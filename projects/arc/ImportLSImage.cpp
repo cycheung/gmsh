@@ -1,5 +1,5 @@
 //
-// Description: 
+// Description:
 //
 //
 // Author:  <Boris Sedji>,  12/2009
@@ -24,7 +24,7 @@
 #include "GModel.h"
 #include "MElement.h"
 #include "gmshLevelset.h"
-#include "OctreeLSImage/OctreeLSImage.cpp"
+#include "Classes/OctreeLSImage.cpp"
 
 
 
@@ -44,18 +44,18 @@ int main( int argc, char *argv[] )
   typedef itk::ImageFileReader< ImageTypeFloat > ImageReaderTypeFloat;
   ImageReaderTypeFloat::Pointer reader = ImageReaderTypeFloat::New();
 
-  reader->SetFileName(argv[1]);    
+  reader->SetFileName(argv[1]);
 
 	ImageTypeFloat::Pointer image = reader->GetOutput();
   image->Update();
 
   ImageTypeFloat::RegionType region;
   region = image->GetLargestPossibleRegion ();
-  
+
   std::cout<<"\nImage dimensions : " << region.GetSize(0) << " x " << region.GetSize(1) << " x " << region.GetSize(2);
 
   OctreeLSImage octree(image);
-  
+
   int sizemax = atoi(argv[2]);
   int sizemin = atoi(argv[3]);
 
@@ -73,19 +73,19 @@ int main( int argc, char *argv[] )
   	std::cout<<"\nLeaf Number : "<< (octree.GetLeafNumber())<<"\n";
     k++;
   }
-	
+
 	// Create GModel with the octree mesh
   GModel *m = octree.CreateGModel();
-	
-	// Write a .msh file with the mesh 
+
+	// Write a .msh file with the mesh
  	std::string ModelName = "OctreeMesh.msh" ;
    m->writeMSH(ModelName,2.1,false,false);
- 
+
 	// Write a .msh file with the level set values as postview data
  	PView *pv = octree.CreateLSPView(m);
 	bool useadapt = true;
  	pv->getData(useadapt)->writeMSH("LSPView.msh", false);
- 
+
   std::cout<<"\n";
 
   return 0;

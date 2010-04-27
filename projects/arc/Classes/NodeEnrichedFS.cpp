@@ -51,7 +51,8 @@ template <class T> void NodeEnrichedFS<T>::f(MElement *ele, double u, double v, 
         SPoint3 p;
         elep->pnt(u, v, w, p);
         double func;
-        func = (*_funcEnrichment)(p.x(), p.y(), p.z(),elep);
+        _funcEnrichment->setElement(elep);
+        func = (*_funcEnrichment)(p.x(), p.y(), p.z());
 
         for (int i=0 ;i<EnrichedVertex.size();i++)
         {
@@ -106,13 +107,15 @@ template <class T> void NodeEnrichedFS<T>::gradf(MElement *ele, double u, double
         double df[3];
         SPoint3 p;
         elep->pnt(u, v, w, p);
-        _funcEnrichment->gradient (p.x(), p.y(),p.z(),df[0],df[1],df[2],elep);
+        _funcEnrichment->setElement(elep);
+        _funcEnrichment->gradient (p.x(), p.y(),p.z(),df[0],df[1],df[2]);
         ValType gradfunc(df[0],df[1],df[2]);
 
         // Enrichment function calcul
 
         double func;
-        func = (*_funcEnrichment)(p.x(), p.y(), p.z(),elep);
+        _funcEnrichment->setElement(elep);
+        func = (*_funcEnrichment)(p.x(), p.y(), p.z());
 
         for (int i=0 ;i<EnrichedVertex.size();i++)
         {

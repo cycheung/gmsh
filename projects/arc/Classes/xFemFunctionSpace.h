@@ -72,20 +72,23 @@ class xFemFS : public xFemFunctionSpace<T>
 
  typedef typename TensorialTraits<T>::ValType ValType;
  typedef typename TensorialTraits<T>::GradType GradType;
+ typedef typename TensorialTraits<T>::HessType HessType;
 
  protected:
 
-  simpleFunction<double> *_funcEnrichment;
+  simpleFunctionOnElement<double> *_funcEnrichment;
 
  public:
 
-  xFemFS(FunctionSpace<T>* spacebase, simpleFunction<double> *funcEnrichment) : xFemFunctionSpace<T>(spacebase),_funcEnrichment(funcEnrichment)
+  xFemFS(FunctionSpace<T>* spacebase, simpleFunctionOnElement<double> *funcEnrichment) : xFemFunctionSpace<T>(spacebase),_funcEnrichment(funcEnrichment)
   {};
 
   virtual void f(MElement *ele, double u, double v, double w,std::vector<ValType> &vals);
   virtual void gradf(MElement *ele, double u, double v, double w,std::vector<GradType> &grads);
   virtual int getNumKeys(MElement *ele);
   virtual void getKeys(MElement *ele, std::vector<Dof> &keys);
+  virtual void hessfuvw(MElement *ele, double u, double v, double
+w,std::vector<HessType> &hess){};
 };
 
 
@@ -98,6 +101,7 @@ class FilteredFS : public FilteredFunctionSpace<T,FilterNodeEnriched>
 
   typedef typename TensorialTraits<T>::ValType ValType;
   typedef typename TensorialTraits<T>::GradType GradType;
+  typedef typename TensorialTraits<T>::HessType HessType;
 
  public:
   FilteredFS(FunctionSpace<T>* spacebase, FilterNodeEnriched *filter) : FilteredFunctionSpace<T,FilterNodeEnriched> (spacebase,filter)
@@ -106,6 +110,8 @@ class FilteredFS : public FilteredFunctionSpace<T,FilterNodeEnriched>
   virtual void gradf(MElement *ele, double u, double v, double w,std::vector<GradType> &grads);
   virtual int getNumKeys(MElement *ele);
   virtual void getKeys(MElement *ele, std::vector<Dof> &keys);
+  virtual void hessfuvw(MElement *ele, double u, double v, double
+w,std::vector<HessType> &hess){};
 };
 
 #endif

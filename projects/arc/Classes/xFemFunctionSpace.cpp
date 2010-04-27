@@ -33,7 +33,8 @@ template <class T> void xFemFS<T>::f(MElement *ele, double u, double v, double w
         SPoint3 p;
         elep->pnt(u, v, w, p); // parametric to cartesian coordinates
         double func;
-        func = (*_funcEnrichment)(p.x(), p.y(), p.z(),elep);
+        _funcEnrichment->setElement(elep);
+        func = (*_funcEnrichment)(p.x(), p.y(), p.z());
         for (int i=0 ;i<nbdofs;i++)
         {
             vals.push_back(valsd[i]*func);
@@ -69,13 +70,15 @@ template <class T> void xFemFS<T>::gradf(MElement *ele, double u, double v, doub
         double df[3];
         SPoint3 p;
         elep->pnt(u, v, w, p);
-        _funcEnrichment->gradient (p.x(), p.y(),p.z(),df[0],df[1],df[2],elep);
+        _funcEnrichment->setElement(elep);
+        _funcEnrichment->gradient (p.x(), p.y(),p.z(),df[0],df[1],df[2]);
         ValType gradfuncenrich(df[0],df[1],df[2]);
 
         // Enrichment function calcul
 
         double func;
-        func = (*_funcEnrichment)(p.x(), p.y(), p.z(),elep);
+        _funcEnrichment->setElement(elep);
+        func = (*_funcEnrichment)(p.x(), p.y(), p.z());
 
         for (int i=0 ;i<nbdofs;i++)
         {

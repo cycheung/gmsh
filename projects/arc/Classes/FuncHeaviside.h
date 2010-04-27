@@ -31,8 +31,18 @@ class FuncHeaviside :  public  simpleFunction<double> {
     	return -1;
     }
   }
+    virtual double operator () (double x,double y,double z, MElement *e) const {
+    if (_ls->isInsideDomain (x,y,z)){
+    	return 1 ;
+    }else{
+    	return -1;
+    }
+  }
   virtual void gradient (double x, double y, double z,
 			 double & dfdx, double & dfdy, double & dfdz) const
+  { dfdx = dfdy = dfdz = 0.0; }
+  virtual void gradient (double x, double y, double z,
+			 double & dfdx, double & dfdy, double & dfdz, MElement *e) const
   { dfdx = dfdy = dfdz = 0.0; }
 };
 

@@ -28,7 +28,7 @@ class ImageSolver : public elasticitySolver
     // enriched comp
     std::set<int>  _EnrichComp;
     // simple multiplying function enrichment to enrich the space function
-    simpleFunction<double> *_funcEnrichment;
+    simpleFunctionOnElement<double> *_funcEnrichment;
     // level set value
     std::map<int, double > _LevelSetValue;
     // hanging nodes
