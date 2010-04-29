@@ -1,0 +1,15 @@
+MeshFile plate.msh
+//           physical   E     nu  beta1 beta2 beta3    h  Formulation(Cg/Dg=0 FullDg=1)
+ElasticDomain 99        1.e6  0.3   10.  10.    10.    0.1        0
+// Solver Gmm=0 (default) Taucs=1 PETSc=2
+Solver 1
+EdgeDisplacement 31 2 0.
+EdgeDisplacement 21 2 0.
+EdgeDisplacement 21 0 0.
+EdgeDisplacement 21 1 0.
+EdgeDisplacement 11 0 0.
+EdgeDisplacement 11 1 0.
+EdgeDisplacement 41 0 0.
+EdgeDisplacement 41 1 0.
+NodeForce 111 0. 0. -50.
+Theta 3 11 21 41
