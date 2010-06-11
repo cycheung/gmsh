@@ -17,13 +17,20 @@ set(SRC
   src/mainDG.cpp
   src/DgC0PlateDof.cpp
   src/IPState.cpp
+  src/IPFieldPlatePlaneStress.cpp
+  src/IPFieldPlatePlaneStressWTI.cpp
+  src/IPFieldPlatePlaneStressWF.cpp
   src/DgC0PlateSolver.cpp
+  src/DgC0PlateSolverStaticNonLinear.cpp
   src/DgC0PlateTerms.cpp
   src/GModelWithInterface.cpp
   src/LinearElasticShellHookeTensor.cpp
   src/LocalBasis.cpp
   src/MInterfaceElement.cpp
+  src/elementField.cpp
+  src/displacementField.cpp
   src/reduction.cpp
+  src/IPField.cpp
   ../dg/dgGroupOfElements.cpp
   ../dg/dgDofContainer.cpp
   ../dg/dgAlgorithm.cpp

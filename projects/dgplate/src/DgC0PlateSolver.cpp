@@ -19,13 +19,14 @@
 #include "MPoint.h"
 #include "IPState.h"
 #include "IPField.h"
+#include "SimpleFunctionTime.h"
 
 #if defined(HAVE_POST)
 #include "PView.h"
 #include "PViewData.h"
 #endif
 
-void DgC0PlateSolver::setMesh(const std::string &meshFileName)
+void DgC0PlateSolver::setMesh(const std::string meshFileName)
 {
   pModel = new GModelWithInterface();
   pModel->readMSH(meshFileName.c_str());
@@ -38,27 +39,43 @@ void DgC0PlateSolver::setMesh(const std::string &meshFileName)
   //LagSpace=new VectorLagrangeFunctionSpace(_tag,VectorLagrangeFunctionSpace::VECTOR_Z);
   // Plate 3 dof per node
   LagSpace=new DgC0LagrangeFunctionSpace(_tag);
-
 }
 
-void DgC0PlateSolver::readInputFile(const std::string &fn)
+void DgC0PlateSolver::readInputFile(const std::string fn)
 {
   FILE *f = fopen(fn.c_str(), "r");
   char what[256];
   while(!feof(f)){
     if(fscanf(f, "%s", what) != 1) return;
     if (!strcmp(what, "ElasticDomain")){
-      DGelasticField field;
-      int physical, b;
-      if(fscanf(f, "%d %lf %lf %lf %lf %lf %lf %d", &physical, &field._E, &field._nu, &field._beta1, &field._beta2, &field._beta3, &field._h, &b) != 8) return;
+      DGelasticField field; // TODO creation of constructor
+      int physical, b,c;
+      if(fscanf(f, "%d %lf %lf %lf %lf %lf %lf %d %d", &physical, &field._E, &field._nu, &field._beta1, &field._beta2, &field._beta3, &field._h, &b, &c) != 9) return;
       field._tag = _tag;
       field._phys= physical; // needed to impose BC on face
-      field.setFormulation(b);
+      field.setFormulation(b); // Formulation of element cG/dG full dG
+      // set the number of simpsons point for numerical integration on thickness (add one to the number if it is even)
+      c%2==0 ? field._msimp=++c : field._msimp=c;
       field.setMaterialLaw(materialLaw::linearElasticPlaneStress); // Elastic Domain --> linear elastic law
       field.g = new groupOfElements (_dim, physical);
-      // Add the Interface Elements
-      field.gi = pModel->getInterface(physical); // TODO integrate with field.g
+      // push field in vector
       elasticFields.push_back(field);
+
+    }
+    else if (!strcmp(what, "ElasticFractureDomain")){
+      DGelasticField field; // TODO creation of constructor
+      int physical, c;
+      if(fscanf(f, "%d %lf %lf %lf %lf %lf %lf %lf %lf %d", &physical, &field._E, &field._nu, &field._beta1, &field._beta2, &field._beta3, &field._h, &field._Gc, &field._sigmac, &c) != 10) return;
+      field._tag = _tag;
+      field._phys= physical; // needed to impose BC on face
+      field.setFormulation(1); // Only full dG for fracture problem
+      // set the number of simpsons point for numerical integration on thickness (add one to the number if it is even)
+      c%2==0 ? field._msimp=++c : field._msimp=c;
+      field.setMaterialLaw(materialLaw::linearElasticPlaneStressWithFracture); // Elastic Domain --> linear elastic law
+      field.g = new groupOfElements (_dim, physical);
+      pModel->getBoundInterface(physical,field.gib); // if theta is prescribed before the construction of this field
+      elasticFields.push_back(field);
+
     }
     else if (!strcmp(what, "Void")){
       //      elasticField field;
@@ -73,7 +90,7 @@ void DgC0PlateSolver::readInputFile(const std::string &fn)
       if(fscanf(f, "%d %d %lf", &node, &comp, &val) != 3) return;
       dirichletBC diri;
       diri.g = new groupOfElements (0, node);
-      diri._f= simpleFunction<double>(val);
+      diri._f= simpleFunctionTime<double>(val);
       diri._comp=comp;
       diri._tag=node;
       diri.onWhat=BoundaryCondition::ON_VERTEX;
@@ -85,7 +102,7 @@ void DgC0PlateSolver::readInputFile(const std::string &fn)
       if(fscanf(f, "%d %d %lf", &edge, &comp, &val) != 3) return;
       dirichletBC diri;
       diri.g = new groupOfElements (1, edge);
-      diri._f= simpleFunction<double>(val);
+      diri._f= simpleFunctionTime<double>(val);
       diri._comp=comp;
       diri._tag=edge;
       diri.onWhat=BoundaryCondition::ON_EDGE;
@@ -97,7 +114,7 @@ void DgC0PlateSolver::readInputFile(const std::string &fn)
       if(fscanf(f, "%d %d %lf", &face, &comp, &val) != 3) return;
       dirichletBC diri;
       diri.g = new groupOfElements (2, face);
-      diri._f= simpleFunction<double>(val);
+      diri._f= simpleFunctionTime<double>(val);
       diri._comp=comp;
       diri._tag=face;
       diri.onWhat=BoundaryCondition::ON_FACE;
@@ -109,7 +126,7 @@ void DgC0PlateSolver::readInputFile(const std::string &fn)
       if(fscanf(f, "%d %lf %lf %lf", &node, &val1, &val2, &val3) != 4) return;
       neumannBC neu;
       neu.g = new groupOfElements (0, node);
-      neu._f= simpleFunction<SVector3>(SVector3(val1, val2, val3));
+      neu._f= simpleFunctionTime<SVector3>(SVector3(val1, val2, val3));
       neu._tag=node;
       neu.onWhat=BoundaryCondition::ON_VERTEX;
       allNeumann.push_back(neu);
@@ -120,7 +137,7 @@ void DgC0PlateSolver::readInputFile(const std::string &fn)
       if(fscanf(f, "%d %lf %lf %lf", &edge, &val1, &val2, &val3) != 4) return;
       neumannBC neu;
       neu.g = new groupOfElements (1, edge);
-      neu._f= simpleFunction<SVector3>(SVector3(val1, val2, val3));
+      neu._f= simpleFunctionTime<SVector3>(SVector3(val1, val2, val3));
       neu._tag=edge;
       neu.onWhat=BoundaryCondition::ON_EDGE;
       allNeumann.push_back(neu);
@@ -131,7 +148,7 @@ void DgC0PlateSolver::readInputFile(const std::string &fn)
       if(fscanf(f, "%d %lf %lf %lf", &face, &val1, &val2, &val3) != 4) return;
       neumannBC neu;
       neu.g = new groupOfElements (2, face);
-      neu._f= simpleFunction<SVector3>(SVector3(val1, val2, val3));
+      neu._f= simpleFunctionTime<SVector3>(SVector3(val1, val2, val3));
       neu._tag=face;
       neu.onWhat=BoundaryCondition::ON_FACE;
       allNeumann.push_back(neu);
@@ -142,7 +159,7 @@ void DgC0PlateSolver::readInputFile(const std::string &fn)
       if(fscanf(f, "%d %lf %lf %lf", &volume, &val1, &val2, &val3) != 4) return;
       neumannBC neu;
       neu.g = new groupOfElements (3, volume);
-      neu._f= simpleFunction<SVector3>(SVector3(val1, val2, val3));
+      neu._f= simpleFunctionTime<SVector3>(SVector3(val1, val2, val3));
       neu._tag=volume;
       neu.onWhat=BoundaryCondition::ON_VOLUME;
       allNeumann.push_back(neu);
@@ -154,22 +171,41 @@ void DgC0PlateSolver::readInputFile(const std::string &fn)
     }
     else if (!strcmp(what, "Theta")){
       int num, num_phys=0;
-      std::vector<MVertex*> vv;
       // First component number of physical groups where theta is imposed (to 0 for now)
       fscanf(f,"%d",&num);
       for(int i=0;i<num;i++){
         fscanf(f,"%d",&num_phys);
-        // Store the group (the interfaceElement will be created later)
+        std::vector<MVertex*> vv;
         pModel->getMeshVerticesForPhysicalGroup(1,num_phys,vv);
         pModel->insertThetaBound(num_phys,vv);
       }
-      // store the boundary interface element to the elastifFields
-      for(int i=0;i<elasticFields.size();i++) elasticFields[i].gib=pModel->getBoundInterface(i);
     }
     else if(!strcmp(what, "Solver")){
-      int s;
-      fscanf(f,"%d",&s);
-      this->setSolver(s);
+      int sol,sch;
+      fscanf(f,"%d %d",&sol,&sch);
+      this->setSolver(sol);
+      this->setScheme(sch);
+    }
+    else if(!strcmp(what, "StaticNonLinearData")){
+      int ns;
+      double et,tol;
+      fscanf(f,"%d %lf %lf",&ns,&et,&tol);
+      this->setSNLData(ns,et,tol);
+    }
+    else if(!strcmp(what, "Archive")){
+      int na;
+      fscanf(f,"%d",&na);
+      this->setStepBetweenArchiving(na);
+    }
+    else if(!strcmp(what, "ArchivingEdgeForce")){
+      int numphys,comp;
+      fscanf(f,"%d %d",&numphys,&comp);
+      this->addArchivingEdgeForce(numphys,comp);
+    }
+    else if(!strcmp(what, "ArchivingNodeDisplacement")){
+      int num,comp;
+      fscanf(f,"%d %d",&num,&comp);
+      this->addArchivingNodeDisplacement(num,comp);
     }
     else {
       Msg::Error("Invalid input : %s", what);
@@ -178,6 +214,21 @@ void DgC0PlateSolver::readInputFile(const std::string &fn)
   }
   fclose(f);
 }
+
+void DgC0PlateSolver::addElasticDomain(DGelasticField* ED, const int f, const int d){
+  ED->g = new groupOfElements (d, f);
+  elasticFields.push_back(*ED);
+}
+
+void DgC0PlateSolver::addTheta(const int numphys){
+  std::vector<MVertex*> vv;
+  pModel->getMeshVerticesForPhysicalGroup(1,numphys,vv);
+  pModel->insertThetaBound(numphys,vv);
+  // store the boundary interface element to the elastifFields
+  //for(int i=0;i<elasticFields.size();i++) pModel->getBoundInterface(i,elasticFields[i].gib);
+  //for(int i=0;i<elasticFields.size();i++) pModel->getBoundInterface(elasticFields[i]._phys,elasticFields[i].gib);
+}
+
 
 void DgC0PlateSolver::createInterfaceElement(){
   // Compute and add interface element to the model
@@ -194,7 +245,7 @@ void DgC0PlateSolver::createInterfaceElement(){
       for(int j=0;j<nedge;j++){
         std::vector<MVertex*> vv;
         e->getEdgeVertices(j,vv);
-        Iedge ie = Iedge(vv,e,i);
+        Iedge ie = Iedge(vv,e,elasticFields[i]._phys);
         unsigned long int key = ie.getkey();
         const std::map<unsigned long int,Iedge>::iterator it_edge=map_edge.find(key);
         if(it_edge == map_edge.end()) // The edge doesn't exist -->inserted into the map
@@ -206,7 +257,7 @@ void DgC0PlateSolver::createInterfaceElement(){
         }
       }
     }
-    elasticFields[i].gi=pModel->getInterface(elasticFields[i]._phys); // Avoid this step ??
+    pModel->getInterface(elasticFields[i]._phys,elasticFields[i].gi); // Avoid this step ??
   }
   // At this stage the edge in map_edge must be separated into BoundaryInterfaceElement and Virtual InterfaceElement
   //pModel->generateInterfaceElementsOnBoundary(num_phys,elasticFields); //TODO don't pass elastic field but I don't know how to access to element in GModel ??
@@ -216,7 +267,8 @@ void DgC0PlateSolver::createInterfaceElement(){
     MInterfaceElement interel = MInterfaceElement(Mv,0,0,ie.getElement(),ie.getElement());
     pModel->storeVirtualInterfaceElement(interel);
   }
-  std::vector<MInterfaceElement*> vie = pModel->getVirtualInterface();
+  std::vector<MInterfaceElement*> vie;
+  pModel->getVirtualInterface(vie);
 
   std::vector<MVertex*> vv;
   std::vector<int> thetaBound;
@@ -238,7 +290,8 @@ void DgC0PlateSolver::createInterfaceElement(){
     vv.clear();
   }
   for(int i=0;i<elasticFields.size();i++)
-    elasticFields[i].gib=pModel->getBoundInterface(i);
+   // pModel->getBoundInterface(i,elasticFields[i].gib);
+   pModel->getBoundInterface(elasticFields[i]._phys,elasticFields[i].gib);
   //for(int j=0;j<elasticFields[0].gib.size();j++)
   // printf("elem - %d elem + %d\n",elasticFields[0].gib[j]->getElem(0)->getNum(),elasticFields[0].gib[j]->getElem(1)->getNum());
 }
@@ -312,7 +365,10 @@ else{
 
   // ATTENTION The BC must be rewrite to take into account different fields (CG/DG and fullDG field for exemple)
   std::cout <<  "Dirichlet BC"<< std::endl;
-  std::vector<MInterfaceElement*> vinter = pModel->getVirtualInterface(); // vector needed to impose boundary condition for fullDg formulation
+  std::vector<MInterfaceElement*> vinter;
+  pModel->getVirtualInterface(vinter); // vector needed to impose boundary condition for fullDg formulation
+  std::vector<MInterfaceElement*> vinternalInter;
+  pModel->getInterface(vinternalInter);
   for (unsigned int i = 0; i < allDirichlet.size(); i++)
   {
     DgC0PlateFilterDofComponent filter(allDirichlet[i]._comp);
@@ -322,7 +378,8 @@ else{
       if(allDirichlet[i].onWhat == BoundaryCondition::ON_FACE)
         FixNodalDofs(*LagSpace,allDirichlet[i].g->begin(),allDirichlet[i].g->end(),*pAssembler,allDirichlet[i]._f,filter,true);
       else
-        FixNodalDofs(*LagSpace,allDirichlet[i].g->begin(),allDirichlet[i].g->end(),*pAssembler,allDirichlet[i]._f,filter,vinter);
+        FixNodalDofs(*LagSpace,allDirichlet[i].g->begin(),allDirichlet[i].g->end(),*pAssembler,allDirichlet[i]._f,filter,vinter,
+                     vinternalInter);
     }
  }
 
@@ -353,16 +410,13 @@ else{
     }
   }
 
+  // displacement field
+  displacementField ufield(pAssembler,elasticFields,3,LagSpace->getId(),anoded);
   // Store stress and deformation at each gauss point
   // IPState "declaration" reserve place for data
-  // Just storage allocation no initialization in AIPS constructor
-  AllIPState AIPS(pModel, elasticFields, Integ_Bulk, Integ_Boundary);
   IPField<DGelasticField,DgC0FunctionSpace<SVector3> > ipf(&elasticFields,pAssembler,LagSpace,
-                                                           &Integ_Bulk, &Integ_Boundary, &AIPS);
+                                                           &Integ_Bulk, &Integ_Boundary, pModel, &ufield);
   ipf.compute1state(IPState::initial);
-  // depends on ipvar make a switch or something else ??
-  // loop on all component of AIPS to initialize the variable at gauss point
- //  AIPS.copy(IPState::initial,IPState::current);
 
   // bulk material law
   for (unsigned int i = 0; i < elasticFields.size(); i++)
@@ -370,469 +424,162 @@ else{
     // print the chosen formulation
     if(elasticFields[i].getFormulation()) printf("Full Dg formulation is chosen for elasticField %d\n",elasticFields[i]._tag);
     else printf("Cg/Dg formulation is chosen for elasticField %d\n",elasticFields[i]._tag);
+    printf("Number of integration point on thickness : %d\n",elasticFields[i].getmsimp());
     // Initialization of elementary terms in function of the field and space
-    IsotropicElasticBulkTermC0Plate Eterm(*LagSpace,elasticFields[i]._E,elasticFields[i]._nu,elasticFields[i]._h);
+    IsotropicElasticStiffBulkTermC0Plate Eterm(*LagSpace,elasticFields[i]._E,elasticFields[i]._nu,elasticFields[i]._h,elasticFields[i].getFormulation());
     // Assembling loop on Elementary terms
-    AssembleBulk(Eterm,*LagSpace,elasticFields[i].g->begin(),elasticFields[i].g->end(),Integ_Bulk,
-                 *pAssembler, elasticFields[i].getFormulation());
+    MyAssemble(Eterm,*LagSpace,elasticFields[i].g->begin(),elasticFields[i].g->end(),Integ_Bulk,
+                 *pAssembler);
 
     // Initialization of elementary  interface terms in function of the field and space
-    IsotropicElasticInterfaceTermC0Plate IEterm(*LagSpace,elasticFields[i]._E,elasticFields[i]._nu,elasticFields[i]._beta1,
+    IsotropicElasticStiffInterfaceTermC0Plate IEterm(*LagSpace,elasticFields[i]._E,elasticFields[i]._nu,elasticFields[i]._beta1,
                                                 elasticFields[i]._beta2,elasticFields[i]._beta3,
-                                                elasticFields[i]._h,elasticFields[i].getFormulation());
+                                                elasticFields[i]._h,&ufield, &ipf, elasticFields[i].getSolElemType(),
+                                                elasticFields[i].getFormulation());
     // Assembling loop on elementary interface terms
-    AssembleInterface(IEterm,*LagSpace,elasticFields[i].g,elasticFields[i].gi,Integ_Boundary,
-                      *pAssembler,elasticFields[i].getFormulation()); // Use the same GaussQuadrature rule than on the boundary
+    MyAssemble(IEterm,*LagSpace,elasticFields[i].gi.begin(),elasticFields[i].gi.end(),Integ_Boundary,
+                      *pAssembler); // Use the same GaussQuadrature rule than on the boundary
 
     // Initialization of elementary  interface terms in function of the field and space
-    IsotropicElasticVirtualInterfaceTermC0Plate VIEterm(*LagSpace,elasticFields[i]._E,elasticFields[i]._nu,elasticFields[i]._beta1,
+    IsotropicElasticStiffVirtualInterfaceTermC0Plate VIEterm(*LagSpace,elasticFields[i]._E,elasticFields[i]._nu,elasticFields[i]._beta1,
                                                 elasticFields[i]._beta2,elasticFields[i]._beta3,
-                                                elasticFields[i]._h,elasticFields[i].getFormulation());
+                                                elasticFields[i]._h,&ufield,&ipf,elasticFields[i].getSolElemType(),true,elasticFields[i].getFormulation());
     // Assembling loop on elementary boundary interface terms
-    AssembleInterface(VIEterm,*LagSpace,elasticFields[i].g,elasticFields[i].gib,Integ_Boundary,
-                      *pAssembler,elasticFields[i].getFormulation()); // Use the same GaussQuadrature rule than on the boundary
+    MyAssemble(VIEterm,*LagSpace,elasticFields[i].gib.begin(),elasticFields[i].gib.end(),Integ_Boundary,
+                      *pAssembler); // Use the same GaussQuadrature rule than on the boundary
 
   }
-printf("-- done assembling!\n");
-lsys->systemSolve();
-printf("-- done solving!\n");
+  printf("-- done assembling!\n");
+  lsys->systemSolve();
+  printf("-- done solving!\n");
 
-// compute stress after solve
-//AIPS.nextStep();
-ipf.compute1state(IPState::current);
-//AIPS.stressAndDefo(IPState::current,elasticFields,pAssembler,LagSpace,Integ_Bulk,Integ_Boundary);
-// print result
-/*IntPt *GP;
-IPState::whichState ws = IPState::current;
-      for(int i=0;i<elasticFields.size();i++){
-        if(!elasticFields[i].getFormulation()){ //cg/dg formulation
-          // The object is initialized thanks to interfaceElement. Other Possibilities ?? if CG can be done with element but not for cg/dg and full dg
-          // loop
-          for(std::vector<MInterfaceElement*>::iterator it=elasticFields[i].gi.begin(); it!=elasticFields[i].gi.end();++it){
-            MInterfaceElement *ie = *it;
-            // get info for element - and + (gauss point on interface are only created for element - has cg/dg)
-            MElement *em = ie->getElem(0);
-            int edge = ie->getEdgeNumber(0);
-            int npts_inter=Integ_Boundary.getIntPoints(ie,&GP);
-            for(int j=0;j<npts_inter;j++){
-              IPnum key=IPnum(em->getNum(),IPnum::createTypeWithTwoInts(edge,j));
-              IPState *ips = AIPS.getIPstate(&key);
-              IPVariablePlate *ipv = dynamic_cast<IPVariablePlate*>(ips->getState(ws));
-              printf("elem %d edge %d gaussPoint %d sxx =%f\n",em->getNum(),edge,j,ipv->getSigma(component::xx));
-            }
-          }
-        }
-        else{ //full dg formulation
-          // loop
-          for(std::vector<MInterfaceElement*>::iterator it=elasticFields[i].gi.begin(); it!=elasticFields[i].gi.end();++it){
-            MInterfaceElement *ie = *it;
-            // get info for element - and + (gauss point on interface are only created for element - has cg/dg)
-            MElement *em = ie->getElem(0);
-            MElement *ep = ie->getElem(1);
-            int edgem = ie->getEdgeNumber(0);
-            int edgep = ie->getEdgeNumber(1);
-            int npts_inter=Integ_Boundary.getIntPoints(ie,&GP);
-            for(int j=0;j<npts_inter;j++){
-              IPnum key=IPnum(em->getNum(),IPnum::createTypeWithTwoInts(edgem,j));
-              IPState *ips = AIPS.getIPstate(&key);
-              IPVariablePlate *ipv = dynamic_cast<IPVariablePlate*>(ips->getState(ws));
-              printf("elem %d edge %d gaussPoint %d sxx =%f\n",em->getNum(),edgem,j,ipv->getSigma(component::xx));
-              IPnum keyp=IPnum(ep->getNum(),IPnum::createTypeWithTwoInts(edgep,j));
-              ips = AIPS.getIPstate(&keyp);
-              ipv = dynamic_cast<IPVariablePlate*>(ips->getState(ws));
-              printf("elem %d edge %d gaussPoint %d sxx =%f\n",ep->getNum(),edgep,j,ipv->getSigma(component::xx));
-            }
-          }
-        }
-        for(std::vector<MInterfaceElement*>::iterator it=elasticFields[i].gib.begin(); it!=elasticFields[i].gib.end();++it){
-          MInterfaceElement *ie = *it;
-          // get info for element - and + (gauss point on interface are only created for element - has cg/dg)
-          MElement *em = ie->getElem(0);
-          int edge = ie->getEdgeNumber(0);
-          int npts_inter=Integ_Boundary.getIntPoints(ie,&GP);
-          for(int j=0;j<npts_inter;j++){
-            IPnum key=IPnum(em->getNum(),IPnum::createTypeWithTwoInts(edge,j));
-            IPState *ips = AIPS.getIPstate(&key);
-            //ips->getState(IPState::initial);
-            //IPVariablePlate *ipv = <dynamic_cast IPVariablePlate *> ips->getState(IPState::initial);
-            IPVariablePlate *ipv = dynamic_cast<IPVariablePlate*>(ips->getState(ws));
-            printf("elem %d edge %d gaussPoint %d sxx =%f\n",em->getNum(),edge,j,ipv->getSigma(component::xx));
-          }
-        }
-
-        for (groupOfElements::elementContainer::const_iterator it = elasticFields[i].g->begin(); it != elasticFields[i].g->end(); ++it){
-          MElement *e = *it;
-          int edge = e->getNumEdges();
-          int npts_bulk=Integ_Bulk.getIntPoints(e,&GP);
-          for(int j=0;j<npts_bulk;j++){
-            IPnum key=IPnum(e->getNum(),IPnum::createTypeWithTwoInts(edge,j));
-            IPState *ips = AIPS.getIPstate(&key);
-            IPVariablePlate *ipv = dynamic_cast<IPVariablePlate*>(ips->getState(ws));
-            printf("elem %d edge %d gaussPoint %d sxx =%f\n",e->getNum(),edge,j,ipv->getSigma(component::xx));
-          }
-        }
-      }*/
- // Save solution
-/*FILE *fp1 = fopen("matrix.txt","w");
-FILE *fp2 = fopen("force.txt","w");
-FILE *fp3 = fopen("sol.txt","w");
-for(int i=0;i<48;i++){
-  for(int j=0;j<48;j++)
-    fprintf(fp1,"%f ",lsys->getFromMatrix(i,j));
-  fprintf(fp2, "%f\n",lsys->getFromRightHandSide(i));
-  fprintf(fp3, "%f\n",lsys->getFromSolution(i));
-  fprintf(fp1,"\n");
-}
-fclose(fp1); fclose(fp2); fclose(fp3);*/
-// Plante Bug problème de template ??
-/*  double energ=0;
-  for (unsigned int i = 0; i < elasticFields.size(); i++)
-  {
-    SolverField<SVector3> Field(pAssembler, LagSpace);
-    IsotropicElasticTermC0Plate Eterm(Field,elasticFields[i]._E,elasticFields[i]._nu,elasticFields[i]._h);
-    BilinearTermToScalarTerm<SVector3,SVector3> Elastic_Energy_Term(Eterm);
-    Assemble(Elastic_Energy_Term,elasticFields[i].g->begin(),elasticFields[i].g->end(),Integ_Bulk,energ);
-  }
-  printf("elastic energy=%f\n",energ);*/
-}
-
-
-
-#if defined(HAVE_POST)
-
-// Function returning the type of element (Implemented only for supported element by FullDgPlate
-int whichType(MElement *e){
-  int type;
-  int numEdge = e->getNumEdges();
-  int order = e->getPolynomialOrder();
-  switch(numEdge){
-    case 2 :
-      switch(order){
-        case 1 :
-          type=1; break;
-        case 2 :
-          type=8; break;
-        case 3 :
-          type=26; break;
-        default : printf("Warning unknow element type in builDisplacementView"); type=0; break;
-      } break;
-    case 3 :
-      switch(order){
-        case 1 :
-          type=2; break;
-        case 2 :
-          type=9; break;
-        case 3 :
-          type=20; break;
-        default :  printf("Warning unknow element type in builDisplacementView"); type=0; break;
-      } break;
-    case 4 :
-      switch(order){
-        case 1 :
-          type=3; break;
-        case 2 :
-          type=16; break;
-        case 3 :
-          type=39 ; break;
-        default :  printf("Warning unknow element type in builDisplacementView"); type=0; break;
-      } break;
-    default : printf("Warning unknow element type in builDisplacementView"); type=0; break;
-
-  }
-
-  return type;
-}
-
-PView* DgC0PlateSolver::buildDisplacementView (const std::string &postFileName)
-{
-  if(!elasticFields[0].getFormulation()){ // No change if CG/DG change this because test on elasticFields[0] only
-    std::set<MVertex*> v;
-    for (unsigned int i = 0; i < elasticFields.size(); ++i)
-    {
-      for (groupOfElements::elementContainer::const_iterator it = elasticFields[i].g->begin(); it != elasticFields[i].g->end(); ++it)
-      {
-        MElement *e=*it;
-        for (int j = 0; j < e->getNumVertices(); ++j) v.insert(e->getVertex(j));
-      }
-    }
-    std::map<int, std::vector<double> > data;
-    DgC0SolverField<SVector3> Field(pAssembler, LagSpace);
-    for ( std::set<MVertex*>::iterator it = v.begin(); it != v.end(); ++it)
-    {
-      SVector3 val;
-      MPoint p(*it);
-      Field.getVertexDisplacement(&p,val,false,0);
-      std::vector<double> vec(3);vec[0]=val(0);vec[1]=val(1);vec[2]=val(2);
-      data[(*it)->getNum()]=vec;
-    }
-    PView *pv = new PView (postFileName, "NodeData", pModel, data, 0.0);
-    return pv;
-  }
-  else{ // Full Dg case all files is save here and function pv->getData->writeMSH is not used so return null pointer
-    std::set<MElement*> v; //set with element has each element has got its own dofs
-    for (unsigned int i = 0; i < elasticFields.size(); ++i)
-      for (groupOfElements::elementContainer::const_iterator it = elasticFields[i].g->begin(); it != elasticFields[i].g->end(); ++it)
-        v.insert(*it);
-
-    SVector3 val(0.,0.,0.);
-    std::map<unsigned long int,MVertex*> map_vertex; // map with the number of node associated to a vertex
-    std::map<MElement*,std::vector<unsigned long int> > map_elem;
-    std::map<unsigned long int,SVector3> data;
-    unsigned long int num=1;
-    DgC0SolverField<SVector3> Field(pAssembler, LagSpace);
-    std::vector<unsigned long int> num_vertex;
-    for( std::set<MElement*>::iterator it = v.begin(); it != v.end() ;++it){
-      MElement *e=*it;
-      for(int j=0;j<e->getNumVertices();j++){
-        Field.getVertexDisplacement(e,val,true,j);
-        map_vertex[num]=e->getVertex(j);
-        data[num]=val;
-        num_vertex.push_back(num);
-        num++;
-      }
-    //map_elem.insert(std::pair<int,std::vector<unsigned long int> >(e->getNum(),num_vertex));
-    map_elem[e] = num_vertex;
-    num_vertex.clear();
-  }
-
-  // Now all informations are disponible for write GMSH file make a function in PViewData writeMSH with this code (will be necessary to view stress or strain)
-  bool binary=false;               // arg of function
-  std::string fileName = "dispDg.msh"; // arg of function
-  std::string name_t = "displacement"; //arg of function
-  double time = 0.; // arg of function
-  int ts =0; //arg of function What is ts;
-
-  const int numComp=3; // not arg because SVector3
-  FILE *fp = fopen(fileName.c_str(), "w");
-  if(!fp){
-    Msg::Error("Unable to open file '%s'", fileName.c_str());
-    return false;
-  }
-
-  if(binary) Msg::Warning("Binary write not implemented yet");
-
-  fprintf(fp, "$MeshFormat\n2 0 8\n$EndMeshFormat\n");
-  fprintf(fp, "$Nodes\n");
-  fprintf(fp, "%d\n", (int)map_vertex.size());
-  for(std::map<unsigned long int, MVertex*>::iterator it = map_vertex.begin();it!=map_vertex.end();++it){
-      fprintf(fp, "%d %.16g %.16g %.16g\n", (*it).first, (*it).second->x(), (*it).second->y(), (*it).second->z());
-  }
-  fprintf(fp, "$EndNodes\n");
-
-  fprintf(fp, "$Elements\n");
-  fprintf(fp, "%d\n", map_elem.size());
-  int num_elem=1;
-  for(std::map<MElement*, std::vector<unsigned long int> >::iterator it=map_elem.begin();it!=map_elem.end();++it){
-    int type=whichType((*it).first);
-    fprintf(fp, "%d %d %d %d %d ",num_elem,type,2,99,6); // I don't know how to access to the 3 number of tag last variable physical, geometrical region
-    num_elem++;
-    for(int j=0;j<(*it).second.size();j++) fprintf(fp, "%d ",(*it).second[j]);
-    fprintf(fp,"\n");
-  }
-  fprintf(fp, "$EndElements\n");
-  fprintf(fp, "$NodeData\n");
-  fprintf(fp, "1\n\"%s\"\n", name_t.c_str());
-  fprintf(fp, "1\n%.16g\n", time);
-  fprintf(fp, "3\n%d\n%d\n%d\n", ts, numComp, map_vertex.size());
-  for(std::map<unsigned long int,SVector3>::iterator it=data.begin(); it!=data.end();++it)
-    fprintf(fp, "%d %.16g %.16g %.16g\n",(*it).first,(*it).second(0),(*it).second(1),(*it).second(2));
-  fprintf(fp, "$EndNodeData\n");
-  fclose(fp);
-  return NULL;
-  }
-
-}
-
-/*PView *DgC0PlateSolver::buildElasticEnergyView(const std::string &postFileName)
-{
-  std::map<int, std::vector<double> > data;
-  GaussQuadrature Integ_Bulk(GaussQuadrature::GradGrad);
-  for (unsigned int i = 0; i < elasticFields.size(); ++i)
-  {
-    DgC0SolverField<SVector3> Field(pAssembler, LagSpace);
-    IsotropicElasticTermC0Plate Eterm(Field,elasticFields[i]._E,elasticFields[i]._nu);
-    DgC0BilinearTermToScalarTerm<SVector3,SVector3> Elastic_Energy_Term(Eterm);
-    DgC0ScalarTermConstant One(1.0);
-    for (groupOfElements::elementContainer::const_iterator it = elasticFields[i].g->begin(); it != elasticFields[i].g->end(); ++it)
-    {
-      MElement *e=*it;
-      double energ;
-      double vol;
-      IntPt *GP;
-      int npts=Integ_Bulk.getIntPoints(e,&GP);
-      Elastic_Energy_Term.get(e,npts,GP,energ);
-      One.get(e,npts,GP,vol);
-      std::vector<double> vec;
-      vec.push_back(energ/vol);
-      data[(*it)->getNum()]=vec;
-    }
-  }
-  PView *pv = new PView (postFileName, "ElementData", pModel, data, 0.0);
-  return pv;
-}*/
-
-/*PView *DgC0PlateSolver::buildVonMisesView(const std::string &postFileName)
-{
-  std::map<int, std::vector<double> > data;
-  GaussQuadrature Integ_Bulk(GaussQuadrature::GradGrad);
-  for (unsigned int i = 0; i < elasticFields.size(); ++i)
-  {
-    DgC0SolverField<SVector3> Field(pAssembler, LagSpace);
-    IsotropicElasticTermC0Plate Eterm(Field,elasticFields[i]._E,elasticFields[i]._nu);
-    DgC0BilinearTermToScalarTerm<SVector3,SVector3> Elastic_Energy_Term(Eterm);
-    for (groupOfElements::elementContainer::const_iterator it = elasticFields[i].g->begin(); it != elasticFields[i].g->end(); ++it)
-    {
-      MElement *e=*it;
-      double energ;
-      double vol;
-      IntPt *GP;
-      int npts=Integ_Bulk.getIntPoints(e,&GP);
-      Elastic_Energy_Term.get(e,npts,GP,energ);
-      std::vector<double> vec;
-      vec.push_back(energ);
-      data[(*it)->getNum()]=vec;
-    }
-  }
-  PView *pv = new PView (postFileName, "ElementData", pModel, data, 0.0);
-  return pv;
-}*/
-
-// used PView ??
-void DgC0PlateSolver::buildVonMisesView(const std::string &postFileName){
-  bool binary=false;               // arg of function
-  std::string fileName = "stress.msh"; // arg of function
-  std::string name_t = "VonMises"; //arg of function
-  double time = 0.; // arg of function
-  int ts =0; //arg of function What is ts;
-
-  // used for fullDg case
-  std::map<unsigned long int, MVertex*> map_vertex;
-  std::set<MElement*> v; //set with element has each element has got its own dofs
-  std::map<MElement*,std::vector<unsigned long int> > map_elem;
-
-  const int numComp=1; // not arg because 1 component for VM (1 value by element)
-  FILE *fp = fopen(fileName.c_str(), "w");
-  // Top of file
-  fprintf(fp, "$MeshFormat\n2.2 0 8\n$EndMeshFormat\n");
-  fprintf(fp, "$Nodes\n");
-  // Write node value
-  // 1) Cg/Dg cases
-  if(!elasticFields[0].getFormulation()){
-    fprintf(fp, "%d\n", pModel->getNumVertices());
-    for (unsigned int i = 0; i < elasticFields.size(); ++i)
-      for (groupOfElements::vertexContainer::const_iterator it = elasticFields[i].g->vbegin(); it != elasticFields[i].g->vend(); ++it)
-        fprintf(fp, "%d %.16g %.16g %.16g\n", (*it)->getNum(), (*it)->x(), (*it)->y(), (*it)->z());
-  }
-  else{ // 2) Full Dg Cases
-    // build of set with Nodes and elements
-    for (unsigned int i = 0; i < elasticFields.size(); ++i)
-      for (groupOfElements::elementContainer::const_iterator it = elasticFields[i].g->begin(); it != elasticFields[i].g->end(); ++it)
-        v.insert(*it);
-    unsigned long int num=1;
-    std::vector<unsigned long int> num_vertex;
-    for( std::set<MElement*>::iterator it = v.begin(); it != v.end() ;++it){
-      MElement *e=*it;
-      for(int j=0;j<e->getNumVertices();j++){
-        map_vertex[num]=e->getVertex(j);
-        num_vertex.push_back(num);
-        num++;
-      }
-      //map_elem.insert(std::pair<int,std::vector<unsigned long int> >(e->getNum(),num_vertex));
-      map_elem[e] = num_vertex;
-      num_vertex.clear();
-    }
-    fprintf(fp, "%d\n", (int)map_vertex.size());
-    for(std::map<unsigned long int, MVertex*>::iterator it = map_vertex.begin();it!=map_vertex.end();++it)
-      fprintf(fp, "%d %.16g %.16g %.16g\n", (*it).first, (*it).second->x(), (*it).second->y(), (*it).second->z());
-  }
-  fprintf(fp, "$EndNodes\n");
-  // Element data
-  fprintf(fp, "$Elements\n");
-  if(!elasticFields[0].getFormulation()){
-    fprintf(fp, "%d\n", pModel->getNumMeshElements());
-    for(int i=0;i<elasticFields.size();i++){
-      for(groupOfElements::elementContainer::const_iterator it = elasticFields[i].g->begin(); it != elasticFields[i].g->end(); ++it){
-        int type=whichType(*it);
-        fprintf(fp, "%d %d %d %d %d ",(*it)->getNum(),type,2,99,6); // I don't know how to access to the 3 number of tag last variable physical, geometrical region
-      }
-    }
-  }
-  else{
-    fprintf(fp, "%d\n", map_elem.size());
-    int num_elem=1;
-    for(std::map<MElement*, std::vector<unsigned long int> >::iterator it=map_elem.begin();it!=map_elem.end();++it){
-      int type=whichType((*it).first);
-      fprintf(fp, "%d %d %d %d %d ",num_elem,type,2,99,6); // I don't know how to access to the 3 number of tag last variable physical, geometrical region
-      num_elem++;
-      for(int j=0;j<(*it).second.size();j++) fprintf(fp, "%d ",(*it).second[j]);
-      fprintf(fp,"\n");
-    }
-  }
-  fprintf(fp, "$EndElements\n");
-  fprintf(fp, "$ElementData\n");
-  fprintf(fp, "1\n\"%s\"\n", name_t.c_str());
-  fprintf(fp, "1\n%.16g\n", time);
-  if(!elasticFields[0].getFormulation()) fprintf(fp, "3\n%d\n%d\n%d\n", ts, numComp, pModel->getNumMeshElements());
-  else fprintf(fp, "3\n%d\n%d\n%d\n", ts, numComp, map_elem.size());
-
-  // VM value (change this ??
-  GaussQuadrature Integ_Boundary(GaussQuadrature::Val);
-  GaussQuadrature Integ_Bulk(GaussQuadrature::GradGrad);
-  AllIPState AIPS(pModel, elasticFields, Integ_Bulk, Integ_Boundary);
-  IPField<DGelasticField,DgC0FunctionSpace<SVector3> > ipf(&elasticFields,pAssembler,LagSpace,
-                                                           &Integ_Bulk, &Integ_Boundary, &AIPS);
+  // compute stress after solve
+  ufield.update();
   ipf.compute1state(IPState::current);
-  // Loop on element
-  if(!elasticFields[0].getFormulation()){
-    for (unsigned int i = 0; i < elasticFields.size(); ++i)
-      for (groupOfElements::elementContainer::const_iterator it = elasticFields[i].g->begin(); it != elasticFields[i].g->end(); ++it)
-        fprintf(fp, "%d %.16g\n",(*it)->getNum(),ipf.getVonMises((*it),IPState::current,IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::mean));
-        //fprintf(fp, "%d %.16g\n",(*it)->getNum(),10.);
+  // save solution (for visualisation)
+  ipf.buildView(elasticFields,0.,1,false);
+  ufield.buildView(elasticFields,0.,1,false);
+}
+
+void DgC0PlateSolver::addArchivingEdgeForce(const int numphys, const int comp){
+  // get the node of the edge
+  std::vector<MVertex*> vv;
+  pModel->getMeshVerticesForPhysicalGroup(1,numphys,vv);
+
+  std::vector<Dof> vdof;// all dof include in the edge
+
+  // build the dof
+  if(!elasticFields[0].getFormulation()){ //cG/dG case
+    for(int i=0;i<vv.size();i++)
+      vdof.push_back(Dof(vv[i]->getNum(), DgC0PlateDof::createTypeWithThreeInts(comp,LagSpace->getId())));
   }
   else{
-    int numE=0;
-    for (unsigned int i = 0; i < elasticFields.size(); ++i)
-      for (groupOfElements::elementContainer::const_iterator it = elasticFields[i].g->begin(); it != elasticFields[i].g->end(); ++it)
-        fprintf(fp, "%d %.16g\n",++numE,ipf.getVonMises((*it),IPState::current,IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::mean));
-        //fprintf(fp, "%d %.16g\n",++numE,10.);
+    // find elements of the vertex
+    for(int i=0;i<elasticFields.size();i++)
+      for(groupOfElements::elementContainer::const_iterator it = elasticFields[i].g->begin(); it != elasticFields[i].g->end(); ++it){
+        MElement *e = *it;
+        for(int j=0;j<e->getNumVertices();j++){
+          for(int k=0;k<vv.size();k++)
+            if(e->getVertex(j) == vv[k]){
+              vdof.push_back(Dof(e->getNum(),DgC0PlateDof::createTypeWithThreeInts(comp,LagSpace->getId(),j)));
+          }
+        }
+      }
   }
-  fprintf(fp, "$EndElementData\n");
-  fclose(fp);
-};
+  aef[numphys] = vdof;
+  aefvalue[numphys] = 0.;
 
-#else
-PView* DgC0PlateSolver::buildDisplacementView  (const std::string &postFileName)
-{
-  Msg::Error("Post-pro module not available");
-  return 0;
+  // remove old file (linux only ??)
+  std::ostringstream oss;
+  oss << numphys;
+  std::string s = oss.str();
+  std::string rfname = "rm force"+s+".csv";
+  system(rfname.c_str());
 }
 
-PView* DgC0PlateSolver::buildElasticEnergyView(const std::string &postFileName)
-{
-  Msg::Error("Post-pro module not available");
-  return 0;
+void DgC0PlateSolver::addArchivingNodeDisplacement(const int num, const int comp){
+  // no distinction between cG/dG and full Dg formulation. class Displacement Field manage it
+  anoded.push_back(Dof(num,DgC0PlateDof::createTypeWithThreeInts(comp,LagSpace->getId())));
 }
+
+std::vector<Dof> DgC0PlateSolver::getDofArchForce(){
+    std::vector<Dof> vDof;
+    for(std::map<int,std::vector<Dof> >::iterator it = aef.begin(); it!=aef.end(); ++it)
+      for(int i=0;i<it->second.size();i++)
+        vDof.push_back(Dof(it->second[i].getEntity(),it->second[i].getType()));
+  return vDof;
+  }
 
 // Lua interaction
-#include "Bindings.h"
 void DgC0PlateSolver::registerBindings(binding *b)
 {
   classBinding *cb = b->addClass<DgC0PlateSolver>("DgC0PlateSolver");
   cb->setDescription("Solver class to solve plate problem with Cg/Dg or full Dg formulation");
   methodBinding *cm;
   cm = cb->addMethod("Input", &DgC0PlateSolver::readInputFile);
-  cm->setArgNames("file_name",NULL);
+  cm->setArgNames("fn",NULL);
   cm->setDescription("Use this to give a txt file with data");
   cm = cb->addMethod("CreateInterfaceElement", &DgC0PlateSolver::createInterfaceElement);
   cm->setDescription("Create all interface elements");
-  cm = cb->addMethod("solve" &DgC0PlateSolver::solve);
+  cm = cb->addMethod("solve", &DgC0PlateSolver::solveLUA);
   cm->setDescription("This function solve the linear elastic problem");
-  cm = cb->addMethod("buildDisplacementView", &DgC0PlateSolver::buildDisplacementView);
-  cm->setArgNames("value",NULL);
-  cm->setDescription("Make a displacement view for gmsh");
   cm = cb->setConstructor<DgC0PlateSolver,int>();
   cm->setArgNames("number",NULL);
   cm->setDescription("Class of C0DgPlateSolver to solve a linear elastic plate problem with Cg/Dg or full Dg formulation");
+  cm = cb->addMethod("setScheme", &DgC0PlateSolver::setScheme);
+  cm->setArgNames("number",NULL);
+  cm->setDescription("Strategy to solve problem Static linear=0 Static Non linear=1");
+  cm = cb->addMethod("SNLData", &DgC0PlateSolver::setSNLData);
+  cm->setArgNames("ns","et","reltol",NULL);
+  cm->setDescription("Set data for Static Non Linear Scheme. First argument=number of time step. Second argument = end time. Third= relative tolerance for iterattion default 1.e-6 ");
+  cm = cb->addMethod("whichSolver", &DgC0PlateSolver::setSolver);
+  cm->setArgNames("s",NULL);
+  cm->setDescription("Select the solver for resolution Gmm=0 (default) Taucs=1 PETsc=2");
+  cm = cb->addMethod("readmsh", &DgC0PlateSolver::setMesh);
+  cm->setArgNames("meshFileName",NULL);
+  cm->setDescription("Read a mesh file");
+  cm = cb->addMethod("stepBetweenArchiving", &DgC0PlateSolver::setStepBetweenArchiving);
+  cm->setArgNames("na",NULL);
+  cm->setDescription("Set the number of step between 2 archiving");
+  cm = cb->addMethod("AddElasticDomain", &DgC0PlateSolver::addElasticDomain);
+  cm->setArgNames("ED","f","d",NULL);
+  cm->setDescription("Add a elastic domain class Second argument is the physical number of the domain. Third is the dimension");
+  cm = cb->addMethod("AddThetaConstraint", &DgC0PlateSolver::addTheta);
+  cm->setArgNames("numphys",NULL);
+  cm->setDescription("Add a constrain on rotation (=0) for a physical group");
+  cm = cb->addMethod("prescribedDisplacement", &DgC0PlateSolver::addDisp);
+  cm->setArgNames("onwhat","numphys","comp","value",NULL);
+  cm->setDescription("Add a prescribed displacement. First argument value (string) : Node, Edge, Face");
+  cm = cb->addMethod("prescribedForce", &DgC0PlateSolver::addForce);
+  cm->setArgNames("onwhat","numphys","xval","yval","zval",NULL);
+  cm->setDescription("Add a prescribed force. First argument value (string) : Node, Edge, Face, Volume");
+  cm = cb->addMethod("ArchivingEdgeForce", &DgC0PlateSolver::addArchivingEdgeForce);
+  cm->setArgNames("numphys","comp",NULL);
+  cm->setDescription("Archive an force on an edge. First argument is the physical number of the edge the second is the comp x=0 y=1 z=2");
+  cm = cb->addMethod("ArchivingNodalDisplacement", &DgC0PlateSolver::addArchivingNodeDisplacement);
+  cm->setArgNames("num","comp",NULL);
+  cm->setDescription("Archiving a nodal displacement. First argument is the number of node the second is the comp x=0 y=1, z=2");
+  // delete other functions ??
+/*  cm = cb->addMethod("AddNodalDisplacement", &DgC0PlateSolver::addNodalDisp);
+  cm->setArgNames("node","comp","value",NULL);
+  cm->setDescription("Add a nodal displacement");
+  cm = cb->addMethod("AddEdgeDisplacement", & DgC0PlateSolver::addEdgeDisp);
+  cm->setArgNames("edge","comp","value",NULL);
+  cm->setDescription("Add an edge displacement");
+  cm = cb->addMethod("AddFaceDisplacement", &DgC0PlateSolver::addFaceDisp);
+  cm->setArgNames("face","comp","value",NULL);
+  cm->setDescription("Add face displacement");
+  cm = cb->addMethod("AddNodeForce", &DgC0PlateSolver::addNodeForce);
+  cm->setArgNames("node","xval","yval","zval",NULL)
+  cm->setDescription("Add a nodal force");
+  cm = cb->addMethod("AddEdgeForce", &DgC0PlateSolver::addEdgeForce);
+  cm->setArgNames("edge","xval","yval","zval",NULL);
+  cm->setDescription("Add an edge force");
+  cm = cb->addMethod("AddFaceForce", &DgC0PlateSolver::addFaceForce);
+  cm->setArgNames("face","xval","yval","zval",NULL);
+  cm->setDescription("Add a face force");
+  cm = cb->addMethod("AddVolumeForce", &DgC0PlateSolver::addVolumeForce);
+  cm->setArgNames("volume","xval","yval","zval",NULL);
+  cm->setDescription("Add a volume force");*/
 }
 
-#endif

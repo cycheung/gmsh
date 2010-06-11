@@ -48,7 +48,24 @@ class LocalBasis{
       T.setAll(0.);
       t.setAll(0.);
     }
-    //~LocalBasis(){}
+    ~LocalBasis(){}
+    // Copy Constructor
+    LocalBasis& operator=(const LocalBasis &source){
+      phi0 = source.phi0;
+      phi0d = source.phi0d;
+      T = source.T;
+      t = source.t;
+      t0= source.t0;
+      detJ0 = source.detJ0;
+    }
+    LocalBasis(const LocalBasis &source){
+      phi0 = source.phi0;
+      phi0d = source.phi0d;
+      T = source.T;
+      t = source.t;
+      t0= source.t0;
+      detJ0 = source.detJ0;
+    }
 
     void set(MElement *ele, const std::vector<TensorialTraits<double>::GradType> &Grads){
       const int nbFF = ele->getNumVertices();
@@ -152,8 +169,8 @@ class LocalBasis{
     inline double gett0(const int i) const {return t0(i);}
     std::vector<SVector3> getphi0() const {return phi0;}
     std::vector<SVector3> getphi0d()const {return phi0d;}
-    SVector3 getphi0(const int i) const {return phi0[i];}
-    SVector3 getphi0d(const int i)const {return phi0d[i];}
+    SVector3 getphi0(const int i) const {if(i<2) return phi0[i]; else return t0;}
+    SVector3 getphi0d(const int i)const {if (i<2) return phi0d[i]; else return t0;}
     inline double getphi0(const int i,const int j) const {return phi0[i](j);}
     inline double getphi0d(const int i,const int j) const {return phi0d[i](j);}
     fullMatrix<double> getT() const {return T;}

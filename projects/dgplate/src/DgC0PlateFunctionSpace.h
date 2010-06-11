@@ -38,6 +38,7 @@ class DgC0FunctionSpace : public DgC0FunctionSpaceBase
   virtual void hessfuvw(MElement *ele, double u, double v, double w,std::vector<HessType> &hess)=0;
   virtual int getNumKeys(MElement *ele)=0; // if one needs the number of dofs
   virtual void getKeys(MElement *ele, std::vector<Dof> &keys){printf("Warning not implemented function\n");};
+  virtual void getKeys(MElement *ele, std::vector<Dof> &keys,bool,std::vector<int> *numvertex=NULL){printf("Warning not implemented function elem %d\n",ele->getNum());};
   virtual int getId(void) const{printf("Warning not implemented function\n");return 0;}
 };
 
@@ -63,7 +64,7 @@ class DgC0ScalarLagrangeFunctionSpace : public DgC0FunctionSpace<double>
 
  public:
   DgC0ScalarLagrangeFunctionSpace(int i=0):_iField(i) {}
-  int getId(void) const {return _iField;};
+  virtual int getId(void) const {return _iField;};
   virtual void f(MElement *ele, double u, double v, double w, std::vector<ValType> &vals)
   {
     if (ele->getParent()) ele = ele->getParent();
@@ -255,23 +256,25 @@ public :
 
 class DgC0LagrangeFunctionSpace : public DgC0ScalarToAnyFunctionSpace<SVector3>
 {
+ int iField; // otherwise getId in scalarLagrangeFunctionSpace doesn't work ?? //TODO How to access
  public:
   enum Along { VECTOR_X=0, VECTOR_Y=1, VECTOR_Z=2 };
   typedef TensorialTraits<double>::ValType ValType;
   typedef TensorialTraits<double>::GradType GradType;
   typedef TensorialTraits<double>::HessType HessType;
-  DgC0LagrangeFunctionSpace(int id) :
+  DgC0LagrangeFunctionSpace(int id) : iField(id),
           DgC0ScalarToAnyFunctionSpace<SVector3>::DgC0ScalarToAnyFunctionSpace(DgC0ScalarLagrangeFunctionSpace(id),0,1,2)
   {}
-  DgC0LagrangeFunctionSpace(int id,Along comp1) :
+  DgC0LagrangeFunctionSpace(int id,Along comp1) : iField(id),
           DgC0ScalarToAnyFunctionSpace<SVector3>::DgC0ScalarToAnyFunctionSpace(DgC0ScalarLagrangeFunctionSpace(id),comp1)
   {}
-  DgC0LagrangeFunctionSpace(int id,Along comp1,Along comp2) :
+  DgC0LagrangeFunctionSpace(int id,Along comp1,Along comp2) : iField(id),
           DgC0ScalarToAnyFunctionSpace<SVector3>::DgC0ScalarToAnyFunctionSpace(DgC0ScalarLagrangeFunctionSpace(id),comp1,comp2)
   {}
-  DgC0LagrangeFunctionSpace(int id,Along comp1,Along comp2, Along comp3) :
+  DgC0LagrangeFunctionSpace(int id,Along comp1,Along comp2, Along comp3) : iField(id),
           DgC0ScalarToAnyFunctionSpace<SVector3>::DgC0ScalarToAnyFunctionSpace(DgC0ScalarLagrangeFunctionSpace(id),comp1,comp2,comp3)
   {}
+  int getId(void) const{return iField;}
 };
 
 #endif // DGC0PLATEFUNCTIONSPACE_H_

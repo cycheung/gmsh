@@ -1,7 +1,7 @@
 // Test case a SCB with a vertical load at its free extremity
 // Size
-x=1.0;
-y=0.1;
+x=0.1;
+y=0.01;
 
 // Characteristic length
 Lc1=0.01;

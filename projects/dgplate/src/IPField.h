@@ -11,8 +11,14 @@
 //
 # ifndef _IPFIELD_H_
 # define _IPFIELD_H_
+#include<vector>
+#include"DgC0PlateDof.h"
+#include"quadratureRules.h"
+#include"IPState.h"
+#include "displacementField.h"
+#include "elementField.h"
 template<class T1, class T2>
-class IPField{
+class IPField : public elementField {
   protected :
     std::vector<T1>* _efield;
     dofManager<double> *_dm;
@@ -20,248 +26,197 @@ class IPField{
     QuadratureBase *_intBulk;
     QuadratureBase *_intBound;
     AllIPState *_AIPS;
+    displacementField *_ufield; // space field ??
 
-    // function to compute state depends on element type
-    void compute1statePlatePlaneStress(IPState::whichState ws, T1* ef){
-      DgC0SolverField<SVector3> SField(_dm, _space); //used to interpolate and evaluate gradient
-      SVector3 val; // value of a vertex displacement
-      IntPt *GP;
-      if(!ef->getFormulation()){ // edge gauss point cg/dg (just minus element)
-        std::vector<TensorialTraits<double>::GradType> Grads,Gradm,Gradp;
-        std::vector<TensorialTraits<double>::HessType> Hess;
-        double uem,vem,uep,vep;
-        fullMatrix<double> disp;
-        for(std::vector<MInterfaceElement*>::iterator it=ef->gi.begin(); it!=ef->gi.end();++it){
-          MInterfaceElement *ie = *it;
-          MElement *e = ie->getElem(0);
-          // gauss point
-          int npts = _intBound->getIntPoints(ie,&GP);
-          // vector with nodal displacement
-          int nbdof = _space->getNumKeys(e);
-          int nbFF = e->getNumVertices();
-          disp.resize(nbdof,1);
-          disp.setAll(0.);
-          for(int j=0;j<nbFF;j++){
-            SField.getVertexDisplacement(e,val,false,j);
-            disp(j,0) = val(0);
-            disp(j+nbFF,0) = val(1);
-            disp(j+2*nbFF,0) = val(2);
-          }
-          for(int j=0;j<npts;j++){
-            // key of gauss point
-            //grad value at gauss point
-            ie->getuvOnElem(GP[j].pt[0],uem,vem,uep,vep);
-            _space->gradfuvw(e,uem,vem,0.,Gradm);
-            _space->gradfuvw(ie->getElem(1),uep,vep,0.,Gradp);
-            _space->gradfuvw(ie,GP[j].pt[0],GP[j].pt[1],GP[j].pt[2],Grads);
-            _space->hessfuvw(e,uem,vem,0.,Hess);
-            // local basis on element is needed to compute the local basis on interfaceelement (normal)
-            LocalBasis lbm,lbp;
-            lbm.set(e,Gradm);
-            lbp.set(ie->getElem(1),Gradp);
-            IPnum key(e->getNum(),IPnum::createTypeWithTwoInts(ie->getEdgeNumber(0),j));
-            IPState* ips = _AIPS->getIPstate(&key);
-            IPVariablePlate *ipv = dynamic_cast<IPVariablePlate*>(ips->getState(ws));
-            ipv->setLocalBasis(ie,Grads,lbm.gett0(),lbp.gett0());
-            ipv->computeStressAndDeformation(ef->getMaterialLaw(),&lbm,nbFF,nbdof,disp,Gradm,Hess); // For interfaceElement it uses
-                                                                                                    // the LocalBasis of Element
-            // appened method in gradfuvw
-            Gradm.clear(); Gradp.clear(); Grads.clear(); Hess.clear();
-          }
-        }
-      }
-      else{ //edge gauss point full dg
-        std::vector<TensorialTraits<double>::GradType> Grads,Gradm,Gradp;
-        std::vector<TensorialTraits<double>::HessType> Hessm,Hessp;
-        double uem,vem,uep,vep;
-        fullMatrix<double> dispm,dispp;
-        for(std::vector<MInterfaceElement*>::iterator it=ef->gi.begin(); it!=ef->gi.end();++it){
-          MInterfaceElement *ie = *it;
-          MElement *em = ie->getElem(0);
-          MElement *ep = ie->getElem(1);
-          // gauss point
-          int npts = _intBound->getIntPoints(ie,&GP);
-          // vector with nodal displacement
-          int nbdofm = _space->getNumKeys(em);
-          int nbdofp = _space->getNumKeys(ep);
-          int nbFFm = em->getNumVertices();
-          int nbFFp = ep->getNumVertices();
-          dispm.resize(nbdofm,1);
-          dispm.setAll(0.);
-          dispp.resize(nbdofp,1);
-          dispp.setAll(0.);
-          for(int j=0;j<nbFFm;j++){
-            SField.getVertexDisplacement(em,val,true,j);
-            dispm(j,0) = val(0);
-            dispm(j+nbFFm,0) = val(1);
-            dispm(j+2*nbFFm,0) = val(2);
-          }
-          for(int j=0;j<nbFFp;j++){
-            SField.getVertexDisplacement(ep,val,true,j);
-            dispp(j,0) = val(0);
-            dispp(j+nbFFp,0) = val(1);
-            dispp(j+2*nbFFp,0) = val(2);
-          }
-          for(int j=0;j<npts;j++){
-            // key of gauss point
-            //grad value at gauss point
-            ie->getuvOnElem(GP[j].pt[0],uem,vem,uep,vep);
-            _space->gradfuvw(em,uem,vem,0.,Gradm);
-            _space->hessfuvw(em,uem,vem,0.,Hessm);
-            _space->gradfuvw(ep,uep,vep,0.,Gradp);
-            _space->hessfuvw(ep,uep,vep,0.,Hessp);
-            _space->gradfuvw(ie,GP[j].pt[0],GP[j].pt[1],GP[j].pt[2],Grads);
-            // local basis on element is needed to compute the local basis on interfaceelement (normal)
-            LocalBasis lbm,lbp;
-            lbm.set(em,Gradm);
-            lbp.set(ep,Gradp);
-            IPnum key(em->getNum(),IPnum::createTypeWithTwoInts(ie->getEdgeNumber(0),j));
-            IPState* ips = _AIPS->getIPstate(&key);
-            IPVariablePlate *ipv = dynamic_cast<IPVariablePlate*>(ips->getState(ws));
-            ipv->setLocalBasis(ie,Grads,lbm.gett0(),lbp.gett0());
-            ipv->computeStressAndDeformation(ef->getMaterialLaw(),&lbm,nbFFm,nbdofm,dispm,Gradm,Hessm);
-
-            // plus elem
-            IPnum keyp(ep->getNum(),IPnum::createTypeWithTwoInts(ie->getEdgeNumber(1),j));
-            ips = _AIPS->getIPstate(&keyp);
-            ipv = dynamic_cast<IPVariablePlate*>(ips->getState(ws));
-            ipv->setLocalBasis(ie,Grads,lbm.gett0(),lbp.gett0());
-            ipv->computeStressAndDeformation(ef->getMaterialLaw(),&lbp,nbFFp,nbdofp,dispp,Gradp,Hessp);
-
-            // appened method in gradfuvw
-            Grads.clear(); Gradm.clear();Gradp.clear(); Hessm.clear(); Hessp.clear();
-          }
-        }
-      }
-      // Virtual interface element
-      std::vector<TensorialTraits<double>::GradType> Grads,Gradm,Gradp;
-      std::vector<TensorialTraits<double>::HessType> Hess;
-      double uem,vem,uep,vep;
-      fullMatrix<double> disp;
-      for(std::vector<MInterfaceElement*>::iterator it=ef->gib.begin(); it!=ef->gib.end();++it){
-        MInterfaceElement *ie = *it;
-        // get info for element - and + (gauss point on interface are only created for element - has cg/dg)
-        MElement *e = ie->getElem(0);
-        int edge = ie->getEdgeNumber(0);
-        int npts_inter=_intBound->getIntPoints(ie,&GP);
-        // vector with nodal displacement
-        int nbdof = _space->getNumKeys(e);
-        int nbFF = e->getNumVertices();
-        disp.resize(nbdof,1);
-        disp.setAll(0.);
-        for(int j=0;j<nbFF;j++){
-          SField.getVertexDisplacement(e,val,ef->getFormulation(),j);
-          disp(j,0) = val(0);
-          disp(j+nbFF,0) = val(1);
-          disp(j+2*nbFF,0) = val(2);
-        }
-        for(int j=0;j<npts_inter;j++){
-          IPnum key=IPnum(e->getNum(),IPnum::createTypeWithTwoInts(edge,j));
-          // key of gauss point
-          //grad value at gauss point
-          ie->getuvOnElem(GP[j].pt[0],uem,vem,uep,vep);
-          _space->gradfuvw(e,uem,vem,0.,Gradm);
-          _space->gradfuvw(ie,GP[j].pt[0],GP[j].pt[1],GP[j].pt[2],Grads);
-          _space->hessfuvw(e,uem,vem,0.,Hess);
-          // local basis on element is needed to compute the local basis on interfaceelement (normal)
-          LocalBasis lbm;
-          lbm.set(e,Gradm);
-          IPState* ips = _AIPS->getIPstate(&key);
-          IPVariablePlate *ipv = dynamic_cast<IPVariablePlate*>(ips->getState(ws));
-          ipv->setLocalBasis(ie,Grads,lbm.gett0());
-          ipv->computeStressAndDeformation(ef->getMaterialLaw(),&lbm,nbFF,nbdof,disp,Gradm,Hess);
-          Gradm.clear(); Grads.clear(); Hess.clear();
-        }
-      }
-      // bulk
-      for (groupOfElements::elementContainer::const_iterator it = ef->g->begin(); it != ef->g->end(); ++it){
-        MElement *e = *it;
-        int edge = e->getNumEdges();
-        int npts_bulk=_intBulk->getIntPoints(e,&GP);
-        int nbdof = _space->getNumKeys(e);
-        int nbFF = e->getNumVertices();
-        disp.resize(nbdof,1);
-        disp.setAll(0.);
-        for(int j=0;j<nbFF;j++){
-          SField.getVertexDisplacement(e,val,ef->getFormulation(),j);
-          disp(j,0) = val(0);
-          disp(j+nbFF,0) = val(1);
-          disp(j+2*nbFF,0) = val(2);
-        }
-        for(int j=0;j<npts_bulk;j++){
-          IPnum key=IPnum(e->getNum(),IPnum::createTypeWithTwoInts(edge,j));
-          //grad value at gauss point
-          _space->gradfuvw(e,GP[j].pt[0],GP[j].pt[1],GP[j].pt[2],Grads);
-          _space->hessfuvw(e,GP[j].pt[0],GP[j].pt[1],GP[j].pt[2],Hess);
-          // local basis on element is needed to compute the local basis on interfaceelement (normal)
-          IPState* ips = _AIPS->getIPstate(&key);
-          IPVariablePlate *ipv = dynamic_cast<IPVariablePlate*>(ips->getState(ws));
-          ipv->setLocalBasis(e,Grads);
-          ipv->computeStressAndDeformation(ef->getMaterialLaw(),nbFF,nbdof,disp,Grads,Hess);
-          // appened method in gradfuvw
-          Grads.clear(); Hess.clear();
-        }
-      }
-    }
+    // function to compute state depends on element type (template in place of dynamic cast ??)
+    void compute1statePlatePlaneStress(IPState::whichState ws, T1* ef);
     double getVMPlatePlaneStress(MElement *ele, const IPState::whichState ws,
-                                 const int num, const DGelasticField *elas) const{
-      double svm =0.;
-      if(num<10000){ // VonMises at a Gauss Point
-        IPnum key=IPnum(ele->getNum(),IPnum::createTypeWithTwoInts(ele->getNumEdges(),num)); //modif if on interface (edge instead of getNumVertices)
-        IPState* ips = _AIPS->getIPstate(&key);
-        IPVariablePlate *ipv = dynamic_cast<IPVariablePlate*>(ips->getState(ws));
-        double sx=ipv->getSigma(component::xx), sy=ipv->getSigma(component::yy), sz=0.;
-        double txy = ipv->getSigma(component::xy), txz=0. , tyz=0.;
-        svm = 1./6.*((sx-sy)*(sx-sy)+(sy-sz)*(sy-sz)+(sx-sz)*(sx-sz)+6*(txy*txy+tyz*tyz+txz*txz));
+                                 const int num, const DGelasticField *elas) const;
+
+    void compute1statePlatePlaneStressWTI(IPState::whichState ws, T1* ef);
+    double getVMPlatePlaneStressWTI(MElement *ele, const IPState::whichState ws,
+                                 const int num, const DGelasticField *elas, const int pos) const;
+
+    void compute1statePlatePlaneStressWF(IPState::whichState ws, T1* ef);
+    void setBroken(MInterfaceElement *ie,IPState::whichState ws, const int numminus, const int numplus,
+                   const double svm,const SolElementType::eltype elt, const double Gc){
+
+      std::vector<IPState*> *vips = _AIPS->getIPstate(ie->getNum());
+      IPVariablePlateOIWF* ipv = dynamic_cast<IPVariablePlateOIWF*>((*vips)[numminus]->getState(ws));
+      IPVariablePlateOIWF* ipvp = dynamic_cast<IPVariablePlateOIWF*>((*vips)[numminus]->getState(IPState::previous));
+      if(!ipvp->getBroken()){
+        Msg::Info("Interface element %d is broken\n",ie->getNum());
+        std::vector<SVector3> nhatmean;
+        std::vector<SVector3> mhatmean;
+        const LocalBasis* Lb[3];
+        nhatmean.resize(2); mhatmean.resize(2);
+
+        IntPt *GP;
+        int npts = _intBound->getIntPoints(ie,&GP);
+        // compute n0 and m0
+        this->getReductionAndLocalBasis(ie,numminus,npts,elt,ws,nhatmean,mhatmean,Lb);
+        std::vector<double> dispm;
+        std::vector<double> dispp;
+        SVector3 ujump;
+        double rjump[3];
+        dispm.resize(_space->getNumKeys(ie->getElem(0)));
+        dispp.resize(_space->getNumKeys(ie->getElem(1)));
+        _ufield->get(ie->getElem(0),dispm);
+        _ufield->get(ie->getElem(1),dispp);
+        // initial jump
+        double uem,uep,vem,vep;
+        int nbFFm = ie->getElem(0)->getNumVertices();
+        int nbFFp = ie->getElem(1)->getNumVertices();
+        ie->getuvOnElem(GP[numminus].pt[0],uem,vem,uep,vep);
+        std::vector<TensorialTraits<double>::ValType> Valm;
+        _space->fuvw(ie->getElem(0),uem, vem,0., Valm);
+        std::vector<TensorialTraits<double>::ValType> Valp;
+        _space->fuvw(ie->getElem(1),uep, vep,0., Valp);
+        std::vector<TensorialTraits<double>::GradType> Gradm,Gradp;
+        _space->gradfuvw(ie->getElem(0),uem,vem,0.,Gradm);
+        _space->gradfuvw(ie->getElem(1),uep,vep,0.,Gradp);
+        displacementjump(Valm,nbFFm,Valp,nbFFp,dispm,dispp,ujump);
+        rotationjump(Lb[2],Gradm,ie->getElem(0)->getNumVertices(),Lb[0],Gradp,ie->getElem(1)->getNumVertices(),Lb[1],dispm,dispp,rjump);
+        // Store data
+        ipv->setBroken(svm,Gc,nhatmean,mhatmean,ujump[0],rjump);
+        ipv = dynamic_cast<IPVariablePlateOIWF*>((*vips)[numplus]->getState(ws));
+        ipv->setBroken(svm,Gc,nhatmean,mhatmean,ujump[0],rjump);
       }
-      else{  // Particular value (max,min,mean)
-         // loop on IP point
-         double svmp;
-         IntPt *GP;
-         int npts = _intBulk->getIntPoints(ele,&GP);
-         for(int i=0;i<npts;i++){
-           IPnum key=IPnum(ele->getNum(),IPnum::createTypeWithTwoInts(ele->getNumEdges(),i)); //modif if on interface (edge instead of getNumVertices)
-           IPState* ips = _AIPS->getIPstate(&key);
-           IPVariablePlate *ipv = dynamic_cast<IPVariablePlate*>(ips->getState(ws));
-           double sx=ipv->getSigma(component::xx), sy=ipv->getSigma(component::yy), sz=0.;
-           double txy = ipv->getSigma(component::xy), txz=0. , tyz=0.;
-           svmp = 1./6.*((sx-sy)*(sx-sy)+(sy-sz)*(sy-sz)+(sx-sz)*(sx-sz)+6*(txy*txy+tyz*tyz+txz*txz));
-           if(i==0)
-             svm = svmp;
-           else{
-             switch(num){
-               case IPField::max :
-                 if(svmp>svm) svm=svmp;
-                 break;
-               case IPField::min :
-                 if(svmp<svm) svm=svmp;
-                 break;
-               case IPField::mean :
-                 svm+=svmp;
-                 break;
-             }
-           }
-           if(num==IPField::mean) svm/=(double)npts;
-         }
-      }
-      return svm;
     }
-  public :
+    // fracture criteria is based on VM stress (fracture if s_VM> s_c)
+    void computeFracture(IPState::whichState ws, T1* ef){
+      // For now no fracture at extremities (only MInterfaceElement and no VirtualInterfaceElement)
+      IntPt *GP;
+      int npts;
+      double svm;
+      double sc = ef->getSigmaC();
+      int msimpm1 = ef->getmsimp()-1;
+      for(std::vector<MInterfaceElement*>::iterator it=ef->gi.begin(); it!=ef->gi.end();++it){
+        MInterfaceElement *ie = *it;
+        npts = _intBound->getIntPoints(ie,&GP);
+        // TODO no computation if already broken
+        for(int j=0;j<npts;j++){
+          // mean value (+ and - element)
+          svm = this->getVMPlatePlaneStressWTI(ie,ws,j,ef,0);
+          svm+= this->getVMPlatePlaneStressWTI(ie,ws,j+npts,ef,0);
+          svm*=0.5;
+          if(svm>sc){
+            linearElasticLawPlaneStressWithFracture *mlaw = dynamic_cast<linearElasticLawPlaneStressWithFracture*>(ef->getMaterialLaw());
+            this->setBroken(ie,ws,j,j+npts,svm,ef->getSolElemType(),mlaw->getGc());
+          } // no computation for last Simpson's point if it already broken
+          else{
+            svm = this->getVMPlatePlaneStressWTI(ie,ws,j,ef,msimpm1);
+            svm+= this->getVMPlatePlaneStressWTI(ie,ws,j+npts,ef,msimpm1);
+            svm*=0.5;
+            if(svm>sc){
+              //Msg::Info("Interface element %d is upper broken\n",ie->getNum());
+              linearElasticLawPlaneStressWithFracture *mlaw = dynamic_cast<linearElasticLawPlaneStressWithFracture*>(ef->getMaterialLaw());
+              this->setBroken(ie,ws,j,j+npts,svm,ef->getSolElemType(),mlaw->getGc());
+            }
+          }
+        }
+      }
+    }
+  void getReductionByCohesiveLawAndLocalBasis(const MInterfaceElement *iele, const int gaussnum, const int npts,
+                                              std::vector<SVector3> &nhatmean, std::vector<SVector3> &mhatmean,
+                                              const LocalBasis* lbb[3]){
+    // find elasticField
+    bool flag=false;
+    DGelasticField *ef;
+    for(int i=0;i<_efield->size();i++){
+      for(std::vector<MInterfaceElement*>::iterator it = (*_efield)[i].gi.begin(); it != (*_efield)[i].gi.end(); ++it){
+        MInterfaceElement *ie = *it;
+        if(ie==iele){
+          flag=true;
+          break;
+        }
+      }
+      if(flag) {ef=&(*_efield)[i]; break;}
+    }
+    // get ipv
+    IPVariablePlateOIWF *ipv;
+    std::vector<IPState*> *vips;
+    IPState *ips;
+    vips = _AIPS->getIPstate(iele->getNum());
+    ips = (*vips)[gaussnum];
+    ipv = dynamic_cast<IPVariablePlateOIWF*>(ips->getState(IPState::current));
+
+    // use the law
+    linearElasticLawPlaneStressWithFracture *mlaw = dynamic_cast<linearElasticLawPlaneStressWithFracture*>(ef->getMaterialLaw());
+    mlaw->getCohesiveReduction(ipv->getM0(),ipv->getN0(),ipv->getDelta(),ipv->getDeltamax(),ipv->getDeltac(),nhatmean,mhatmean);
+
+    // set localBasis
+    lbb[0] = ipv->getLocalBasis();
+    lbb[2] = ipv->getLocalBasisOfInterface();
+    ips = (*vips)[gaussnum+npts];
+    ipv = dynamic_cast<IPVariablePlateOIWF*>(ips->getState(IPState::current));
+    lbb[1] = ipv->getLocalBasis();
+  }
+  void getReductionByCohesiveLaw(const MInterfaceElement *iele, const int gaussnum, const int npts,
+                                              std::vector<SVector3> &nhatmean, std::vector<SVector3> &mhatmean){
+    // find elasticField
+    bool flag=false;
+    DGelasticField *ef;
+    for(int i=0;i<_efield->size();i++){
+      for(std::vector<MInterfaceElement*>::iterator it = (*_efield)[i].gi.begin(); it != (*_efield)[i].gi.end(); ++it){
+        MInterfaceElement *ie = *it;
+        if(ie==iele){
+          flag=true;
+          break;
+        }
+      }
+      if(flag) {ef=&(*_efield)[i]; break;}
+    }
+    // get ipv
+    IPVariablePlateOIWF *ipv;
+    std::vector<IPState*> *vips;
+    IPState *ips;
+    vips = _AIPS->getIPstate(iele->getNum());
+    ips = (*vips)[gaussnum];
+    ipv = dynamic_cast<IPVariablePlateOIWF*>(ips->getState(IPState::current));
+
+    // use the law
+    linearElasticLawPlaneStressWithFracture *mlaw = dynamic_cast<linearElasticLawPlaneStressWithFracture*>(ef->getMaterialLaw());
+    mlaw->getCohesiveReduction(ipv->getM0(),ipv->getN0(),ipv->getDelta(),ipv->getDeltamax(),ipv->getDeltac(),nhatmean,mhatmean);
+  }
+
+
+ public :
   enum ElemValue{mean=10001, max=10002, min=10003}; // enum to select a particular value on element
   IPField(std::vector< T1 >* ef,dofManager<double>* pa,T2* sp,
-          QuadratureBase *intb, QuadratureBase *intb1, AllIPState* aips) : _efield(ef), _dm(pa), _space(sp),
-                                                                           _intBulk(intb), _intBound(intb1), _AIPS(aips){};
+          QuadratureBase *intb, QuadratureBase *intb1, GModelWithInterface *pmo, displacementField* uf) : _efield(ef), _dm(pa), _space(sp),
+                                                                           _intBulk(intb), _intBound(intb1), _ufield(uf),
+                                                                           elementField("stressVM.msh",1000000,1,
+                                                                                        elementField::ElementData,"VonMises",true){
+  // Creation of storage for IP data
+  _AIPS = new AllIPState(pmo, *_efield, *_intBulk, *_intBound);
+  // compute the number of element (FIX IT TODO ??)
+  long int nelem=0;
+  for (unsigned int i = 0; i < _efield->size(); ++i)
+    for (groupOfElements::elementContainer::const_iterator it = (*_efield)[i].g->begin(); it != (*_efield)[i].g->end(); ++it)
+      nelem++;
+  this->setTotElem(nelem);
+  this->buildView(*_efield,0.,0,false);
+  }
+  AllIPState* getAips() const {return _AIPS;}
+  ~IPField(){delete _AIPS;}
   void compute1state(IPState::whichState ws){
     for(int i=0;i<_efield->size();i++){
       switch((*_efield)[i].getSolElemType()){
         case SolElementType::PlatePlaneStress :
           this->compute1statePlatePlaneStress(ws,&(*_efield)[i]);
-      }
+          break;
+        case SolElementType::PlatePlaneStressWTI :
+          this->compute1statePlatePlaneStressWTI(ws,&(*_efield)[i]);
+          break;
+        case SolElementType::PlatePlaneStressWF :
+          this->compute1statePlatePlaneStressWF(ws,&(*_efield)[i]); // The state is compute in the same way as there is not fracture
+      }                                                              // an other function computes fracture
     }
 
   }
   // On element only ?? Higher level to pass the associated element (pass edge num)
-  double getVonMises(MElement *ele, const IPState::whichState ws, const int num) const{
+  double getVonMises(MElement *ele, const IPState::whichState ws, const int num, const int pos=0) const{
     double svm;
     // Find elastic field of the element
     bool flag=false;
@@ -281,6 +236,12 @@ class IPField{
       case SolElementType::PlatePlaneStress :
         svm = getVMPlatePlaneStress(ele,ws,num,ef);
         break;
+      case SolElementType::PlatePlaneStressWTI :
+        svm = getVMPlatePlaneStressWTI(ele,ws,num,ef,0);
+        break;
+      case SolElementType::PlatePlaneStressWF :
+        svm = getVMPlatePlaneStressWTI(ele,ws,num,ef,0);
+        break;
       default :
         Msg::Error("Function getVonMises doesn't exist for element type : %d",ef->getSolElemType());
         svm = 0.;
@@ -288,6 +249,157 @@ class IPField{
     return svm;
   }
 
-};
+  // function to archive
+  virtual void get(MElement *ele, std::vector<double> &stress, const int cc=-1){
+    stress[0]= this->getVonMises(ele,IPState::current,max,0);
+  }
 
+  void evalFracture(IPState::whichState ws){
+    for(int i=0;i<_efield->size();i++){
+      switch((*_efield)[i].getSolElemType()){
+        case SolElementType::PlatePlaneStressWF : // other case no fracture
+          computeFracture(ws,&(*_efield)[i]);
+          break;
+      }
+    }
+  }
+
+  // retrieve a vector with fractured gauss point for an element
+  void getBroken(MInterfaceElement* iele, SolElementType::eltype elt, std::vector<bool> &vectB, std::vector<bool> &vectfB){
+    IntPt *GP;
+    int npts = _intBound->getIntPoints(iele,&GP);
+    vectB.resize(2*npts);
+    vectfB.resize(2*npts);
+    for(int i=0;i<2*npts;i++) vectfB[i]=false;
+    // cG/dG case no fracture
+    if(elt != SolElementType::PlatePlaneStressWF)
+      for(int i=0;i<2*npts;i++) vectB[i]=false;
+    else{
+      // retrieve information from AIPS
+      IPVariablePlateOIWF *ipv;
+      std::vector<IPState*> *vips;
+      IPState *ips;
+      vips = _AIPS->getIPstate(iele->getNum());
+      for(int j=0;j<2*npts;j++){
+        ips = (*vips)[j];
+        ipv = dynamic_cast<IPVariablePlateOIWF*>(ips->getState(IPState::current));
+        vectB[j] = ipv->getBroken();
+        if(vectB[j]){
+          double delta = ipv->getDelta();
+          double deltac = ipv->getDeltac();
+          if(delta >= deltac) vectfB[j] =true;
+        }
+      }
+    }
+  }
+  bool getBroken(const MInterfaceElement *iele, const int numgauss, const SolElementType::eltype elt, const IPState::whichState ws){
+    bool t = false;
+    if(elt == SolElementType::PlatePlaneStressWF){
+      IPVariablePlateOIWF *ipv;
+      std::vector<IPState*> *vips;
+      IPState *ips;
+      vips = _AIPS->getIPstate(iele->getNum());
+      ips = (*vips)[numgauss];
+      ipv = dynamic_cast<IPVariablePlateOIWF*>(ips->getState(ws));
+      t = ipv->getBroken();
+    }
+    return t;
+  }
+
+  // Interaction with Aips
+  void copy(IPState::whichState source, IPState::whichState dest){_AIPS->copy(source,dest);}
+  void nextStep(){
+    // If fracture deltamax must be updated before update
+    // deltamax is set in current state just before it becomes previous state;
+    for(int i=0;i<_efield->size();i++){
+      if((*_efield)[i].getSolElemType() == SolElementType::PlatePlaneStressWF){
+        // loop on interfaceElement
+        IPVariablePlateOIWF *ipv;
+        std::vector<IPState*> *vips;
+        IPState *ips;
+        for(std::vector<MInterfaceElement*>::iterator it=(*_efield)[i].gi.begin(); it!=(*_efield)[i].gi.end();++it){
+          MInterfaceElement *ie = *it;
+          vips = _AIPS->getIPstate(ie->getNum());
+          for(int j=0;j<vips->size();j++){
+            ips = (*vips)[j];
+            ipv = dynamic_cast<IPVariablePlateOIWF*>(ips->getState(IPState::current));
+            if(ipv->getBroken()) ipv->updatedeltamax();
+          }
+        }
+      }
+    }
+    _AIPS->nextStep();
+  }
+
+  // reduction element
+  void getStressReduction(MElement *ele,const int gaussnum, SolElementType::eltype et,IPState::whichState ws,
+                          std::vector<SVector3> &nalpha);
+  void getMomentReduction(MElement *ele,const int gaussnum, SolElementType::eltype et,IPState::whichState ws,
+                          std::vector<SVector3> &malpha);
+  void getReduction(MElement *ele,const int gaussnum, SolElementType::eltype et,IPState::whichState ws,
+                          std::vector<SVector3> &nalpha,std::vector<SVector3> &malpha );
+
+  const LocalBasis* getReductionAndLocalBasis(MElement *ele,const int gaussnum, SolElementType::eltype et,IPState::whichState ws,
+                          std::vector<SVector3> &nalpha,std::vector<SVector3> &malpha );
+
+  void getStressReduction(MInterfaceElement *iele, const int gaussnum, const int numOfGaussPoint, SolElementType::eltype et,
+                                         IPState::whichState ws, std::vector<SVector3> &nhatmean);
+  void getMomentReduction(MInterfaceElement *iele, const int gaussnum, const int numOfGaussPoint, SolElementType::eltype et,
+                                         IPState::whichState ws, std::vector<SVector3> &mhatmean);
+  void getMomentReductionAndLocalBasis(MInterfaceElement *iele, const int gaussnum, const int numOfGaussPoint, SolElementType::eltype et,
+                                         IPState::whichState ws, std::vector<SVector3> &mhatmean, const LocalBasis *lb[3]);
+
+  void getReductionAndLocalBasis(MInterfaceElement *iele, const int gaussnum, const int numOfGaussPoint, SolElementType::eltype et,
+                                         IPState::whichState ws, std::vector<SVector3> &nhatmean, std::vector<SVector3> &mhatmean,
+                                         const LocalBasis *lb[3]);
+  void getVirtualMomentReductionAndLocalBasis(MInterfaceElement *iele, const int gaussnum, const int numOfGaussPoint,
+                                              SolElementType::eltype et, IPState::whichState ws, std::vector<SVector3> &mhatmean,
+                                              const LocalBasis *lb[3]);
+
+  void getStress(const MElement *ele, const int gaussnum, IPState::whichState st, double stress[6]);
+  void getStressMembrane(const MElement *ele, const int gaussnum, IPState::whichState st, double stress[6], double & h);
+  void getStressBending(const MElement *ele, const int gaussnum, IPState::whichState st, double stress[6], double & h);
+  void getStress(const MElement *ele, const int gaussnum, IPState::whichState st, double stressM[6], double stressB[6], double & h);
+  const LocalBasis* getStressAndLocalBasis(const MElement *ele, const int gaussnum, IPState::whichState st, double stressM[6], double stressB[6], double & h);
+  void getStressAndLocalBasis(const MInterfaceElement *ele, const int gaussnum, IPState::whichState st, double stressM[6], double stressB[6], double & h,
+                              const LocalBasis* lb[3]);
+
+  // WTI
+  void getStress(const MElement *ele, const int gaussnum, IPState::whichState st, std::vector<tab6> &stress);
+  void getStress(const MElement *ele, const int gaussnum, IPState::whichState st, std::vector<tab6> &stress,
+                 std::vector<double> &hsimp);
+  LocalBasis* getStressAndLocalBasis(const MElement *ele, const int gaussnum, IPState::whichState st, std::vector<tab6> &stress,
+                                     std::vector<double> &hsimp);
+  void getStressAndLocalBasis(const MInterfaceElement *ele, const int gaussnum, IPState::whichState st, std::vector<tab6> &stress,
+                              std::vector<double> &hsimp, const LocalBasis *lb[3]);
+
+  // WF (matrix by numerical perturbation)
+  void getReductionFracture(const MInterfaceElement *iele, const int numgauss, const int npts,
+                            const SolElementType::eltype elemtype, const std::vector<double> disp, const int nbFF_m, const int nbdofm,
+                            const std::vector<TensorialTraits<double>::ValType> &Vals_m,
+                            const std::vector<TensorialTraits<double>::GradType> &Grads_m,
+                            const int nbFF_p,const std::vector<TensorialTraits<double>::ValType> &Vals_p,
+                            const std::vector<TensorialTraits<double>::GradType> &Grads_p,
+                            std::vector<SVector3> &nhatmean, std::vector<SVector3> &mhatmean) const;
+
+  // Function to get data (must be removed)
+  void getData(int numelem,int numgauss, materialLaw *mlaw, double &M, double &dr,double &delta){
+    // It's for fracture so type elem and material law are known
+    IPVariablePlateOIWF *ipv;
+    std::vector<IPState*> *vips;
+    std::vector<SVector3> nhatmean;
+    std::vector<SVector3> mhatmean;
+    nhatmean.resize(2);
+    mhatmean.resize(2);
+    IPState *ips;
+    vips = _AIPS->getIPstate(numelem);
+    ips = (*vips)[numgauss];
+    ipv = dynamic_cast<IPVariablePlateOIWF*>(ips->getState(IPState::current));
+    delta = ipv->getDelta();
+    dr = ipv->getDeltar();
+    linearElasticLawPlaneStressWithFracture *mlaw1 = dynamic_cast<linearElasticLawPlaneStressWithFracture*>(mlaw);
+    mlaw1->getCohesiveReduction(ipv->getM0(), ipv->getN0(),delta, ipv->getDeltamax(),ipv->getDeltac(),nhatmean,mhatmean);
+    M = mhatmean[1][1];
+  }
+};
 #endif // IPField

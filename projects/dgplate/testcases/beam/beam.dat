@@ -1,12 +1,14 @@
-MeshFile beam50.msh
+MeshFile beam6.msh
 // (beta2 and 3 must be defined even for CG/DG formulation but they don't used)
-//           physical   E     nu  beta1 beta2 beta3    h  Formulation(Cg/Dg=0 FullDg=1)
-ElasticDomain   99    100.e9  0.    10.   1000.   10.   0.01       1           
-// Solver Gmm=0 (default) Taucs=1 PETSc=2
-Solver 2
+//           physical   E     nu  beta1 beta2 beta3    h  Formulation(Cg/Dg=0 FullDg=1)  Number of Simpson point (odd)
+ElasticDomain   99    100.e9  0.3  10.   10.   10.   0.01      0           3 
+// Solver Gmm=0 (default) Taucs=1 PETSc=2 Scheme StaticLinear=0 (default) StaticNonLinear=1 
+Solver 2 0 
+// Data for static Non linear scheme Nstep endtime
+StaticNonLinearData 60 1. 1.e-4
+Archive 6
 EdgeDisplacement 41 1 0.
 EdgeDisplacement 41 0 0.
 EdgeDisplacement 41 2 0.
-EdgeForce 21 -100. 0. 0. 
+EdgeForce 21 0 0 10000.
 Theta 1 41
-

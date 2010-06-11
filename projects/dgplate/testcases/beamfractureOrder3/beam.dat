@@ -1,0 +1,18 @@
+MeshFile beamO3.msh
+// (beta2 and 3 must be defined even for CG/DG formulation but they don't used)
+//                   physical   E     nu  beta1 beta2 beta3    h    Gc   sigmac    Number of Simpson point (odd)
+ElasticFractureDomain   99     71.e9  0.  10.   10.   10.   0.0025 8800. 400.e67           3 
+// Solver Gmm=0 (default) Taucs=1 PETSc=2 Scheme StaticLinear=0 (default) StaticNonLinear=1 
+Solver 1 1  
+// Data for static Non linear scheme Nstep endtime
+StaticNonLinearData 60 1. 1.e-4
+// number of step between archivage (default=1)
+Archive 6
+EdgeDisplacement 31 1 0.
+EdgeDisplacement 31 0 0.
+EdgeDisplacement 31 2 0.
+EdgeDisplacement 61 0 0.
+EdgeDisplacement 61 1 0.
+EdgeDisplacement 61 2 0.
+EdgeDisplacement 71 2 0.001
+Theta 2 31 61
