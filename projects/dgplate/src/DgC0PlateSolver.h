@@ -47,7 +47,7 @@ struct DGelasticField{
   std::vector<MInterfaceElement*> gi; // support for the interfaceElement TODO cast to a groupOfElements
   std::vector<MInterfaceElement*> gib; // support for the interfaceElement TODO cast to a groupOfElements
   SolElementType::eltype _elemType;
-  double _E, _nu, _beta1, _beta2, _beta3, _h;  // specific elastic datas (should be somewhere else)
+  double _E, _nu, _h;  // specific elastic datas (should be somewhere else)
   double _Gc, _sigmac; // fracture parameter
   bool FullDg; // To know which formulation Cg/Dg or FullDg is used for this field
   void setFormulation(int b){b==1 ? FullDg=true : FullDg=false;}
@@ -85,7 +85,6 @@ struct DGelasticField{
   // function used by lua to set the properties
   void setYoungModulus(const double E){_E=E;}
   void setPoissonRation(const double nu){_nu=nu;}
-  void setStabilityParameters(const double b1, const double b2=0., const double b3=0.){_beta1=b1;_beta2=b2;_beta3=b3;}
   void setThickness(const double h){_h=h;}
   void setNumberOfSimpsonPoints(int num){num%2==0 ? _msimp=++num : _msimp=num;}
   void setTag(const int t){_tag=t;}
@@ -108,9 +107,6 @@ struct DGelasticField{
   cm = cb->addMethod("poisson", &DGelasticField::setPoissonRation);
   cm->setArgNames("nu",NULL);
   cm->setDescription("Set the Poisson ratio value");
-  cm = cb->addMethod("stabilityParameters", &DGelasticField::setStabilityParameters);
-  cm->setArgNames("b1","b2","b3",NULL);
-  cm->setDescription("Beta value for stabilization. The first one only for Cg/Dg formulation");
   cm = cb->addMethod("thickness", &DGelasticField::setThickness);
   cm->setArgNames("h",NULL);
   cm->setDescription("Value of thickness (because beam, plate or shell formulation");
@@ -176,6 +172,7 @@ class DgC0PlateSolver
   // std vector to archive a node displacement
   std::vector<Dof> anoded;
 
+  double _beta1, _beta2, _beta3; // Stability parameters for cG/dG case only beta1 is used
   int numstep; // Number of step not used for StaticLinearScheme but it is not necesary to derive class because (small useless data)
   double endtime; // final time not used for StaticLinearScheme but it is not necesary to derive class because (small useless data)
   double _tol; // relative tolerance for iteration not used for StaticLinearScheme but it is not necesary to derive class because (small useless data)
@@ -205,10 +202,10 @@ class DgC0PlateSolver
   solver whatSolver; //  Solver used to solve
   scheme whatScheme; // scheme used to solve equation
  public:
-  DgC0PlateSolver(int tag) : _tag(tag),LagSpace(0),pAssembler(0), numstep(1), endtime(1.), _tol(1.e-6), nsba(1)
-  {
-    whatSolver=DgC0PlateSolver::Gmm; whatScheme=DgC0PlateSolver::StaticLinear; // default Gmm and static linear scheme
-  }
+  DgC0PlateSolver(int tag) : _tag(tag),LagSpace(0),pAssembler(0), numstep(1), endtime(1.), _tol(1.e-6), nsba(1),
+                             whatSolver(DgC0PlateSolver::Gmm), whatScheme(DgC0PlateSolver::StaticLinear),
+                             _beta1(10.), _beta2(10.), _beta3(10.){} // default Gmm and static linear scheme
+
   virtual ~DgC0PlateSolver()
   {
     if (LagSpace) delete LagSpace;
@@ -218,14 +215,7 @@ class DgC0PlateSolver
   void setMesh(const std::string meshFileName);
   void setSolver(const int s){whatSolver= (solver)s;}
   void setScheme(const int s){whatScheme=(scheme)s;}
-  void setSNLData(const int ns, const double et, const double reltol){
-    if(whatScheme==StaticNonLinear){
-      numstep=ns;endtime=et;_tol=reltol;
-    }
-    else{
-      Msg::Error("Impossible to set data for Static Non Linear scheme because another is chosen to solve the problem");
-    }
-  }
+  void setSNLData(const int ns, const double et, const double reltol);
   void setStepBetweenArchiving(const int n){nsba = n;}
   int getStepBetweenArchiving() const{return nsba;}
   int getNumStep() const{return numstep;}
@@ -233,75 +223,18 @@ class DgC0PlateSolver
   scheme getScheme() const{return whatScheme;}
   virtual void solve();
   virtual void solveSNL();
+  virtual void setStabilityParameters(const double b1, const double b2=0., const double b3=0.){_beta1=b1;_beta2=b2;_beta3=b3;}
   virtual void createInterfaceElement();
   // create interfaceelement with dgGoupOfElement from dg projet doesn't work (segmentation fault)
   virtual void createInterfaceElement_2();
 
   virtual std::vector<Dof> getDofArchForce();
   // functions for lua interaction
-  virtual void solveLUA(){
-    switch(whatScheme){
-      case StaticLinear :
-        this->solve();
-        break;
-      case StaticNonLinear :
-        this->solveSNL();
-        break;
-    }
-  }
+  virtual void solveLUA();
   virtual void addElasticDomain(DGelasticField* ED, const int f, const int d);
   virtual void addTheta(const int numphys);
-  virtual void addDisp(std::string onwhat, const int numphys, const int comp, const double value){
-    dirichletBC diri;
-    const std::string node("Node");
-    const std::string edge("Edge");
-    const std::string face("Face");
-    if(onwhat==node){
-      diri.g = new groupOfElements (0, numphys);
-      diri.onWhat=BoundaryCondition::ON_VERTEX;
-    }
-    else if(onwhat==edge){
-      diri.g = new groupOfElements (1, numphys);
-      diri.onWhat=BoundaryCondition::ON_EDGE;
-    }
-    else if(onwhat==face){
-      diri.g = new groupOfElements (2, numphys);
-      diri.onWhat=BoundaryCondition::ON_FACE;
-    }
-    else Msg::Error("Impossible to prescribe a displacement on a %s\n",onwhat.c_str());
-    diri._f= simpleFunctionTime<double>(value);
-    diri._comp=comp;
-    diri._tag=numphys;
-    allDirichlet.push_back(diri);
-  }
-
-  virtual void addForce(std::string onwhat, const int numphys, const double xval, const double yval, const double zval){
-    neumannBC neu;
-    const std::string node("Node");
-    const std::string edge("Edge");
-    const std::string face("Face");
-    const std::string volume("Volume");
-    if(onwhat==node){
-      neu.g = new groupOfElements (0, numphys);
-      neu.onWhat=BoundaryCondition::ON_VERTEX;
-    }
-    else if(onwhat==edge){
-      neu.g = new groupOfElements (1, numphys);
-      neu.onWhat=BoundaryCondition::ON_EDGE;
-    }
-    else if(onwhat==face){
-      neu.g = new groupOfElements (2, numphys);
-      neu.onWhat=BoundaryCondition::ON_FACE;
-    }
-    else if(onwhat==volume){
-      neu.g = new groupOfElements (3, numphys);
-      neu.onWhat=BoundaryCondition::ON_VOLUME;
-    }
-    else  Msg::Error("Impossible to prescribe a force on a %s\n",onwhat.c_str());
-    neu._f= simpleFunctionTime<SVector3>(SVector3(xval, yval, zval));
-    neu._tag=numphys;
-    allNeumann.push_back(neu);
-  }
+  virtual void addDisp(std::string onwhat, const int numphys, const int comp, const double value);
+  virtual void addForce(std::string onwhat, const int numphys, const double xval, const double yval, const double zval);
   virtual void addArchivingEdgeForce(const int numphys, const int comp);
   virtual void addArchivingNodeDisplacement(const int num, const int comp);
   static void registerBindings(binding *b);

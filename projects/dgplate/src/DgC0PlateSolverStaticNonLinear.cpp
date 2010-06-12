@@ -74,8 +74,7 @@ double DgC0PlateSolver::computeNorm0(linearSystem<double> *lsys, dofManager<doub
 
     // Initialization of elementary  interface terms in function of the field and space
     IsotropicElasticForceInterfaceTermC0Plate IEterm(*LagSpace,elasticFields[i]._E,elasticFields[i]._nu,
-                                                     elasticFields[i]._beta1,elasticFields[i]._beta2,
-                                                     elasticFields[i]._beta3,elasticFields[i]._h,
+                                                     _beta1,_beta2,_beta3,elasticFields[i]._h,
                                                      elasticFields[i].getFormulation(),ufield,ipf,
                                                      elasticFields[i].getSolElemType());
     // Assembling loop on elementary interface terms
@@ -84,8 +83,7 @@ double DgC0PlateSolver::computeNorm0(linearSystem<double> *lsys, dofManager<doub
 
     // Initialization of elementary  interface terms in function of the field and space
     IsotropicElasticForceVirtualInterfaceTermC0Plate VIEterm(*LagSpace,elasticFields[i]._E,
-                                                             elasticFields[i]._nu,elasticFields[i]._beta1,
-                                                             elasticFields[i]._beta2,elasticFields[i]._beta3,
+                                                             elasticFields[i]._nu,_beta1,_beta2,_beta3,
                                                              elasticFields[i]._h,elasticFields[i].getFormulation(),
                                                              ufield,ipf,elasticFields[i].getSolElemType());
     // Assembling loop on elementary boundary interface terms
@@ -118,8 +116,7 @@ double DgC0PlateSolver::computeRightHandSide(linearSystem<double> *lsys, dofMana
 
     // Initialization of elementary  interface terms in function of the field and space
     IsotropicElasticForceInterfaceTermC0Plate IEterm(*LagSpace,elasticFields[i]._E,elasticFields[i]._nu,
-                                                     elasticFields[i]._beta1,elasticFields[i]._beta2,
-                                                     elasticFields[i]._beta3,elasticFields[i]._h,
+                                                     _beta1,_beta2,_beta3,elasticFields[i]._h,
                                                      elasticFields[i].getFormulation(),ufield,
                                                      ipf,elasticFields[i].getSolElemType(),true);
     // Assembling loop on elementary interface terms
@@ -128,8 +125,7 @@ double DgC0PlateSolver::computeRightHandSide(linearSystem<double> *lsys, dofMana
 
     // Initialization of elementary  interface terms in function of the field and space
     IsotropicElasticForceVirtualInterfaceTermC0Plate VIEterm(*LagSpace,elasticFields[i]._E,
-                                                             elasticFields[i]._nu,elasticFields[i]._beta1,
-                                                             elasticFields[i]._beta2,elasticFields[i]._beta3,
+                                                             elasticFields[i]._nu,_beta1, _beta2,_beta3,
                                                              elasticFields[i]._h,elasticFields[i].getFormulation(),
                                                              ufield,ipf,elasticFields[i].getSolElemType(),true);
     // Assembling loop on elementary boundary interface terms
@@ -172,8 +168,8 @@ void DgC0PlateSolver::computeStiffMatrix(linearSystem<double> *lsys, dofManager<
   MyAssemble(Eterm,*LagSpace,elasticFields[i].g->begin(),elasticFields[i].g->end(),Integ_Bulk,*pAssembler);
 
   // Initialization of elementary  interface terms in function of the field and space
-  IsotropicElasticStiffInterfaceTermC0Plate IEterm(*LagSpace,elasticFields[i]._E,elasticFields[i]._nu,elasticFields[i]._beta1,
-                                                elasticFields[i]._beta2,elasticFields[i]._beta3,
+  IsotropicElasticStiffInterfaceTermC0Plate IEterm(*LagSpace,elasticFields[i]._E,elasticFields[i]._nu,_beta1,
+                                                _beta2,_beta3,
                                                 elasticFields[i]._h,ufield, ipf, elasticFields[i].getSolElemType(),
                                                 elasticFields[i].getFormulation());
   // Assembling loop on elementary interface terms
@@ -181,8 +177,8 @@ void DgC0PlateSolver::computeStiffMatrix(linearSystem<double> *lsys, dofManager<
                       *pAssembler); // Use the same GaussQuadrature rule than on the boundary
 
   // Initialization of elementary  interface terms in function of the field and space
-  IsotropicElasticStiffVirtualInterfaceTermC0Plate VIEterm(*LagSpace,elasticFields[i]._E,elasticFields[i]._nu,elasticFields[i]._beta1,
-                                                elasticFields[i]._beta2,elasticFields[i]._beta3,
+  IsotropicElasticStiffVirtualInterfaceTermC0Plate VIEterm(*LagSpace,elasticFields[i]._E,elasticFields[i]._nu,_beta1,
+                                                _beta2,_beta3,
                                                 elasticFields[i]._h,ufield,ipf,elasticFields[i].getSolElemType(),true,elasticFields[i].getFormulation());
   // Assembling loop on elementary boundary interface terms
   MyAssemble(VIEterm,*LagSpace,elasticFields[i].gib.begin(),elasticFields[i].gib.end(),Integ_Boundary,

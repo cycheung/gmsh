@@ -1,0 +1,14 @@
+MeshFile beam6.msh
+//           physical   E     nu     h  Formulation(Cg/Dg=0 FullDg=1)  Number of Simpson point (odd)
+ElasticDomain   99    100.e9  0.3   0.01      0           3 
+// Solver Gmm=0 (default) Taucs=1 PETSc=2 Scheme StaticLinear=0 (default) StaticNonLinear=1 
+Solver 2 0 
+StabilityParameters 10. 10. 10.
+// Data for static Non linear scheme Nstep endtime
+StaticNonLinearData 60 1. 1.e-6
+Archive 6
+EdgeDisplacement 41 1 0.
+EdgeDisplacement 41 0 0.
+EdgeDisplacement 41 2 0.
+EdgeForce 21 0 0 10000.
+Theta 1 41

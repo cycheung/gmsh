@@ -1,0 +1,18 @@
+MeshFile plate.msh
+//           physical   E     nu     h  Formulation(Cg/Dg=0 FullDg=1) NumberOfSimpson's points (odd)
+ElasticDomain 99        1.e6  0.3   0.1        0                                  1
+// Solver Gmm=0 (default) Taucs=1 PETSc=2 (Scheme StaticLinear = 0 (default) StaticNonLinear = 1) 
+Solver 1 0
+StabilityParameters 10. 10. 10.
+EdgeDisplacement 11 0 0.
+EdgeDisplacement 11 1 0.
+EdgeDisplacement 21 0 0.
+EdgeDisplacement 21 1 0.
+EdgeDisplacement 21 2 0.
+EdgeDisplacement 31 0 0.
+EdgeDisplacement 31 1 0.
+EdgeDisplacement 31 2 0.
+EdgeDisplacement 41 0 0.
+EdgeDisplacement 41 1 0.
+NodeForce 111 0. 0. -50.
+Theta 4 11 21 31 41

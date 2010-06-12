@@ -50,7 +50,7 @@ void DgC0PlateSolver::readInputFile(const std::string fn)
     if (!strcmp(what, "ElasticDomain")){
       DGelasticField field; // TODO creation of constructor
       int physical, b,c;
-      if(fscanf(f, "%d %lf %lf %lf %lf %lf %lf %d %d", &physical, &field._E, &field._nu, &field._beta1, &field._beta2, &field._beta3, &field._h, &b, &c) != 9) return;
+      if(fscanf(f, "%d %lf %lf %lf %d %d", &physical, &field._E, &field._nu, &field._h, &b, &c) != 6) return;
       field._tag = _tag;
       field._phys= physical; // needed to impose BC on face
       field.setFormulation(b); // Formulation of element cG/dG full dG
@@ -65,7 +65,7 @@ void DgC0PlateSolver::readInputFile(const std::string fn)
     else if (!strcmp(what, "ElasticFractureDomain")){
       DGelasticField field; // TODO creation of constructor
       int physical, c;
-      if(fscanf(f, "%d %lf %lf %lf %lf %lf %lf %lf %lf %d", &physical, &field._E, &field._nu, &field._beta1, &field._beta2, &field._beta3, &field._h, &field._Gc, &field._sigmac, &c) != 10) return;
+      if(fscanf(f, "%d %lf %lf %lf %lf %lf %d", &physical, &field._E, &field._nu, &field._h, &field._Gc, &field._sigmac, &c) != 7) return;
       field._tag = _tag;
       field._phys= physical; // needed to impose BC on face
       field.setFormulation(1); // Only full dG for fracture problem
@@ -185,6 +185,11 @@ void DgC0PlateSolver::readInputFile(const std::string fn)
       fscanf(f,"%d %d",&sol,&sch);
       this->setSolver(sol);
       this->setScheme(sch);
+    }
+    else if(!strcmp(what, "StabilityParameters")){
+      double b1,b2,b3;
+      fscanf(f,"%lf %lf %lf",&b1,&b2,&b3);
+      this->setStabilityParameters(b1,b2,b3);
     }
     else if(!strcmp(what, "StaticNonLinearData")){
       int ns;
@@ -432,8 +437,8 @@ else{
                  *pAssembler);
 
     // Initialization of elementary  interface terms in function of the field and space
-    IsotropicElasticStiffInterfaceTermC0Plate IEterm(*LagSpace,elasticFields[i]._E,elasticFields[i]._nu,elasticFields[i]._beta1,
-                                                elasticFields[i]._beta2,elasticFields[i]._beta3,
+    IsotropicElasticStiffInterfaceTermC0Plate IEterm(*LagSpace,elasticFields[i]._E,elasticFields[i]._nu,_beta1,
+                                                _beta2,_beta3,
                                                 elasticFields[i]._h,&ufield, &ipf, elasticFields[i].getSolElemType(),
                                                 elasticFields[i].getFormulation());
     // Assembling loop on elementary interface terms
@@ -441,8 +446,8 @@ else{
                       *pAssembler); // Use the same GaussQuadrature rule than on the boundary
 
     // Initialization of elementary  interface terms in function of the field and space
-    IsotropicElasticStiffVirtualInterfaceTermC0Plate VIEterm(*LagSpace,elasticFields[i]._E,elasticFields[i]._nu,elasticFields[i]._beta1,
-                                                elasticFields[i]._beta2,elasticFields[i]._beta3,
+    IsotropicElasticStiffVirtualInterfaceTermC0Plate VIEterm(*LagSpace,elasticFields[i]._E,elasticFields[i]._nu,_beta1,
+                                                _beta2,_beta3,
                                                 elasticFields[i]._h,&ufield,&ipf,elasticFields[i].getSolElemType(),true,elasticFields[i].getFormulation());
     // Assembling loop on elementary boundary interface terms
     MyAssemble(VIEterm,*LagSpace,elasticFields[i].gib.begin(),elasticFields[i].gib.end(),Integ_Boundary,
@@ -459,6 +464,78 @@ else{
   // save solution (for visualisation)
   ipf.buildView(elasticFields,0.,1,false);
   ufield.buildView(elasticFields,0.,1,false);
+}
+
+void DgC0PlateSolver::setSNLData(const int ns, const double et, const double reltol){
+  if(whatScheme==StaticNonLinear){
+    numstep=ns;endtime=et;_tol=reltol;
+  }
+  else{
+    Msg::Error("Impossible to set data for Static Non Linear scheme because another is chosen to solve the problem");
+  }
+}
+
+void DgC0PlateSolver::solveLUA(){
+  switch(whatScheme){
+    case StaticLinear :
+      this->solve();
+      break;
+    case StaticNonLinear :
+      this->solveSNL();
+      break;
+  }
+}
+
+void DgC0PlateSolver::addDisp(std::string onwhat, const int numphys, const int comp, const double value){
+  dirichletBC diri;
+  const std::string node("Node");
+  const std::string edge("Edge");
+  const std::string face("Face");
+  if(onwhat==node){
+    diri.g = new groupOfElements (0, numphys);
+    diri.onWhat=BoundaryCondition::ON_VERTEX;
+  }
+  else if(onwhat==edge){
+    diri.g = new groupOfElements (1, numphys);
+    diri.onWhat=BoundaryCondition::ON_EDGE;
+  }
+  else if(onwhat==face){
+    diri.g = new groupOfElements (2, numphys);
+    diri.onWhat=BoundaryCondition::ON_FACE;
+  }
+  else Msg::Error("Impossible to prescribe a displacement on a %s\n",onwhat.c_str());
+  diri._f= simpleFunctionTime<double>(value);
+  diri._comp=comp;
+  diri._tag=numphys;
+  allDirichlet.push_back(diri);
+}
+
+void DgC0PlateSolver::addForce(std::string onwhat, const int numphys, const double xval, const double yval, const double zval){
+  neumannBC neu;
+  const std::string node("Node");
+  const std::string edge("Edge");
+  const std::string face("Face");
+  const std::string volume("Volume");
+  if(onwhat==node){
+    neu.g = new groupOfElements (0, numphys);
+    neu.onWhat=BoundaryCondition::ON_VERTEX;
+  }
+  else if(onwhat==edge){
+    neu.g = new groupOfElements (1, numphys);
+    neu.onWhat=BoundaryCondition::ON_EDGE;
+  }
+  else if(onwhat==face){
+    neu.g = new groupOfElements (2, numphys);
+    neu.onWhat=BoundaryCondition::ON_FACE;
+  }
+  else if(onwhat==volume){
+    neu.g = new groupOfElements (3, numphys);
+    neu.onWhat=BoundaryCondition::ON_VOLUME;
+  }
+  else  Msg::Error("Impossible to prescribe a force on a %s\n",onwhat.c_str());
+  neu._f= simpleFunctionTime<SVector3>(SVector3(xval, yval, zval));
+  neu._tag=numphys;
+  allNeumann.push_back(neu);
 }
 
 void DgC0PlateSolver::addArchivingEdgeForce(const int numphys, const int comp){
@@ -500,6 +577,12 @@ void DgC0PlateSolver::addArchivingEdgeForce(const int numphys, const int comp){
 void DgC0PlateSolver::addArchivingNodeDisplacement(const int num, const int comp){
   // no distinction between cG/dG and full Dg formulation. class Displacement Field manage it
   anoded.push_back(Dof(num,DgC0PlateDof::createTypeWithThreeInts(comp,LagSpace->getId())));
+  // remove old file (linux only ??)
+  std::ostringstream oss;
+  oss << num;
+  std::string s = oss.str();
+  std::string rfname = "rm NodalDisplacement"+s+".csv";
+  system(rfname.c_str());
 }
 
 std::vector<Dof> DgC0PlateSolver::getDofArchForce(){
@@ -559,6 +642,9 @@ void DgC0PlateSolver::registerBindings(binding *b)
   cm = cb->addMethod("ArchivingNodalDisplacement", &DgC0PlateSolver::addArchivingNodeDisplacement);
   cm->setArgNames("num","comp",NULL);
   cm->setDescription("Archiving a nodal displacement. First argument is the number of node the second is the comp x=0 y=1, z=2");
+  cm = cb->addMethod("stabilityParameters", &DgC0PlateSolver::setStabilityParameters);
+  cm->setArgNames("b1","b2","b3",NULL);
+  cm->setDescription("Beta value for stabilization. The first one only for Cg/Dg formulation");
   // delete other functions ??
 /*  cm = cb->addMethod("AddNodalDisplacement", &DgC0PlateSolver::addNodalDisp);
   cm->setArgNames("node","comp","value",NULL);
