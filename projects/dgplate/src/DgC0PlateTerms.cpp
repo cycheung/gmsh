@@ -108,8 +108,7 @@ void IsotropicElasticForceBulkTermC0Plate::get(MElement *ele,int npts,IntPt *GP,
   m.scale(0.);
   std::vector<TensorialTraits<double>::HessType> Hess;
   std::vector<TensorialTraits<double>::GradType> Grad;
-  std::vector<SVector3> nalpha,malpha;
-  nalpha.resize(2); malpha.resize(2);
+  reductionElement nalpha,malpha;
 
   // sum on Gauss' points
   for (int i = 0; i < npts; i++)
@@ -131,8 +130,7 @@ void IsotropicElasticForceBulkTermC0Plate::get(MElement *ele,int npts,IntPt *GP,
       for(int k=0;k<3;k++)
         for(int alpha=0;alpha<2;alpha++)
           for(int beta=0;beta<2;beta++)
-//            m(j+k*nbFF)+=Cnt*Grad[j](alpha)*nalpha[alpha](beta)*lb->getphi0(beta,k)- Cmt*Hess[j](alpha,beta)*malpha[alpha](beta)*lb->gett0(k);
-            m(j+k*nbFF)+=wJ*(Grad[j](alpha)*nalpha[alpha](beta)*lb->getphi0(beta,k)- Hess[j](alpha,beta)*malpha[alpha](beta)*lb->gett0(k));
+            m(j+k*nbFF)+=wJ*(Grad[j](alpha)*nalpha(alpha,beta)*lb->getphi0(beta,k)- Hess[j](alpha,beta)*malpha(alpha,beta)*lb->gett0(k));
     }
   // clear the hessian and Grad because the components append in hessfuvw and gradfuvw
   Hess.clear(); Grad.clear();
@@ -485,8 +483,7 @@ void IsotropicElasticForceInterfaceTermC0Plate::get(MElement *ele,int npts,IntPt
   double me_cons[3];
   double me_comp[3];
   double me_stab[3];
-  std::vector<SVector3> nhatmean, mhatmean;
-  nhatmean.resize(2); mhatmean.resize(2);
+  reductionElement nhatmean, mhatmean;
   SVector3 ujump;
   std::vector<bool> vbroken;
   std::vector<bool> vfullbroken;
@@ -532,21 +529,17 @@ void IsotropicElasticForceInterfaceTermC0Plate::get(MElement *ele,int npts,IntPt
       // Assemblage
       double dt[3];
       for(int alpha=0;alpha<2;alpha++){
-            SVector3 malpha = mhatmean[alpha](0)*lb[2]->getphi0(0)+mhatmean[alpha](1)*lb[2]->getphi0(1);
-        //for(int beta=0;beta<2;beta++){
+            SVector3 malpha = mhatmean(alpha,0)*lb[2]->getphi0(0)+mhatmean(alpha,1)*lb[2]->getphi0(1);
             for(int j=0;j<nbFF_m;j++){
               matTvectprod(Deltat_m[j],malpha,dt);
               for(int k=0;k<3;k++)
-//                m(j+k*nbFF_m)+= - (wJ*scaldot(mhatmean[alpha],lb[2]->getphi0d(beta))*dt[k]*(-scaldot(lb[2]->getphi0(1),lb[2]->getphi0(beta))));
                 m(j+k*nbFF_m)+= - (wJ*dt[k]*(-scaldot(lb[2]->getphi0(1),lb[2]->getphi0(alpha))));
             }
             for(int j=0;j<nbFF_p;j++){
               matTvectprod(Deltat_p[j],malpha,dt);
               for(int k=0;k<3;k++)
-//                m(j+k*nbFF_p+nbdof_m)+= (wJ*scaldot(mhatmean[alpha],lb[2]->getphi0d(beta))*dt[k]*(-scaldot(lb[2]->getphi0(1),lb[2]->getphi0(beta))));
                 m(j+k*nbFF_p+nbdof_m)+= (wJ*dt[k]*(-scaldot(lb[2]->getphi0(1),lb[2]->getphi0(alpha))));
-          }
-        //}
+            }
       }
 
     // Compatibility and stability (if not broken)
@@ -587,11 +580,9 @@ void IsotropicElasticForceInterfaceTermC0Plate::get(MElement *ele,int npts,IntPt
         for(int beta=0;beta<2;beta++){
           for(int k=0;k<3;k++){
             for(int j=0;j<nbFF_m;j++)
-              m(j+k*nbFF_m)+=-(wJ*nhatmean[alpha](beta)*Val_m[j]*(lb[2]->getphi0(beta,k))*(-scaldot(lb[2]->getphi0(1),lb[2]->getphi0(alpha))));
-              //m(j+k*nbFF_m)+=-(wJ*nhatmean[alpha](beta)*Val_m[j]*(lb[2]->getphi0(beta,k))*(-lb[2]->getphi0(1,alpha)));
+              m(j+k*nbFF_m)+=-(wJ*nhatmean(alpha,beta)*Val_m[j]*(lb[2]->getphi0(beta,k))*(-scaldot(lb[2]->getphi0(1),lb[2]->getphi0(alpha))));
             for(int j=0;j<nbFF_p;j++)
-              m(j+k*nbFF_p+nbdof_m)+=(wJ*nhatmean[alpha](beta)*Val_p[j]*(lb[2]->getphi0(beta,k))*(-scaldot(lb[2]->getphi0(1),lb[2]->getphi0(alpha))));
-              //m(j+k*nbFF_p+nbdof_m)+=(wJ*nhatmean[alpha](beta)*Val_p[j]*(lb[2]->getphi0(beta,k))*(-lb[2]->getphi0(1,alpha)));
+              m(j+k*nbFF_p+nbdof_m)+=(wJ*nhatmean(alpha,beta)*Val_p[j]*(lb[2]->getphi0(beta,k))*(-scaldot(lb[2]->getphi0(1),lb[2]->getphi0(alpha))));
           }
         }
       }
@@ -802,8 +793,7 @@ void IsotropicElasticForceVirtualInterfaceTermC0Plate::get(MElement *ele,int npt
   double me_cons[3];
   double me_comp[3];
   double me_stab[3];
-  std::vector<SVector3> mhatmean;
-  mhatmean.resize(2);
+  reductionElement mhatmean;
   // Characteristic size of interface element
   double h_s = iele->getCharacteristicSize();
 
@@ -840,11 +830,10 @@ void IsotropicElasticForceVirtualInterfaceTermC0Plate::get(MElement *ele,int npt
     // Consistency
     double dt[3];
     for(int alpha=0;alpha<2;alpha++){
-      SVector3 malpha = mhatmean[alpha](0)*lb[2]->getphi0(0)+mhatmean[alpha](1)*lb[2]->getphi0(1);
+      SVector3 malpha = mhatmean(alpha,0)*lb[2]->getphi0(0)+mhatmean(alpha,1)*lb[2]->getphi0(1);
         for(int j=0;j<nbFF_m;j++){
           matTvectprod(Deltat_m[j],malpha,dt);
           for(int k=0;k<3;k++)
-           //m(j+k*nbFF_m)+= - (wJ*scaldot(mhatmean[alpha],lb[2]->getphi0d(beta))*dt[k]*(-scaldot(lb[2]->getphi0(1),lb[2]->getphi0(beta))));
            m(j+k*nbFF_m)+= - (wJ*dt[k]*(-scaldot(lb[2]->getphi0(1),lb[2]->getphi0(alpha))));
           }
     }

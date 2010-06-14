@@ -561,10 +561,8 @@ inline void computeFintFrac(const MInterfaceElement *iele, const std::vector<dou
 
   double Deltat_m[256][3][3];
   double Deltat_p[256][3][3];
-  std::vector<SVector3> nhatmean;
-  std::vector<SVector3> mhatmean;
-  nhatmean.resize(2);
-  mhatmean.resize(2);
+  reductionElement nhatmean;
+  reductionElement mhatmean;
   ipf->getReductionFracture(iele,numgauss,npts,elemtype,disp,nbFF_m,nbdof_m,Vals_m,Grads_m,nbFF_p,Vals_p,Grads_p,nhatmean,mhatmean);
 
   double wJ = weight*lbs->getJacobian();
@@ -575,17 +573,16 @@ inline void computeFintFrac(const MInterfaceElement *iele, const std::vector<dou
   // Assemblage
   double dt[3];
   for(int alpha=0;alpha<2;alpha++){
-    for(int beta=0;beta<2;beta++){
-      for(int j=0;j<nbFF_m;j++){
-        matTvectprod(Deltat_m[j],lbs->getphi0(alpha),dt);
-        for(int k=0;k<3;k++)
-          m(j+k*nbFF_m)+= - (wJ*mhatmean[alpha](beta)*dt[k]*(-scaldot(lbs->getphi0(1),lbs->getphi0(beta))));
-      }
-      for(int j=0;j<nbFF_p;j++){
-        matTvectprod(Deltat_p[j],lbs->getphi0(alpha),dt);
-        for(int k=0;k<3;k++)
-          m(j+k*nbFF_p+nbdof_m)+= (wJ*mhatmean[alpha](beta)*dt[k]*(-scaldot(lbs->getphi0(1),lbs->getphi0(beta))));
-      }
+    SVector3 malpha = mhatmean(alpha,0)*lbs->getphi0(0) + mhatmean(alpha,1)*lbs->getphi0(1);
+    for(int j=0;j<nbFF_m;j++){
+      matTvectprod(Deltat_m[j],malpha,dt);
+      for(int k=0;k<3;k++)
+        m(j+k*nbFF_m)+= - (wJ*dt[k]*(-scaldot(lbs->getphi0(1),lbs->getphi0(alpha))));
+    }
+    for(int j=0;j<nbFF_p;j++){
+      matTvectprod(Deltat_p[j],malpha,dt);
+      for(int k=0;k<3;k++)
+        m(j+k*nbFF_p+nbdof_m)+= (wJ*dt[k]*(-scaldot(lbs->getphi0(1),lbs->getphi0(alpha))));
     }
   }
 };

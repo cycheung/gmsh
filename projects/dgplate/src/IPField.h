@@ -46,10 +46,8 @@ class IPField : public elementField {
       IPVariablePlateOIWF* ipvp = dynamic_cast<IPVariablePlateOIWF*>((*vips)[numminus]->getState(IPState::previous));
       if(!ipvp->getBroken()){
         Msg::Info("Interface element %d is broken\n",ie->getNum());
-        std::vector<SVector3> nhatmean;
-        std::vector<SVector3> mhatmean;
+        reductionElement nhatmean, mhatmean;
         const LocalBasis* Lb[3];
-        nhatmean.resize(2); mhatmean.resize(2);
 
         IntPt *GP;
         int npts = _intBound->getIntPoints(ie,&GP);
@@ -118,7 +116,7 @@ class IPField : public elementField {
       }
     }
   void getReductionByCohesiveLawAndLocalBasis(const MInterfaceElement *iele, const int gaussnum, const int npts,
-                                              std::vector<SVector3> &nhatmean, std::vector<SVector3> &mhatmean,
+                                              reductionElement &nhatmean, reductionElement &mhatmean,
                                               const LocalBasis* lbb[3]){
     // find elasticField
     bool flag=false;
@@ -153,7 +151,7 @@ class IPField : public elementField {
     lbb[1] = ipv->getLocalBasis();
   }
   void getReductionByCohesiveLaw(const MInterfaceElement *iele, const int gaussnum, const int npts,
-                                              std::vector<SVector3> &nhatmean, std::vector<SVector3> &mhatmean){
+                                              reductionElement &nhatmean, reductionElement &mhatmean){
     // find elasticField
     bool flag=false;
     DGelasticField *ef;
@@ -333,27 +331,27 @@ class IPField : public elementField {
 
   // reduction element
   void getStressReduction(MElement *ele,const int gaussnum, SolElementType::eltype et,IPState::whichState ws,
-                          std::vector<SVector3> &nalpha);
+                          reductionElement &nalpha);
   void getMomentReduction(MElement *ele,const int gaussnum, SolElementType::eltype et,IPState::whichState ws,
-                          std::vector<SVector3> &malpha);
+                          reductionElement &malpha);
   void getReduction(MElement *ele,const int gaussnum, SolElementType::eltype et,IPState::whichState ws,
-                          std::vector<SVector3> &nalpha,std::vector<SVector3> &malpha );
+                          reductionElement &nalpha,reductionElement &malpha );
 
   const LocalBasis* getReductionAndLocalBasis(MElement *ele,const int gaussnum, SolElementType::eltype et,IPState::whichState ws,
-                          std::vector<SVector3> &nalpha,std::vector<SVector3> &malpha );
+                          reductionElement &nalpha,reductionElement &malpha );
 
   void getStressReduction(MInterfaceElement *iele, const int gaussnum, const int numOfGaussPoint, SolElementType::eltype et,
-                                         IPState::whichState ws, std::vector<SVector3> &nhatmean);
+                                         IPState::whichState ws, reductionElement &nhatmean);
   void getMomentReduction(MInterfaceElement *iele, const int gaussnum, const int numOfGaussPoint, SolElementType::eltype et,
-                                         IPState::whichState ws, std::vector<SVector3> &mhatmean);
+                                         IPState::whichState ws, reductionElement &mhatmean);
   void getMomentReductionAndLocalBasis(MInterfaceElement *iele, const int gaussnum, const int numOfGaussPoint, SolElementType::eltype et,
-                                         IPState::whichState ws, std::vector<SVector3> &mhatmean, const LocalBasis *lb[3]);
+                                         IPState::whichState ws, reductionElement &mhatmean, const LocalBasis *lb[3]);
 
   void getReductionAndLocalBasis(MInterfaceElement *iele, const int gaussnum, const int numOfGaussPoint, SolElementType::eltype et,
-                                         IPState::whichState ws, std::vector<SVector3> &nhatmean, std::vector<SVector3> &mhatmean,
+                                         IPState::whichState ws, reductionElement &nhatmean, reductionElement &mhatmean,
                                          const LocalBasis *lb[3]);
   void getVirtualMomentReductionAndLocalBasis(MInterfaceElement *iele, const int gaussnum, const int numOfGaussPoint,
-                                              SolElementType::eltype et, IPState::whichState ws, std::vector<SVector3> &mhatmean,
+                                              SolElementType::eltype et, IPState::whichState ws, reductionElement &mhatmean,
                                               const LocalBasis *lb[3]);
 
   void getStress(const MElement *ele, const int gaussnum, IPState::whichState st, double stress[6]);
@@ -380,17 +378,15 @@ class IPField : public elementField {
                             const std::vector<TensorialTraits<double>::GradType> &Grads_m,
                             const int nbFF_p,const std::vector<TensorialTraits<double>::ValType> &Vals_p,
                             const std::vector<TensorialTraits<double>::GradType> &Grads_p,
-                            std::vector<SVector3> &nhatmean, std::vector<SVector3> &mhatmean) const;
+                            reductionElement &nhatmean, reductionElement &mhatmean) const;
 
   // Function to get data (must be removed)
   void getData(int numelem,int numgauss, materialLaw *mlaw, double &M, double &dr,double &delta){
     // It's for fracture so type elem and material law are known
     IPVariablePlateOIWF *ipv;
     std::vector<IPState*> *vips;
-    std::vector<SVector3> nhatmean;
-    std::vector<SVector3> mhatmean;
-    nhatmean.resize(2);
-    mhatmean.resize(2);
+    reductionElement nhatmean;
+    reductionElement mhatmean;
     IPState *ips;
     vips = _AIPS->getIPstate(numelem);
     ips = (*vips)[numgauss];
@@ -399,7 +395,7 @@ class IPField : public elementField {
     dr = ipv->getDeltar();
     linearElasticLawPlaneStressWithFracture *mlaw1 = dynamic_cast<linearElasticLawPlaneStressWithFracture*>(mlaw);
     mlaw1->getCohesiveReduction(ipv->getM0(), ipv->getN0(),delta, ipv->getDeltamax(),ipv->getDeltac(),nhatmean,mhatmean);
-    M = mhatmean[1][1];
+    M = mhatmean(1,1);
   }
 };
 #endif // IPField

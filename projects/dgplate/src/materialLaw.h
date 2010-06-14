@@ -13,6 +13,7 @@
 #define _MATERIALLAW_H_
 #include "LocalBasis.h"
 #include "LinearElasticShellHookeTensor.h"
+#include "reduction.h"
 // class with all material laws
 
 // Problem when it puts in IPState.h ????
@@ -66,14 +67,11 @@ class linearElasticLawPlaneStressWithFracture : public linearElasticLawPlaneStre
   double getGc() const{return _Gc;}
   double getSigmac() const{return _sigmac;}
   void getCohesiveReduction(const double M0, const double N0, const double delta, const double delta_max,
-                              const double deltac,std::vector<SVector3> &nhatmean, std::vector<SVector3> &mhatmean) const{
+                              const double deltac,reductionElement &nhatmean, reductionElement &mhatmean) const{
     // for now Mxx and Nxx component (other = 0)
     // nhatmean and mhatmean are supposed to be initialized (change this when others components will be computed)
-    for(int i=0;i<2;i++)
-      for(int j=0;j<3;j++){
-        mhatmean[i][j]=0.;
-        nhatmean[i][j]=0.;
-      }
+    nhatmean.setAll(0.);
+    mhatmean.setAll(0.);
     // monotonic decreasing cohesive law
     if((0.<=delta) and (delta<=deltac)){
       double c;
@@ -81,8 +79,8 @@ class linearElasticLawPlaneStressWithFracture : public linearElasticLawPlaneStre
         c = 1.-delta/deltac;
       else //unloading case
         c = delta/delta_max - delta/deltac;
-      mhatmean[1][1] = M0*c; // Change this ??
-      nhatmean[0][0] = N0*c;
+      mhatmean(1,1) = M0*c; // Change this ??
+      nhatmean(1,1) = N0*c;
  //     printf("%lf %lf %lf\n",delta,mhatmean[1][1],M0);
     }
 //    else if(delta> deltac)

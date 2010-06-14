@@ -105,9 +105,8 @@ double rhogd(const int gamma, const int delta, const LocalBasis *lb,const std::v
 }
 
 void stressReduction(const LinearElasticShellHookeTensor *H,const std::vector<TensorialTraits<double>::GradType> &Grads,
-                     const LocalBasis *lb,const std::vector<double> &disp, std::vector<SVector3> &n){
-  n[0](0)=0.;n[0](1)=0.;n[0](2)=0.;
-  n[1](0)=0.;n[1](1)=0.;n[1](2)=0.;
+                     const LocalBasis *lb,const std::vector<double> &disp, reductionElement &n){
+  n.setAll(0.);
   double eps_gd;
   for(int gamma=0;gamma<2;gamma++)
     for(int delta=0;delta<2;delta++)
@@ -115,14 +114,13 @@ void stressReduction(const LinearElasticShellHookeTensor *H,const std::vector<Te
       eps_gd=epsilongd(gamma,delta,lb,Grads,disp);
         for(int alpha=0;alpha<2;alpha++)
           for(int beta=0;beta<2;beta++)
-            n[alpha](beta) += H->get(alpha,beta,gamma,delta)*eps_gd;
+            n(alpha,beta) += H->get(alpha,beta,gamma,delta)*eps_gd;
     }
 }
 
 void momentReduction(const LinearElasticShellHookeTensor *H,const std::vector<TensorialTraits<double>::HessType> &hess,
-                     const LocalBasis *lb,const std::vector<double> &disp, std::vector<SVector3> &m){
-  m[0](0)=0.;m[0](1)=0.;m[0](2)=0.;
-  m[1](0)=0.;m[1](1)=0.;m[1](2)=0.;
+                     const LocalBasis *lb,const std::vector<double> &disp, reductionElement &m){
+  m.setAll(0.);
   double rho_gd;
   for(int gamma=0;gamma<2;gamma++)
     for(int delta=0;delta<2;delta++)
@@ -130,17 +128,17 @@ void momentReduction(const LinearElasticShellHookeTensor *H,const std::vector<Te
       rho_gd=rhogd(gamma,delta,lb,hess,disp);
       for(int alpha=0;alpha<2;alpha++)
         for(int beta=0;beta<2;beta++)
-          m[alpha](beta) += H->get(alpha,beta,gamma,delta)*rho_gd;
+          m(alpha,beta) += H->get(alpha,beta,gamma,delta)*rho_gd;
     }
 }
 
-void stressReductionHat(const std::vector<SVector3> &n,const LocalBasis *lb,std::vector<SVector3> &nhat){
+void stressReductionHat(const reductionElement &n,const LocalBasis *lb, reductionElement &nhat){
+  nhat.setAll(0.);
   for(int alpha=0;alpha<2;alpha++)
     for(int beta=0;beta<2;beta++){
-      nhat[alpha](beta)=0.;
       for(int gamma=0;gamma<2;gamma++)
         for(int delta=0;delta<2;delta++)
-          nhat[alpha](beta)+=lb->getT(gamma,alpha)*n[gamma](delta)*lb->getT(delta,beta);
+          nhat(alpha,beta)+=lb->getT(gamma,alpha)*n(gamma,delta)*lb->getT(delta,beta);
     }
 }
 // Should be somewhere else ??

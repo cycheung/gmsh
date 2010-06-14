@@ -130,16 +130,16 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getStressA
 // Functions to compute reduction element
 template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getStressReduction(MElement *ele,const int gaussnum,
                                                                                            SolElementType::eltype et,IPState::whichState ws,
-                                                                                            std::vector<SVector3> &nalpha){
+                                                                                            reductionElement &nalpha){
     if(et == SolElementType::PlatePlaneStress ){
       double stress[6];
       double h;
       this->getStressMembrane(ele,gaussnum,ws,stress,h);
 
       // compute nalpha
-      nalpha[0][0] = h*stress[0];
-      nalpha[0][1] = nalpha[1][0] = h*stress[3];
-      nalpha[1][1] = h*stress[1];
+      nalpha(0,0) = h*stress[0];
+      nalpha(0,1) = nalpha(1,0) = h*stress[3];
+      nalpha(1,1) = h*stress[1];
     }
     else if(et == SolElementType::PlatePlaneStressWTI ){
       std::vector<tab6> stress ;
@@ -150,11 +150,11 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getStressR
       double h = hsimp[msize-1]-hsimp[0];
       temp.resize(msize);
       for(int i=0;i<msize;i++) temp[i]=stress[i][0]; // retrieve component change this ?? TODO
-      nalpha[0][0] = SimpsonIntegration(temp,h);
+      nalpha(0,0) = SimpsonIntegration(temp,h);
       for(int i=0;i<msize;i++) temp[i]=stress[i][3];
-      nalpha[0][1] = nalpha[1][0] = SimpsonIntegration(temp,h);
+      nalpha(0,1) = nalpha(1,0) = SimpsonIntegration(temp,h);
       for(int i=0;i<msize;i++) temp[i]=stress[i][1];
-      nalpha[1][1] = SimpsonIntegration(temp,h);
+      nalpha(1,1) = SimpsonIntegration(temp,h);
     }
     else Msg::Error("GetStressReduction is not implemented for SolelemType %d",et);
 
@@ -162,7 +162,7 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getStressR
 
 template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getMomentReduction(MElement *ele,const int gaussnum,
                                                                                            SolElementType::eltype et,IPState::whichState ws,
-                                                                                            std::vector<SVector3> &malpha){
+                                                                                            reductionElement &malpha){
     if(et == SolElementType::PlatePlaneStress ){
       double stress[6];
       double h;
@@ -170,9 +170,9 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getMomentR
 
       // compute nalpha
       double hcubdiv12 = h*h*h/12.;
-      malpha[0][0] = hcubdiv12*stress[0];
-      malpha[0][1] = malpha[1][0] = hcubdiv12*stress[3];
-      malpha[1][1] = hcubdiv12*stress[1];
+      malpha(0,0) = hcubdiv12*stress[0];
+      malpha(0,1) = malpha(1,0) = hcubdiv12*stress[3];
+      malpha(1,1) = hcubdiv12*stress[1];
     }
     else if(et == SolElementType::PlatePlaneStressWTI) {
       std::vector<tab6> stress ;
@@ -182,18 +182,18 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getMomentR
       int msize = zsimp.size();
       temp.resize(msize);
       for(int i=0;i<msize;i++) temp[i]=stress[i][0]; // retrieve component change this ?? TODO
-      malpha[0][0] = SimpsonIntegration(temp,zsimp);
+      malpha(0,0) = SimpsonIntegration(temp,zsimp);
       for(int i=0;i<msize;i++) temp[i]=stress[i][3];
-      malpha[0][1] = malpha[1][0] = SimpsonIntegration(temp,zsimp);
+      malpha(0,1) = malpha(1,0) = SimpsonIntegration(temp,zsimp);
       for(int i=0;i<msize;i++) temp[i]=stress[i][1];
-      malpha[1][1] = SimpsonIntegration(temp,zsimp);
+      malpha(1,1) = SimpsonIntegration(temp,zsimp);
     }
     else Msg::Error("GetStressReduction is not implemented for SolelemType %d",et);
 }
 
 template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getReduction(MElement *ele,const int gaussnum,
                                                                                            SolElementType::eltype et,IPState::whichState ws,
-                                                                                            std::vector<SVector3> &nalpha,std::vector<SVector3> &malpha){
+                                                                                            reductionElement &nalpha, reductionElement &malpha){
     if(et == SolElementType::PlatePlaneStress ){
       double stressMembrane[6];
       double stressBending[6];
@@ -201,14 +201,14 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getReducti
       this->getStress(ele,gaussnum,ws,stressMembrane,stressBending,h);
 
       // compute nalpha
-      nalpha[0][0] = h*stressMembrane[0];
-      nalpha[0][1] = h*stressMembrane[3];
-      nalpha[1][1] = h*stressMembrane[1];
+      nalpha(0,0) = h*stressMembrane[0];
+      nalpha(0,1) = h*stressMembrane[3];
+      nalpha(1,1) = h*stressMembrane[1];
       // compute nalpha
       double hcubdiv12 = h*h*h/12.;
-      malpha[0][0] = hcubdiv12*stressBending[0];
-      malpha[0][1] = hcubdiv12*stressBending[3];
-      malpha[1][1] = hcubdiv12*stressBending[1];
+      malpha(0,0) = hcubdiv12*stressBending[0];
+      malpha(0,1) = malpha(1,0)*hcubdiv12*stressBending[3];
+      malpha(1,1) = hcubdiv12*stressBending[1];
     }
     else if(et == SolElementType::PlatePlaneStressWTI){
       std::vector<tab6> stress ;
@@ -219,21 +219,21 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getReducti
       double h = zsimp[msize-1]-zsimp[0];
       temp.resize(msize);
       for(int i=0;i<msize;i++) temp[i]=stress[i][0]; // retrieve component change this ?? TODO
-      nalpha[0][0] = SimpsonIntegration(temp,h);
-      malpha[0][0] = SimpsonIntegration(temp,zsimp);
+      nalpha(0,0) = SimpsonIntegration(temp,h);
+      malpha(0,0) = SimpsonIntegration(temp,zsimp);
       for(int i=0;i<msize; i++) temp[i]=stress[i][3];
-      nalpha[0][1] = nalpha[1][0] = SimpsonIntegration(temp,h);
-      malpha[0][1] = malpha[1][0] = SimpsonIntegration(temp,zsimp);
+      nalpha(0,1) = nalpha(1,0) = SimpsonIntegration(temp,h);
+      malpha(0,1) = malpha(1,0) = SimpsonIntegration(temp,zsimp);
       for(int i=0;i<msize; i++) temp[i]=stress[i][1];
-      nalpha[1][1] = SimpsonIntegration(temp,h);
-      malpha[1][1] = SimpsonIntegration(temp,zsimp);
+      nalpha(1,1) = SimpsonIntegration(temp,h);
+      malpha(1,1) = SimpsonIntegration(temp,zsimp);
     }
     else Msg::Error("GetStressReduction is not implemented for SolelemType %d",et);
 }
 
 template<> const LocalBasis* IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getReductionAndLocalBasis(MElement *ele,const int gaussnum,
                                                                                            SolElementType::eltype et,IPState::whichState ws,
-                                                                                            std::vector<SVector3> &nalpha,std::vector<SVector3> &malpha){
+                                                                                            reductionElement &nalpha, reductionElement &malpha){
     const LocalBasis *lb;
     if(et == SolElementType::PlatePlaneStress ){
       double stressMembrane[6];
@@ -242,14 +242,14 @@ template<> const LocalBasis* IPField<DGelasticField,DgC0FunctionSpace<SVector3> 
       lb = this->getStressAndLocalBasis(ele,gaussnum,ws,stressMembrane,stressBending,h);
 
       // compute nalpha
-      nalpha[0][0] = h*stressMembrane[0];
-      nalpha[0][1] = nalpha[1][0] = h*stressMembrane[3];
-      nalpha[1][1] = h*stressMembrane[1];
+      nalpha(0,0) = h*stressMembrane[0];
+      nalpha(0,1) = nalpha(1,0) = h*stressMembrane[3];
+      nalpha(1,1) = h*stressMembrane[1];
       // compute malpha
       double hcubdiv12 = h*h*h/12.;
-      malpha[0][0] = hcubdiv12*stressBending[0];
-      malpha[0][1] = malpha[1][0] = hcubdiv12*stressBending[3];
-      malpha[1][1] = hcubdiv12*stressBending[1];
+      malpha(0,0) = hcubdiv12*stressBending[0];
+      malpha(0,1) = malpha(1,0) = hcubdiv12*stressBending[3];
+      malpha(1,1) = hcubdiv12*stressBending[1];
       return lb;
     }
     else if((et == SolElementType::PlatePlaneStressWTI) or (et == SolElementType::PlatePlaneStressWF)){
@@ -261,14 +261,14 @@ template<> const LocalBasis* IPField<DGelasticField,DgC0FunctionSpace<SVector3> 
       double h = zsimp[msize-1]-zsimp[0];
       temp.resize(msize);
       for(int i=0;i<msize;i++) temp[i]=stress[i][0]; // retrieve component change this ?? TODO
-      nalpha[0][0] = SimpsonIntegration(temp,h);
-      malpha[0][0] = SimpsonIntegration(temp,zsimp);
+      nalpha(0,0) = SimpsonIntegration(temp,h);
+      malpha(0,0) = SimpsonIntegration(temp,zsimp);
       for(int i=0;i<msize; i++) temp[i]=stress[i][3];
-      nalpha[0][1] = nalpha[1][0] = SimpsonIntegration(temp,h);
-      malpha[0][1] = malpha[1][0] = SimpsonIntegration(temp,zsimp);
+      nalpha(0,1) = nalpha(1,0) = SimpsonIntegration(temp,h);
+      malpha(0,1) = malpha(1,0) = SimpsonIntegration(temp,zsimp);
       for(int i=0;i<msize; i++) temp[i]=stress[i][1];
-      nalpha[1][1] = SimpsonIntegration(temp,h);
-      malpha[1][1] = SimpsonIntegration(temp,zsimp);
+      nalpha(1,1) = SimpsonIntegration(temp,h);
+      malpha(1,1) = SimpsonIntegration(temp,zsimp);
       return lb;
     }
     else{
@@ -280,44 +280,42 @@ template<> const LocalBasis* IPField<DGelasticField,DgC0FunctionSpace<SVector3> 
 template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getStressReduction(MInterfaceElement *iele, const int gaussnum,
                                                                                          const int numOfGaussPoint,
                                                                                          SolElementType::eltype et, IPState::whichState ws,
-                                                                                         std::vector<SVector3> &nhatmean){
+                                                                                         reductionElement &nhatmean){
   if(et == SolElementType::PlatePlaneStress){
     double stressMembrane[6];
     double stressBending[6];
     double h;
     const LocalBasis *lb;
-    std::vector<SVector3> nalpha, nhat;
-    nalpha.resize(2); nhat.resize(2);
+    reductionElement nalpha, nhat;
 
     // minus element
     lb = this->getStressAndLocalBasis(iele,gaussnum,ws,stressMembrane,stressBending,h);
     // nalpha
-    nalpha[0][0] = h*stressMembrane[0];
-    nalpha[0][1] = nalpha[1][0] = h*stressMembrane[3];
-    nalpha[1][1] = h*stressMembrane[1];
+    nalpha(0,0) = h*stressMembrane[0];
+    nalpha(0,1) = nalpha(1,0) = h*stressMembrane[3];
+    nalpha(1,1) = h*stressMembrane[1];
     // hat operation and store in nhatmean
     stressReductionHat(nalpha,lb,nhatmean);
 
     // plus element
     lb = this->getStressAndLocalBasis(iele,gaussnum+numOfGaussPoint,ws,stressMembrane,stressBending,h);
     // nalpha_p
-    nalpha[0][0] = h*stressMembrane[0];
-    nalpha[0][1] = nalpha[1][0] = h*stressMembrane[3];
-    nalpha[1][1] = h*stressMembrane[1];
+    nalpha(0,0) = h*stressMembrane[0];
+    nalpha(0,1) = nalpha(1,0) = h*stressMembrane[3];
+    nalpha(1,1) = h*stressMembrane[1];
     // hat operation
     stressReductionHat(nalpha,lb,nhat);
 
     // mean
     for(int i=0;i<2;i++)
       for(int j=0;j<3;j++){
-        nhatmean[i][j] += nhat[i][j];
-        nhatmean[i][j]*=0.5;
+        nhatmean(i,j) += nhat(i,j);
+        nhatmean(i,j)*=0.5;
       }
   }
   else if(et == SolElementType::PlatePlaneStressWTI){
 
-    std::vector<SVector3> nalpha,nhat;
-    nalpha.resize(2), nhat.resize(2);
+    reductionElement nalpha,nhat;
     const LocalBasis *lb;
     std::vector<double> temp;
     std::vector<tab6> stress ;
@@ -329,11 +327,11 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getStressR
     double h = hsimp[msize-1]-hsimp[0];
     temp.resize(msize);
     for(int i=0;i<msize;i++) temp[i]=stress[i][0]; // retrieve component change this ?? TODO
-    nalpha[0][0] = SimpsonIntegration(temp,h);
+    nalpha(0,0) = SimpsonIntegration(temp,h);
     for(int i=0;i<msize;i++) temp[i]=stress[i][3];
-    nalpha[0][1] = nalpha[1][0] = SimpsonIntegration(temp,h);
+    nalpha(0,1) = nalpha(1,0) = SimpsonIntegration(temp,h);
     for(int i=0;i<msize;i++) temp[i]=stress[i][1];
-    nalpha[1][1] = SimpsonIntegration(temp,h);
+    nalpha(1,1) = SimpsonIntegration(temp,h);
     // hat operation and store in nhatmean
     stressReductionHat(nalpha,lb,nhatmean);
 
@@ -343,18 +341,18 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getStressR
     h = hsimp[msize-1]-hsimp[0];
     temp.resize(msize);
     for(int i=0;i<msize;i++) temp[i]=stress[i][0]; // retrieve component change this ?? TODO
-    nalpha[0][0] = SimpsonIntegration(temp,h);
+    nalpha(0,0) = SimpsonIntegration(temp,h);
     for(int i=0;i<msize;i++) temp[i]=stress[i][3];
-    nalpha[0][1] = nalpha[1][0] = SimpsonIntegration(temp,h);
+    nalpha(0,1) = nalpha(1,0) = SimpsonIntegration(temp,h);
     for(int i=0;i<msize;i++) temp[i]=stress[i][1];
-    nalpha[1][1] = SimpsonIntegration(temp,h);
+    nalpha(1,1) = SimpsonIntegration(temp,h);
     // hat operation
     stressReductionHat(nalpha,lb,nhat);
     // mean
     for(int i=0;i<2;i++)
       for(int j=0;j<3;j++){
-        nhatmean[i][j] += nhat[i][j];
-        nhatmean[i][j]*=0.5;
+        nhatmean(i,j) += nhat(i,j);
+        nhatmean(i,j)*=0.5;
       }
 
   }
@@ -364,22 +362,21 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getStressR
 template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getMomentReduction(MInterfaceElement *iele, const int gaussnum,
                                                                                          const int numOfGaussPoint,
                                                                                          SolElementType::eltype et, IPState::whichState ws,
-                                                                                         std::vector<SVector3> &mhatmean){
+                                                                                         reductionElement &mhatmean){
   if(et == SolElementType::PlatePlaneStress){
     double stressMembrane[6];
     double stressBending[6];
     double h;
     const LocalBasis *lb;
-    std::vector<SVector3> malpha, mhat;
-    malpha.resize(2); mhat.resize(2);
+    reductionElement malpha, mhat;
 
     // minus element
     lb = this->getStressAndLocalBasis(iele,gaussnum,ws,stressMembrane,stressBending,h);
     // malpha_m
     double hcubdiv12 = h*h*h/12.;
-    malpha[0][0] = hcubdiv12*stressBending[0];
-    malpha[0][1] = malpha[1][0] = hcubdiv12*stressBending[3];
-    malpha[1][1] = hcubdiv12*stressBending[1];
+    malpha(0,0) = hcubdiv12*stressBending[0];
+    malpha(0,1) = malpha(1,0) = hcubdiv12*stressBending[3];
+    malpha(1,1) = hcubdiv12*stressBending[1];
     // hat operation and store in mhatmean
     stressReductionHat(malpha,lb,mhatmean);
 
@@ -387,23 +384,22 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getMomentR
     lb = this->getStressAndLocalBasis(iele,gaussnum+numOfGaussPoint,ws,stressMembrane,stressBending,h);
     // nalpha_p
     hcubdiv12 = h*h*h/12.;
-    malpha[0][0] = hcubdiv12*stressBending[0];
-    malpha[0][1] = malpha[1][0] = hcubdiv12*stressBending[3];
-    malpha[1][1] = hcubdiv12*stressBending[1];
+    malpha(0,0) = hcubdiv12*stressBending[0];
+    malpha(0,1) = malpha(1,0) = hcubdiv12*stressBending[3];
+    malpha(1,1) = hcubdiv12*stressBending[1];
     // hat operation
     stressReductionHat(malpha,lb,mhat);
 
     // mean
     for(int i=0;i<2;i++)
       for(int j=0;j<3;j++){
-        mhatmean[i][j] += mhat[i][j];
-        mhatmean[i][j]*=0.5;
+        mhatmean(i,j) += mhat(i,j);
+        mhatmean(i,j)*=0.5;
       }
   }
   else if(et == SolElementType::PlatePlaneStressWTI){
 
-    std::vector<SVector3> malpha,mhat;
-    malpha.resize(2), mhat.resize(2);
+    reductionElement malpha,mhat;
     LocalBasis *lb;
     std::vector<double> temp;
     std::vector<tab6> stress ;
@@ -414,11 +410,11 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getMomentR
     int msize = hsimp.size();
     temp.resize(msize);
     for(int i=0;i<msize;i++) temp[i]=stress[i][0]; // retrieve component change this ?? TODO
-    malpha[0][0] = SimpsonIntegration(temp,hsimp);
+    malpha(0,0) = SimpsonIntegration(temp,hsimp);
     for(int i=0;i<msize;i++) temp[i]=stress[i][3];
-    malpha[0][1] = malpha[1][0] = SimpsonIntegration(temp,hsimp);
+    malpha(0,1) = malpha(1,0) = SimpsonIntegration(temp,hsimp);
     for(int i=0;i<msize;i++) temp[i]=stress[i][1];
-    malpha[1][1] = SimpsonIntegration(temp,hsimp);
+    malpha(1,1) = SimpsonIntegration(temp,hsimp);
     // hat operation and store in nhatmean
     stressReductionHat(malpha,lb,mhatmean);
 
@@ -427,18 +423,18 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getMomentR
     msize = hsimp.size();
     temp.resize(msize);
     for(int i=0;i<msize;i++) temp[i]=stress[i][0]; // retrieve component change this ?? TODO
-    malpha[0][0] = SimpsonIntegration(temp,hsimp);
+    malpha(0,0) = SimpsonIntegration(temp,hsimp);
     for(int i=0;i<msize;i++) temp[i]=stress[i][3];
-    malpha[0][1] = malpha[1][0] = SimpsonIntegration(temp,hsimp);
+    malpha(0,1) = malpha(1,0) = SimpsonIntegration(temp,hsimp);
     for(int i=0;i<msize;i++) temp[i]=stress[i][1];
-    malpha[1][1] = SimpsonIntegration(temp,hsimp);
+    malpha(1,1) = SimpsonIntegration(temp,hsimp);
     // hat operation
     stressReductionHat(malpha,lb,mhat);
     // mean
     for(int i=0;i<2;i++)
       for(int j=0;j<3;j++){
-        mhatmean[i][j] += mhat[i][j];
-        mhatmean[i][j]*=0.5;
+        mhatmean(i,j) += mhat(i,j);
+        mhatmean(i,j)*=0.5;
       }
 
   }
@@ -449,24 +445,23 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getMomentR
 template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getMomentReductionAndLocalBasis(MInterfaceElement *iele,
                                                                                          const int gaussnum,const int numOfGaussPoint,
                                                                                          SolElementType::eltype et, IPState::whichState ws,
-                                                                                         std::vector<SVector3> &mhatmean,
+                                                                                         reductionElement &mhatmean,
                                                                                          const LocalBasis* lbb[3]){
   if(et == SolElementType::PlatePlaneStress){
     double stressMembrane[6];
     double stressBending[6];
     double h;
     const LocalBasis *lb;
-    std::vector<SVector3> malpha, mhat;
-    malpha.resize(2); mhat.resize(2);
+    reductionElement malpha, mhat;
 
     // minus element
     this->getStressAndLocalBasis(iele,gaussnum,ws,stressMembrane,stressBending,h,lbb);
     lb = lbb[0];
     // malpha_m
     double hcubdiv12 = h*h*h/12.;
-    malpha[0][0] = hcubdiv12*stressBending[0];
-    malpha[0][1] = malpha[1][0] = hcubdiv12*stressBending[3];
-    malpha[1][1] = hcubdiv12*stressBending[1];
+    malpha(0,0) = hcubdiv12*stressBending[0];
+    malpha(0,1) = malpha(1,0) = hcubdiv12*stressBending[3];
+    malpha(1,1) = hcubdiv12*stressBending[1];
     // hat operation and store in mhatmean
     stressReductionHat(malpha,lb,mhatmean);
 
@@ -475,23 +470,22 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getMomentR
     lb = lbb[1];
     // nalpha_p
     hcubdiv12 = h*h*h/12.;
-    malpha[0][0] = hcubdiv12*stressBending[0];
-    malpha[0][1] = malpha[1][0] = hcubdiv12*stressBending[3];
-    malpha[1][1] = hcubdiv12*stressBending[1];
+    malpha(0,0) = hcubdiv12*stressBending[0];
+    malpha(0,1) = malpha(1,0) = hcubdiv12*stressBending[3];
+    malpha(1,1) = hcubdiv12*stressBending[1];
     // hat operation
     stressReductionHat(malpha,lb,mhat);
 
     // mean
     for(int i=0;i<2;i++)
       for(int j=0;j<3;j++){
-        mhatmean[i][j] += mhat[i][j];
-        mhatmean[i][j]*=0.5;
+        mhatmean(i,j) += mhat(i,j);
+        mhatmean(i,j)*=0.5;
       }
   }
   else if((et == SolElementType::PlatePlaneStressWTI)){
 
-    std::vector<SVector3> malpha,mhat;
-    malpha.resize(2), mhat.resize(2);
+    reductionElement malpha,mhat;
     const LocalBasis *lb;
     std::vector<double> temp;
     std::vector<tab6> stress ;
@@ -503,11 +497,11 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getMomentR
     int msize = hsimp.size();
     temp.resize(msize);
     for(int i=0;i<msize;i++) temp[i]=stress[i][0]; // retrieve component change this ?? TODO
-    malpha[0][0] = SimpsonIntegration(temp,hsimp);
+    malpha(0,0) = SimpsonIntegration(temp,hsimp);
     for(int i=0;i<msize;i++) temp[i]=stress[i][3];
-    malpha[0][1] = malpha[1][0] = SimpsonIntegration(temp,hsimp);
+    malpha(0,1) = malpha(1,0) = SimpsonIntegration(temp,hsimp);
     for(int i=0;i<msize;i++) temp[i]=stress[i][1];
-    malpha[1][1] = SimpsonIntegration(temp,hsimp);
+    malpha(1,1) = SimpsonIntegration(temp,hsimp);
     // hat operation and store in nhatmean
     stressReductionHat(malpha,lb,mhatmean);
 
@@ -517,18 +511,18 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getMomentR
     msize = hsimp.size();
     temp.resize(msize);
     for(int i=0;i<msize;i++) temp[i]=stress[i][0]; // retrieve component change this ?? TODO
-    malpha[0][0] = SimpsonIntegration(temp,hsimp);
+    malpha(0,0) = SimpsonIntegration(temp,hsimp);
     for(int i=0;i<msize;i++) temp[i]=stress[i][3];
-    malpha[0][1] = malpha[1][0] = SimpsonIntegration(temp,hsimp);
+    malpha(0,1) = malpha(1,0) = SimpsonIntegration(temp,hsimp);
     for(int i=0;i<msize;i++) temp[i]=stress[i][1];
-    malpha[1][1] = SimpsonIntegration(temp,hsimp);
+    malpha(1,1) = SimpsonIntegration(temp,hsimp);
     // hat operation
     stressReductionHat(malpha,lb,mhat);
     // mean
     for(int i=0;i<2;i++)
       for(int j=0;j<3;j++){
-        mhatmean[i][j] += mhat[i][j];
-        mhatmean[i][j]*=0.5;
+        mhatmean(i,j) += mhat(i,j);
+        mhatmean(i,j)*=0.5;
       }
 
   }
@@ -539,33 +533,31 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getMomentR
 template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getReductionAndLocalBasis(MInterfaceElement *iele,
                                                                                          const int gaussnum,const int numOfGaussPoint,
                                                                                          SolElementType::eltype et, IPState::whichState ws,
-                                                                                         std::vector<SVector3> &nhatmean,
-                                                                                         std::vector<SVector3> &mhatmean,
+                                                                                         reductionElement &nhatmean,
+                                                                                         reductionElement &mhatmean,
                                                                                          const LocalBasis* lbb[3]){
   if(et == SolElementType::PlatePlaneStress){
     double stressMembrane[6];
     double stressBending[6];
     double h;
     const LocalBasis *lb;
-    std::vector<SVector3> malpha, mhat;
-    malpha.resize(2); mhat.resize(2);
-    std::vector<SVector3> nalpha, nhat;
-    nalpha.resize(2); nhat.resize(2);
+    reductionElement malpha, mhat;
+    reductionElement nalpha, nhat;
 
     // minus element
     this->getStressAndLocalBasis(iele,gaussnum,ws,stressMembrane,stressBending,h,lbb);
     lb = lbb[0];
     // nalpha_m
-    nalpha[0][0] = h*stressMembrane[0];
-    nalpha[0][1] = nalpha[1][0] = h*stressMembrane[3];
-    nalpha[1][1] = h*stressMembrane[1];
+    nalpha(0,0) = h*stressMembrane[0];
+    nalpha(0,1) = nalpha(1,0) = h*stressMembrane[3];
+    nalpha(1,1) = h*stressMembrane[1];
     // hat operation and store in nhatmean
     stressReductionHat(nalpha,lb,nhatmean);
     // malpha_m
     double hcubdiv12 = h*h*h/12.;
-    malpha[0][0] = hcubdiv12*stressBending[0];
-    malpha[0][1] = malpha[1][0] = hcubdiv12*stressBending[3];
-    malpha[1][1] = hcubdiv12*stressBending[1];
+    malpha(0,0) = hcubdiv12*stressBending[0];
+    malpha(0,1) = malpha(1,0) = hcubdiv12*stressBending[3];
+    malpha(1,1) = hcubdiv12*stressBending[1];
     // hat operation and store in mhatmean
     stressReductionHat(malpha,lb,mhatmean);
 
@@ -573,34 +565,32 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getReducti
     lbb[1] = this->getStressAndLocalBasis(iele,gaussnum+numOfGaussPoint,ws,stressMembrane,stressBending,h);
     lb = lbb[1];
     // nalpha_p
-    nalpha[0][0] = h*stressMembrane[0];
-    nalpha[0][1] = nalpha[1][0] = h*stressMembrane[3];
-    nalpha[1][1] = h*stressMembrane[1];
+    nalpha(0,0) = h*stressMembrane[0];
+    nalpha(0,1) = nalpha(1,0) = h*stressMembrane[3];
+    nalpha(1,1) = h*stressMembrane[1];
     // hat operation
     stressReductionHat(nalpha,lb,nhat);
     // malpha_p
     hcubdiv12 = h*h*h/12.;
-    malpha[0][0] = hcubdiv12*stressBending[0];
-    malpha[0][1] = malpha[1][0] = hcubdiv12*stressBending[3];
-    malpha[1][1] = hcubdiv12*stressBending[1];
+    malpha(0,0) = hcubdiv12*stressBending[0];
+    malpha(0,1) = malpha(1,0) = hcubdiv12*stressBending[3];
+    malpha(1,1) = hcubdiv12*stressBending[1];
     // hat operation
     stressReductionHat(malpha,lb,mhat);
 
     // mean
     for(int i=0;i<2;i++)
       for(int j=0;j<3;j++){
-        mhatmean[i][j] += mhat[i][j];
-        nhatmean[i][j] += nhat[i][j];
-        mhatmean[i][j]*=0.5;
-        nhatmean[i][j]*=0.5;
+        mhatmean(i,j) += mhat(i,j);
+        nhatmean(i,j) += nhat(i,j);
+        mhatmean(i,j)*=0.5;
+        nhatmean(i,j)*=0.5;
       }
   }
   else if((et == SolElementType::PlatePlaneStressWTI) or (et == SolElementType::PlatePlaneStressWF) ){
 
-    std::vector<SVector3> malpha,mhat;
-    malpha.resize(2), mhat.resize(2);
-    std::vector<SVector3> nalpha,nhat;
-    nalpha.resize(2), nhat.resize(2);
+    reductionElement malpha,mhat;
+    reductionElement nalpha,nhat;
     const LocalBasis *lb;
     std::vector<double> temp;
     std::vector<tab6> stress ;
@@ -614,14 +604,14 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getReducti
       double h = hsimp[msize-1]-hsimp[0];
       temp.resize(msize);
       for(int i=0;i<msize;i++) temp[i]=stress[i][0]; // retrieve component change this ?? TODO
-      nalpha[0][0] = SimpsonIntegration(temp,h);
-      malpha[0][0] = SimpsonIntegration(temp,hsimp);
+      nalpha(0,0) = SimpsonIntegration(temp,h);
+      malpha(0,0) = SimpsonIntegration(temp,hsimp);
       for(int i=0;i<msize;i++) temp[i]=stress[i][3];
-      nalpha[0][1] = nalpha[1][0] = SimpsonIntegration(temp,h);
-      malpha[0][1] = malpha[1][0] = SimpsonIntegration(temp,hsimp);
+      nalpha(0,1) = nalpha(1,0) = SimpsonIntegration(temp,h);
+      malpha(0,1) = malpha(1,0) = SimpsonIntegration(temp,hsimp);
       for(int i=0;i<msize;i++) temp[i]=stress[i][1];
-      nalpha[1][1] = SimpsonIntegration(temp,h);
-      malpha[1][1] = SimpsonIntegration(temp,hsimp);
+      nalpha(1,1) = SimpsonIntegration(temp,h);
+      malpha(1,1) = SimpsonIntegration(temp,hsimp);
       // hat operation and store in nhatmean
       stressReductionHat(nalpha,lb,nhatmean);
       // hat operation and store in nhatmean
@@ -633,24 +623,24 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getReducti
       msize = hsimp.size();
       temp.resize(msize);
       for(int i=0;i<msize;i++) temp[i]=stress[i][0]; // retrieve component change this ?? TODO
-      nalpha[0][0] = SimpsonIntegration(temp,h);
-      malpha[0][0] = SimpsonIntegration(temp,hsimp);
+      nalpha(0,0) = SimpsonIntegration(temp,h);
+      malpha(0,0) = SimpsonIntegration(temp,hsimp);
       for(int i=0;i<msize;i++) temp[i]=stress[i][3];
-      nalpha[0][1] = nalpha[1][0] = SimpsonIntegration(temp,h);
-      malpha[0][1] = malpha[1][0] = SimpsonIntegration(temp,hsimp);
+      nalpha(0,1) = nalpha(1,0) = SimpsonIntegration(temp,h);
+      malpha(0,1) = malpha(1,0) = SimpsonIntegration(temp,hsimp);
       for(int i=0;i<msize;i++) temp[i]=stress[i][1];
-      nalpha[1][1] = SimpsonIntegration(temp,h);
-      malpha[1][1] = SimpsonIntegration(temp,hsimp);
+      nalpha(1,1) = SimpsonIntegration(temp,h);
+      malpha(1,1) = SimpsonIntegration(temp,hsimp);
       // hat operation
       stressReductionHat(nalpha,lb,nhat);
       stressReductionHat(malpha,lb,mhat);
       // mean
       for(int i=0;i<2;i++)
         for(int j=0;j<3;j++){
-          nhatmean[i][j] += nhat[i][j];
-          nhatmean[i][j]*=0.5;
-          mhatmean[i][j] += mhat[i][j];
-          mhatmean[i][j]*=0.5;
+          nhatmean(i,j) += nhat(i,j);
+          nhatmean(i,j)*=0.5;
+          mhatmean(i,j) += mhat(i,j);
+          mhatmean(i,j)*=0.5;
         }
     }
     else{
@@ -663,37 +653,35 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getReducti
 template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getVirtualMomentReductionAndLocalBasis(MInterfaceElement *iele,
                                                                                          const int gaussnum,const int numOfGaussPoint,
                                                                                          SolElementType::eltype et, IPState::whichState ws,
-                                                                                         std::vector<SVector3> &mhatmean,
+                                                                                         reductionElement &mhatmean,
                                                                                          const LocalBasis* lbb[3]){
   if(et == SolElementType::PlatePlaneStress){
     double stressMembrane[6];
     double stressBending[6];
     double h;
     const LocalBasis *lb;
-    std::vector<SVector3> malpha;
-    malpha.resize(2);
+    reductionElement malpha;
 
     // minus element
     this->getStressAndLocalBasis(iele,gaussnum,ws,stressMembrane,stressBending,h,lbb);
     lb = lbb[0];
     // malpha_m
     double hcubdiv12 = h*h*h/12.;
-    malpha[0][0] = hcubdiv12*stressBending[0];
-    malpha[0][1] = malpha[1][0] = hcubdiv12*stressBending[3];
-    malpha[1][1] = hcubdiv12*stressBending[1];
+    malpha(0,0) = hcubdiv12*stressBending[0];
+    malpha(0,1) = malpha(1,0) = hcubdiv12*stressBending[3];
+    malpha(1,1) = hcubdiv12*stressBending[1];
     // hat operation and store in mhatmean
     stressReductionHat(malpha,lb,mhatmean);
 
     // mean
     for(int i=0;i<2;i++)
       for(int j=0;j<3;j++){
-        mhatmean[i][j]*=0.5;
+        mhatmean(i,j)*=0.5;
       }
   }
   else if((et == SolElementType::PlatePlaneStressWTI) or (et == SolElementType::PlatePlaneStressWF)){
 
-    std::vector<SVector3> malpha;
-    malpha.resize(2);
+    reductionElement malpha;
     const LocalBasis *lb;
     std::vector<double> temp;
     std::vector<tab6> stress ;
@@ -705,18 +693,18 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getVirtual
     int msize = hsimp.size();
     temp.resize(msize);
     for(int i=0;i<msize;i++) temp[i]=stress[i][0]; // retrieve component change this ?? TODO
-    malpha[0][0] = SimpsonIntegration(temp,hsimp);
+    malpha(0,0) = SimpsonIntegration(temp,hsimp);
     for(int i=0;i<msize;i++) temp[i]=stress[i][3];
-    malpha[0][1] = malpha[1][0] = SimpsonIntegration(temp,hsimp);
+    malpha(0,1) = malpha(1,0) = SimpsonIntegration(temp,hsimp);
     for(int i=0;i<msize;i++) temp[i]=stress[i][1];
-    malpha[1][1] = SimpsonIntegration(temp,hsimp);
+    malpha(1,1) = SimpsonIntegration(temp,hsimp);
     // hat operation and store in nhatmean
     stressReductionHat(malpha,lb,mhatmean);
 
     // mean
     for(int i=0;i<2;i++)
       for(int j=0;j<3;j++){
-        mhatmean[i][j]*=0.5;
+        mhatmean(i,j)*=0.5;
       }
 
   }
@@ -734,8 +722,8 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getReducti
                                                                                              const int nbFF_p,
                                                                                              const std::vector<TensorialTraits<double>::ValType> &Vals_p,
                                                                                              const std::vector<TensorialTraits<double>::GradType> &Grads_p,
-                                                                                             std::vector<SVector3> &nhatmean,
-                                                                                             std::vector<SVector3> &mhatmean) const
+                                                                                             reductionElement &nhatmean,
+                                                                                             reductionElement &mhatmean) const
 {
   // get ipv
   IPVariablePlateOIWF *ipv;

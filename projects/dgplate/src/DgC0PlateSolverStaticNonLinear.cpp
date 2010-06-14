@@ -314,6 +314,7 @@ void DgC0PlateSolver::solveSNL()
                                                            &Integ_Bulk, &Integ_Boundary, pModel,&ufield); // Field for GaussPoint
   ipf.compute1state(IPState::initial);
   ipf.copy(IPState::initial,IPState::previous); // if initial stress previous must be initialized before computation
+
   for(int ii=0;ii<numstep;ii++){
     curtime+=dt;
     printf("t= %lf on %lf\n",curtime,endtime);
