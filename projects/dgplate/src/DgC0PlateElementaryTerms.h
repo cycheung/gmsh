@@ -551,7 +551,7 @@ void compute_Deltat_tildeBound(const LocalBasis *lb, const std::vector<Tensorial
 }*/
 
 
-inline void computeFintFrac(const MInterfaceElement *iele, const std::vector<double> &disp, const LocalBasis *lbm,
+void computeFintFrac(const MInterfaceElement *iele, const std::vector<double> &disp, const LocalBasis *lbm,
                              const LocalBasis *lbp, const LocalBasis *lbs, const double weight, const int numgauss, const int npts,
                              const SolElementType::eltype elemtype, const IPField<DGelasticField,DgC0FunctionSpace<SVector3> > *ipf,
                              const int nbFF_m, const std::vector<TensorialTraits<double>::ValType> &Vals_m,
@@ -564,13 +564,13 @@ inline void computeFintFrac(const MInterfaceElement *iele, const std::vector<dou
   reductionElement nhatmean;
   reductionElement mhatmean;
   ipf->getReductionFracture(iele,numgauss,npts,elemtype,disp,nbFF_m,nbdof_m,Vals_m,Grads_m,nbFF_p,Vals_p,Grads_p,nhatmean,mhatmean);
-
   double wJ = weight*lbs->getJacobian();
   // Compute of Deltat_tilde
   compute_Deltat_tilde(lbp,Grads_p,nbFF_p,Deltat_p);
   compute_Deltat_tilde(lbm,Grads_m,nbFF_m,Deltat_m);
 
   // Assemblage
+  // m^alpha
   double dt[3];
   for(int alpha=0;alpha<2;alpha++){
     SVector3 malpha = mhatmean(alpha,0)*lbs->getphi0(0) + mhatmean(alpha,1)*lbs->getphi0(1);
@@ -584,6 +584,16 @@ inline void computeFintFrac(const MInterfaceElement *iele, const std::vector<dou
       for(int k=0;k<3;k++)
         m(j+k*nbFF_p+nbdof_m)+= (wJ*dt[k]*(-scaldot(lbs->getphi0(1),lbs->getphi0(alpha))));
     }
+  }
+  // n^alpha (TODO regroup with malpha)
+  for(int alpha=0;alpha<2;alpha++){
+    SVector3 nalpha = nhatmean(alpha,0) * lbs->getphi0(0) + nhatmean(alpha,1)*lbs->getphi0(1);
+    for(int j=0;j<nbFF_m;j++)
+      for(int k=0;k<3;k++)
+        m(j+k*nbFF_m)+=-(wJ*nalpha(k)*Vals_m[j]*(-scaldot(lbs->getphi0(1),lbs->getphi0(alpha))));
+    for(int j=0;j<nbFF_p;j++)
+      for(int k=0;k<3;k++)
+        m(j+k*nbFF_p+nbdof_m)+=(wJ*nalpha(k)*Vals_p[j]*(-scaldot(lbs->getphi0(1),lbs->getphi0(alpha))));
   }
 };
 #endif //DGC0PLATEELEMENTARYTERMS_H_

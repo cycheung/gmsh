@@ -231,36 +231,36 @@ void DgC0PlateSolver::NewtonRaphson(linearSystem<double> *lsys, dofManager<doubl
 // For now no initial displacement
 void DgC0PlateSolver::solveSNL()
 {
-  printf("SNL Data : nstep =%d endtime=%f\n",this->getNumStep(),this->getEndTime());
+  Msg::Info("SNL Data : nstep =%d endtime=%f",this->getNumStep(),this->getEndTime());
 
   // Select the solver for linear system Ax=b (KDeltau = Fext-Fint)
   linearSystem<double> *lsys;
   if(DgC0PlateSolver::whatSolver == Taucs){
     #if defined(HAVE_TAUCS)
       lsys = new linearSystemCSRTaucs<double>;
-      printf("Taucs is chosen to solve\n");
+      Msg::Info("Taucs is chosen to solve\n");
     #else
       lsys = new linearSystemGmm<double>;
       lsys = dynamic_cast<linearSystemGmm<double>*>(lsys);
       dynamic_cast<linearSystemGmm<double>*>(lsys)->setNoisy(2);
-      printf("Taucs is not installed\n Gmm is chosen to solve\n");
+      Msg::Error("Taucs is not installed\n Gmm is chosen to solve\n");
     #endif
   }
   else if(DgC0PlateSolver::whatSolver == Petsc){
     #if defined(HAVE_PETSC)
       lsys = new linearSystemPETSc<double>;
-      printf("PETSc is chosen to solve\n");
+      Msg::Info("PETSc is chosen to solve\n");
     #else
       lsys = new linearSystemGmm<double>;
       lsys = dynamic_cast<linearSystemGmm<double>*>(lsys);
       dynamic_cast<linearSystemGmm<double>*>(lsys)->setNoisy(2);
-      printf("PETSc is not installed\n Gmm is chosen to solve\n");
+      Msg::Error("PETSc is not installed\n Gmm is chosen to solve\n");
     #endif
   }
   else{
     lsys = new linearSystemGmm<double>;
     dynamic_cast<linearSystemGmm<double>*>(lsys)->setNoisy(2);
-    printf("Gmm is chosen to solve\n");
+    Msg::Info("Gmm is chosen to solve\n");
   }
 
   // Creation of dof manager. The Dof where the displacement is prescribed are fixe to zero
@@ -276,7 +276,6 @@ void DgC0PlateSolver::solveSNL()
   // numbered afterwards
 
   // ATTENTION The BC must be rewrite to take into account different fields (CG/DG and fullDG field for exemple)
-  std::cout <<  "Dirichlet BC"<< std::endl;
   std::vector<MInterfaceElement*> vinter;
   pModel->getVirtualInterface(vinter); // vector needed to impose boundary condition for fullDg formulation
   std::vector<MInterfaceElement*> vinternalInterface;
@@ -364,194 +363,27 @@ void DgC0PlateSolver::solveSNL()
       fclose(fp);
     }
 
-    // write M(Dr) curve
+    // write M(Dr) and N(Dun) curves
 /*    int ngauss = 4;
     int numinter = 15;
-    double M, dr,delta;
+    double M, dr,delta,N,du;
     for(int i=0;i<ngauss;i++){
-      ipf.getData(numinter,i,elasticFields[0].getMaterialLaw(),M,dr,delta);
+      ipf.getData(numinter,i,elasticFields[0].getMaterialLaw(),N,M,du,dr,delta);
       std::ostringstream oss;
       oss << i;
       std::string s = oss.str();
       std::string s1("MDelta");
+      std::string ss1("NDelta");
       std::string s2(".csv");
       std::string fileName  = s1+s+s2;
+      std::string fN2 = ss1+s+s2;
       FILE *fp = fopen(fileName.c_str(), "a");
       fprintf(fp,"%lf;%lf;%lf;%lf\n",curtime,delta,dr,M);
       fclose(fp);
+      fp = fopen(fN2.c_str(), "a");
+      fprintf(fp,"%lf;%lf;%lf;%lf\n",curtime,delta,du,N);
+      fclose(fp);
     }*/
-
-    // write f(u) curve
-/*    double Fint = 0.;
-    double nodes[4];
-    int elemm = 4;
-    int elemp = 4;
-    int intere1 = 38;
-    int intere2 = 12;
-    nodes[0] = 1; nodes[1] = 4; nodes[2] = 53; nodes[3] = 54;
-    IsotropicElasticForceBulkTermC0Plate Eterm(*LagSpace,elasticFields[0]._E,elasticFields[0]._nu,
-                                               elasticFields[0]._h,elasticFields[0].getFormulation(),&ufield,
-                                               &ipf,elasticFields[0].getSolElemType(),false);
-    // Initialization of elementary  interface terms in function of the field and space
-    IsotropicElasticForceInterfaceTermC0Plate IEterm(*LagSpace,elasticFields[0]._E,elasticFields[0]._nu,
-                                                     elasticFields[0]._beta1,elasticFields[0]._beta2,
-                                                     elasticFields[0]._beta3,elasticFields[0]._h,
-                                                     elasticFields[0].getFormulation(),&ufield,
-                                                     &ipf,elasticFields[0].getSolElemType(),false);
-
-    IsotropicElasticForceVirtualInterfaceTermC0Plate VIEterm(*LagSpace,elasticFields[0]._E,elasticFields[0]._nu,
-                                                     elasticFields[0]._beta1,elasticFields[0]._beta2,
-                                                     elasticFields[0]._beta3,elasticFields[0]._h,
-                                                     elasticFields[0].getFormulation(),&ufield,
-                                                     &ipf,elasticFields[0].getSolElemType(),false);
-
-    fullVector<double> force;
-    std::vector<double> udisp;
-    std::vector<int> nodenum;
-    IntPt *GP;
-    double ups;
-    for (groupOfElements::elementContainer::const_iterator it = elasticFields[0].g->begin(); it != elasticFields[0].g->end(); ++it){
-      MElement *e = *it;
-      udisp.resize(3*e->getNumVertices());
-      ufield.get(e,udisp);
-      for(int i=0;i<e->getNumVertices();i++)
-        if(e->getVertex(i)->getNum() == 5){
-          ups = udisp[2*e->getNumVertices()+i];
-         break;}
-    }
-    for (groupOfElements::elementContainer::const_iterator it = elasticFields[0].g->begin(); it != elasticFields[0].g->end(); ++it){
-      MElement *e = *it;
-      if(e->getNum()==elemm){
-        force.resize(3*e->getNumVertices());
-        force.scale(0.);
-        udisp.resize(3*e->getNumVertices());
-        ufield.get(e,udisp);
-        int npts = Integ_Bulk.getIntPoints(e,&GP);
-        Eterm.get(e,npts,GP,force);
-        //for(int ji=0;ji<3*e->getNumVertices();ji++) printf ("%lf\n",force(ji));
-        for(int i=0;i<e->getNumVertices();i++)
-          if(e->getVertex(i)->getNum() == nodes[0] or e->getVertex(i)->getNum() == nodes[1] or e->getVertex(i)->getNum() == nodes[2] or e->getVertex(i)->getNum() == nodes[3] ){
-            Fint += force(2*e->getNumVertices()+i);
-            //if(e->getVertex(i)->getNum() == nodes[0])
-            //  ups = udisp[2*e->getNumVertices()+i];
-          }
-        break;
-      }
-    }
-    for(std::vector<MInterfaceElement*>::iterator it = elasticFields[0].gib.begin(); it != elasticFields[0].gib.end();++it){
-      MInterfaceElement *ie = *it;
-      if(ie->getNum() == intere1 or ie->getNum() == intere2){
-        int ndofm = 3*ie->getElem(0)->getNumVertices();
-        int ndofp = 3*ie->getElem(1)->getNumVertices();
-        force.resize(ndofm+ndofp);
-        force.scale(0.);
-        int npts = Integ_Boundary.getIntPoints(ie,&GP);
-        VIEterm.get(ie,npts,GP,force);
-        //for(int ji=0;ji<ndofm+ndofp;ji++) printf ("%lf\n",force(ji));
-        MElement *e = ie->getElem(0);
-        for(int i=0;i<e->getNumVertices();i++)
-          if(e->getVertex(i)->getNum() == nodes[0] or e->getVertex(i)->getNum() == nodes[1] or e->getVertex(i)->getNum() == nodes[2] or e->getVertex(i)->getNum() == nodes[3] )
-          {
-            Fint += force(2*e->getNumVertices()+i);
-          }
-
-        break;
-      }
-    }
-    for(std::vector<MInterfaceElement*>::iterator it = elasticFields[0].gi.begin(); it != elasticFields[0].gi.end();++it){
-      MInterfaceElement *ie = *it;
-      if(ie->getNum() == intere1 or ie->getNum() == intere2){
-        int ndofm = 3*ie->getElem(0)->getNumVertices();
-        int ndofp = 3*ie->getElem(1)->getNumVertices();
-        force.resize(ndofm+ndofp);
-        force.scale(0.);
-        int npts = Integ_Boundary.getIntPoints(ie,&GP);
-        IEterm.get(ie,npts,GP,force);
-        //for(int ji=0;ji<ndofm+ndofp;ji++) printf ("%lf\n",force(ji));
-        MElement *e = ie->getElem(1);
-        for(int i=0;i<e->getNumVertices();i++)
-          if(e->getVertex(i)->getNum() == nodes[0] or e->getVertex(i)->getNum() == nodes[1] or e->getVertex(i)->getNum() == nodes[2] or e->getVertex(i)->getNum() == nodes[3] )
-          {
-            Fint += force(2*e->getNumVertices()+i+ndofm);
-          }
-
-        break;
-      }
-    }*/
-
-
-/*    double Fint = 0.;
-    double nodes[3];
-    int elemm = 16;
-    int elemp = 16;
-    int intere = 41;
-    nodes[0] = 1; nodes[1] = 4; nodes[2] = 28;
-    IsotropicElasticForceBulkTermC0Plate Eterm(*LagSpace,elasticFields[0]._E,elasticFields[0]._nu,
-                                               elasticFields[0]._h,elasticFields[0].getFormulation(),&ufield,
-                                               &ipf,elasticFields[0].getSolElemType(),false);
-    // Initialization of elementary  interface terms in function of the field and space
-    IsotropicElasticForceVirtualInterfaceTermC0Plate IEterm(*LagSpace,elasticFields[0]._E,elasticFields[0]._nu,
-                                                     elasticFields[0]._beta1,elasticFields[0]._beta2,
-                                                     elasticFields[0]._beta3,elasticFields[0]._h,
-                                                     elasticFields[0].getFormulation(),&ufield,
-                                                     &ipf,elasticFields[0].getSolElemType(),false);
-    fullVector<double> force;
-    std::vector<double> udisp;
-    std::vector<int> nodenum;
-    IntPt *GP;
-    double ups;
-    for (groupOfElements::elementContainer::const_iterator it = elasticFields[0].g->begin(); it != elasticFields[0].g->end(); ++it){
-      MElement *e = *it;
-      udisp.resize(3*e->getNumVertices());
-      ufield.get(e,udisp);
-      for(int i=0;i<e->getNumVertices();i++)
-        if(e->getVertex(i)->getNum() == 2){
-          ups = udisp[2*e->getNumVertices()+i];
-         break;}
-    }
-
-    for (groupOfElements::elementContainer::const_iterator it = elasticFields[0].g->begin(); it != elasticFields[0].g->end(); ++it){
-      MElement *e = *it;
-      if(e->getNum()==elemm){
-        force.resize(3*e->getNumVertices());
-        force.scale(0.);
-        udisp.resize(3*e->getNumVertices());
-        ufield.get(e,udisp);
-        int npts = Integ_Bulk.getIntPoints(e,&GP);
-        Eterm.get(e,npts,GP,force);
-        //for(int i=0;i<3*e->getNumVertices();i++) printf ("%lf\n",force(i));
-        for(int i=0;i<e->getNumVertices();i++)
-          if(e->getVertex(i)->getNum() == nodes[0]){// or e->getVertex(i)->getNum() == nodes[1] or e->getVertex(i)->getNum() == nodes[2] or e->getVertex(i)->getNum() == nodes[3] ){
-            Fint += force(2*e->getNumVertices()+i);
-            printf("%d %d %d %lf\n",e->getNum(),i,e->getVertex(i)->getNum(), force(2*e->getNumVertices()+i));
-            //if(e->getVertex(i)->getNum() == nodes[0])
-              //ups = udisp[2*e->getNumVertices()+i];
-          }
-        break;
-      }
-    }
-    for(std::vector<MInterfaceElement*>::iterator it = elasticFields[0].gib.begin(); it != elasticFields[0].gib.end();++it){
-      MInterfaceElement *ie = *it;
-      if(ie->getNum() == intere){
-        int ndofm = 3*ie->getElem(0)->getNumVertices();
-        int ndofp = 3*ie->getElem(1)->getNumVertices();
-        force.resize(ndofm+ndofp);
-        force.scale(0.);
-        int npts = Integ_Boundary.getIntPoints(ie,&GP);
-        IEterm.get(ie,npts,GP,force);
-        MElement *e = ie->getElem(0);
-        for(int i=0;i<e->getNumVertices();i++)
-          if(e->getVertex(i)->getNum() == nodes[0]) // or e->getVertex(i)->getNum() == nodes[1] or e->getVertex(i)->getNum() == nodes[2] or e->getVertex(i)->getNum() == nodes[3] )
-            {Fint += force(2*e->getNumVertices()+i);
-            printf("JJJJNnter %d %d %d %lf\n",e->getNum(),i,e->getVertex(i)->getNum(), force(2*e->getNumVertices()+i));}
-        break;
-      }
-    }*/
-
-
-/*    FILE *fp  = fopen("force.csv", "a");
-    fprintf(fp,"%lf;%lf;%lf\n",curtime,ups,Fint);
-    fclose(fp);*/
 
     // next step for ipvariable
     ipf.nextStep();

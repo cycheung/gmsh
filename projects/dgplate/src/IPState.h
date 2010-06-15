@@ -265,7 +265,7 @@ class IPVariablePlateOIWF : public IPVariablePlateWithThicknessIntegrationOI{
   // Add some variables use in case of fracture
   reductionElement n0, m0;
   bool broken;
-  double ujump, rjump, ujump0, rjump0, delta, deltac, delta0, deltamax, sigmac, beta;
+  double unjump, rjump, unjump0, rjump0, delta, deltac, delta0, deltamax, sigmac, beta;
 
  public :
    IPVariablePlateOIWF(const short int numsimp,
@@ -278,8 +278,8 @@ class IPVariablePlateOIWF : public IPVariablePlateWithThicknessIntegrationOI{
       n0=source.n0;
       m0=source.m0;
       broken = source.broken;
-      ujump = source.ujump;
-      ujump0= source.ujump0;
+      unjump = source.unjump;
+      unjump0= source.unjump0;
       rjump = source.rjump;
       rjump0=source.rjump0;
       delta = source.delta;
@@ -294,8 +294,8 @@ class IPVariablePlateOIWF : public IPVariablePlateWithThicknessIntegrationOI{
       n0=source.n0;
       m0=source.m0;
       broken = source.broken;
-      ujump = source.ujump;
-      ujump0= source.ujump0;
+      unjump = source.unjump;
+      unjump0= source.unjump0;
       rjump = source.rjump;
       rjump0=source.rjump0;
       delta = source.delta;
@@ -307,54 +307,10 @@ class IPVariablePlateOIWF : public IPVariablePlateWithThicknessIntegrationOI{
       return *this;
     }
     void setBroken(const double svm, const double Gc, const reductionElement nalpha, const reductionElement malpha,
-                   const double du, const double dr[3])
-    {
-      if(!broken){ // initialize broken at this gauss point
-        double hdiv6 = this->getThickness()/6.;
-        n0 = nalpha;
-        m0 = malpha;
-        ujump0 = du;
-        ujump =0.;
-        rjump0 = dr[1];
-        rjump = 0.;
-        sigmac = svm;
-        delta = 0.;
-        deltac = 2*Gc/sigmac;
-        deltamax =0.;
-        double M0 = malpha(1,1);
-        double N0 = nalpha(1,1);
-        double m0abshdiv6;
-        if(M0>0) {m0abshdiv6 = M0*hdiv6; rjump0 = -rjump0;}
-        else m0abshdiv6 = -M0*hdiv6;
-        beta = m0abshdiv6/(m0abshdiv6+N0);
-        delta0 = beta*hdiv6*rjump0 + (1-beta)*ujump0;
-        broken = true;
-      }
-    }
+                   const double du[3], const double dr[3], const LocalBasis *lbs);
     void updatedeltamax(){if(delta>deltamax) deltamax = delta;}
-
-    void setFracture(const IPVariablePlateOIWF *ipvprev,const double ujump_, const double rjump_[3]){
-      n0 =ipvprev->n0;
-      m0 =ipvprev->m0;
-      ujump0 = ipvprev->ujump0;
-      rjump0 = ipvprev->rjump0;
-      sigmac = ipvprev->sigmac;
-      deltac = ipvprev->deltac;
-      delta0 = ipvprev->delta0;
-      deltamax = ipvprev->deltamax;
-      beta = ipvprev->beta;
-      broken = ipvprev->broken;
-      ujump = ujump_ - ujump0;
-      // tempory set rjump with respect of max(malpha)
-      if( m0(1,1)>0) rjump = -rjump_[1] - rjump0;
-      else rjump = rjump_[1] - rjump0;
-      double hdiv6 = this->getThickness()/6.;
-      delta = beta*hdiv6*rjump + (1-beta)*ujump;
-    }
-    double computeDelta(const SVector3 ujump_, const double rjump_[3]) const {
-      if(m0(1,1)>0) return (1-beta)*(ujump_[0]-ujump0) + beta*this->getThickness()/6.*(-rjump_[1]-rjump0);
-      else return (1-beta)*(ujump_[0]-ujump0) + beta*this->getThickness()/6.*(rjump_[1]-rjump0);
-    }
+    void setFracture(const IPVariablePlateOIWF *ipvprev,const double ujump_[3], const double rjump_[3], const LocalBasis *lbs);
+    double computeDelta(const SVector3 ujump_, const double rjump_[3], const LocalBasis *lbs) const;
     bool getBroken() const{return broken;}
     double getDelta() const{return delta;}
     double getDeltac() const{return deltac;}
@@ -362,6 +318,7 @@ class IPVariablePlateOIWF : public IPVariablePlateWithThicknessIntegrationOI{
     double getN0() const{return n0(1,1);}
     double getDeltamax() const{return deltamax;}
     double getDeltar() const{return rjump;}
+    double getDeltaunor() const{return unjump;}
 };
 
 class IPState{

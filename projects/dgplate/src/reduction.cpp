@@ -150,13 +150,12 @@ void displacementjump(const std::vector<double> &Val_m,const int n_m,const std::
     for(int j=0;j<n_p;j++)
       up(i)+=Val_p[j]*disp[j+i*n_p+3*n_m];
   }
-  //diff(up,um,ujump);
   ujump = up-um;
-
 }
 
 void displacementjump(const std::vector<double> &Val_m,const int n_m,const std::vector<double> &Val_p,
-                      const int n_p,const std::vector<double> &dispm, const std::vector<double> &dispp,SVector3 &ujump){
+                      const int n_p,const std::vector<double> &dispm,
+                      const std::vector<double> &dispp,SVector3 &ujump){
   SVector3 up(0.,0.,0.),um(0.,0.,0.);
   for(int i=0;i<3;i++){
     for(int j=0;j<n_m;j++)
@@ -164,7 +163,6 @@ void displacementjump(const std::vector<double> &Val_m,const int n_m,const std::
     for(int j=0;j<n_p;j++)
       up(i)+=Val_p[j]*dispp[j+i*n_p];
   }
-  //diff(up,um,ujump);
   ujump = up-um;
 }
 

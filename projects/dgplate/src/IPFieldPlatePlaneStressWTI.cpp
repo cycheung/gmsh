@@ -195,3 +195,73 @@ template<> double IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getVMPla
   }
   return svm;
 }
+
+
+ template<> const LocalBasis* IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getStressTensorWTI(MInterfaceElement *iele,
+                                                                                                       const IPState::whichState ws,
+                                                                                                       const int num,
+                                                                                                       const DGelasticField *elas,
+                                                                                                       reductionElement &stressTensor,
+                                                                                                       const int pos)
+{
+  if(num<10000){ // stressTensor at a Gauss Point
+    IPState* ips = (*_AIPS->getIPstate(iele->getNum()))[num];
+    IPVariablePlateWithThicknessIntegrationOI *ipv = dynamic_cast<IPVariablePlateWithThicknessIntegrationOI*>(ips->getState(ws));
+    // Stress in plate basis
+    double sa=ipv->getSigma(pos,component::xx), sb=ipv->getSigma(pos,component::yy), sc=0.;
+    double tab = ipv->getSigma(pos,component::xy), tac=0. , tbc=0.;
+    double sx,sy,txy,sz,txz,tyz;
+    const LocalBasis *lb = ipv->getLocalBasis();
+    // compute of stress for representation
+    stressTensor(0,0) = sa;//sa*lb->getphi0(0,0)*lb->getphi0(0,0)+2*tab*lb->getphi0(0,0)*lb->getphi0(0,1)+sb*lb->getphi0(0,1)*lb->getphi0(0,1);
+    stressTensor(0,1) = stressTensor(1,0) = tab;//stressTensor(1,0) = sa*lb->getphi0(0,0)*lb->getphi0(1,0)+tab*(lb->getphi0(0,0)*lb->getphi0(1,1)+lb->getphi0(0,1)*lb->getphi0(1,0))+sb*lb->getphi0(0,1)*lb->getphi0(1,1);
+    stressTensor(1,1) = sb;//sa*lb->getphi0(1,0)*lb->getphi0(1,0)+2*tab*(lb->getphi0(1,0)*lb->getphi0(1,1))+sb*lb->getphi0(1,1)*lb->getphi0(1,1);
+    return lb;
+  }
+  else{  // Particular value on element (max,min,mean)
+    // loop on IP point
+    stressTensor.setAll(0.);
+    IntPt *GP;
+    int npts = _intBound->getIntPoints(iele,&GP);
+    std::vector<IPState*> *vips = _AIPS->getIPstate(iele->getNum());
+    IPVariablePlateWithThicknessIntegrationOI *ipv;
+	for(int i=0;i<npts;i++){
+      IPState* ips = (*vips)[i];
+      ipv = dynamic_cast<IPVariablePlateWithThicknessIntegrationOI*>(ips->getState(ws));
+      // Stress in plate basis
+      double sa=ipv->getSigma(pos,component::xx), sb=ipv->getSigma(pos,component::yy), sc=0.;
+      double tab = ipv->getSigma(pos,component::xy), tac=0. , tbc=0.;
+      double sx,sy,txy,sz,txz,tyz;
+      LocalBasis *lb = ipv->getLocalBasis();
+      // compute of stress for representation
+      sx = sa*lb->getphi0(0,0)*lb->getphi0(0,0)+2*tab*lb->getphi0(0,0)*lb->getphi0(0,1)+sb*lb->getphi0(0,1)*lb->getphi0(0,1);
+      txy= sa*lb->getphi0(0,0)*lb->getphi0(1,0)+tab*(lb->getphi0(0,0)*lb->getphi0(1,1)+lb->getphi0(0,1)*lb->getphi0(1,0))+sb*lb->getphi0(0,1)*lb->getphi0(1,1);
+      sy = sa*lb->getphi0(1,0)*lb->getphi0(1,0)+2*tab*(lb->getphi0(1,0)*lb->getphi0(1,1))+sb*lb->getphi0(1,1)*lb->getphi0(1,1);
+      sz = txz = tyz =0.;
+      if(i==0){
+        stressTensor(0,0) = sa;
+        stressTensor(0,1) = stressTensor(1,0) = tab;
+        stressTensor(1,1) = sb;
+      }
+      else{
+        switch(num){
+          case IPField::max :
+            Msg::Error("Max on gauss point of stress tensor is not implemented");
+            break;
+          case IPField::min :
+            Msg::Error("Min on gauss point of stress tensor is not implemented");
+            break;
+          case IPField::mean :
+            stressTensor(0,0) += sa;
+            stressTensor(0,1) += tab;
+            stressTensor(1,1) += sb;
+            break;
+        }
+      }
+    }
+    if(num==IPField::mean)
+      for(int k=0;k<2;k++)
+        for(int kk=0;kk<2;kk++) stressTensor(k,kk)/=(double)npts;
+    return ipv->getLocalBasis();
+  }
+}

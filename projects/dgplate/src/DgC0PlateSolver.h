@@ -235,6 +235,8 @@ class DgC0PlateSolver
   virtual void addTheta(const int numphys);
   virtual void addDisp(std::string onwhat, const int numphys, const int comp, const double value);
   virtual void addForce(std::string onwhat, const int numphys, const double xval, const double yval, const double zval);
+  virtual void addIndepDisp(std::string onwhat, const int numphys, const int comp, const double value);
+  virtual void addIndepForce(std::string onwhat, const int numphys, const double xval, const double yval, const double zval);
   virtual void addArchivingEdgeForce(const int numphys, const int comp);
   virtual void addArchivingNodeDisplacement(const int num, const int comp);
   static void registerBindings(binding *b);

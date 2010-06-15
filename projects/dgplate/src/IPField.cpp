@@ -741,7 +741,7 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getReducti
   double rjump[3];
   displacementjump(Vals_m,nbFF_m,Vals_p,nbFF_p,disp,ujump);
   rotationjump(ipv->getLocalBasisOfInterface(),Grads_m,nbFF_m,nbdofm,ipv->getLocalBasis(),Grads_p,nbFF_p,ipvp->getLocalBasis(),disp,rjump);
-  double delta = ipv->computeDelta(ujump,rjump);
+  double delta = ipv->computeDelta(ujump,rjump,ipv->getLocalBasisOfInterface());
 
   // find elasticField (to know the law to use)
   bool flag=false;

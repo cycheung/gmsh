@@ -12,6 +12,13 @@
 #include"IPField.h"
 #include"IPState.h"
 
+static inline double scaldot(const SVector3 &a, const SVector3 &b){
+  double c=0.;
+  for(int i=0;i<3;i++)
+    c+= a[i]*b[i];
+  return c;
+}
+
 template<> void IPField<DGelasticField, DgC0FunctionSpace<SVector3> >::compute1statePlatePlaneStressWF(IPState::whichState ws,
                                                                                                         DGelasticField* ef){
   SVector3 val; // value of a vertex displacement
@@ -72,11 +79,11 @@ template<> void IPField<DGelasticField, DgC0FunctionSpace<SVector3> >::compute1s
         displacementjump(Valm,nbFFm,Valp,nbFFp,dispm,dispp,ujump);
         rotationjump(&lbs,Gradm,nbFFm,&lbm,Gradp,nbFFp,&lbp,dispm,dispp,rjump);
         IPVariablePlateOIWF *ipvprev = dynamic_cast<IPVariablePlateOIWF*>(ips->getState(IPState::previous));
-        ipv->setFracture(ipvprev,ujump[0],rjump);
+        ipv->setFracture(ipvprev,ujump,rjump,&lbs);
         ips = (*vips)[npts+j];
         ipvprev = dynamic_cast<IPVariablePlateOIWF*>(ips->getState(IPState::previous));
         ipv = dynamic_cast<IPVariablePlateOIWF*>(ips->getState(ws));
-        ipv->setFracture(ipvprev,ujump[0],rjump);
+        ipv->setFracture(ipvprev,ujump,rjump,&lbs);
       }
 
       // plus elem
@@ -152,4 +159,58 @@ template<> void IPField<DGelasticField, DgC0FunctionSpace<SVector3> >::compute1s
       Grads.clear(); Hessm.clear();
     }
   }
+}
+
+void IPVariablePlateOIWF::setBroken(const double svm, const double Gc, const reductionElement nalpha, const reductionElement malpha,
+                                     const double du[3], const double dr[3], const LocalBasis *lbs)
+{
+  if(!broken){ // initialize broken at this gauss point
+    double hdiv6 = this->getThickness()/6.;
+    n0 = nalpha;
+    m0 = malpha;
+    unjump0 = - scaldot(du,lbs->getphi0(1)); // minus because normal of LocalBasis of interface = - phi0,1
+    unjump =0.;
+    rjump0 = dr[1];
+    rjump = 0.;
+    sigmac = svm;
+    delta = 0.;
+    deltac = 2*Gc/sigmac;
+    deltamax =0.;
+    double M0 = malpha(1,1);
+    double N0 = nalpha(1,1);
+    double m0abshdiv6;
+    if(M0>0) {m0abshdiv6 = M0/hdiv6; rjump0 = -rjump0;}
+    else m0abshdiv6 = -M0/hdiv6;
+    beta = m0abshdiv6/(m0abshdiv6+N0);
+    delta0 = beta*hdiv6*rjump0 + (1-beta)*unjump0;
+    broken = true;
+  }
+}
+
+void IPVariablePlateOIWF::setFracture(const IPVariablePlateOIWF *ipvprev,const double ujump_[3], const double rjump_[3],
+                                      const LocalBasis *lbs)
+{
+  n0 =ipvprev->n0;
+  m0 =ipvprev->m0;
+  unjump0 = ipvprev->unjump0;
+  rjump0 = ipvprev->rjump0;
+  sigmac = ipvprev->sigmac;
+  deltac = ipvprev->deltac;
+  delta0 = ipvprev->delta0;
+  deltamax = ipvprev->deltamax;
+  beta = ipvprev->beta;
+  broken = ipvprev->broken;
+  unjump = - scaldot(ujump_,lbs->getphi0(1)) - unjump0; // minus because normal of LocalBasis of interface = - phi0,1
+  if( m0(1,1)>0) rjump = -rjump_[1] - rjump0;
+  else rjump = rjump_[1] - rjump0;
+  double hdiv6 = this->getThickness()/6.;
+  delta = beta*hdiv6*rjump + (1-beta)*unjump;
+}
+
+double IPVariablePlateOIWF::computeDelta(const SVector3 ujump_, const double rjump_[3], const LocalBasis *lbs) const
+{
+  // un
+  double unor = - scaldot(ujump_,lbs->getphi0(1)); // minus because normal of LocalBasis of interface = - phi0,1
+  if(m0(1,1)>0) return (1-beta)*(unor-unjump0) + beta*this->getThickness()/6.*(-rjump_[1]-rjump0);
+  else return (1-beta)*(unor-unjump0) + beta*this->getThickness()/6.*(rjump_[1]-rjump0);
 }

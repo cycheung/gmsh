@@ -96,6 +96,18 @@ void DgC0PlateSolver::readInputFile(const std::string fn)
       diri.onWhat=BoundaryCondition::ON_VERTEX;
       allDirichlet.push_back(diri);
     }
+    else if (!strcmp(what, "IndependentNodeDisplacement")){
+      double val;
+      int node, comp;
+      if(fscanf(f, "%d %d %lf", &node, &comp, &val) != 3) return;
+      dirichletBC diri;
+      diri.g = new groupOfElements (0, node);
+      diri._f= simpleFunctionTime<double>(val,false);
+      diri._comp=comp;
+      diri._tag=node;
+      diri.onWhat=BoundaryCondition::ON_VERTEX;
+      allDirichlet.push_back(diri);
+    }
     else if (!strcmp(what, "EdgeDisplacement")){
       double val;
       int edge, comp;
@@ -103,6 +115,18 @@ void DgC0PlateSolver::readInputFile(const std::string fn)
       dirichletBC diri;
       diri.g = new groupOfElements (1, edge);
       diri._f= simpleFunctionTime<double>(val);
+      diri._comp=comp;
+      diri._tag=edge;
+      diri.onWhat=BoundaryCondition::ON_EDGE;
+      allDirichlet.push_back(diri);
+    }
+    else if (!strcmp(what, "IndependentEdgeDisplacement")){
+      double val;
+      int edge, comp;
+      if(fscanf(f, "%d %d %lf", &edge, &comp, &val) != 3) return;
+      dirichletBC diri;
+      diri.g = new groupOfElements (1, edge);
+      diri._f= simpleFunctionTime<double>(val,false);
       diri._comp=comp;
       diri._tag=edge;
       diri.onWhat=BoundaryCondition::ON_EDGE;
@@ -120,6 +144,18 @@ void DgC0PlateSolver::readInputFile(const std::string fn)
       diri.onWhat=BoundaryCondition::ON_FACE;
       allDirichlet.push_back(diri);
     }
+    else if (!strcmp(what, "IndependentFaceDisplacement")){
+      double val;
+      int face, comp;
+      if(fscanf(f, "%d %d %lf", &face, &comp, &val) != 3) return;
+      dirichletBC diri;
+      diri.g = new groupOfElements (2, face);
+      diri._f= simpleFunctionTime<double>(val,false);
+      diri._comp=comp;
+      diri._tag=face;
+      diri.onWhat=BoundaryCondition::ON_FACE;
+      allDirichlet.push_back(diri);
+    }
     else if (!strcmp(what, "NodeForce")){
       double val1, val2, val3;
       int node;
@@ -127,6 +163,17 @@ void DgC0PlateSolver::readInputFile(const std::string fn)
       neumannBC neu;
       neu.g = new groupOfElements (0, node);
       neu._f= simpleFunctionTime<SVector3>(SVector3(val1, val2, val3));
+      neu._tag=node;
+      neu.onWhat=BoundaryCondition::ON_VERTEX;
+      allNeumann.push_back(neu);
+    }
+    else if (!strcmp(what, "IndependentNodeForce")){
+      double val1, val2, val3;
+      int node;
+      if(fscanf(f, "%d %lf %lf %lf", &node, &val1, &val2, &val3) != 4) return;
+      neumannBC neu;
+      neu.g = new groupOfElements (0, node);
+      neu._f= simpleFunctionTime<SVector3>(SVector3(val1, val2, val3),false);
       neu._tag=node;
       neu.onWhat=BoundaryCondition::ON_VERTEX;
       allNeumann.push_back(neu);
@@ -142,6 +189,17 @@ void DgC0PlateSolver::readInputFile(const std::string fn)
       neu.onWhat=BoundaryCondition::ON_EDGE;
       allNeumann.push_back(neu);
     }
+    else if (!strcmp(what, "IndependentEdgeForce")){
+      double val1, val2, val3;
+      int edge;
+      if(fscanf(f, "%d %lf %lf %lf", &edge, &val1, &val2, &val3) != 4) return;
+      neumannBC neu;
+      neu.g = new groupOfElements (1, edge);
+      neu._f= simpleFunctionTime<SVector3>(SVector3(val1, val2, val3),false);
+      neu._tag=edge;
+      neu.onWhat=BoundaryCondition::ON_EDGE;
+      allNeumann.push_back(neu);
+    }
     else if (!strcmp(what, "FaceForce")){
       double val1, val2, val3;
       int face;
@@ -153,6 +211,17 @@ void DgC0PlateSolver::readInputFile(const std::string fn)
       neu.onWhat=BoundaryCondition::ON_FACE;
       allNeumann.push_back(neu);
     }
+    else if (!strcmp(what, "IndependentFaceForce")){
+      double val1, val2, val3;
+      int face;
+      if(fscanf(f, "%d %lf %lf %lf", &face, &val1, &val2, &val3) != 4) return;
+      neumannBC neu;
+      neu.g = new groupOfElements (2, face);
+      neu._f= simpleFunctionTime<SVector3>(SVector3(val1, val2, val3),false);
+      neu._tag=face;
+      neu.onWhat=BoundaryCondition::ON_FACE;
+      allNeumann.push_back(neu);
+    }
     else if (!strcmp(what, "VolumeForce")){
       double val1, val2, val3;
       int volume;
@@ -160,6 +229,17 @@ void DgC0PlateSolver::readInputFile(const std::string fn)
       neumannBC neu;
       neu.g = new groupOfElements (3, volume);
       neu._f= simpleFunctionTime<SVector3>(SVector3(val1, val2, val3));
+      neu._tag=volume;
+      neu.onWhat=BoundaryCondition::ON_VOLUME;
+      allNeumann.push_back(neu);
+    }
+    else if (!strcmp(what, "IndependentVolumeForce")){
+      double val1, val2, val3;
+      int volume;
+      if(fscanf(f, "%d %lf %lf %lf", &volume, &val1, &val2, &val3) != 4) return;
+      neumannBC neu;
+      neu.g = new groupOfElements (3, volume);
+      neu._f= simpleFunctionTime<SVector3>(SVector3(val1, val2, val3),false);
       neu._tag=volume;
       neu.onWhat=BoundaryCondition::ON_VOLUME;
       allNeumann.push_back(neu);
@@ -510,6 +590,30 @@ void DgC0PlateSolver::addDisp(std::string onwhat, const int numphys, const int c
   allDirichlet.push_back(diri);
 }
 
+void DgC0PlateSolver::addIndepDisp(std::string onwhat, const int numphys, const int comp, const double value){
+  dirichletBC diri;
+  const std::string node("Node");
+  const std::string edge("Edge");
+  const std::string face("Face");
+  if(onwhat==node){
+    diri.g = new groupOfElements (0, numphys);
+    diri.onWhat=BoundaryCondition::ON_VERTEX;
+  }
+  else if(onwhat==edge){
+    diri.g = new groupOfElements (1, numphys);
+    diri.onWhat=BoundaryCondition::ON_EDGE;
+  }
+  else if(onwhat==face){
+    diri.g = new groupOfElements (2, numphys);
+    diri.onWhat=BoundaryCondition::ON_FACE;
+  }
+  else Msg::Error("Impossible to prescribe a displacement on a %s\n",onwhat.c_str());
+  diri._f= simpleFunctionTime<double>(value,false);
+  diri._comp=comp;
+  diri._tag=numphys;
+  allDirichlet.push_back(diri);
+}
+
 void DgC0PlateSolver::addForce(std::string onwhat, const int numphys, const double xval, const double yval, const double zval){
   neumannBC neu;
   const std::string node("Node");
@@ -537,6 +641,35 @@ void DgC0PlateSolver::addForce(std::string onwhat, const int numphys, const doub
   neu._tag=numphys;
   allNeumann.push_back(neu);
 }
+
+void DgC0PlateSolver::addIndepForce(std::string onwhat, const int numphys, const double xval, const double yval, const double zval){
+  neumannBC neu;
+  const std::string node("Node");
+  const std::string edge("Edge");
+  const std::string face("Face");
+  const std::string volume("Volume");
+  if(onwhat==node){
+    neu.g = new groupOfElements (0, numphys);
+    neu.onWhat=BoundaryCondition::ON_VERTEX;
+  }
+  else if(onwhat==edge){
+    neu.g = new groupOfElements (1, numphys);
+    neu.onWhat=BoundaryCondition::ON_EDGE;
+  }
+  else if(onwhat==face){
+    neu.g = new groupOfElements (2, numphys);
+    neu.onWhat=BoundaryCondition::ON_FACE;
+  }
+  else if(onwhat==volume){
+    neu.g = new groupOfElements (3, numphys);
+    neu.onWhat=BoundaryCondition::ON_VOLUME;
+  }
+  else  Msg::Error("Impossible to prescribe a force on a %s\n",onwhat.c_str());
+  neu._f= simpleFunctionTime<SVector3>(SVector3(xval, yval, zval),false);
+  neu._tag=numphys;
+  allNeumann.push_back(neu);
+}
+
 
 void DgC0PlateSolver::addArchivingEdgeForce(const int numphys, const int comp){
   // get the node of the edge
@@ -636,6 +769,12 @@ void DgC0PlateSolver::registerBindings(binding *b)
   cm = cb->addMethod("prescribedForce", &DgC0PlateSolver::addForce);
   cm->setArgNames("onwhat","numphys","xval","yval","zval",NULL);
   cm->setDescription("Add a prescribed force. First argument value (string) : Node, Edge, Face, Volume");
+  cm = cb->addMethod("independentPrescribedDisplacement", &DgC0PlateSolver::addIndepDisp);
+  cm->setArgNames("onwhat","numphys","comp","value",NULL);
+  cm->setDescription("Add a prescribed displacement independent of time. First argument value (string) : Node, Edge, Face");
+  cm = cb->addMethod("independentPrescribedForce", &DgC0PlateSolver::addIndepForce);
+  cm->setArgNames("onwhat","numphys","xval","yval","zval",NULL);
+  cm->setDescription("Add a prescribed force independent of time. First argument value (string) : Node, Edge, Face, Volume");
   cm = cb->addMethod("ArchivingEdgeForce", &DgC0PlateSolver::addArchivingEdgeForce);
   cm->setArgNames("numphys","comp",NULL);
   cm->setDescription("Archive an force on an edge. First argument is the physical number of the edge the second is the comp x=0 y=1 z=2");
