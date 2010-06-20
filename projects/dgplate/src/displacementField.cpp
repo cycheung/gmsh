@@ -204,7 +204,13 @@ void displacementField::archiving(const double time){
       std::ostringstream oss;
       oss << it->first;
       std::string s = oss.str();
-      std::string fname = "NodalDisplacement"+s+".csv";
+      // component of displacement
+      int field,comp,num;
+      DgC0PlateDof::getThreeIntsFromType(it->second.getType(),comp,field,num);
+      oss.str("");
+      oss << comp;
+      std::string s2 = oss.str();
+      std::string fname = "NodalDisplacement"+s+"comp"+s2+".csv";
       fp = fopen(fname.c_str(),"a");
       fprintf(fp,"%lf;%lf\n",time,u);
       fclose(fp);

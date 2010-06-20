@@ -21,6 +21,24 @@ inline void diaprod(const double a[3], const double b[3], double m[3][3]){
       m[i][j]=a[i]*b[j];
 }
 
+inline void diaprod(const double a[3], const SVector3 &b, double m[3][3]){
+  for(int i=0;i<3;i++)
+    for(int j=0;j<3;j++)
+      m[i][j]=a[i]*b[j];
+}
+
+inline void diaprod(const SVector3 &a, const double b[3], double m[3][3]){
+  for(int i=0;i<3;i++)
+    for(int j=0;j<3;j++)
+      m[i][j]=a[i]*b[j];
+}
+
+inline void diaprod(const SVector3 &a, const SVector3 &b, double m[3][3]){
+  for(int i=0;i<3;i++)
+    for(int j=0;j<3;j++)
+      m[i][j]=a[i]*b[j];
+}
+
 inline double scaldot(const double a[3],const SVector3 &b){
   double c=0.;
   for(int i=0;i<3;i++)
@@ -570,30 +588,21 @@ void computeFintFrac(const MInterfaceElement *iele, const std::vector<double> &d
   compute_Deltat_tilde(lbm,Grads_m,nbFF_m,Deltat_m);
 
   // Assemblage
-  // m^alpha
   double dt[3];
   for(int alpha=0;alpha<2;alpha++){
     SVector3 malpha = mhatmean(alpha,0)*lbs->getphi0(0) + mhatmean(alpha,1)*lbs->getphi0(1);
+    SVector3 nalpha = nhatmean(alpha,0) * lbs->getphi0(0) + nhatmean(alpha,1)*lbs->getphi0(1);
     for(int j=0;j<nbFF_m;j++){
       matTvectprod(Deltat_m[j],malpha,dt);
-      for(int k=0;k<3;k++)
-        m(j+k*nbFF_m)+= - (wJ*dt[k]*(-scaldot(lbs->getphi0(1),lbs->getphi0(alpha))));
+      for(int k=0;k<3;k++){
+        m(j+k*nbFF_m)-= wJ*(dt[k]+nalpha(k)*Vals_m[j])*(-scaldot(lbs->getphi0(1),lbs->getphi0(alpha)));
+      }
     }
     for(int j=0;j<nbFF_p;j++){
       matTvectprod(Deltat_p[j],malpha,dt);
       for(int k=0;k<3;k++)
-        m(j+k*nbFF_p+nbdof_m)+= (wJ*dt[k]*(-scaldot(lbs->getphi0(1),lbs->getphi0(alpha))));
+        m(j+k*nbFF_p+nbdof_m)+= wJ*(dt[k]+nalpha(k)*Vals_p[j])*(-scaldot(lbs->getphi0(1),lbs->getphi0(alpha)));
     }
-  }
-  // n^alpha (TODO regroup with malpha)
-  for(int alpha=0;alpha<2;alpha++){
-    SVector3 nalpha = nhatmean(alpha,0) * lbs->getphi0(0) + nhatmean(alpha,1)*lbs->getphi0(1);
-    for(int j=0;j<nbFF_m;j++)
-      for(int k=0;k<3;k++)
-        m(j+k*nbFF_m)+=-(wJ*nalpha(k)*Vals_m[j]*(-scaldot(lbs->getphi0(1),lbs->getphi0(alpha))));
-    for(int j=0;j<nbFF_p;j++)
-      for(int k=0;k<3;k++)
-        m(j+k*nbFF_p+nbdof_m)+=(wJ*nalpha(k)*Vals_p[j]*(-scaldot(lbs->getphi0(1),lbs->getphi0(alpha))));
   }
 };
 #endif //DGC0PLATEELEMENTARYTERMS_H_

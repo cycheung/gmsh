@@ -1,6 +1,8 @@
 MeshFile plate.msh
-//           physical   E     nu     h  Formulation(Cg/Dg=0 FullDg=1) Number of Simpson's points (odd)
-ElasticDomain 99        1.e6  0.3    0.1        1                                 3
+//                   num  E    nu
+ElasticPlaneStressLaw 1  1.e6  0.3
+//           physical   lawnum   h  Formulation(Cg/Dg=0 FullDg=1) NumberOfSimpson's points (odd)
+ElasticDomain 99        1       0.1        0                                  1                              3
 // Solver Gmm=0 (default) Taucs=1 PETSc=2 Scheme (0 = StaticLinear (default) 1 = StaticNonLinear)
 Solver 1 0
 StabilityParameters 10. 10. 10.

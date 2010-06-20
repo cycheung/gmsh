@@ -5,14 +5,13 @@
     data 
   ]]
 -- material law
-nfield =99 -- number of the field (physical number of surface)
+lawnum = 1
 E = 71.e9 -- Young's modulus
 nu = 0.   -- Poisson's ratio
-fullDg = 1 --  formulation CgDg=0 fullDg =1
-law = 1 --PlatePlanestress =0 PlatePlanestressWithfracture=1
-Gc=8800.
-sigmac=400.e6
-
+Gc=8800.  -- fracture energy [J/m²]
+sigmac=400.e6 -- fracture limit in tension [Pa]
+beta =0.87 -- ratio KII/KI
+mu =0.41 -- friction coefficient ??
 -- geometry
 h = 0.0025  -- thickness
 meshfile="beamO3.msh" -- name of mesh file
@@ -33,34 +32,40 @@ nstepArch=1 -- Number of step between 2 archiving (used only if soltype=1)
 --[[
     compute solution and BC (given directly to the solver
   ]]
+-- creation of law
+law1 = linearElasticLawPlaneStressWithFracture(lawnum,E,nu)
+law1:setGc(Gc)
+law1:setSigmac(sigmac)
+law1:setBeta(beta)
+law1:setMu(mu)
+
 -- creation of ElasticField
+nfield =99 -- number of the field (physical number of surface)
+fullDg = 1 --  formulation CgDg=0 fullDg =1
 myfield1 = DGelasticField()
 myfield1:tag(1000)
-myfield1:young(E)
-myfield1:poisson(nu)
-myfield1:fractureParameter(Gc,sigmac)
 myfield1:thickness(h)
 myfield1:simpsonPoints(nsimp)
 myfield1:formulation(fullDg)
-myfield1:law(1)
-
+myfield1:lawnumber(lawnum)
 -- creation of Solver
 mysolver = DgC0PlateSolver(1000)
 mysolver:readmsh(meshfile)
 mysolver:AddElasticDomain(myfield1,nfield,2)
+mysolver:AddLinearElasticLawPlaneStressWithFracture(law1)
 mysolver:setScheme(soltype)
 mysolver:whichSolver(sol)
 mysolver:SNLData(nstep,ftime,tol)
 mysolver:stepBetweenArchiving(nstepArch)
 mysolver:stabilityParameters(beta1,beta2,beta3)
 -- BC
-mysolver:independentPrescribedDisplacement("Edge",31,0,-0.00002)
+mysolver:independentPrescribedDisplacement("Edge",31,0,-0.0000)
 mysolver:prescribedDisplacement("Edge",31,1,0.)
 mysolver:prescribedDisplacement("Edge",31,2,0.0)
 mysolver:prescribedDisplacement("Edge",61,0,0.)
 mysolver:prescribedDisplacement("Edge",61,1,0.)
 mysolver:prescribedDisplacement("Edge",61,2,0.)
-mysolver:prescribedDisplacement("Edge",71,2,0.001)
+mysolver:prescribedDisplacement("Edge",71,2,-0.001)
 mysolver:AddThetaConstraint(31)
 mysolver:AddThetaConstraint(61)
 mysolver:ArchivingEdgeForce(61,2)
@@ -68,6 +73,5 @@ mysolver:ArchivingEdgeForce(31,2)
 mysolver:ArchivingEdgeForce(71,2)
 mysolver:ArchivingNodalDisplacement(5,2)
 mysolver:ArchivingNodalDisplacement(6,2)
-mysolver:CreateInterfaceElement()
 mysolver:solve()
 

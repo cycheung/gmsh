@@ -741,8 +741,9 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getReducti
   double rjump[3];
   displacementjump(Vals_m,nbFF_m,Vals_p,nbFF_p,disp,ujump);
   rotationjump(ipv->getLocalBasisOfInterface(),Grads_m,nbFF_m,nbdofm,ipv->getLocalBasis(),Grads_p,nbFF_p,ipvp->getLocalBasis(),disp,rjump);
-  double delta = ipv->computeDelta(ujump,rjump,ipv->getLocalBasisOfInterface());
-
+  //double delta = ipv->computeDelta(ujump,rjump,ipv->getLocalBasisOfInterface());
+  double deltan = ipv->computeDeltaNormal(ujump,rjump,ipv->getLocalBasisOfInterface());
+  double deltat = ipv->computeDeltaTangent(ujump,rjump,ipv->getLocalBasisOfInterface());
   // find elasticField (to know the law to use)
   bool flag=false;
   DGelasticField *ef;
@@ -759,6 +760,6 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getReducti
 
   // use the law
   linearElasticLawPlaneStressWithFracture *mlaw = dynamic_cast<linearElasticLawPlaneStressWithFracture*>(ef->getMaterialLaw());
-  mlaw->getCohesiveReduction(ipv->getM0(),ipv->getN0(),delta,ipv->getDeltamax(),ipv->getDeltac(),nhatmean,mhatmean);
+  mlaw->getCohesiveReduction(ipv->getm0(),ipv->getn0(),deltan,ipv->getDeltanmax(),deltat,ipv->getDeltatmax(), ipv->getDeltac(),ipv->ifTension(),nhatmean,mhatmean);
 }
 

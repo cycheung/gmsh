@@ -264,13 +264,14 @@ class IPVariablePlateOIWF : public IPVariablePlateWithThicknessIntegrationOI{
  protected :
   // Add some variables use in case of fracture
   reductionElement n0, m0;
-  bool broken;
-  double unjump, rjump, unjump0, rjump0, delta, deltac, delta0, deltamax, sigmac, beta;
-
+  bool broken, tension;
+  double unjump, rnjump, unjump0, rnjump0, deltan, deltat, deltac, deltan0, deltat0, deltanmax, deltatmax, sigmac, etaI;
+  double utjump, rtjump, utjump0, rtjump0,etaII;
+  double alpha,beta;
  public :
    IPVariablePlateOIWF(const short int numsimp,
                                              const double h) : IPVariablePlateWithThicknessIntegrationOI(numsimp,h),
-                                             broken(false), delta(0.), deltamax(0.){} // no initial fracture (for initial fracture use ipfield)
+                                             broken(false), deltan(0.), deltanmax(0.), deltat(0.), deltatmax(0.), alpha(6.){} // no initial fracture (for initial fracture use ipfield)
    ~IPVariablePlateOIWF(){}
     IPVariablePlateOIWF(const IPVariablePlateOIWF &source):
                                               IPVariablePlateWithThicknessIntegrationOI(source)
@@ -280,14 +281,25 @@ class IPVariablePlateOIWF : public IPVariablePlateWithThicknessIntegrationOI{
       broken = source.broken;
       unjump = source.unjump;
       unjump0= source.unjump0;
-      rjump = source.rjump;
-      rjump0=source.rjump0;
-      delta = source.delta;
+      rnjump = source.rnjump;
+      rnjump0=source.rnjump0;
+      utjump = source.utjump;
+      utjump0 = source.utjump0;
+      rtjump = source.rtjump;
+      rtjump0= source.rtjump0;
+      deltan = source.deltan;
+      deltat = source.deltat;
       deltac = source.deltac;
-      delta0 = source.delta0;
-      deltamax = source.deltamax;
+      deltan0 = source.deltan0;
+      deltat0 = source.deltat0;
+      deltanmax = source.deltanmax;
+      deltatmax = source.deltatmax;
       sigmac = source.sigmac;
+      etaI = source.etaI;
+      etaII = source.etaII;
+      alpha = source.alpha;
       beta = source.beta;
+      tension = source.tension;
     }
     IPVariablePlateOIWF &operator = (const IPVariablePlateOIWF &source){
       IPVariablePlateWithThicknessIntegrationOI::operator = (source);
@@ -296,29 +308,43 @@ class IPVariablePlateOIWF : public IPVariablePlateWithThicknessIntegrationOI{
       broken = source.broken;
       unjump = source.unjump;
       unjump0= source.unjump0;
-      rjump = source.rjump;
-      rjump0=source.rjump0;
-      delta = source.delta;
+      rnjump = source.rnjump;
+      rnjump0=source.rnjump0;
+      utjump = source.utjump;
+      utjump0=source.utjump0;
+      rtjump = source.rtjump;
+      rtjump0=source.rtjump0;
+      deltan = source.deltan;
+      deltat = source.deltat;
       deltac = source.deltac;
-      delta0 = source.delta0;
-      deltamax = source.deltamax;
+      deltan0 = source.deltan0;
+      deltat0 = source.deltat0;
+      deltanmax = source.deltanmax;
+      deltatmax = source.deltatmax;
       sigmac = source.sigmac;
+      etaI = source.etaI;
+      etaII= source.etaII;
+      alpha = source.alpha;
       beta = source.beta;
+      tension = source.tension;
       return *this;
     }
-    void setBroken(const double svm, const double Gc, const reductionElement nalpha, const reductionElement malpha,
-                   const double du[3], const double dr[3], const LocalBasis *lbs);
-    void updatedeltamax(){if(delta>deltamax) deltamax = delta;}
+    void setBroken(const double svm, const double Gc, const double beta_, const reductionElement &nalpha,
+                   const reductionElement &malpha, const double du[3], const double dr[3], const LocalBasis *lbs, const bool tension_);
+    void updatedeltamax(){if(deltan>deltanmax) deltanmax = deltan; if(abs(deltat)>abs(deltatmax)) deltatmax = deltat;}
     void setFracture(const IPVariablePlateOIWF *ipvprev,const double ujump_[3], const double rjump_[3], const LocalBasis *lbs);
     double computeDelta(const SVector3 ujump_, const double rjump_[3], const LocalBasis *lbs) const;
+    double computeDeltaNormal(const SVector3 ujump_, const double rjump_[3], const LocalBasis *lbs) const;
+    double computeDeltaTangent(const SVector3 ujump_, const double rjump_[3], const LocalBasis *lbs) const;
     bool getBroken() const{return broken;}
-    double getDelta() const{return delta;}
     double getDeltac() const{return deltac;}
-    double getM0() const{return m0(1,1);}
-    double getN0() const{return n0(1,1);}
-    double getDeltamax() const{return deltamax;}
-    double getDeltar() const{return rjump;}
-    double getDeltaunor() const{return unjump;}
+    double getDeltan() const {return (1-etaI)*unjump + etaI*this->getThickness()/6.*rnjump;}
+    double getDeltat() const {return (1-etaII)*utjump + etaII*this->getThickness()/alpha*rtjump;}
+    const reductionElement& getm0() const{return m0;}
+    const reductionElement& getn0() const{return n0;}
+    double getDeltanmax() const{return deltanmax;}
+    double getDeltatmax() const{return deltatmax;}
+    bool ifTension() const{return tension;}
 };
 
 class IPState{

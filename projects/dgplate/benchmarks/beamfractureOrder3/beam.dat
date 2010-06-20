@@ -1,6 +1,8 @@
 MeshFile beamO3.msh
-//                   physical   E     nu    h    Gc   sigmac    Number of Simpson point (odd)
-ElasticFractureDomain   99     71.e9  0.  0.0025 8800. 400.e6           3 
+//                              lawnum    E   nu    Gc   sigma_c  beta mu
+ElasticPlaneStressLawWithFracture  1   71.e9  0.   8800.  400.e6  0.87 0.01
+//                   physical  lawnum    h   formulation Number of Simpson point (odd)
+ElasticDomain           99        1   0.0025       0                3 
 // Solver Gmm=0 (default) Taucs=1 PETSc=2 Scheme StaticLinear=0 (default) StaticNonLinear=1 
 Solver 1 1  
 StabilityParameters 10. 10. 10.

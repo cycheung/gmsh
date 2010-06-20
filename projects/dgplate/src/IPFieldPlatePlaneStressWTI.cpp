@@ -149,9 +149,9 @@ template<> double IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getVMPla
     double sx,sy,txy,sz,txz,tyz;
     LocalBasis *lb = ipv->getLocalBasis();
     // compute of stress for representation
-    sx = sa*lb->getphi0(0,0)*lb->getphi0(0,0)+2*tab*lb->getphi0(0,0)*lb->getphi0(0,1)+sb*lb->getphi0(0,1)*lb->getphi0(0,1);
+    sx = sa*lb->getphi0(0,0)*lb->getphi0(0,0)+2*tab*lb->getphi0(0,0)*lb->getphi0(0,1)+sb*lb->getphi0(1,0)*lb->getphi0(1,0);
     txy= sa*lb->getphi0(0,0)*lb->getphi0(1,0)+tab*(lb->getphi0(0,0)*lb->getphi0(1,1)+lb->getphi0(0,1)*lb->getphi0(1,0))+sb*lb->getphi0(0,1)*lb->getphi0(1,1);
-    sy = sa*lb->getphi0(1,0)*lb->getphi0(1,0)+2*tab*(lb->getphi0(1,0)*lb->getphi0(1,1))+sb*lb->getphi0(1,1)*lb->getphi0(1,1);
+    sy = sa*lb->getphi0(0,1)*lb->getphi0(0,1)+2*tab*(lb->getphi0(1,0)*lb->getphi0(1,1))+sb*lb->getphi0(1,1)*lb->getphi0(1,1);
     sz = tyz = txz =0.;
     svm = sqrt(1./2.*((sx-sy)*(sx-sy)+(sy-sz)*(sy-sz)+(sx-sz)*(sx-sz)+6*(txy*txy+tyz*tyz+txz*txz)));
   }
@@ -170,10 +170,11 @@ template<> double IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getVMPla
       double sx,sy,txy,sz,txz,tyz;
       LocalBasis *lb = ipv->getLocalBasis();
       // compute of stress for representation
-      sx = sa*lb->getphi0(0,0)*lb->getphi0(0,0)+2*tab*lb->getphi0(0,0)*lb->getphi0(0,1)+sb*lb->getphi0(0,1)*lb->getphi0(0,1);
+      sx = sa*lb->getphi0(0,0)*lb->getphi0(0,0)+2*tab*lb->getphi0(0,0)*lb->getphi0(0,1)+sb*lb->getphi0(1,0)*lb->getphi0(1,0);
       txy= sa*lb->getphi0(0,0)*lb->getphi0(1,0)+tab*(lb->getphi0(0,0)*lb->getphi0(1,1)+lb->getphi0(0,1)*lb->getphi0(1,0))+sb*lb->getphi0(0,1)*lb->getphi0(1,1);
-      sy = sa*lb->getphi0(1,0)*lb->getphi0(1,0)+2*tab*(lb->getphi0(1,0)*lb->getphi0(1,1))+sb*lb->getphi0(1,1)*lb->getphi0(1,1);
+      sy = sa*lb->getphi0(0,1)*lb->getphi0(0,1)+2*tab*(lb->getphi0(1,0)*lb->getphi0(1,1))+sb*lb->getphi0(1,1)*lb->getphi0(1,1);
       sz = txz = tyz =0.;
+
       svmp = sqrt(1./2.*((sx-sy)*(sx-sy)+(sy-sz)*(sy-sz)+(sx-sz)*(sx-sz)+6*(txy*txy+tyz*tyz+txz*txz)));
       if(i==0)
         svm = svmp;
@@ -210,12 +211,11 @@ template<> double IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getVMPla
     // Stress in plate basis
     double sa=ipv->getSigma(pos,component::xx), sb=ipv->getSigma(pos,component::yy), sc=0.;
     double tab = ipv->getSigma(pos,component::xy), tac=0. , tbc=0.;
-    double sx,sy,txy,sz,txz,tyz;
     const LocalBasis *lb = ipv->getLocalBasis();
     // compute of stress for representation
-    stressTensor(0,0) = sa;//sa*lb->getphi0(0,0)*lb->getphi0(0,0)+2*tab*lb->getphi0(0,0)*lb->getphi0(0,1)+sb*lb->getphi0(0,1)*lb->getphi0(0,1);
-    stressTensor(0,1) = stressTensor(1,0) = tab;//stressTensor(1,0) = sa*lb->getphi0(0,0)*lb->getphi0(1,0)+tab*(lb->getphi0(0,0)*lb->getphi0(1,1)+lb->getphi0(0,1)*lb->getphi0(1,0))+sb*lb->getphi0(0,1)*lb->getphi0(1,1);
-    stressTensor(1,1) = sb;//sa*lb->getphi0(1,0)*lb->getphi0(1,0)+2*tab*(lb->getphi0(1,0)*lb->getphi0(1,1))+sb*lb->getphi0(1,1)*lb->getphi0(1,1);
+    stressTensor(0,0) = sa;
+    stressTensor(0,1) = stressTensor(1,0) = tab;
+    stressTensor(1,1) = sb;
     return lb;
   }
   else{  // Particular value on element (max,min,mean)
@@ -231,13 +231,8 @@ template<> double IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getVMPla
       // Stress in plate basis
       double sa=ipv->getSigma(pos,component::xx), sb=ipv->getSigma(pos,component::yy), sc=0.;
       double tab = ipv->getSigma(pos,component::xy), tac=0. , tbc=0.;
-      double sx,sy,txy,sz,txz,tyz;
       LocalBasis *lb = ipv->getLocalBasis();
       // compute of stress for representation
-      sx = sa*lb->getphi0(0,0)*lb->getphi0(0,0)+2*tab*lb->getphi0(0,0)*lb->getphi0(0,1)+sb*lb->getphi0(0,1)*lb->getphi0(0,1);
-      txy= sa*lb->getphi0(0,0)*lb->getphi0(1,0)+tab*(lb->getphi0(0,0)*lb->getphi0(1,1)+lb->getphi0(0,1)*lb->getphi0(1,0))+sb*lb->getphi0(0,1)*lb->getphi0(1,1);
-      sy = sa*lb->getphi0(1,0)*lb->getphi0(1,0)+2*tab*(lb->getphi0(1,0)*lb->getphi0(1,1))+sb*lb->getphi0(1,1)*lb->getphi0(1,1);
-      sz = txz = tyz =0.;
       if(i==0){
         stressTensor(0,0) = sa;
         stressTensor(0,1) = stressTensor(1,0) = tab;

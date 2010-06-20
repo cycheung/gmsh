@@ -41,7 +41,7 @@ class IPField : public elementField {
 
     void compute1statePlatePlaneStressWF(IPState::whichState ws, T1* ef);
     void setBroken(MInterfaceElement *ie,IPState::whichState ws, const int numminus, const int numplus,
-                   const double svm,const SolElementType::eltype elt, const double Gc){
+                   const double svm,const SolElementType::eltype elt, const double Gc, const double betaML, const bool tension_){
 
       std::vector<IPState*> *vips = _AIPS->getIPstate(ie->getNum());
       IPVariablePlateOIWF* ipv = dynamic_cast<IPVariablePlateOIWF*>((*vips)[numminus]->getState(ws));
@@ -78,21 +78,24 @@ class IPField : public elementField {
         displacementjump(Valm,nbFFm,Valp,nbFFp,dispm,dispp,ujump);
         rotationjump(Lb[2],Gradm,ie->getElem(0)->getNumVertices(),Lb[0],Gradp,ie->getElem(1)->getNumVertices(),Lb[1],dispm,dispp,rjump);
         // Store data
-        ipv->setBroken(svm,Gc,nhatmean,mhatmean,ujump,rjump,Lb[2]);
+        ipv->setBroken(svm,Gc,betaML,nhatmean,mhatmean,ujump,rjump,Lb[2],tension_);
         ipv = dynamic_cast<IPVariablePlateOIWF*>((*vips)[numplus]->getState(ws));
-        ipv->setBroken(svm,Gc,nhatmean,mhatmean,ujump,rjump,Lb[2]);
+        ipv->setBroken(svm,Gc,betaML,nhatmean,mhatmean,ujump,rjump,Lb[2],tension_);
       }
     }
-    // fracture criteria is based on VM stress (fracture if s_VM> s_c)
+    // fracture criteria is based on Camacho & Ortiz Modelling of impact damage (Int J. Solids Structures 1996)
+    // here this criteria is evaluated on lower and upper fiber of plate.
     void computeFracture(IPState::whichState ws, T1* ef){
       // For now no fracture at extremities (only MInterfaceElement and no VirtualInterfaceElement)
       IntPt *GP;
       int npts;
       //double svm;
-      double sc = ef->getSigmaC();
       int msimpm1 = ef->getmsimp()-1;
       reductionElement stressTensor, stressTensorHat,stressTensorMean;
-
+      linearElasticLawPlaneStressWithFracture *mlaw = dynamic_cast<linearElasticLawPlaneStressWithFracture*>(ef->getMaterialLaw());
+      double sigmac = mlaw->getSigmac();
+      double seff, smax;
+      bool ift;
       const LocalBasis *lb;
       for(std::vector<MInterfaceElement*>::iterator it=ef->gi.begin(); it!=ef->gi.end();++it){
         MInterfaceElement *ie = *it;
@@ -100,9 +103,6 @@ class IPField : public elementField {
         // TODO no computation if already broken
         for(int j=0;j<npts;j++){
           // mean value (+ and - element)
-          //svm = this->getVMPlatePlaneStressWTI(ie,ws,j,ef,0);
-          //svm+= this->getVMPlatePlaneStressWTI(ie,ws,j+npts,ef,0);
-          //svm*=0.5;
           lb = this->getStressTensorWTI(ie,ws,j,ef,stressTensor,0);
           stressReductionHat(stressTensor,lb,stressTensorMean);
           lb = this->getStressTensorWTI(ie,ws,j+npts,ef,stressTensor,0);
@@ -112,16 +112,21 @@ class IPField : public elementField {
               stressTensorMean(k,kk)+=stressTensorHat(k,kk);
               stressTensorMean(k,kk)*=0.5;
             }
-
-          // if(svm>sc) // doesn't work fracture in compression ??
-          if(stressTensorMean(1,1)>sc){ // Fracture in mode I only
-            linearElasticLawPlaneStressWithFracture *mlaw = dynamic_cast<linearElasticLawPlaneStressWithFracture*>(ef->getMaterialLaw());
-            this->setBroken(ie,ws,j,j+npts,stressTensorMean(1,1),ef->getSolElemType(),mlaw->getGc());
+          // sigma eff (Camacho and Ortiz)
+          if(stressTensorMean(1,1)>=0.){
+            seff = sqrt(stressTensorMean(1,1)*stressTensorMean(1,1)+mlaw->getBeta()*stressTensorMean(0,1)*stressTensorMean(0,1));
+            smax = stressTensorMean(1,1);
+            ift = true;
+          }
+          else{
+            seff = sqrt(mlaw->getBeta())*abs(abs(stressTensorMean(0,1))-mlaw->getMu()*abs(stressTensorMean(1,1)));
+            smax = stressTensorMean(0,1);
+            ift=false;
+          }
+          if(seff> sigmac){
+            this->setBroken(ie,ws,j,j+npts,smax,ef->getSolElemType(),mlaw->getGc(),mlaw->getBeta(),ift);
           } // no computation for last Simpson's point if it already broken
           else{
-//            svm = this->getVMPlatePlaneStressWTI(ie,ws,j,ef,msimpm1);
-//            svm+= this->getVMPlatePlaneStressWTI(ie,ws,j+npts,ef,msimpm1);
-//            svm*=0.5;
               stressTensorMean.setAll(0.);
               lb = this->getStressTensorWTI(ie,ws,j,ef,stressTensor,msimpm1);
               stressReductionHat(stressTensor,lb,stressTensorMean);
@@ -131,13 +136,19 @@ class IPField : public elementField {
                 for(int kk=0;kk<2;kk++){
                   stressTensorMean(k,kk)+=stressTensorHat(k,kk);
                   stressTensorMean(k,kk)*=0.5;
-                }
-            //if(svm>sc){ // doesn't work fracture in compression
-            if(stressTensorMean(1,1)>sc){ // fracture in mode I
-              //Msg::Info("Interface element %d is upper broken\n",ie->getNum());
-              linearElasticLawPlaneStressWithFracture *mlaw = dynamic_cast<linearElasticLawPlaneStressWithFracture*>(ef->getMaterialLaw());
-              this->setBroken(ie,ws,j,j+npts,stressTensorMean(1,1),ef->getSolElemType(),mlaw->getGc());
-            }
+              }
+              if(stressTensorMean(1,1)>=0.){
+                seff = sqrt(stressTensorMean(1,1)*stressTensorMean(1,1)+mlaw->getBeta()*stressTensorMean(0,1)*stressTensorMean(0,1));
+                smax = stressTensorMean(1,1);
+                ift = true;
+              }
+              else{
+                seff = sqrt(mlaw->getBeta())*abs(abs(stressTensorMean(0,1))-mlaw->getMu()*abs(stressTensorMean(1,1)));
+                smax = stressTensorMean(0,1);
+                ift = false;
+              }
+              if(seff>sigmac)
+                this->setBroken(ie,ws,j,j+npts,smax,ef->getSolElemType(),mlaw->getGc(),mlaw->getBeta(),ift);
           }
         }
       }
@@ -168,7 +179,7 @@ class IPField : public elementField {
 
     // use the law
     linearElasticLawPlaneStressWithFracture *mlaw = dynamic_cast<linearElasticLawPlaneStressWithFracture*>(ef->getMaterialLaw());
-    mlaw->getCohesiveReduction(ipv->getM0(),ipv->getN0(),ipv->getDelta(),ipv->getDeltamax(),ipv->getDeltac(),nhatmean,mhatmean);
+    mlaw->getCohesiveReduction(ipv->getm0(),ipv->getn0(),ipv->getDeltan(),ipv->getDeltanmax(),ipv->getDeltat(),ipv->getDeltatmax(),ipv->getDeltac(),ipv->ifTension(),nhatmean,mhatmean);
 
     // set localBasis
     lbb[0] = ipv->getLocalBasis();
@@ -202,7 +213,9 @@ class IPField : public elementField {
 
     // use the law
     linearElasticLawPlaneStressWithFracture *mlaw = dynamic_cast<linearElasticLawPlaneStressWithFracture*>(ef->getMaterialLaw());
-    mlaw->getCohesiveReduction(ipv->getM0(),ipv->getN0(),ipv->getDelta(),ipv->getDeltamax(),ipv->getDeltac(),nhatmean,mhatmean);
+    mlaw->getCohesiveReduction(ipv->getm0(),ipv->getn0(),ipv->getDeltan(),ipv->getDeltanmax(),ipv->getDeltat(),ipv->getDeltatmax(),
+                               ipv->getDeltac(),ipv->ifTension(),
+                               nhatmean,mhatmean);
   }
 
 
@@ -290,7 +303,7 @@ class IPField : public elementField {
   }
 
   // retrieve a vector with fractured gauss point for an element
-  void getBroken(MInterfaceElement* iele, SolElementType::eltype elt, std::vector<bool> &vectB, std::vector<bool> &vectfB){
+  void getBroken(MInterfaceElement* iele, const SolElementType::eltype elt, std::vector<bool> &vectB, std::vector<bool> &vectfB){
     IntPt *GP;
     int npts = _intBound->getIntPoints(iele,&GP);
     vectB.resize(2*npts);
@@ -310,9 +323,7 @@ class IPField : public elementField {
         ipv = dynamic_cast<IPVariablePlateOIWF*>(ips->getState(IPState::current));
         vectB[j] = ipv->getBroken();
         if(vectB[j]){
-          double delta = ipv->getDelta();
-          double deltac = ipv->getDeltac();
-          if(delta >= deltac) vectfB[j] =true;
+          if(ipv->getDeltan()<0.) vectfB[j] =true;
         }
       }
     }
@@ -408,7 +419,7 @@ class IPField : public elementField {
                             reductionElement &nhatmean, reductionElement &mhatmean) const;
 
   // Function to get data (must be removed)
-  void getData(int numelem,int numgauss, materialLaw *mlaw, double &N, double &M, double &du, double &dr,double &delta){
+/*  void getData(int numelem,int numgauss, materialLaw *mlaw, double &N, double &M, double &du, double &dr,double &deltan){
     // It's for fracture so type elem and material law are known
     IPVariablePlateOIWF *ipv;
     std::vector<IPState*> *vips;
@@ -418,13 +429,14 @@ class IPField : public elementField {
     vips = _AIPS->getIPstate(numelem);
     ips = (*vips)[numgauss];
     ipv = dynamic_cast<IPVariablePlateOIWF*>(ips->getState(IPState::current));
-    delta = ipv->getDelta();
-    dr = ipv->getDeltar();
+    deltan = ipv->getDeltan();
+    double deltat = ipv->getDeltat();
+    dr = ipv->getDeltarnor() ;
     du = ipv->getDeltaunor();
     linearElasticLawPlaneStressWithFracture *mlaw1 = dynamic_cast<linearElasticLawPlaneStressWithFracture*>(mlaw);
-    mlaw1->getCohesiveReduction(ipv->getM0(), ipv->getN0(),delta, ipv->getDeltamax(),ipv->getDeltac(),nhatmean,mhatmean);
+    mlaw1->getCohesiveReduction(ipv->getm0(), ipv->getn0(),deltan, ipv->getDeltanmax(),deltat, ipv->getDeltatmax, ipv->getDeltac(),ipv->ifTension(),nhatmean,mhatmean);
     M = mhatmean(1,1);
     N = nhatmean(1,1);
-  }
+  }*/
 };
 #endif // IPField

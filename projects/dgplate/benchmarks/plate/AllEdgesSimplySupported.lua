@@ -5,10 +5,9 @@
     data 
   ]]
 -- material law
-nfield =99 -- number of the field (physical number of surface)
+lawnum = 1 -- unique number of law
 E = 1.e6 -- Young's modulus
 nu = 0.3   -- Poisson's ratio
-fullDg = 1 --  formulation CgDg=0 fullDg =1
 
 -- geometry
 h = 0.1  -- thickness
@@ -30,20 +29,24 @@ nstepArch=6 -- Number of step between 2 archiving (used only if soltype=1)
 --[[
     compute solution and BC (given directly to the solver
   ]]
+-- creation of law
+law1 = linearElasticLawPlaneStress(lawnum,E,nu)
+
 -- creation of ElasticField
+nfield =99 -- number of the field (physical number of surface)
+fullDg = 1 --  formulation CgDg=0 fullDg =1
 myfield1 = DGelasticField()
 myfield1:tag(1000)
-myfield1:young(E)
-myfield1:poisson(nu)
 myfield1:thickness(h)
 myfield1:simpsonPoints(nsimp)
 myfield1:formulation(fullDg)
-myfield1:law(0)
+myfield1:lawnumber(lawnum)
 
 -- creation of Solver
 mysolver = DgC0PlateSolver(1000)
 mysolver:readmsh(meshfile)
 mysolver:AddElasticDomain(myfield1,nfield,2)
+mysolver:AddLinearElasticLawPlaneStress(law1)
 mysolver:setScheme(soltype)
 mysolver:whichSolver(sol)
 mysolver:SNLData(nstep,ftime,tol)
@@ -59,5 +62,4 @@ mysolver:prescribedDisplacement("Edge",41,1,0.)
 mysolver:prescribedForce("Node",111,0.,0.,-50.)
 mysolver:AddThetaConstraint(11)
 mysolver:AddThetaConstraint(41)
-mysolver:CreateInterfaceElement() -- remove this
 mysolver:solve()

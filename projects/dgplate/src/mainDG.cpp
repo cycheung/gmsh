@@ -37,17 +37,17 @@ int main (int argc, char* argv[])
 
     // read some input file
     mySolver.readInputFile(argv[1]);
-    mySolver.createInterfaceElement();
+    //mySolver.createInterfaceElement();
     // create the interface element after reading the mesh file put this somewhere else ??
 
     // solve the problem
     switch(mySolver.getScheme()){
       case DgC0PlateSolver::StaticLinear :
-        printf("Static linear resolution\n");
+        Msg::Info("Static linear resolution");
         mySolver.solve();
         break;
       case DgC0PlateSolver::StaticNonLinear :
-        printf("Static non linear resolution\n");
+        Msg::Info("Static non linear resolution");
         mySolver.solveSNL();
         break;
       default : Msg::Error("The scheme of resolution seems to be missing");
@@ -56,6 +56,9 @@ int main (int argc, char* argv[])
   else if(ext==lua){
     #if defined(HAVE_LUA)
     binding *b = binding::instance();
+    materialLaw::registerBindings(b);
+    linearElasticLawPlaneStress::registerBindings(b);
+    linearElasticLawPlaneStressWithFracture::registerBindings(b);
     DGelasticField::registerBindings(b);
     DgC0PlateSolver::registerBindings(b);
     GmshMergeFile(argv[1]);

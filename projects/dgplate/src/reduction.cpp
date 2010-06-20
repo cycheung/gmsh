@@ -171,28 +171,7 @@ void rotationjump(const LocalBasis *lbs,const std::vector<SVector3> &Gradm,const
                   const std::vector<SVector3> &Gradp,const int nbFFp,const LocalBasis *lbp,
                   const std::vector<double> &dispm, const std::vector<double> &dispp, double rjump[3])
 {
-  for(int i=0;i<3;i++) rjump[i] =0.;
-  // Compute Dt linear case
-  /*double Deltat[256][3][3];
-  double dt[3];
-  SVector3 u(0.,0.,0.);
-  compute_Deltat_tilde(lbm, Gradm, nbFFm, Deltat);
-  for(int i=0;i<nbFFm;i++){
-    u[0] = dispm[i]; u[1] = dispm[i+nbFFm]; u[2]=dispm[i+nbFFm+nbFFm];
-    matvectprod(Deltat[i],u,dt);
-    for(int j=0;j<3;j++)
-      rjump[j]-= dt[j];
-  }
-  compute_Deltat_tilde(lbp, Gradp, nbFFp, Deltat);
-  for(int i=0;i<nbFFp;i++){
-    u[0] = dispp[i]; u[1] = dispp[i+nbFFp]; u[2] = dispp[i+nbFFp+nbFFp];
-    matvectprod(Deltat[i],u,dt);
-    for(int j=0;j<3;j++)
-      rjump[j] += dt[j];
-  }*/
-  // general case
   SVector3 dtt;
-  SVector3 dt;
   SVector3 dtm = lbm->gett0();
   SVector3 dtp = lbp->gett0();
   normalVariation(lbm,nbFFm,Gradm,dispm,dtt);
@@ -201,74 +180,23 @@ void rotationjump(const LocalBasis *lbs,const std::vector<SVector3> &Gradm,const
   normalVariation(lbp,nbFFp,Gradp,dispp,dtt);
   for(int i=0;i<3;i++)
     dtp[i] += dtt[i];
-  dt = dtp -dtm;
-  // dt is a vector with normal variation
-  //SVector3 t;
-  //t=lbs->gett0() +dt;
-  //rjump[0] = - atan(scaldot(dt,lbs->getphi0(0))/(abs(lbs->getphi0(0,1))*scaldot(dt,lbs->getphi0(1))));
-  //rjump[1] = - atan(abs(lbs->getphi0(0,1))*scaldot(dt,lbs->getphi0(1))/scaldot(dt,lbs->getphi0(0))); // As phi0,0 is not normed
-  for(int alpha=0;alpha<2;alpha++)
-    rjump[alpha] = scaldot(dt,lbs->getphi0d(alpha));
+  for(int i=0;i<3;i++)
+    rjump[i] = dtp[i]-dtm[i];
 }
 
 void rotationjump(const LocalBasis *lbs,const std::vector<SVector3> &Gradm,const int nbFFm, const int nbdofm,const LocalBasis *lbm,
                   const std::vector<SVector3> &Gradp,const int nbFFp,const LocalBasis *lbp,
                   const std::vector<double> &disp,  double rjump[3])
 {
-/*  // Compute Dt
-  for(int i=0;i<3;i++) for(int j=0;j<3;j++) rjump[i][j] =0.;
-  double Deltat[256][3][3];
-  double dt[3];
-  compute_Deltat_tilde(lbm, Gradm, nbFFm, Deltat);
-  for(int i=0;i<nbFFm;i++)
-    for(int alpha=0;alpha<2;alpha++){
-      matTvectprod(Deltat[i],lbm->getphi0(alpha),dt);
-      for(int j=0;j<3;j++)
-        rjump[j][alpha] -= dt[j]*disp[i+j*nbFFm];
-    }
-  compute_Deltat_tilde(lbp, Gradp, nbFFp, Deltat);
-  for(int i=0;i<nbFFp;i++)
-    for(int alpha=0;alpha<2;alpha++){
-      matTvectprod(Deltat[i],lbp->getphi0(alpha),dt);
-      for(int j=0;j<3;j++)
-        rjump[j][alpha] += dt[j]*disp[i+j*nbFFp+nbdofm];
-    }*/
-//  for(int i=0;i<3;i++) rjump[i] =0.;
-/*  // Compute Dt linear case
-  double Deltat[256][3][3];
-  double dt[3];
-  SVector3 u(0.,0.,0.);
-  compute_Deltat_tilde(lbm, Gradm, nbFFm, Deltat);
-  for(int i=0;i<nbFFm;i++){
-    u[0] = disp[i]; u[1] = disp[i+nbFFm]; u[2] = disp[i+nbFFm+nbFFm];
-    matvectprod(Deltat[i],u,dt);
-    for(int j=0;j<3;j++)
-      rjump[j] -= dt[j];
-  }
-  compute_Deltat_tilde(lbp, Gradp, nbFFp, Deltat);
-  for(int i=0;i<nbFFp;i++){
-    u[0] = disp[i+nbdofm]; u[1] = disp[i+nbFFp+nbdofm]; u[2] = disp[i+nbFFp+nbFFp+nbdofm];
-    matvectprod(Deltat[i],u,dt);
-    for(int j=0;j<3;j++)
-      rjump[j] += dt[j];
-  }*/
-  // general case
   SVector3 dtt;
   SVector3 dtm = lbm->gett0();
   SVector3 dtp = lbp->gett0();
-  SVector3 dt;
   normalVariation(lbm,nbFFm,Gradm,disp,dtt);
   for(int i=0;i<3;i++)
     dtm[i] += dtt[i];
   normalVariation(lbp,nbFFp,Gradp,disp,dtt,nbdofm);
   for(int i=0;i<3;i++)
     dtp[i] += dtt[i];
-  dt = dtp-dtm;
-
-  // dt is a vector with normal variation
-  // now projection to have the angular component
-  //rjump[0] = - atan(scaldot(dt,lbs->getphi0(0))/(abs(lbs->getphi0(0,1))*scaldot(dt,lbs->getphi0(1))));
-  //rjump[1] = - atan(abs(lbs->getphi0(0,1))*scaldot(dt,lbs->getphi0(1))/scaldot(dt,lbs->getphi0(0))); // As phi0,0 is not normed
-  for(int alpha=0;alpha<2;alpha++)
-    rjump[alpha] = scaldot(dt,lbs->getphi0d(alpha));
+  for(int i=0;i<3;i++)
+    rjump[i] = dtp[i]-dtm[i];
 }

@@ -178,9 +178,8 @@ void IsotropicElasticStiffInterfaceTermC0Plate::get(MElement *ele,int npts,IntPt
     double me_comp[3][3];
     double me_stab[3][3];
     std::vector<bool> vbroken;
-    std::vector<bool> vfullbroken;
-    ipf->getBroken(iele,_elemtype,vbroken,vfullbroken);
-
+    std::vector<bool> vDeltanNeg;
+    ipf->getBroken(iele,_elemtype,vbroken,vDeltanNeg);
     // Characteristic size of interface element
     double h_s = iele->getCharacteristicSize();
     const double Bhs = beta1/h_s;
@@ -319,7 +318,42 @@ void IsotropicElasticStiffInterfaceTermC0Plate::get(MElement *ele,int npts,IntPt
                   m(j+(jj*nbFF_p)+nbdof_m,k+(kk*nbFF_p)+nbdof_m) += ( me_cons[jj][kk] + me_comp[jj][kk] + B2hs * me_stab[jj][kk]);
             }
           }
+          // Out of Plane term
+          Cst = weight*lbs->getJacobian()*Cs*B3hs; // Hooke tensor in "shearing" 1 component = Cs
+
+          // compute B vector
+          compute_Bs(lbs,Val_m,nbFF_m,Bs_m);
+          compute_Bs(lbs,Val_p,nbFF_p,Bs_p);
+          for(int j=0;j<nbFF_m;j++){
+            for(int k=0;k<nbFF_m;k++){
+              stabilityC0PlateStiffnessShearingTerms(Bs_m[j], Bs_m[k],me_stab);
+              for(int jj=0;jj<3;jj++)
+                for(int kk=0;kk<3;kk++)
+                  {m(j+jj*nbFF_m,k+kk*nbFF_m) += Cst * me_stab[jj][kk]; }//printf("-- %d %d %f\n",jj,kk,Cst * me_stab[jj][kk]);}
+            }
+            for(int k=0;k<nbFF_p;k++){
+              stabilityC0PlateStiffnessShearingTerms(Bs_m[j], Bs_p[k],me_stab);
+              for(int jj=0;jj<3;jj++)
+                for(int kk=0;kk<3;kk++)
+                  {m(j+jj*nbFF_m,k+nbdof_m+kk*nbFF_p) += -Cst * me_stab[jj][kk]; }//printf("-+ %d %d %f\n",jj,kk,Cst * me_stab[jj][kk]);}
+            }
+          }
+          for(int j=0;j<nbFF_p;j++){
+            for(int k=0;k<nbFF_m;k++){
+              stabilityC0PlateStiffnessShearingTerms(Bs_p[j], Bs_m[k],me_stab);
+              for(int jj=0;jj<3;jj++)
+                for(int kk=0;kk<3;kk++)
+                  {m(j+(jj*nbFF_p)+nbdof_m,k+kk*nbFF_m) += -Cst * me_stab[jj][kk]; }//printf("+- %d %d %f\n",jj,kk,Cst * me_stab[jj][kk]);}
+            }
+            for(int k=0;k<nbFF_p;k++){
+              stabilityC0PlateStiffnessShearingTerms(Bs_p[j], Bs_p[k],me_stab);
+              for(int jj=0;jj<3;jj++)
+                for(int kk=0;kk<3;kk++)
+                  {m(j+(jj*nbFF_p)+nbdof_m,k+(kk*nbFF_p)+nbdof_m) += Cst * me_stab[jj][kk]; }//printf("++ %d %d %f\n",jj,kk,Cst * me_stab[jj][kk]);}
+            }
+          }
         }
+        Val_m.clear();Val_p.clear();
       }
       else{
         // get matrix by perturbation
@@ -352,43 +386,56 @@ void IsotropicElasticStiffInterfaceTermC0Plate::get(MElement *ele,int npts,IntPt
           for(int k=0;k<nbdof_m+nbdof_p;k++)
             m(k,j) += (fp(k)-fm(k))/(perturbation+perturbation);
         }
-        Val_m.clear(); Val_p.clear();
-      }
-      if(fullDg and!vfullbroken[i]){
-        // Out of Plane term
-        Cst = weight*lbs->getJacobian()*Cs*B3hs; // Hooke tensor in "shearing" 1 component = Cs
+        // contact if Deltan is negatif (compatibility and stability terms)
+        if(vDeltanNeg[i]){
+          // Compute Bnhat vector (used previous Bhat_m and Bhat_p)
+          // first value of Bn are needed
+          compute_Bn(lb_m,Grads_m,nbFF_m,Bn_m);
+          compute_Bn(lb_p,Grads_p,nbFF_p,Bn_p);
+          compute_Bnhat(lb_m,nbFF_m,Bn_m,Bhat_m);
+          compute_Bnhat(lb_p,nbFF_p,Bn_p,Bhat_p);
 
-        // compute B vector
-        compute_Bs(lbs,Val_m,nbFF_m,Bs_m);
-        compute_Bs(lbs,Val_p,nbFF_p,Bs_p);
-        for(int j=0;j<nbFF_m;j++){
-          for(int k=0;k<nbFF_m;k++){
-            stabilityC0PlateStiffnessShearingTerms(Bs_m[j], Bs_m[k],me_stab);
-            for(int jj=0;jj<3;jj++)
-              for(int kk=0;kk<3;kk++)
-                {m(j+jj*nbFF_m,k+kk*nbFF_m) += Cst * me_stab[jj][kk]; }//printf("-- %d %d %f\n",jj,kk,Cst * me_stab[jj][kk]);}
+          // Compute Hooke tensor
+          Cnt = weight*lbs->getJacobian()*Cn;
+          Hhat_m->hat(lb_m,Cnt,nu); // Redondant avec + haut (faut enlever le Cmt pour le calcul augmente cout calcul ??)
+          Hhat_p->hat(lb_p,Cnt,nu);
+          Hhatmean->mean(Hhat_m,Hhat_p);
+          for(int j=0;j<nbFF_m;j++){
+            for(int k=0;k<nbFF_m;k++){
+              compC0PlateStiffnessMembraneTerms(Hhat_m,Bhat_m[j],Val_m[k],lbs,me_comp);
+              stabilityC0PlateStiffnessMembraneTerms(Hhatmean,Val_m[j], Val_m[k],lbs,me_stab);
+              for(int jj=0;jj<3;jj++)
+                for(int kk=0;kk<3;kk++)
+                  m(j+jj*nbFF_m,k+kk*nbFF_m) += (- me_comp[jj][kk] + B2hs * me_stab[jj][kk] );
+            }
+            for(int k=0;k<nbFF_p;k++){
+              compC0PlateStiffnessMembraneTerms(Hhat_p,Bhat_m[j],Val_p[k],lbs,me_comp);
+              stabilityC0PlateStiffnessMembraneTerms(Hhatmean,Val_m[j], Val_p[k],lbs,me_stab);
+              for(int jj=0;jj<3;jj++)
+                for(int kk=0;kk<3;kk++)
+                  m(j+jj*nbFF_m,k+nbdof_m+kk*nbFF_p) += ( me_comp[jj][kk]- B2hs * me_stab[jj][kk] );
+            }
           }
-          for(int k=0;k<nbFF_p;k++){
-            stabilityC0PlateStiffnessShearingTerms(Bs_m[j], Bs_p[k],me_stab);
-            for(int jj=0;jj<3;jj++)
-              for(int kk=0;kk<3;kk++)
-                {m(j+jj*nbFF_m,k+nbdof_m+kk*nbFF_p) += -Cst * me_stab[jj][kk]; }//printf("-+ %d %d %f\n",jj,kk,Cst * me_stab[jj][kk]);}
+          for(int j=0;j<nbFF_p;j++){
+            for(int k=0;k<nbFF_m;k++){
+              compC0PlateStiffnessMembraneTerms(Hhat_m,Bhat_p[j],Val_m[k],lbs,me_comp);
+              stabilityC0PlateStiffnessMembraneTerms(Hhatmean,Val_p[j], Val_m[k],lbs,me_stab);
+              for(int jj=0;jj<3;jj++)
+                for(int kk=0;kk<3;kk++)
+                  m(j+(jj*nbFF_p)+nbdof_m,k+kk*nbFF_m) += (- me_comp[jj][kk] - B2hs * me_stab[jj][kk]);
+            }
+            for(int k=0;k<nbFF_p;k++){
+              compC0PlateStiffnessMembraneTerms(Hhat_p,Bhat_p[j],Val_p[k],lbs,me_comp);
+              stabilityC0PlateStiffnessMembraneTerms(Hhatmean,Val_p[j], Val_p[k],lbs,me_stab);
+              for(int jj=0;jj<3;jj++)
+                for(int kk=0;kk<3;kk++)
+                  m(j+(jj*nbFF_p)+nbdof_m,k+(kk*nbFF_p)+nbdof_m) += ( me_comp[jj][kk] + B2hs * me_stab[jj][kk]);
+            }
           }
+
         }
-        for(int j=0;j<nbFF_p;j++){
-          for(int k=0;k<nbFF_m;k++){
-            stabilityC0PlateStiffnessShearingTerms(Bs_p[j], Bs_m[k],me_stab);
-            for(int jj=0;jj<3;jj++)
-              for(int kk=0;kk<3;kk++)
-                {m(j+(jj*nbFF_p)+nbdof_m,k+kk*nbFF_m) += -Cst * me_stab[jj][kk]; }//printf("+- %d %d %f\n",jj,kk,Cst * me_stab[jj][kk]);}
-          }
-          for(int k=0;k<nbFF_p;k++){
-            stabilityC0PlateStiffnessShearingTerms(Bs_p[j], Bs_p[k],me_stab);
-            for(int jj=0;jj<3;jj++)
-              for(int kk=0;kk<3;kk++)
-                {m(j+(jj*nbFF_p)+nbdof_m,k+(kk*nbFF_p)+nbdof_m) += Cst * me_stab[jj][kk]; }//printf("++ %d %d %f\n",jj,kk,Cst * me_stab[jj][kk]);}
-          }
-        }
+
+
         Val_m.clear(); Val_p.clear();
       }
       // Because component are push_back in Grads in gradfuvw idem for hess
@@ -487,7 +534,7 @@ void IsotropicElasticForceInterfaceTermC0Plate::get(MElement *ele,int npts,IntPt
   reductionElement nhatmean, mhatmean;
   SVector3 ujump;
   std::vector<bool> vbroken;
-  std::vector<bool> vfullbroken;
+  std::vector<bool> vDeltanNeg;
 
   // Characteristic size of interface element
   double h_s = iele->getCharacteristicSize();
@@ -500,7 +547,7 @@ void IsotropicElasticForceInterfaceTermC0Plate::get(MElement *ele,int npts,IntPt
   disp.resize(nbdof_m+nbdof_p);
   ufield->get(iele,disp);
   // sum on Gauss' points
-  ipf->getBroken(iele,_elemtype,vbroken,vfullbroken);
+  ipf->getBroken(iele,_elemtype,vbroken,vDeltanNeg);
   //for(int i=0;i<npts;i++){ if(vbroken[i]) printf("%d true\n",iele->getNum()); else printf("%d false\n",iele->getNum());}
   for (int i = 0; i < npts; i++)
   {
@@ -588,7 +635,7 @@ void IsotropicElasticForceInterfaceTermC0Plate::get(MElement *ele,int npts,IntPt
       }
 
       // Compatibility and stability (if not broken)
-      if(!vbroken[i]){
+      if(!vbroken[i] or vDeltanNeg[i]){
         // compute jump of u
         displacementjump(Val_m,nbFF_m,Val_p,nbFF_p,disp,ujump);
 
@@ -621,26 +668,24 @@ void IsotropicElasticForceInterfaceTermC0Plate::get(MElement *ele,int npts,IntPt
                 }
               }
         }
+      // Out of Plane term (if not totally broken)
+      Cst = wJ*Cs*B3hs; // Hooke tensor in "shearing" 1 component = Cs
+      // compute B vector
+      compute_Bs(lb[2],Val_m,nbFF_m,Bs_m);
+      compute_Bs(lb[2],Val_p,nbFF_p,Bs_p);
+      for(int j=0;j<nbFF_m;j++){
+        stabilityC0PlateForceShearingTerms(Bs_m[j], Bs_m, Bs_p,nbFF_m,nbFF_p,disp,me_stab);
+        for(int jj=0;jj<3;jj++)
+          m(j+jj*nbFF_m) += -Cst * me_stab[jj];
       }
-      if(!vfullbroken[i]){
-        // Out of Plane term (if not totally broken)
-        Cst = wJ*Cs*B3hs; // Hooke tensor in "shearing" 1 component = Cs
-        // compute B vector
-        compute_Bs(lb[2],Val_m,nbFF_m,Bs_m);
-        compute_Bs(lb[2],Val_p,nbFF_p,Bs_p);
-        for(int j=0;j<nbFF_m;j++){
-          stabilityC0PlateForceShearingTerms(Bs_m[j], Bs_m, Bs_p,nbFF_m,nbFF_p,disp,me_stab);
-          for(int jj=0;jj<3;jj++)
-            m(j+jj*nbFF_m) += -Cst * me_stab[jj];
-        }
-        for(int j=0;j<nbFF_p;j++){
-          stabilityC0PlateForceShearingTerms(Bs_p[j],Bs_m,Bs_p,nbFF_m,nbFF_p,disp,me_stab);
-          for(int jj=0;jj<3;jj++)
-            m(j+(jj*nbFF_p)+nbdof_m) += Cst * me_stab[jj];
-        }
+      for(int j=0;j<nbFF_p;j++){
+        stabilityC0PlateForceShearingTerms(Bs_p[j],Bs_m,Bs_p,nbFF_m,nbFF_p,disp,me_stab);
+        for(int jj=0;jj<3;jj++)
+          m(j+(jj*nbFF_p)+nbdof_m) += Cst * me_stab[jj];
       }
-      Val_m.clear(); Val_p.clear();
     }
+    Val_m.clear(); Val_p.clear();
+  }
   // Because component are push_back in Grads in gradfuvw idem for hess
   Grads_m.clear(); Grads_p.clear(); Hess_m.clear(); Hess_p.clear(); Grads.clear();
   }
@@ -731,9 +776,9 @@ void IsotropicElasticStiffVirtualInterfaceTermC0Plate::get(MElement *ele,int npt
       // Because component are push_back in Grads in gradfuvw idem for hess
       Grads_m.clear(); Hess_m.clear(); Grads.clear();
   }
-/*    m.print("InterfaceBound");
+//   m.print("InterfaceBound");
     // By numerical perturbation (Verification OK)
-    double eps=1.e-8;
+/*    double eps=1.e-8;
     fullVector<double> fp(nbdof_m);
     fullVector<double> fm(nbdof_m);
     fp.scale(0.);

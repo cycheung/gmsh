@@ -161,28 +161,41 @@ template<> void IPField<DGelasticField, DgC0FunctionSpace<SVector3> >::compute1s
   }
 }
 
-void IPVariablePlateOIWF::setBroken(const double svm, const double Gc, const reductionElement nalpha, const reductionElement malpha,
-                                     const double du[3], const double dr[3], const LocalBasis *lbs)
+void IPVariablePlateOIWF::setBroken(const double svm, const double Gc, const double beta_, const reductionElement &nalpha,
+                                    const reductionElement &malpha, const double du[3], const double dr[3], const LocalBasis *lbs,
+                                    const bool tension_)
 {
   if(!broken){ // initialize broken at this gauss point
     double hdiv6 = this->getThickness()/6.;
+    double hdiva = this->getThickness()/alpha;
     n0 = nalpha;
     m0 = malpha;
-    unjump0 = - scaldot(du,lbs->getphi0(1)); // minus because normal of LocalBasis of interface = - phi0,1
+    unjump0 = - scaldot(du,lbs->getphi0(1))/lbs->getphi0(1).norm(); // minus because minus normal of LocalBasis of interface = - phi0,1
     unjump =0.;
-    rjump0 = dr[1];
-    rjump = 0.;
-    sigmac = svm;
-    delta = 0.;
+    utjump0 = scaldot(du,lbs->getphi0d(0))/lbs->getphi0(0).norm();
+    rnjump0 = - scaldot(dr,lbs->getphi0(1))/lbs->getphi0(1).norm(); // minus because minus normal of LocalBasis of interface = - phi0,1
+    rnjump = 0.;
+    rtjump = 0.;
+    rtjump0 = scaldot(dr,lbs->getphi0d(0))/lbs->getphi0(0).norm();
+    sigmac = svm;   // sigma can be use for tau_max
     deltac = 2*Gc/sigmac;
-    deltamax =0.;
+    beta = beta_;
+    deltanmax =0.;
+    deltatmax =0.;
+    tension = tension_;
     double M0 = malpha(1,1);
     double N0 = nalpha(1,1);
-    double m0abshdiv6;
-    if(M0>0) {m0abshdiv6 = M0/hdiv6; rjump0 = -rjump0;}
-    else m0abshdiv6 = -M0/hdiv6;
-    beta = m0abshdiv6/(m0abshdiv6+N0);
-    delta0 = beta*hdiv6*rjump0 + (1-beta)*unjump0;
+    double N12 = nalpha(0,1);
+    double M12 = malpha(0,1);
+    double m0abshdiv6, m12abshdiva;
+    if(M0<0) {m0abshdiv6 = - M0/hdiv6; rnjump0 = -rnjump0;}
+    else m0abshdiv6 = M0/hdiv6;
+    etaI = m0abshdiv6/(m0abshdiv6+N0);
+    if(M12<0) {m12abshdiva = - M12/hdiv6; rtjump0 = -rtjump0;}
+    else m12abshdiva = M12/hdiv6;
+    etaII = m12abshdiva/(m12abshdiva+N12);
+    deltan0 = etaI*hdiv6*rnjump0 + (1-etaI)*unjump0;
+    deltat0 = etaII*hdiva*rtjump0 + (1-etaII)*utjump0;
     broken = true;
   }
 }
@@ -193,24 +206,58 @@ void IPVariablePlateOIWF::setFracture(const IPVariablePlateOIWF *ipvprev,const d
   n0 =ipvprev->n0;
   m0 =ipvprev->m0;
   unjump0 = ipvprev->unjump0;
-  rjump0 = ipvprev->rjump0;
+  rnjump0 = ipvprev->rnjump0;
+  utjump0 = ipvprev->utjump0;
+  rtjump0 = ipvprev->rtjump0;
   sigmac = ipvprev->sigmac;
   deltac = ipvprev->deltac;
-  delta0 = ipvprev->delta0;
-  deltamax = ipvprev->deltamax;
+  deltan0 = ipvprev->deltan0;
+  deltat0 = ipvprev->deltat0;
+  deltanmax = ipvprev->deltanmax;
+  deltatmax = ipvprev->deltatmax;
+  etaI = ipvprev->etaI;
+  etaII= ipvprev->etaII;
+  alpha = ipvprev->alpha;
   beta = ipvprev->beta;
   broken = ipvprev->broken;
-  unjump = - scaldot(ujump_,lbs->getphi0(1)) - unjump0; // minus because normal of LocalBasis of interface = - phi0,1
-  if( m0(1,1)>0) rjump = -rjump_[1] - rjump0;
-  else rjump = rjump_[1] - rjump0;
+  tension = ipvprev->tension;
+  unjump = - scaldot(ujump_,lbs->getphi0(1))/lbs->getphi0(1).norm() - unjump0; // minus because normal of LocalBasis of interface = - phi0,1
+  utjump = scaldot(ujump_,lbs->getphi0(0))/lbs->getphi0(0).norm() - utjump0;
+  if( m0(1,1)<0) rnjump = scaldot(rjump_,lbs->getphi0(1))/lbs->getphi0(1).norm() - rnjump0;
+  else rnjump = - scaldot(rjump_,lbs->getphi0(1))/lbs->getphi0(1).norm() - rnjump0;
+  if( m0(0,1)<0) rtjump = scaldot(rjump_,lbs->getphi0(0))/lbs->getphi0(0).norm() - rtjump0;
+  else rtjump = - scaldot(rjump_,lbs->getphi0(0))/lbs->getphi0(0).norm() - rtjump0;
   double hdiv6 = this->getThickness()/6.;
-  delta = beta*hdiv6*rjump + (1-beta)*unjump;
+  double hdiva = this->getThickness()/alpha;
+  deltan = etaI*hdiv6*rnjump + (1-etaI)*unjump;
+  deltat = etaII*hdiva*rtjump+(1-etaII)*utjump;
 }
 
 double IPVariablePlateOIWF::computeDelta(const SVector3 ujump_, const double rjump_[3], const LocalBasis *lbs) const
 {
-  // un
-  double unor = - scaldot(ujump_,lbs->getphi0(1)); // minus because normal of LocalBasis of interface = - phi0,1
-  if(m0(1,1)>0) return (1-beta)*(unor-unjump0) + beta*this->getThickness()/6.*(-rjump_[1]-rjump0);
-  else return (1-beta)*(unor-unjump0) + beta*this->getThickness()/6.*(rjump_[1]-rjump0);
+  double unor = - scaldot(ujump_,lbs->getphi0(1))/lbs->getphi0(1).norm(); // minus because normal of LocalBasis of interface = - phi0,1
+  double ut = scaldot(ujump_,lbs->getphi0d(0))/lbs->getphi0(0).norm();
+  double rnor =  - scaldot(rjump_,lbs->getphi0(1))/lbs->getphi0(1).norm();
+  double rt = scaldot(rjump_,lbs->getphi0d(0))/lbs->getphi0(0).norm();
+  double deltan, deltat;
+  if(m0(1,1)>0) deltan = (1-etaI)*(unor-unjump0) + etaI*this->getThickness()/6.*(-rnor-rnjump0);
+  else deltan = (1-etaI)*(unor-unjump0) + etaI*this->getThickness()/6.*(rnor-rnjump0);
+  if(m0(0,1)>0) deltat = (1-etaII)*(ut-utjump0) + etaII*this->getThickness()/alpha*(-rt-rtjump0);
+  else deltat = (1-etaII)*(ut-utjump0) + etaII*this->getThickness()/alpha*(rt-rtjump0);
+  return sqrt(deltan*deltan+beta*beta*deltat*deltat);
+}
+
+double IPVariablePlateOIWF::computeDeltaNormal(const SVector3 ujump_, const double rjump_[3], const LocalBasis *lbs) const
+{
+  double unor = - scaldot(ujump_,lbs->getphi0(1))/lbs->getphi0(1).norm(); // minus because normal of LocalBasis of interface = - phi0,1
+  double rnor = - scaldot(rjump_,lbs->getphi0(1))/lbs->getphi0(1).norm();
+  if(m0(1,1)<0) return (1-etaI)*(unor-unjump0) + etaI*this->getThickness()/6.*(-rnor-rnjump0);
+  else return (1-etaI)*(unor-unjump0) + etaI*this->getThickness()/6.*(rnor-rnjump0);
+}
+double IPVariablePlateOIWF::computeDeltaTangent(const SVector3 ujump_, const double rjump_[3], const LocalBasis *lbs) const
+{
+  double utan = - scaldot(ujump_,lbs->getphi0(0))/lbs->getphi0(0).norm(); // minus because normal of LocalBasis of interface = - phi0,1
+  double rtan = - scaldot(rjump_,lbs->getphi0(0))/lbs->getphi0(0).norm();
+  if(m0(0,1)<0) return (1-etaII)*(utan-utjump0) + etaII*this->getThickness()/alpha*(-rtan-rtjump0);
+  else return (1-etaII)*(utan-utjump0) + etaII*this->getThickness()/alpha*(rtan-rtjump0);
 }

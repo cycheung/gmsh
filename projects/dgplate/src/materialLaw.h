@@ -31,10 +31,30 @@ struct tab6{
 
 
 class materialLaw{
-  public :
-    enum matname{linearElasticPlaneStress, linearElasticPlaneStressWithFracture};
-    virtual void bidon(){}; // One virtual function to use polymorphism
-    //virtual void stress(const LocalBasis*, const double[6],double[6])=0;
+ protected :
+  int _num; // number of law (must be unique !)
+ public :
+  enum matname{linearElasticPlaneStress, linearElasticPlaneStressWithFracture};
+  matname _type; // used to make a dynamic_cast to access to specific data of the law
+  // constructor
+  materialLaw(const int num) : _num(num){}
+  ~materialLaw(){}
+  materialLaw(const materialLaw &source){
+    _num = source._num;
+    _type = source._type;
+  }
+  materialLaw& operator=(const materialLaw &source){
+    _num = source._num;
+    _type = source._type;
+    return *this;
+  }
+  virtual int getNum() const{return _num;}
+  virtual matname getType() const{return _type;}
+  virtual void setType(const matname t){_type=t;}
+  static void registerBindings(binding *b){
+    classBinding *cb = b->addClass<materialLaw>("materialLaw");
+    cb->setDescription("base class for material Law");
+  }
 };
 
 // class for linear elastic law
@@ -45,7 +65,12 @@ class linearElasticLawPlaneStress : public materialLaw{
     const double C11;
     LinearElasticShellHookeTensor H;
   public :
-    linearElasticLawPlaneStress(const double E, const double nu) : _E(E), _nu(nu), C11(E/((1-nu)*(1+nu))){
+    linearElasticLawPlaneStress(const int num, const double E, const double nu) : materialLaw(num),
+                                                                                      _E(E), _nu(nu), C11(E/((1-nu)*(1+nu))){
+      this->setType(materialLaw::linearElasticPlaneStress);
+    }
+    ~linearElasticLawPlaneStress(){}
+    linearElasticLawPlaneStress( const linearElasticLawPlaneStress &source) : materialLaw(source), _E(source._E), _nu(source._nu), C11(source.C11), H(source.H){
     }
     virtual void stress(const LocalBasis *lb,const tab6 &eps,tab6 &sig){ //template scal vect tensor
         H.set(lb,C11,_nu);
@@ -54,38 +79,103 @@ class linearElasticLawPlaneStress : public materialLaw{
         sig[3] = H(0,1,0,0)*eps[0]+(H(0,1,0,1)+H(0,1,1,0))*eps[3]+H(0,1,1,1)*eps[1];
         sig[2]=sig[4]=sig[5]=0.;
     }
+    virtual double getYoung() const{return _E;}
+    virtual double getPoisson() const{return _nu;}
+    static void registerBindings(binding *b){
+      classBinding *cb = b->addClass<linearElasticLawPlaneStress>("linearElasticLawPlaneStress");
+      cb->setDescription("A linear elastic plane stress material law");
+      methodBinding *cm;
+      // Constructor
+      cm = cb->setConstructor<linearElasticLawPlaneStress,int,double,double>();
+      cm->setArgNames("num","E","nu",NULL);
+      cm->setDescription("First arg is a unique law number. Second is the Young Modulus and third is the poisson coefficient");
+    }
 };
 
 class linearElasticLawPlaneStressWithFracture : public linearElasticLawPlaneStress{
  protected :
-  const double _Gc;
-  const double _sigmac;
+  // const when LUA with 6 double
+  double _Gc;
+  double _sigmac;
+  double _beta;
+  double _mu;
  public :
-  linearElasticLawPlaneStressWithFracture(const double E, const double nu, const double Gc, const double sigmac) :
-                                          linearElasticLawPlaneStress(E,nu), _Gc(Gc), _sigmac(sigmac){}
+  linearElasticLawPlaneStressWithFracture(const int num, const double E, const double nu, const double Gc, const double sigmac, const double beta, const double mu) :
+                                          linearElasticLawPlaneStress(num,E,nu), _Gc(Gc), _sigmac(sigmac), _beta(beta), _mu(mu){
+    this->setType(materialLaw::linearElasticPlaneStressWithFracture);
+  }
+  linearElasticLawPlaneStressWithFracture(const int num, const double E, const double nu) :
+                                          linearElasticLawPlaneStress(num,E,nu), _Gc(0.), _sigmac(0.), _beta(0.), _mu(0.){
+    this->setType(materialLaw::linearElasticPlaneStressWithFracture);
+  }
+  // set operation (needed because impossible to give 6 double with LUA why ?)
+  void setGc(const double gc){_Gc=gc;}
+  void setSigmac(const double sig){_sigmac = sig;}
+  void setBeta(const double b){_beta =b;}
+  void setMu(const double m){_mu = m;}
+
   // get operation
   double getGc() const{return _Gc;}
   double getSigmac() const{return _sigmac;}
-  void getCohesiveReduction(const double M0, const double N0, const double delta, const double delta_max,
-                              const double deltac,reductionElement &nhatmean, reductionElement &mhatmean) const{
+  double getBeta() const{return _beta;}
+  double getMu() const{return _mu;}
+  void getCohesiveReduction(const reductionElement &m0, const reductionElement &n0, const double deltan,
+                            const double deltan_max, const double deltat, const double deltat_max, const double deltac, const bool tension,
+                            reductionElement &nhatmean, reductionElement &mhatmean) const{
     // for now Mxx and Nxx component (other = 0)
     // nhatmean and mhatmean are supposed to be initialized (change this when others components will be computed)
     nhatmean.setAll(0.);
     mhatmean.setAll(0.);
-    // monotonic decreasing cohesive law
-    if((0.<=delta) and (delta<=deltac)){
-      double c;
-      if(delta >= delta_max) // loading case
-        c = 1.-delta/deltac;
-      else //unloading case
-        c = delta/delta_max - delta/deltac;
-      mhatmean(1,1) = M0*c; // Change this ??
-      nhatmean(1,1) = N0*c;
+    // monotonic decreasing cohesive law (Camacho & Ortiz 1996)
+    if(tension){ // tension case
+      if(deltan<=deltac){
+        double c;
+        if(deltan >= deltan_max) // loading case
+          c = 1.-deltan/deltac;
+        else //unloading case
+          c = deltan/deltan_max - deltan/deltac;
+        mhatmean(1,1) = m0(1,1)*c; // Change this ??
+        nhatmean(1,1) = n0(1,1)*c;
+        mhatmean(0,1) = mhatmean(1,0) = m0(0,1)*c*sign(deltat);
+        nhatmean(0,1) = nhatmean(1,0) = n0(0,1)*c*sign(deltat);
  //     printf("%lf %lf %lf\n",delta,mhatmean[1][1],M0);
+      }
+//      else if(deltan<0.)
+//        Msg::Error("Deltan is <0 in a tension case !");
     }
-//    else if(delta> deltac)
-//      printf("full broken\n");
-//    else {printf("haha\n");Msg::Error("Case delta < 0 is not yet implemented for linearElasticLawPlaneStressWithFracture\n");}
+    else{ // compression case
+      if(deltat<=deltac){
+        double c;
+        if(deltat >= deltat_max) // loading case
+          c = 1.-abs(deltat)/deltac;
+        else //unloading case
+          c = deltat/abs(deltat_max) - deltat/deltac;
+        mhatmean(0,1) = mhatmean(1,0) = m0(0,1)*c*sign(deltat);
+        nhatmean(0,1) = nhatmean(1,0) = n0(0,1)*c*sign(deltat);
+      }
+    }
+  }
+  static void registerBindings(binding *b){
+    classBinding *cb = b->addClass<linearElasticLawPlaneStressWithFracture>("linearElasticLawPlaneStressWithFracture");
+    cb->setDescription("A linear elastic plane stress material law with fracture possibility");
+    methodBinding *cm;
+    // Constructor
+    cm = cb->setConstructor<linearElasticLawPlaneStressWithFracture,int,double,double>();
+    cm->setArgNames("num","E","nu",NULL);
+    cm->setDescription("Arguments are num E and nu. Others parameters must be pass thanks to set methods ");
+    // methods
+    cm = cb->addMethod("setGc", &linearElasticLawPlaneStressWithFracture::setGc);
+    cm->setArgNames("gc",NULL);
+    cm->setDescription("Set the value of fracture energy");
+    cm = cb->addMethod("setSigmac", &linearElasticLawPlaneStressWithFracture::setSigmac);
+    cm->setArgNames("sig",NULL);
+    cm->setDescription("Set the value of fracture stress");
+    cm = cb->addMethod("setBeta", &linearElasticLawPlaneStressWithFracture::setBeta);
+    cm->setArgNames("b",NULL);
+    cm->setDescription("Set the value of ratio : KII/KI");
+    cm = cb->addMethod("setMu", &linearElasticLawPlaneStressWithFracture::setMu);
+    cm->setArgNames("m",NULL);
+    cm->setDescription("Set the value of friction coefficient");
   }
 };
 

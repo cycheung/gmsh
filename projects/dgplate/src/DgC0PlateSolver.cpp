@@ -26,6 +26,81 @@
 #include "PViewData.h"
 #endif
 
+// ElasticField
+void DGelasticField::setFormulation(int b){b==1 ? FullDg=true : FullDg=false;}
+/*void DGelasticField::setMaterialLaw(int m){
+  switch(m){
+    case materialLaw::linearElasticPlaneStress :
+      mat = new linearElasticLawPlaneStress(1,_E,_nu);
+      if(_msimp==1) _elemType = SolElementType::PlatePlaneStress; // change this
+      else _elemType = SolElementType::PlatePlaneStressWTI;
+      break;
+    case materialLaw::linearElasticPlaneStressWithFracture :
+      mat = new linearElasticLawPlaneStressWithFracture(1,_E,_nu,_Gc,_sigmac,_betaML, _muML);
+      _elemType = SolElementType::PlatePlaneStressWF;
+      if(_msimp==1){
+        _msimp=3;
+        Msg::Warning("Impossible to compute a fracture problem with only 1 Simpson's point. The number of Simpson's point is put to 3.\n");
+      }
+      if(!FullDg){
+        FullDg = true;
+        Msg::Warning("Impossible to compute a fracture problem with cG/dG formulation. Switch to full dG formulation\n");
+      }
+      break;
+    default : printf("The chosen material law seems to be inexsistent\n");
+  }
+}*/
+void DGelasticField::setMaterialLaw(materialLaw *mlaw){
+  mat = mlaw;
+  switch(mat->getType()){
+    case materialLaw::linearElasticPlaneStress :
+      if(_msimp==1) _elemType = SolElementType::PlatePlaneStress; // change this
+      else _elemType = SolElementType::PlatePlaneStressWTI;
+      break;
+    case materialLaw::linearElasticPlaneStressWithFracture :
+      _elemType = SolElementType::PlatePlaneStressWF;
+      if(_msimp==1){
+        _msimp=3;
+        Msg::Warning("Impossible to compute a fracture problem with only 1 Simpson's point. The number of Simpson's point is put to 3.\n");
+      }
+      if(!FullDg){
+        FullDg = true;
+        Msg::Warning("Impossible to compute a fracture problem with cG/dG formulation. Switch to full dG formulation\n");
+      }
+      break;
+  }
+}
+
+void DGelasticField::setLawNum(const int num){_matnum = num;}
+
+void DGelasticField::registerBindings(binding *b)
+{
+  classBinding *cb = b->addClass<DGelasticField>("DGelasticField"); //TODO create MaterialField and derive DGelasticField
+  cb->setDescription("Material field: Give all parameters for material law and numerical integration");
+
+  methodBinding *cm;
+  // Constructor
+  cm = cb->setConstructor<DGelasticField>();
+  cm->setDescription("Initialisation of a linear elastic law. All the methods need to be used to set correctly this field");
+  // method
+  cm = cb->addMethod("thickness", &DGelasticField::setThickness);
+  cm->setArgNames("h",NULL);
+  cm->setDescription("Value of thickness (because beam, plate or shell formulation");
+  cm = cb->addMethod("simpsonPoints", &DGelasticField::setNumberOfSimpsonPoints);
+  cm->setArgNames("num",NULL);
+  cm->setDescription("Set the number of Simpson's point used for this field. If = 1 no integration (linear elastic only). If the given is even 1 is add to this number");
+  cm = cb->addMethod("tag", &DGelasticField::setTag);
+  cm->setArgNames("t",NULL);
+  cm->setDescription("Set the tag of this field");
+  cm = cb->addMethod("formulation", &DGelasticField::setFormulation);
+  cm->setArgNames("b",NULL);
+  cm->setDescription("Set the material law used for this field. LinearElasticPlaneStress=0");
+  cm = cb->addMethod("lawnumber", &DGelasticField::setLawNum);
+  cm->setArgNames("num",NULL);
+  cm->setDescription("Give the number of the law linked to this elasticField");
+}
+
+// DgC0PlateSolver
 void DgC0PlateSolver::setMesh(const std::string meshFileName)
 {
   pModel = new GModelWithInterface();
@@ -47,35 +122,31 @@ void DgC0PlateSolver::readInputFile(const std::string fn)
   char what[256];
   while(!feof(f)){
     if(fscanf(f, "%s", what) != 1) return;
-    if (!strcmp(what, "ElasticDomain")){
+    if (!strcmp(what, "ElasticPlaneStressLaw")){
+      int num;
+      double E,nu;
+      if(fscanf(f, "%d %lf %lf",&num,&E,&nu) !=3) return;
+      linearElasticLawPlaneStress *mlaw = new linearElasticLawPlaneStress(num,E,nu);
+      this->addMaterialLaw(mlaw);
+    }
+    else if(!strcmp(what,"ElasticPlaneStressLawWithFracture")){
+      int num;
+      double E,nu,Gc,sigmac,beta,mu;
+      if(fscanf(f, "%d %lf %lf %lf %lf %lf %lf",&num,&E,&nu,&Gc,&sigmac,&beta,&mu) !=7) return;
+      linearElasticLawPlaneStressWithFracture *mlaw = new linearElasticLawPlaneStressWithFracture(num,E,nu,Gc,sigmac,beta,mu);
+      this->addMaterialLaw(mlaw);
+    }
+    else if (!strcmp(what, "ElasticDomain")){
       DGelasticField field; // TODO creation of constructor
-      int physical, b,c;
-      if(fscanf(f, "%d %lf %lf %lf %d %d", &physical, &field._E, &field._nu, &field._h, &b, &c) != 6) return;
+      int b,c;
+      if(fscanf(f, "%d %d %lf %lf %d %d", &field._phys, &field._matnum, &field._h, &b, &c) != 5) return;
       field._tag = _tag;
-      field._phys= physical; // needed to impose BC on face
       field.setFormulation(b); // Formulation of element cG/dG full dG
       // set the number of simpsons point for numerical integration on thickness (add one to the number if it is even)
       c%2==0 ? field._msimp=++c : field._msimp=c;
-      field.setMaterialLaw(materialLaw::linearElasticPlaneStress); // Elastic Domain --> linear elastic law
-      field.g = new groupOfElements (_dim, physical);
+      field.g = new groupOfElements (_dim, field._phys);
       // push field in vector
       elasticFields.push_back(field);
-
-    }
-    else if (!strcmp(what, "ElasticFractureDomain")){
-      DGelasticField field; // TODO creation of constructor
-      int physical, c;
-      if(fscanf(f, "%d %lf %lf %lf %lf %lf %d", &physical, &field._E, &field._nu, &field._h, &field._Gc, &field._sigmac, &c) != 7) return;
-      field._tag = _tag;
-      field._phys= physical; // needed to impose BC on face
-      field.setFormulation(1); // Only full dG for fracture problem
-      // set the number of simpsons point for numerical integration on thickness (add one to the number if it is even)
-      c%2==0 ? field._msimp=++c : field._msimp=c;
-      field.setMaterialLaw(materialLaw::linearElasticPlaneStressWithFracture); // Elastic Domain --> linear elastic law
-      field.g = new groupOfElements (_dim, physical);
-      pModel->getBoundInterface(physical,field.gib); // if theta is prescribed before the construction of this field
-      elasticFields.push_back(field);
-
     }
     else if (!strcmp(what, "Void")){
       //      elasticField field;
@@ -300,9 +371,36 @@ void DgC0PlateSolver::readInputFile(const std::string fn)
   fclose(f);
 }
 
+void DgC0PlateSolver::init(){
+  // create interfaceElement
+  this->createInterfaceElement();
+
+  // link the law to the DGElasticField
+  for(int i=0; i<elasticFields.size();i++){
+    materialLaw* mlaw = this->getMaterialLaw(elasticFields[i].getLawNum());
+    elasticFields[i].setMaterialLaw(mlaw);
+  }
+}
+
 void DgC0PlateSolver::addElasticDomain(DGelasticField* ED, const int f, const int d){
   ED->g = new groupOfElements (d, f);
   elasticFields.push_back(*ED);
+}
+
+void DgC0PlateSolver::addMaterialLaw(materialLaw* mlaw){
+  maplaw.insert(std::pair<int,materialLaw*>(mlaw->getNum(),mlaw));
+}
+
+void DgC0PlateSolver::addLinearElasticLawPlaneStress(linearElasticLawPlaneStress* mlaw){
+  //maplaw.insert(std::pair<int,materialLaw*>(mlaw->getNum(),mlaw));
+  this->addMaterialLaw(mlaw);
+}
+void DgC0PlateSolver::addLinearElasticLawPlaneStressWithFracture(linearElasticLawPlaneStressWithFracture *mlaw){
+  this->addMaterialLaw(mlaw);
+}
+
+materialLaw* DgC0PlateSolver::getMaterialLaw(const int num){
+  return (maplaw.find(num)->second);
 }
 
 void DgC0PlateSolver::addTheta(const int numphys){
@@ -412,6 +510,8 @@ void DgC0PlateSolver::createInterfaceElement_2(){
 
 void DgC0PlateSolver::solve()
 {
+// init data
+this->init();
 linearSystem<double> *lsys;
 if(DgC0PlateSolver::whatSolver == Taucs){
     #if defined(HAVE_TAUCS)
@@ -511,13 +611,13 @@ else{
     else printf("Cg/Dg formulation is chosen for elasticField %d\n",elasticFields[i]._tag);
     printf("Number of integration point on thickness : %d\n",elasticFields[i].getmsimp());
     // Initialization of elementary terms in function of the field and space
-    IsotropicElasticStiffBulkTermC0Plate Eterm(*LagSpace,elasticFields[i]._E,elasticFields[i]._nu,elasticFields[i]._h,elasticFields[i].getFormulation());
+    IsotropicElasticStiffBulkTermC0Plate Eterm(*LagSpace,elasticFields[i].getMaterialLaw(),elasticFields[i]._h,elasticFields[i].getFormulation());
     // Assembling loop on Elementary terms
     MyAssemble(Eterm,*LagSpace,elasticFields[i].g->begin(),elasticFields[i].g->end(),Integ_Bulk,
                  *pAssembler);
 
     // Initialization of elementary  interface terms in function of the field and space
-    IsotropicElasticStiffInterfaceTermC0Plate IEterm(*LagSpace,elasticFields[i]._E,elasticFields[i]._nu,_beta1,
+    IsotropicElasticStiffInterfaceTermC0Plate IEterm(*LagSpace,elasticFields[i].getMaterialLaw(),_beta1,
                                                 _beta2,_beta3,
                                                 elasticFields[i]._h,&ufield, &ipf, elasticFields[i].getSolElemType(),
                                                 elasticFields[i].getFormulation());
@@ -526,7 +626,7 @@ else{
                       *pAssembler); // Use the same GaussQuadrature rule than on the boundary
 
     // Initialization of elementary  interface terms in function of the field and space
-    IsotropicElasticStiffVirtualInterfaceTermC0Plate VIEterm(*LagSpace,elasticFields[i]._E,elasticFields[i]._nu,_beta1,
+    IsotropicElasticStiffVirtualInterfaceTermC0Plate VIEterm(*LagSpace,elasticFields[i].getMaterialLaw(),_beta1,
                                                 _beta2,_beta3,
                                                 elasticFields[i]._h,&ufield,&ipf,elasticFields[i].getSolElemType(),true,elasticFields[i].getFormulation());
     // Assembling loop on elementary boundary interface terms
@@ -696,14 +796,19 @@ void DgC0PlateSolver::addArchivingEdgeForce(const int numphys, const int comp){
         }
       }
   }
-  aef[numphys] = vdof;
-  aefvalue[numphys] = 0.;
+  // keys = 10*numphys + comp otherwise no way to archive different components
+  int key = 10*numphys+comp;
+  aef[key] = vdof;
+  aefvalue[key] = 0.;
 
   // remove old file (linux only ??)
   std::ostringstream oss;
   oss << numphys;
   std::string s = oss.str();
-  std::string rfname = "rm force"+s+".csv";
+  oss.str("");
+  oss << comp;
+  std::string s2 = oss.str();
+  std::string rfname = "rm force"+s+"comp"+s2+".csv";
   system(rfname.c_str());
 }
 
@@ -714,7 +819,10 @@ void DgC0PlateSolver::addArchivingNodeDisplacement(const int num, const int comp
   std::ostringstream oss;
   oss << num;
   std::string s = oss.str();
-  std::string rfname = "rm NodalDisplacement"+s+".csv";
+  oss.str("");
+  oss << comp;
+  std::string s2 = oss.str();
+  std::string rfname = "rm NodalDisplacement"+s+"comp"+s2+".csv";
   system(rfname.c_str());
 }
 
@@ -760,6 +868,12 @@ void DgC0PlateSolver::registerBindings(binding *b)
   cm = cb->addMethod("AddElasticDomain", &DgC0PlateSolver::addElasticDomain);
   cm->setArgNames("ED","f","d",NULL);
   cm->setDescription("Add a elastic domain class Second argument is the physical number of the domain. Third is the dimension");
+  cm = cb->addMethod("AddLinearElasticLawPlaneStress", &DgC0PlateSolver::addLinearElasticLawPlaneStress);
+  cm->setArgNames("mlaw",NULL);
+  cm->setDescription("Add a material law");
+  cm = cb->addMethod("AddLinearElasticLawPlaneStressWithFracture", &DgC0PlateSolver::addLinearElasticLawPlaneStressWithFracture);
+  cm->setArgNames("mlaw",NULL);
+  cm->setDescription("Add a material law");
   cm = cb->addMethod("AddThetaConstraint", &DgC0PlateSolver::addTheta);
   cm->setArgNames("numphys",NULL);
   cm->setDescription("Add a constrain on rotation (=0) for a physical group");

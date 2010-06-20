@@ -169,8 +169,8 @@ class LocalBasis{
     inline double gett0(const int i) const {return t0(i);}
     std::vector<SVector3> getphi0() const {return phi0;}
     std::vector<SVector3> getphi0d()const {return phi0d;}
-    SVector3 getphi0(const int i) const {if(i<2) return phi0[i]; else return t0;}
-    SVector3 getphi0d(const int i)const {if (i<2) return phi0d[i]; else return t0;}
+    const SVector3& getphi0(const int i) const {if(i<2) return phi0[i]; else return t0;}
+    const SVector3& getphi0d(const int i)const {if (i<2) return phi0d[i]; else return t0;}
     inline double getphi0(const int i,const int j) const {return phi0[i](j);}
     inline double getphi0d(const int i,const int j) const {return phi0d[i](j);}
     fullMatrix<double> getT() const {return T;}
@@ -179,7 +179,7 @@ class LocalBasis{
     inline double gett(const int i, const int j) const {return t(i,j);}
 
     // Print
-    void print(){
+    void print() const {
     printf("Basis phi0\n");
     printf("1 : %f %f %f\n",phi0[0](0),phi0[0](1),phi0[0](2));
     printf("2 : %f %f %f\n",phi0[1](0),phi0[1](1),phi0[1](2));
