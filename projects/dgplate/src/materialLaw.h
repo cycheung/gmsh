@@ -128,11 +128,11 @@ class linearElasticLawPlaneStressWithFracture : public linearElasticLawPlaneStre
     mhatmean.setAll(0.);
     // monotonic decreasing cohesive law (Camacho & Ortiz 1996)
     if(tension){ // tension case
-      if(deltan<=deltac){
+      if(deltan<=deltac and deltan >=0.){
         double c;
-        if(deltan >= deltan_max) // loading case
+        if( deltan >= deltan_max) // loading case
           c = 1.-deltan/deltac;
-        else //unloading case
+        else if(deltan > 0.) //unloading case
           c = deltan/deltan_max - deltan/deltac;
         mhatmean(1,1) = m0(1,1)*c; // Change this ??
         nhatmean(1,1) = n0(1,1)*c;
@@ -146,10 +146,10 @@ class linearElasticLawPlaneStressWithFracture : public linearElasticLawPlaneStre
     else{ // compression case
       if(deltat<=deltac){
         double c;
-        if(deltat >= deltat_max) // loading case
-          c = 1.-abs(deltat)/deltac;
+        if(fabs(deltat) >= fabs(deltat_max)) // loading case
+          c = 1.-fabs(deltat)/deltac;
         else //unloading case
-          c = deltat/abs(deltat_max) - deltat/deltac;
+          c = fabs(deltat)/fabs(deltat_max) - fabs(deltat)/deltac;
         mhatmean(0,1) = mhatmean(1,0) = m0(0,1)*c*sign(deltat);
         nhatmean(0,1) = nhatmean(1,0) = n0(0,1)*c*sign(deltat);
       }

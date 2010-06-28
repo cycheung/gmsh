@@ -18,7 +18,7 @@ displacementField::displacementField(dofManager<double> *pas, std::vector<DGelas
                                      const bool view_, const std::string filen
                                                                          ) : pAssembler(pas), fullDg(elas[0].getFormulation()),
                                                                             _field(field),
-                                                                            elementField(filen,1000000,nc,elementField::ElementNodeData,"displacement",view_)
+                                                                            elementField(filen,1000000,nc,elementField::ElementNodeData,view_)
 {
   pAssembler->getFixedDof(fixedDof);
   long int totelem=0;
@@ -38,7 +38,7 @@ displacementField::displacementField(dofManager<double> *pas, std::vector<DGelas
         totelem++;
    // copy node to archive
    for(int i=0;i<archiving.size();i++)
-     varch.insert(std::pair<long int,Dof>(archiving[i].getEntity(),archiving[i]));
+     varch.insert(std::pair<Dof,long int>(archiving[i],archiving[i].getEntity()));
   }
   else{ // full Dg
     for(int i=0;i<elas.size();i++){
@@ -63,7 +63,7 @@ displacementField::displacementField(dofManager<double> *pas, std::vector<DGelas
           MElement *ele = *it;
           for(int j=0;j<ele->getNumVertices();j++){
             if(ele->getVertex(j)->getNum() == nodenum){
-              varch.insert(std::pair<int,Dof>(nodenum,Dof(ele->getNum(),DgC0PlateDof::createTypeWithThreeInts(comp,field,j))));
+              varch.insert(std::pair<Dof,long int >(Dof(ele->getNum(),DgC0PlateDof::createTypeWithThreeInts(comp,field,j)),nodenum));
               flagout = true;
               break;
             }
@@ -73,7 +73,7 @@ displacementField::displacementField(dofManager<double> *pas, std::vector<DGelas
     }
   }
   this->setTotElem(totelem); // TODO FIX IT HOW ??
-  this->buildView(elas,0.,0,false);
+  this->buildView(elas,0.,0,"displacement",-1,false);
 }
 
 void displacementField::update(){
@@ -198,15 +198,16 @@ void displacementField::updateFixedDof(){
 void displacementField::archiving(const double time){
   FILE *fp;
   double u;
-  for(std::map<long int,Dof>::iterator it = varch.begin(); it!=varch.end();++it){
-    this->get(it->second,u);
+  for(std::map<Dof,long int>::iterator it = varch.begin(); it!=varch.end();++it){
+    Dof D = it->first;
+    this->get(D,u);
     // write in File
       std::ostringstream oss;
-      oss << it->first;
+      oss << it->second;
       std::string s = oss.str();
       // component of displacement
       int field,comp,num;
-      DgC0PlateDof::getThreeIntsFromType(it->second.getType(),comp,field,num);
+      DgC0PlateDof::getThreeIntsFromType(it->first.getType(),comp,field,num);
       oss.str("");
       oss << comp;
       std::string s2 = oss.str();

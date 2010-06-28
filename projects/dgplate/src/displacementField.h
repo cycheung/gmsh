@@ -27,7 +27,7 @@ class displacementField : public elementField{
     std::vector<Dof> fixedDof;
     bool fullDg; // formulation
     int _field;
-    std::map<long int,Dof> varch;
+    std::map<Dof,long int> varch;
 
   public :
     displacementField(dofManager<double> *pas, std::vector<DGelasticField> &elas,

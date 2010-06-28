@@ -331,6 +331,11 @@ void DgC0PlateSolver::readInputFile(const std::string fn)
         pModel->insertThetaBound(num_phys,vv);
       }
     }
+    else if(!strcmp(what, "Broken")){
+      int numphys;
+      fscanf(f,"%d",&numphys);
+      this->addPhysInitBroken(numphys);
+    }
     else if(!strcmp(what, "Solver")){
       int sol,sch;
       fscanf(f,"%d %d",&sol,&sch);
@@ -412,6 +417,9 @@ void DgC0PlateSolver::addTheta(const int numphys){
   //for(int i=0;i<elasticFields.size();i++) pModel->getBoundInterface(elasticFields[i]._phys,elasticFields[i].gib);
 }
 
+void DgC0PlateSolver::addPhysInitBroken(const int numphys){
+  initbrokeninter.push_back(numphys);
+}
 
 void DgC0PlateSolver::createInterfaceElement(){
   // Compute and add interface element to the model
@@ -642,8 +650,8 @@ else{
   ufield.update();
   ipf.compute1state(IPState::current);
   // save solution (for visualisation)
-  ipf.buildView(elasticFields,0.,1,false);
-  ufield.buildView(elasticFields,0.,1,false);
+  ipf.buildView(elasticFields,0.,1,"VonMises",-1,false);
+  ufield.buildView(elasticFields,0.,1,"displacement",-1,false);
 }
 
 void DgC0PlateSolver::setSNLData(const int ns, const double et, const double reltol){
@@ -898,6 +906,9 @@ void DgC0PlateSolver::registerBindings(binding *b)
   cm = cb->addMethod("stabilityParameters", &DgC0PlateSolver::setStabilityParameters);
   cm->setArgNames("b1","b2","b3",NULL);
   cm->setDescription("Beta value for stabilization. The first one only for Cg/Dg formulation");
+  cm = cb->addMethod("broken", &DgC0PlateSolver::addPhysInitBroken);
+  cm->setArgNames("numphys",NULL);
+  cm->setDescription("Initial broken of interface given by a physical number");
   // delete other functions ??
 /*  cm = cb->addMethod("AddNodalDisplacement", &DgC0PlateSolver::addNodalDisp);
   cm->setArgNames("node","comp","value",NULL);

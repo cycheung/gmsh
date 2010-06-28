@@ -41,6 +41,42 @@ class reductionElement{
   void setAll(const double d){for(int i=0;i<2;i++) for(int j=0;j<2;j++) mat[i][j]=0.;}
 };
 
+// class for stressTensor
+class stressTensor;
+static void matvectprod(const stressTensor &st, const SVector3 &v1, SVector3 &v2);
+class stressTensor : public STensor3{
+ public :
+  stressTensor(const double v =0.0) : STensor3(v){}
+  stressTensor(const reductionElement &red, const LocalBasis *lbs, const double v =0.0) : STensor3(v){
+    STensor3 temp;
+    for(int alpha = 0; alpha<2;alpha++)
+      for(int beta=0; beta<2;beta++){
+        tensprod(lbs->getphi0(alpha),lbs->getphi0(beta),temp);
+        temp *= red(alpha,beta);
+        *this += temp;
+      }
+  }
+  ~stressTensor(){}
+  stressTensor(const stressTensor & source) : STensor3(source){}
+  stressTensor &operator= (const stressTensor &source){
+    this->STensor3::operator=(source);
+    return *this;
+  }
+  double getComponent(const SVector3 &n1, const SVector3 & n2) const{
+    SVector3 temp(0., 0., 0.);
+    matvectprod(*this,n2,temp);
+    return dot(temp,n1);
+  }
+};
+
+static void matvectprod(const stressTensor &st, const SVector3 &v1, SVector3 &v2){
+  SVector3 temp;
+  for(int i=0;i<3;i++){
+    temp(0) = st(i,0); temp(1) = st(i,1); temp(2) = st(i,2);
+    v2(i) = dot(temp,v1);
+  }
+}
+
 static inline double scaldot(const SVector3 &a, const SVector3 &b);
 
 static inline void diff(const SVector3 &a,const SVector3 &b,SVector3 &c);

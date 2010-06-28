@@ -32,12 +32,12 @@ class IPVariable
     IPVariable(){}
     ~IPVariable(){}
     // copie constructor
-    IPVariable(const IPVariable &source){
-    }
-    IPVariable &operator = (const IPVariable &source){
-    }
+    IPVariable(const IPVariable &source){};
+
+    virtual IPVariable &operator = (IPVariable &source)=0;
+
     // How to remove this ? (Polymorphic (dynamic cast impossible if no virtual functions)).
-    virtual void bidon(){};
+    //virtual void bidon(){};
 
 };
 class IPVariablePlate : public IPVariable{
@@ -79,16 +79,17 @@ class IPVariablePlate : public IPVariable{
       lb=source.lb;
       _h=source._h;
     }
-    IPVariablePlate &operator = (const IPVariablePlate &source){
-      IPVariable::operator = (source);
+    IPVariablePlate &operator = (IPVariable &source){
+      //IPVariable::operator = (source);
+      IPVariablePlate *src = dynamic_cast<IPVariablePlate*>(&source);
       for(int i=0;i<6;i++){
-        sigmaMembrane[i]=source.getSigmaMembrane(i);
-        sigmaBending[i]=source.getSigmaBending(i);
-        epsilon[i]=source.getEpsMembrane(i);
-        rho[i]=source.getRho(i);
+        sigmaMembrane[i]=src->getSigmaMembrane(i);
+        sigmaBending[i]=src->getSigmaBending(i);
+        epsilon[i]=src->getEpsMembrane(i);
+        rho[i]=src->getRho(i);
       }
-      lb=source.lb;
-      _h=source._h;
+      lb=src->lb;
+      _h=src->_h;
       return *this;
     }
     virtual double getSigma(const int i) const{return sigmaMembrane[i]+sigmaBending[i];}
@@ -117,9 +118,10 @@ class IPVariablePlateOnInterface : public IPVariablePlate{
     {
       lbs = source.lbs;
     }
-    IPVariablePlateOnInterface &operator = (const IPVariablePlateOnInterface &source){
+    IPVariablePlateOnInterface &operator = (IPVariable &source){
       IPVariablePlate::operator = (source);
-      lbs = source.lbs;
+      IPVariablePlateOnInterface *src = dynamic_cast<IPVariablePlateOnInterface*>(&source);
+      lbs = src->lbs;
       return *this;
     }
     virtual const LocalBasis* getLocalBasisOfInterface() const{return &lbs;}
@@ -180,17 +182,18 @@ class IPVariablePlateWithThicknessIntegration : public IPVariable{
     }
 
     ~IPVariablePlateWithThicknessIntegration(){}
-    IPVariablePlateWithThicknessIntegration& operator=(const IPVariablePlateWithThicknessIntegration &source)
+    IPVariablePlateWithThicknessIntegration& operator=(IPVariable &source)
     {
-      nsimp = source.getNumSimp();
+      IPVariablePlateWithThicknessIntegration *src = dynamic_cast<IPVariablePlateWithThicknessIntegration*>(&source);
+      nsimp = src->getNumSimp();
       sigma.resize(nsimp);
       epsilon.resize(nsimp);
       zsimp.resize(nsimp);
-      lb = source.lb;
+      lb = src->lb;
       for(int i=0; i<nsimp;i++){
-        sigma[i] = source.sigma[i];
-        epsilon[i] = source.epsilon[i];
-        zsimp[i] = source.zsimp[i];
+        sigma[i] = src->sigma[i];
+        epsilon[i] = src->epsilon[i];
+        zsimp[i] = src->zsimp[i];
       }
     }
     IPVariablePlateWithThicknessIntegration(const IPVariablePlateWithThicknessIntegration& source){
@@ -241,9 +244,10 @@ class IPVariablePlateWithThicknessIntegrationOI : public IPVariablePlateWithThic
     {
       lbs = source.lbs;
     }
-    IPVariablePlateWithThicknessIntegrationOI &operator = (const IPVariablePlateWithThicknessIntegrationOI &source){
+    IPVariablePlateWithThicknessIntegrationOI &operator = (IPVariable &source){
       IPVariablePlateWithThicknessIntegration::operator = (source);
-      lbs = source.lbs;
+      IPVariablePlateWithThicknessIntegrationOI* src = dynamic_cast<IPVariablePlateWithThicknessIntegrationOI*>(&source);
+      lbs = src->lbs;
       return *this;
     }
     void setLocalBasis(MInterfaceElement *ie,const std::vector<TensorialTraits<double>::GradType> &Grads,
@@ -301,32 +305,33 @@ class IPVariablePlateOIWF : public IPVariablePlateWithThicknessIntegrationOI{
       beta = source.beta;
       tension = source.tension;
     }
-    IPVariablePlateOIWF &operator = (const IPVariablePlateOIWF &source){
+    IPVariablePlateOIWF &operator = (IPVariable &source){
       IPVariablePlateWithThicknessIntegrationOI::operator = (source);
-      n0=source.n0;
-      m0=source.m0;
-      broken = source.broken;
-      unjump = source.unjump;
-      unjump0= source.unjump0;
-      rnjump = source.rnjump;
-      rnjump0=source.rnjump0;
-      utjump = source.utjump;
-      utjump0=source.utjump0;
-      rtjump = source.rtjump;
-      rtjump0=source.rtjump0;
-      deltan = source.deltan;
-      deltat = source.deltat;
-      deltac = source.deltac;
-      deltan0 = source.deltan0;
-      deltat0 = source.deltat0;
-      deltanmax = source.deltanmax;
-      deltatmax = source.deltatmax;
-      sigmac = source.sigmac;
-      etaI = source.etaI;
-      etaII= source.etaII;
-      alpha = source.alpha;
-      beta = source.beta;
-      tension = source.tension;
+      IPVariablePlateOIWF* src = dynamic_cast<IPVariablePlateOIWF*>(&source);
+      n0=src->n0;
+      m0=src->m0;
+      broken = src->broken;
+      unjump = src->unjump;
+      unjump0= src->unjump0;
+      rnjump = src->rnjump;
+      rnjump0=src->rnjump0;
+      utjump = src->utjump;
+      utjump0=src->utjump0;
+      rtjump = src->rtjump;
+      rtjump0=src->rtjump0;
+      deltan = src->deltan;
+      deltat = src->deltat;
+      deltac = src->deltac;
+      deltan0 = src->deltan0;
+      deltat0 = src->deltat0;
+      deltanmax = src->deltanmax;
+      deltatmax = src->deltatmax;
+      sigmac = src->sigmac;
+      etaI = src->etaI;
+      etaII= src->etaII;
+      alpha = src->alpha;
+      beta = src->beta;
+      tension = src->tension;
       return *this;
     }
     void setBroken(const double svm, const double Gc, const double beta_, const reductionElement &nalpha,
@@ -518,6 +523,7 @@ class AllIPState{
     }
     void nextStep() {state ? state=false : state=true;} // change boolvalue
 
+//    this function doesn't work used the copy constructor of IPVariable in place of the specific function
     void copy(const IPState::whichState ws1, const IPState::whichState ws2){
       for(std::map<long int,std::vector<IPState*> >::iterator it=_mapall.begin(); it!=_mapall.end();++it){
         std::vector<IPState*> *vips = &((*it).second);

@@ -28,17 +28,26 @@ class IPField : public elementField {
     AllIPState *_AIPS;
     displacementField *_ufield; // space field ??
 
+    std::pair<MInterfaceElement*,int> ctp; // use to know the crack tip position;
+
     // function to compute state depends on element type (template in place of dynamic cast ??)
     void compute1statePlatePlaneStress(IPState::whichState ws, T1* ef);
     double getVMPlatePlaneStress(MElement *ele, const IPState::whichState ws,
                                  const int num, const DGelasticField *elas) const;
+    double getSigmaWithOperationPlatePlaneStress(MElement *ele, const IPState::whichState ws, const int num,
+                                                     const component::enumcomp cmp, const DGelasticField *elas) const;
+
 
     void compute1statePlatePlaneStressWTI(IPState::whichState ws, T1* ef);
     double getVMPlatePlaneStressWTI(MElement *ele, const IPState::whichState ws,
                                  const int num, const DGelasticField *elas, const int pos) const;
-    const LocalBasis * getStressTensorWTI(MInterfaceElement *iele,const IPState::whichState ws,
+    double getStressWithOperationPlatePlaneStressWTI(MElement *ele, const IPState::whichState ws, const int num,
+                                                     const component::enumcomp cmp, const DGelasticField *elas, const int pos) const;
+    const LocalBasis * getStressReducedWTI(MInterfaceElement *iele,const IPState::whichState ws,
                                   const int num,const DGelasticField *elas, reductionElement &stressTensor,const int pos);
 
+    const void getStressReducedWTI(MInterfaceElement *iele,const IPState::whichState ws,
+                                  const int num,const DGelasticField *elas, reductionElement &stressTensor,const int pos, const LocalBasis*[2]);
     void compute1statePlatePlaneStressWF(IPState::whichState ws, T1* ef);
     void setBroken(MInterfaceElement *ie,IPState::whichState ws, const int numminus, const int numplus,
                    const double svm,const SolElementType::eltype elt, const double Gc, const double betaML, const bool tension_){
@@ -47,7 +56,17 @@ class IPField : public elementField {
       IPVariablePlateOIWF* ipv = dynamic_cast<IPVariablePlateOIWF*>((*vips)[numminus]->getState(ws));
       IPVariablePlateOIWF* ipvp = dynamic_cast<IPVariablePlateOIWF*>((*vips)[numminus]->getState(IPState::previous));
       if(!ipvp->getBroken()){
-        Msg::Info("Interface element %d is broken\n",ie->getNum());
+        Msg::Info("Interface element %d is broken at gauss point %d \n",ie->getNum(), numminus);
+        // debugging info
+        Msg::Info("minus element = %d plus element = %d\n",ie->getElem(0)->getNum(),ie->getElem(1)->getNum());
+        Msg::Info("Position of minus interface\n");
+        Msg::Info("x0 = %lf y0 = %lf z0 = %lf x1 = %lf y1 = %lf z1 = %lf",ie->getElem(0)->getVertex(0)->x(),
+                  ie->getElem(0)->getVertex(0)->y(),ie->getElem(0)->getVertex(0)->z(),
+                  ie->getElem(0)->getVertex(1)->x(),ie->getElem(0)->getVertex(1)->y(),ie->getElem(0)->getVertex(1)->z());
+        if(tension_) Msg::Info("tension");
+        else Msg::Info("compression");
+        ctp.first = ie;
+        ctp.second = numminus;
         reductionElement nhatmean, mhatmean;
         const LocalBasis* Lb[3];
 
@@ -91,64 +110,79 @@ class IPField : public elementField {
       int npts;
       //double svm;
       int msimpm1 = ef->getmsimp()-1;
-      reductionElement stressTensor, stressTensorHat,stressTensorMean;
+      reductionElement reducedstressTensor, reducedstressTensorHat, reducedstressTensorMean;
       linearElasticLawPlaneStressWithFracture *mlaw = dynamic_cast<linearElasticLawPlaneStressWithFracture*>(ef->getMaterialLaw());
       double sigmac = mlaw->getSigmac();
-      double seff, smax;
+      double seff, smax, snor, tau;
       bool ift;
-      const LocalBasis *lb;
+      const LocalBasis* lbb[2];
       for(std::vector<MInterfaceElement*>::iterator it=ef->gi.begin(); it!=ef->gi.end();++it){
         MInterfaceElement *ie = *it;
         npts = _intBound->getIntPoints(ie,&GP);
         // TODO no computation if already broken
         for(int j=0;j<npts;j++){
           // mean value (+ and - element)
-          lb = this->getStressTensorWTI(ie,ws,j,ef,stressTensor,0);
-          stressReductionHat(stressTensor,lb,stressTensorMean);
-          lb = this->getStressTensorWTI(ie,ws,j+npts,ef,stressTensor,0);
-          stressReductionHat(stressTensor,lb,stressTensorHat);
+          this->getStressReducedWTI(ie,ws,j,ef,reducedstressTensor,0,lbb);
+          stressReductionHat(reducedstressTensor,lbb[0],reducedstressTensorMean);
+          this->getStressReducedWTI(ie,ws,j+npts,ef,reducedstressTensor,0,lbb);
+          stressReductionHat(reducedstressTensor,lbb[0],reducedstressTensorHat);
           for(int k=0;k<2;k++)
             for(int kk=0;kk<2;kk++){
-              stressTensorMean(k,kk)+=stressTensorHat(k,kk);
-              stressTensorMean(k,kk)*=0.5;
+              reducedstressTensorMean(k,kk)+=reducedstressTensorHat(k,kk);
+              reducedstressTensorMean(k,kk)*=0.5;
             }
+          stressTensor stress(reducedstressTensorMean,lbb[1]);
+          snor = stress.getComponent(lbb[1]->getOrthonormalVector(1),lbb[1]->getOrthonormalVector(1));
+          tau = stress.getComponent(lbb[1]->getOrthonormalVector(0), lbb[1]->getOrthonormalVector(1));
           // sigma eff (Camacho and Ortiz)
-          if(stressTensorMean(1,1)>=0.){
-            seff = sqrt(stressTensorMean(1,1)*stressTensorMean(1,1)+mlaw->getBeta()*stressTensorMean(0,1)*stressTensorMean(0,1));
-            smax = stressTensorMean(1,1);
+          if(snor>=0.){
+            seff = sqrt(snor*snor+mlaw->getBeta()*tau*tau);
+            smax = snor;
             ift = true;
           }
           else{
-            seff = sqrt(mlaw->getBeta())*abs(abs(stressTensorMean(0,1))-mlaw->getMu()*abs(stressTensorMean(1,1)));
-            smax = stressTensorMean(0,1);
+            double temp = fabs(tau)-mlaw->getMu()*fabs(snor);
+            if (temp >0)
+              seff = sqrt(mlaw->getBeta())*temp;
+            else
+              seff = 0.;
+            smax = tau;
             ift=false;
           }
           if(seff> sigmac){
             this->setBroken(ie,ws,j,j+npts,smax,ef->getSolElemType(),mlaw->getGc(),mlaw->getBeta(),ift);
           } // no computation for last Simpson's point if it already broken
           else{
-              stressTensorMean.setAll(0.);
-              lb = this->getStressTensorWTI(ie,ws,j,ef,stressTensor,msimpm1);
-              stressReductionHat(stressTensor,lb,stressTensorMean);
-              lb = this->getStressTensorWTI(ie,ws,j+npts,ef,stressTensor,msimpm1);
-              stressReductionHat(stressTensor,lb,stressTensorHat);
+              reducedstressTensorMean.setAll(0.);
+              this->getStressReducedWTI(ie,ws,j,ef,reducedstressTensor,msimpm1,lbb);
+              stressReductionHat(reducedstressTensor,lbb[0],reducedstressTensorMean);
+              this->getStressReducedWTI(ie,ws,j+npts,ef,reducedstressTensor,msimpm1,lbb);
+              stressReductionHat(reducedstressTensor,lbb[0],reducedstressTensorHat);
               for(int k=0;k<2;k++)
                 for(int kk=0;kk<2;kk++){
-                  stressTensorMean(k,kk)+=stressTensorHat(k,kk);
-                  stressTensorMean(k,kk)*=0.5;
+                  reducedstressTensorMean(k,kk)+=reducedstressTensorHat(k,kk);
+                  reducedstressTensorMean(k,kk)*=0.5;
               }
-              if(stressTensorMean(1,1)>=0.){
-                seff = sqrt(stressTensorMean(1,1)*stressTensorMean(1,1)+mlaw->getBeta()*stressTensorMean(0,1)*stressTensorMean(0,1));
-                smax = stressTensorMean(1,1);
+              stressTensor stress(reducedstressTensorMean,lbb[1]);
+              snor = stress.getComponent(lbb[1]->getOrthonormalVector(1),lbb[1]->getOrthonormalVector(1));
+              tau = stress.getComponent(lbb[1]->getOrthonormalVector(0), lbb[1]->getOrthonormalVector(1));
+              if(snor>=0.){
+                seff = sqrt(snor*snor+mlaw->getBeta()*tau*tau);
+                smax = snor;
                 ift = true;
               }
               else{
-                seff = sqrt(mlaw->getBeta())*abs(abs(stressTensorMean(0,1))-mlaw->getMu()*abs(stressTensorMean(1,1)));
-                smax = stressTensorMean(0,1);
+                double temp = fabs(tau)-mlaw->getMu()*fabs(snor);
+                if (temp >0)
+                  seff = sqrt(mlaw->getBeta())*temp;
+                else
+                  seff = 0.;
+                smax = tau;
                 ift = false;
               }
               if(seff>sigmac)
                 this->setBroken(ie,ws,j,j+npts,smax,ef->getSolElemType(),mlaw->getGc(),mlaw->getBeta(),ift);
+
           }
         }
       }
@@ -224,8 +258,10 @@ class IPField : public elementField {
   IPField(std::vector< T1 >* ef,dofManager<double>* pa,T2* sp,
           QuadratureBase *intb, QuadratureBase *intb1, GModelWithInterface *pmo, displacementField* uf) : _efield(ef), _dm(pa), _space(sp),
                                                                            _intBulk(intb), _intBound(intb1), _ufield(uf),
-                                                                           elementField("stressVM.msh",1000000,1,
-                                                                                        elementField::ElementData,"VonMises",true){
+                                                                           elementField("stress.msh",1000000,1,
+                                                                                        elementField::ElementData,true){
+  ctp.first = NULL; ctp.second = -1;
+  system ("rm crackTipPosition.csv");
   // Creation of storage for IP data
   _AIPS = new AllIPState(pmo, *_efield, *_intBulk, *_intBound);
   // compute the number of element (FIX IT TODO ??)
@@ -234,7 +270,10 @@ class IPField : public elementField {
     for (groupOfElements::elementContainer::const_iterator it = (*_efield)[i].g->begin(); it != (*_efield)[i].g->end(); ++it)
       nelem++;
   this->setTotElem(nelem);
-  this->buildView(*_efield,0.,0,false);
+  this->buildView(*_efield,0.,0,"VonMises",-1,false);
+  this->buildView(*_efield,0.,0,"sigmaxx",0,false);
+  this->buildView(*_efield,0.,0,"sigmayy",1,false);
+  this->buildView(*_efield,0.,0,"tauxy",3,false);
   }
   AllIPState* getAips() const {return _AIPS;}
   ~IPField(){delete _AIPS;}
@@ -287,9 +326,59 @@ class IPField : public elementField {
     return svm;
   }
 
+  // get value with a operation
+  double getStressWithOperation(MElement *ele, const IPState::whichState ws, const int num, const component::enumcomp cmp, const int pos=0) const{
+    double sig;
+    // Find elastic field of the element
+    bool flag=false;
+    DGelasticField *ef;
+    for(int i=0;i<_efield->size();i++){
+      for(groupOfElements::elementContainer::const_iterator it = (*_efield)[i].g->begin(); it != (*_efield)[i].g->end(); ++it){
+        MElement *e = *it;
+        if(e==ele){
+          flag=true;
+          break;
+        }
+      }
+      if(flag) {ef=&(*_efield)[i]; break;}
+    }
+    // function depends on element type
+    switch(ef->getSolElemType()){
+      case SolElementType::PlatePlaneStress :
+        sig = this->getSigmaWithOperationPlatePlaneStress(ele,ws,num,cmp,ef);
+        break;
+      case SolElementType::PlatePlaneStressWTI :
+        sig = this->getStressWithOperationPlatePlaneStressWTI(ele,ws,num,cmp,ef,0);
+        break;
+      case SolElementType::PlatePlaneStressWF :
+        sig = this->getStressWithOperationPlatePlaneStressWTI(ele,ws,num,cmp,ef,0);
+        break;
+      default :
+        Msg::Error("Function getSigmaWithOperation doesn't exist for element type : %d",ef->getSolElemType());
+        sig = 0.;
+      }
+    return sig;
+  }
+
   // function to archive
   virtual void get(MElement *ele, std::vector<double> &stress, const int cc=-1){
-    stress[0]= this->getVonMises(ele,IPState::current,max,0);
+    switch(cc){
+      case -1 :
+        stress[0]= this->getVonMises(ele,IPState::current,max,0);
+        break;
+      case 0 :
+        stress[0] = this->getStressWithOperation(ele,IPState::current,max,component::xx,0);
+        break;
+      case 1 :
+        stress[0] = this->getStressWithOperation(ele,IPState::current,max,component::yy);
+        break;
+      case 2 :
+        stress[0] = this->getStressWithOperation(ele,IPState::current,max,component::zz);
+        break;
+      case 3 :
+        stress[0] = this->getStressWithOperation(ele,IPState::current,max,component::xy);
+        break;
+    }
   }
 
   void evalFracture(IPState::whichState ws){
@@ -367,6 +456,10 @@ class IPField : public elementField {
     _AIPS->nextStep();
   }
 
+  // initial broken
+  void initialBroken(GModelWithInterface* pModel, std::vector<int> &vnumphys);
+  void initialBroken(MInterfaceElement *iele, materialLaw *mlaw);
+
   // reduction element
   void getStressReduction(MElement *ele,const int gaussnum, SolElementType::eltype et,IPState::whichState ws,
                           reductionElement &nalpha);
@@ -419,6 +512,34 @@ class IPField : public elementField {
                             reductionElement &nhatmean, reductionElement &mhatmean) const;
 
   // Function to get data (must be removed)
+
+  // works only without crack branching
+  void archCrackTipPosition(const double time){
+    if(ctp.first){ // otherwise no crack
+      // Compute the position of crack tip
+      MInterfaceElement *ie = ctp.first;
+      double x0,y0,z0,x1,y1,z1;
+      x0 = ie->getVertex(0)->x();
+      x1 = ie->getVertex(1)->x();
+      y0 = ie->getVertex(0)->y();
+      y1 = ie->getVertex(1)->y();
+      z0 = ie->getVertex(0)->z();
+      z1 = ie->getVertex(1)->z();
+      double length = sqrt((x1-x0)*(x1-x0)+(y1-y0)*(y1-y0)+(z1-z0)*(z1-z0));
+      IntPt *GP;
+      int npts = _intBound->getIntPoints(ie,&GP);
+      // abscisse on gauss point
+      double u = GP[ctp.second].pt[0];
+      double ut = (1+u)*length/2.;
+      double xct = x0 + abs(x1-x0)/length*ut;
+      double yct = y0 + abs(y1-y0)/length*ut;
+      double zct = z0 + abs(z1-z0)/length*ut;
+      FILE *FP = fopen("crackTipPosition.csv","a");
+      fprintf(FP,"%lf;%lf;%lf;%lf\n",time,xct,yct,zct);
+      fclose(FP);
+    }
+
+  }
 /*  void getData(int numelem,int numgauss, materialLaw *mlaw, double &N, double &M, double &du, double &dr,double &deltan){
     // It's for fracture so type elem and material law are known
     IPVariablePlateOIWF *ipv;

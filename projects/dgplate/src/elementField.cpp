@@ -53,9 +53,9 @@ void elementField::createFile(){
   }
 }
 
-elementField::elementField(const std::string &fnn, const uint32_t fms, const int ncomp, const dataType dt, const std::string fin,
+elementField::elementField(const std::string &fnn, const uint32_t fms, const int ncomp, const dataType dt,
                            const bool view_=true) : numfile(0), fileName(fnn), fmaxsize(fms), view(view_),
-                                                      totelem(0), numcomp(ncomp), type(dt), fieldname(fin){
+                                                      totelem(0), numcomp(ncomp), type(dt){
   this->createFile();
   switch(type){
     case ElementData :
@@ -68,7 +68,7 @@ elementField::elementField(const std::string &fnn, const uint32_t fms, const int
 }
 
 void elementField::buildView(const std::vector<DGelasticField> &elasticFields,const double time,
-                              const int nstep, const bool binary=false){
+                              const int nstep, const std::string &valuename, const int cc=-1, const bool binary=false){
   if(view){
     // test file size (and create a new one if needed)
     uint32_t fileSize;
@@ -86,7 +86,7 @@ void elementField::buildView(const std::vector<DGelasticField> &elasticFields,co
     // compute the number of element
     if(binary) Msg::Warning("Binary write not implemented yet");
     fprintf(fp, "$%s\n",dataname.c_str());
-    fprintf(fp, "1\n\"%s\"\n",fieldname.c_str());
+    fprintf(fp, "1\n\"%s\"\n",valuename.c_str());
     fprintf(fp, "1\n%.16g\n", time);
     fprintf(fp, "3\n%d\n%d\n%d\n", nstep, numcomp, totelem);
     std::vector<double> fieldData;
@@ -96,7 +96,7 @@ void elementField::buildView(const std::vector<DGelasticField> &elasticFields,co
           MElement *ele = *it;
           int numv = ele->getNumVertices();
           fieldData.resize(numcomp*numv);
-          this->get(ele,fieldData);
+          this->get(ele,fieldData,cc);
           fprintf(fp, "%d %d",ele->getNum(),numv);
           for(int i=0;i<numv;i++)
             for(int j=0;j<numcomp;j++)
@@ -109,7 +109,7 @@ void elementField::buildView(const std::vector<DGelasticField> &elasticFields,co
         for (groupOfElements::elementContainer::const_iterator it = elasticFields[i].g->begin(); it != elasticFields[i].g->end(); ++it){
           MElement *ele = *it;
           fieldData.resize(numcomp);
-          this->get(ele,fieldData);
+          this->get(ele,fieldData,cc);
           fprintf(fp, "%d",ele->getNum());
           for(int j=0;j<numcomp;j++)
             fprintf(fp, " %.16g",fieldData[j]);

@@ -7,11 +7,11 @@
 -- material law
 lawnum = 1 -- unique number of the law
 E = 100.e9 -- Young's modulus
-nu = 0.3   -- Poisson's ratio
+nu = 0.   -- Poisson's ratio
 
 -- geometry
 h = 0.01  -- thickness
-meshfile="beam6.msh" -- name of mesh file
+meshfile="beam50.msh" -- name of mesh file
 -- integration
 nsimp = 3 -- number of Simpson's points (odd)
 
@@ -21,7 +21,7 @@ beta1 = 10. -- value of stabilization parameter
 beta2 = 10.
 beta3 = 10.
 soltype = 1 -- StaticLinear=0 (default) StaticNonLinear=1
-nstep = 10   -- number of step (used only if soltype=1)
+nstep = 1   -- number of step (used only if soltype=1)
 ftime =1.   -- Final time (used only if soltype=1)
 tol=1.e-6   -- relative tolerance for NR scheme (used only if soltype=1)
 nstepArch=1 -- Number of step between 2 archiving (used only if soltype=1)
@@ -60,7 +60,7 @@ mysolver:prescribedDisplacement("Edge",41,2,0.)
 --mysolver:prescribedDisplacement("Edge",21,0,0.)
 --mysolver:prescribedDisplacement("Edge",21,1,0.)
 --mysolver:prescribedDisplacement("Edge",21,2,0.)
---mysolver:prescribedDisplacement("Edge",21,2,0.4)
+--mysolver:prescribedDisplacement("Edge",21,1,0.4)
 --mysolver:prescribedForce("Face",99,0.,0.,1000.)
 mysolver:prescribedForce("Edge",21,0.,0.,-10000.)
 mysolver:AddThetaConstraint(41)

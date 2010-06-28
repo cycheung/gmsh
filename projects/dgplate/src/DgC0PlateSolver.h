@@ -109,14 +109,17 @@ class DgC0PlateSolver
   std::vector<dirichletBC> allDirichlet;
   // vector with material law
   std::map<int,materialLaw*> maplaw;
+  // physical entities that are initialy broken
+  std::vector<int> initbrokeninter;
+
 
   // map to archive force
   std::map<int,std::vector<Dof> > aef;
   std::map<int,double> aefvalue;
-
   // std vector to archive a node displacement
   std::vector<Dof> anoded;
 
+  // specific data
   double _beta1, _beta2, _beta3; // Stability parameters for cG/dG case only beta1 is used
   int numstep; // Number of step not used for StaticLinearScheme but it is not necesary to derive class because (small useless data)
   double endtime; // final time not used for StaticLinearScheme but it is not necesary to derive class because (small useless data)
@@ -193,6 +196,7 @@ class DgC0PlateSolver
   virtual void addIndepForce(std::string onwhat, const int numphys, const double xval, const double yval, const double zval);
   virtual void addArchivingEdgeForce(const int numphys, const int comp);
   virtual void addArchivingNodeDisplacement(const int num, const int comp);
+  virtual void addPhysInitBroken(const int phys);
   static void registerBindings(binding *b);
 };
 

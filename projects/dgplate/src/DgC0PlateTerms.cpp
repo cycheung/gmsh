@@ -386,56 +386,6 @@ void IsotropicElasticStiffInterfaceTermC0Plate::get(MElement *ele,int npts,IntPt
           for(int k=0;k<nbdof_m+nbdof_p;k++)
             m(k,j) += (fp(k)-fm(k))/(perturbation+perturbation);
         }
-        // contact if Deltan is negatif (compatibility and stability terms)
-        if(vDeltanNeg[i]){
-          // Compute Bnhat vector (used previous Bhat_m and Bhat_p)
-          // first value of Bn are needed
-          compute_Bn(lb_m,Grads_m,nbFF_m,Bn_m);
-          compute_Bn(lb_p,Grads_p,nbFF_p,Bn_p);
-          compute_Bnhat(lb_m,nbFF_m,Bn_m,Bhat_m);
-          compute_Bnhat(lb_p,nbFF_p,Bn_p,Bhat_p);
-
-          // Compute Hooke tensor
-          Cnt = weight*lbs->getJacobian()*Cn;
-          Hhat_m->hat(lb_m,Cnt,nu); // Redondant avec + haut (faut enlever le Cmt pour le calcul augmente cout calcul ??)
-          Hhat_p->hat(lb_p,Cnt,nu);
-          Hhatmean->mean(Hhat_m,Hhat_p);
-          for(int j=0;j<nbFF_m;j++){
-            for(int k=0;k<nbFF_m;k++){
-              compC0PlateStiffnessMembraneTerms(Hhat_m,Bhat_m[j],Val_m[k],lbs,me_comp);
-              stabilityC0PlateStiffnessMembraneTerms(Hhatmean,Val_m[j], Val_m[k],lbs,me_stab);
-              for(int jj=0;jj<3;jj++)
-                for(int kk=0;kk<3;kk++)
-                  m(j+jj*nbFF_m,k+kk*nbFF_m) += (- me_comp[jj][kk] + B2hs * me_stab[jj][kk] );
-            }
-            for(int k=0;k<nbFF_p;k++){
-              compC0PlateStiffnessMembraneTerms(Hhat_p,Bhat_m[j],Val_p[k],lbs,me_comp);
-              stabilityC0PlateStiffnessMembraneTerms(Hhatmean,Val_m[j], Val_p[k],lbs,me_stab);
-              for(int jj=0;jj<3;jj++)
-                for(int kk=0;kk<3;kk++)
-                  m(j+jj*nbFF_m,k+nbdof_m+kk*nbFF_p) += ( me_comp[jj][kk]- B2hs * me_stab[jj][kk] );
-            }
-          }
-          for(int j=0;j<nbFF_p;j++){
-            for(int k=0;k<nbFF_m;k++){
-              compC0PlateStiffnessMembraneTerms(Hhat_m,Bhat_p[j],Val_m[k],lbs,me_comp);
-              stabilityC0PlateStiffnessMembraneTerms(Hhatmean,Val_p[j], Val_m[k],lbs,me_stab);
-              for(int jj=0;jj<3;jj++)
-                for(int kk=0;kk<3;kk++)
-                  m(j+(jj*nbFF_p)+nbdof_m,k+kk*nbFF_m) += (- me_comp[jj][kk] - B2hs * me_stab[jj][kk]);
-            }
-            for(int k=0;k<nbFF_p;k++){
-              compC0PlateStiffnessMembraneTerms(Hhat_p,Bhat_p[j],Val_p[k],lbs,me_comp);
-              stabilityC0PlateStiffnessMembraneTerms(Hhatmean,Val_p[j], Val_p[k],lbs,me_stab);
-              for(int jj=0;jj<3;jj++)
-                for(int kk=0;kk<3;kk++)
-                  m(j+(jj*nbFF_p)+nbdof_m,k+(kk*nbFF_p)+nbdof_m) += ( me_comp[jj][kk] + B2hs * me_stab[jj][kk]);
-            }
-          }
-
-        }
-
-
         Val_m.clear(); Val_p.clear();
       }
       // Because component are push_back in Grads in gradfuvw idem for hess
@@ -635,10 +585,9 @@ void IsotropicElasticForceInterfaceTermC0Plate::get(MElement *ele,int npts,IntPt
       }
 
       // Compatibility and stability (if not broken)
-      if(!vbroken[i] or vDeltanNeg[i]){
+      if(!vbroken[i]){
         // compute jump of u
         displacementjump(Val_m,nbFF_m,Val_p,nbFF_p,disp,ujump);
-
         // Hooke tensor (symmetrization is for elastic part)
         Cnt = wJ*Cn;
         Hhat_m->set(lb[0],Cnt,nu);
@@ -646,7 +595,6 @@ void IsotropicElasticForceInterfaceTermC0Plate::get(MElement *ele,int npts,IntPt
         Hhat_m->hat(lb[0],Cnt,nu);
         Hhat_p->hat(lb[1],Cnt,nu);
         Hhatmean->mean(Hhat_m,Hhat_p);
-
         // Assemblage (Compatibility and stability)
         for(int alpha=0;alpha<2;alpha++){
           for(int beta=0;beta<2;beta++)

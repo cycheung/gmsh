@@ -190,10 +190,12 @@ void IPVariablePlateOIWF::setBroken(const double svm, const double Gc, const dou
     double m0abshdiv6, m12abshdiva;
     if(M0<0) {m0abshdiv6 = - M0/hdiv6; rnjump0 = -rnjump0;}
     else m0abshdiv6 = M0/hdiv6;
-    etaI = m0abshdiv6/(m0abshdiv6+N0);
+    if(M0 == 0. and N0 == 0.) etaI = 0.; // to avoid nan value in case of initial broken
+    else etaI = m0abshdiv6/(m0abshdiv6+N0);
     if(M12<0) {m12abshdiva = - M12/hdiv6; rtjump0 = -rtjump0;}
     else m12abshdiva = M12/hdiv6;
-    etaII = m12abshdiva/(m12abshdiva+N12);
+    if(M12 == 0. and N12 == 0.) etaII =0.; // to avoid nan value in case of initial broken
+    else etaII = m12abshdiva/(m12abshdiva+N12);
     deltan0 = etaI*hdiv6*rnjump0 + (1-etaI)*unjump0;
     deltat0 = etaII*hdiva*rtjump0 + (1-etaII)*utjump0;
     broken = true;

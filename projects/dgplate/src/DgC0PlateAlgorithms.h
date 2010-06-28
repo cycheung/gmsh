@@ -108,17 +108,20 @@ template<class Assembler> void FixNodalDofs(DgC0FunctionSpaceBase &space,MElemen
   for (int i=0;i<nv;++i) tabV.push_back(e->getVertex(i));
   MInterfaceElement *ielem=NULL;
   // Find the interface element linked with e
+  int ind;
+  if(nv==1) ind =0; // BC to applied on a vertex --> look at extremities too
+  else ind = 2;
   for(std::vector<MInterfaceElement*>::iterator it=inter.begin();it!=inter.end();++it){
     int nn = (*it)->getNumVertices();
-    for(int i=2;i<nn;i++)  // pass node on extremities
-      if(tabV[2]==(*it)->getVertex(i)) ielem=*it;
+    for(int i=ind;i<nn;i++)  // pass node on extremities
+      if(tabV[ind]==(*it)->getVertex(i)) ielem=*it;
   }
   // If not find on external edge. Look in internal edge
   if(ielem==NULL){
     for(std::vector<MInterfaceElement*>::iterator it=internalInterface.begin();it!=internalInterface.end();++it){
       int nn = (*it)->getNumVertices();
-      for(int i=2;i<nn;i++)  // pass node on extremities
-        if(tabV[2]==(*it)->getVertex(i)) {ielem=*it; InternalEdge=true;}
+      for(int i=ind;i<nn;i++)  // pass node on extremities
+        if(tabV[ind]==(*it)->getVertex(i)) {ielem=*it; InternalEdge=true;}
     }
   }
   std::vector<Dof> R;

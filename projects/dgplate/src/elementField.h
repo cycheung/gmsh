@@ -32,20 +32,19 @@ class elementField{
   uint32_t fmaxsize; // Size max of file in bytes (if size of file is greater a new one is created) TODO Argument for this parameter ?
   int numfile; // numero of file
   int numcomp;
-  std::string fieldname;
   std::string dataname;
   // function to update file name
   void updateFileName();
   void createFile();
 
  public :
-  elementField(const std::string &fnn, const uint32_t fms, const int ncomp, const dataType dt, const std::string fin,
+  elementField(const std::string &fnn, const uint32_t fms, const int ncomp, const dataType dt,
                const bool view_);
   ~elementField(){};
   void setTotElem(const int ne){totelem=ne;}
   virtual void get(MElement *ele,std::vector<double> &fieldData,const int comp=-1)=0; // comp allow to use an enum
                                                                                          // in derivate class to choose which component to save
   void buildView(const std::vector<DGelasticField> &elasticFields,const double time,
-                  const int nstep, const bool binary);
+                  const int nstep, const std::string &valuename, const int cc,const bool binary);
 };
 #endif //

@@ -11,6 +11,7 @@
 //
 #include "IPField.h"
 #include "SimpsonIntegrationRule.h"
+#include "materialLaw.h"
 
 // Functions to get IP data
 template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getStress(const MElement *ele, const int gaussnum,
@@ -763,3 +764,41 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getReducti
   mlaw->getCohesiveReduction(ipv->getm0(),ipv->getn0(),deltan,ipv->getDeltanmax(),deltat,ipv->getDeltatmax(), ipv->getDeltac(),ipv->ifTension(),nhatmean,mhatmean);
 }
 
+template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::initialBroken(MInterfaceElement *iele, materialLaw* mlaw ){
+  Msg::Info("Interface element %d is broken at initialization",iele->getNum());
+  // find the gauss points associated to the interface element iele
+  // set broken = true, _tension = true, Gc and sigmac are chosen to the physical value
+  // but n0 = m0 = 0 --> no cohesive forces
+  reductionElement n0, m0;
+  linearElasticLawPlaneStressWithFracture* mlt = dynamic_cast<linearElasticLawPlaneStressWithFracture*>(mlaw);
+
+  // get ipv
+  IPVariablePlateOIWF *ipv;
+  std::vector<IPState*> *vips;
+  IPState *ips;
+  vips = _AIPS->getIPstate(iele->getNum());
+  double du[3]; du[0] = du[1] = du[2] = 0.;
+  double dr[3]; dr[0] = dr[1] = dr[2] = 0.;
+  for(int i=0;i<vips->size();i++){
+    ips = (*vips)[i];
+    ipv = dynamic_cast<IPVariablePlateOIWF*>(ips->getState(IPState::initial));
+    ipv->setBroken(mlt->getSigmac(), mlt->getGc(), mlt->getBeta(), n0,m0,du,dr, ipv->getLocalBasisOfInterface(),false);
+  }
+  ctp.first = iele;
+  ctp.second = vips->size()/2;
+}
+
+template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::initialBroken(GModelWithInterface* pModel, std::vector<int> &vnumphys){
+  std::vector<MVertex*> vv;
+  for(int i=0;i<vnumphys.size();i++){
+    // get the vertex associated to the physical entities
+    pModel->getMeshVerticesForPhysicalGroup(1,vnumphys[i],vv);
+    // find the InterfaceElement associated to these vertex (identify interior node as degree 2 min)
+    for(std::vector<DGelasticField>::iterator itfield = _efield->begin(); itfield != _efield->end(); ++itfield){
+      for(std::vector<MInterfaceElement*>::iterator it = itfield->gi.begin(); it!=itfield->gi.end(); ++it)
+        for(int k=0;k<vv.size();k++)
+          if(vv[k] == (*it)->getVertex(2) ) this->initialBroken(*it, itfield->getMaterialLaw());
+    }
+    vv.clear();
+  }
+}

@@ -140,15 +140,18 @@ template<> double IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getVMPla
     IPState* ips = (*_AIPS->getIPstate(ele->getNum()))[num];
     IPVariablePlate *ipv = dynamic_cast<IPVariablePlate*>(ips->getState(ws));
     // Stress in plate basis
-    double sa=ipv->getSigma(component::xx), sb=ipv->getSigma(component::yy), sc=0.;
-    double tab = ipv->getSigma(component::xy), tac=0. , tbc=0.;
     double sx,sy,txy,sz,txz,tyz;
     const LocalBasis *lb = ipv->getLocalBasis();
+    reductionElement rstress;
+    rstress(0,0) = ipv->getSigma(component::xx);
+    rstress(1,1) = ipv->getSigma(component::yy);
+    rstress(0,1) = rstress(1,0) = ipv->getSigma(component::xy);
+    stressTensor stress(rstress,lb);
     // compute of stress for representation
-    sx = sa*lb->getphi0(0,0)*lb->getphi0(0,0)+2*tab*lb->getphi0(0,0)*lb->getphi0(0,1)+sb*lb->getphi0(0,1)*lb->getphi0(0,1);
-    txy= sa*lb->getphi0(0,0)*lb->getphi0(1,0)+tab*(lb->getphi0(0,0)*lb->getphi0(1,1)+lb->getphi0(0,1)*lb->getphi0(1,0))+sb*lb->getphi0(0,1)*lb->getphi0(1,1);
-    sy = sa*lb->getphi0(1,0)*lb->getphi0(1,0)+2*tab*(lb->getphi0(1,0)*lb->getphi0(1,1))+sb*lb->getphi0(1,1)*lb->getphi0(1,1);
     sz = tyz = txz =0.;
+    sx = stress.getComponent(lb->getOrthonormalVector(0),lb->getOrthonormalVector(0));
+    sy = stress.getComponent(lb->getOrthonormalVector(1),lb->getOrthonormalVector(1));
+    txy = stress.getComponent(lb->getOrthonormalVector(0),lb->getOrthonormalVector(1));
     svm = sqrt(1./2.*((sx-sy)*(sx-sy)+(sy-sz)*(sy-sz)+(sx-sz)*(sx-sz)+6*(txy*txy+tyz*tyz+txz*txz)));
   }
   else{  // Particular value (max,min,mean)
@@ -161,15 +164,18 @@ template<> double IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getVMPla
       IPState* ips = (*vips)[i];
       IPVariablePlate *ipv = dynamic_cast<IPVariablePlate*>(ips->getState(ws));
       // Stress in plate basis
-      double sa=ipv->getSigma(component::xx), sb=ipv->getSigma(component::yy), sc=0.;
-      double tab = ipv->getSigma(component::xy), tac=0. , tbc=0.;
       double sx,sy,txy,sz,txz,tyz;
       const LocalBasis *lb = ipv->getLocalBasis();
+      reductionElement rstress;
+      rstress(0,0) = ipv->getSigma(component::xx);
+      rstress(1,1) = ipv->getSigma(component::yy);
+      rstress(0,1) = rstress(1,0) = ipv->getSigma(component::xy);
+      stressTensor stress(rstress,lb);
       // compute of stress for representation
-      sx = sa*lb->getphi0(0,0)*lb->getphi0(0,0)+2*tab*lb->getphi0(0,0)*lb->getphi0(0,1)+sb*lb->getphi0(0,1)*lb->getphi0(0,1);
-      txy= sa*lb->getphi0(0,0)*lb->getphi0(1,0)+tab*(lb->getphi0(0,0)*lb->getphi0(1,1)+lb->getphi0(0,1)*lb->getphi0(1,0))+sb*lb->getphi0(0,1)*lb->getphi0(1,1);
-      sy = sa*lb->getphi0(1,0)*lb->getphi0(1,0)+2*tab*(lb->getphi0(1,0)*lb->getphi0(1,1))+sb*lb->getphi0(1,1)*lb->getphi0(1,1);
       sz = txz = tyz =0.;
+      sx = stress.getComponent(lb->getOrthonormalVector(0),lb->getOrthonormalVector(0));
+      sy = stress.getComponent(lb->getOrthonormalVector(1),lb->getOrthonormalVector(1));
+      txy = stress.getComponent(lb->getOrthonormalVector(0),lb->getOrthonormalVector(1));
       svmp = sqrt(1./2.*((sx-sy)*(sx-sy)+(sy-sz)*(sy-sz)+(sx-sz)*(sx-sz)+6*(txy*txy+tyz*tyz+txz*txz)));
       if(i==0)
         svm = svmp;
@@ -190,4 +196,86 @@ template<> double IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getVMPla
   if(num==IPField::mean) svm/=(double)npts;
   }
   return svm;
+}
+
+// Function to compute VonMises stress
+template<> double IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getSigmaWithOperationPlatePlaneStress(MElement *ele,
+                                                                                              const IPState::whichState ws,
+                                                                                              const int num, const component::enumcomp cmp,
+                                                                                              const DGelasticField *elas) const{
+  double sig =0.;
+  if(num<10000){ // VonMises at a Gauss Point
+    IPState* ips = (*_AIPS->getIPstate(ele->getNum()))[num];
+    IPVariablePlate *ipv = dynamic_cast<IPVariablePlate*>(ips->getState(ws));
+    // Stress in plate basis
+    const LocalBasis *lb = ipv->getLocalBasis();
+    reductionElement rstress;
+    rstress(0,0) = ipv->getSigma(component::xx);
+    rstress(1,1) = ipv->getSigma(component::yy);
+    rstress(0,1) = rstress(1,0) = ipv->getSigma(component::xy);
+    stressTensor stress(rstress,lb);
+    // compute of stress for representation
+    switch(cmp){
+      case component::xx :
+        sig = stress.getComponent(lb->getOrthonormalVector(0),lb->getOrthonormalVector(0));
+        break;
+      case component::yy :
+        sig = stress.getComponent(lb->getOrthonormalVector(1),lb->getOrthonormalVector(1));
+        break;
+      case component::xy :
+        sig = stress.getComponent(lb->getOrthonormalVector(0),lb->getOrthonormalVector(1));
+        break;
+      default :
+        sig=0.;
+    }
+  }
+  else{  // Particular value (max,min,mean)
+    // loop on IP point
+    double sigp;
+    IntPt *GP;
+    int npts = _intBulk->getIntPoints(ele,&GP);
+    std::vector<IPState*> *vips = _AIPS->getIPstate(ele->getNum());
+    for(int i=0;i<npts;i++){
+      IPState* ips = (*vips)[i];
+      IPVariablePlate *ipv = dynamic_cast<IPVariablePlate*>(ips->getState(ws));
+      // Stress in plate basis
+      const LocalBasis *lb = ipv->getLocalBasis();
+      reductionElement rstress;
+      rstress(0,0) = ipv->getSigma(component::xx);
+      rstress(1,1) = ipv->getSigma(component::yy);
+      rstress(0,1) = rstress(1,0) = ipv->getSigma(component::xy);
+      stressTensor stress(rstress,lb);
+      switch(cmp){
+        case component::xx :
+          sigp = stress.getComponent(lb->getOrthonormalVector(0),lb->getOrthonormalVector(0));
+          break;
+        case component::yy :
+          sigp = stress.getComponent(lb->getOrthonormalVector(1),lb->getOrthonormalVector(1));
+          break;
+        case component::xy :
+          sigp = stress.getComponent(lb->getOrthonormalVector(0),lb->getOrthonormalVector(1));
+          break;
+        default :
+          sigp=0.;
+      }
+      // compute of stress for representation
+      if(i==0)
+        sig = sigp;
+      else{
+        switch(num){
+          case IPField::max :
+            if(sigp>sig) sig=sigp;
+            break;
+          case IPField::min :
+            if(sigp<sig) sig=sigp;
+            break;
+          case IPField::mean :
+            sig+=sigp;
+            break;
+        }
+      }
+    }
+  if(num==IPField::mean) sig/=(double)npts;
+  }
+  return sig;
 }

@@ -314,6 +314,7 @@ void DgC0PlateSolver::solveSNL()
   IPField<DGelasticField,DgC0FunctionSpace<SVector3> > ipf(&elasticFields,pAssembler,LagSpace,
                                                            &Integ_Bulk, &Integ_Boundary, pModel,&ufield); // Field for GaussPoint
   ipf.compute1state(IPState::initial);
+  ipf.initialBroken(pModel, initbrokeninter);
   ipf.copy(IPState::initial,IPState::previous); // if initial stress previous must be initialized before computation
 
   for(int ii=0;ii<numstep;ii++){
@@ -342,10 +343,14 @@ void DgC0PlateSolver::solveSNL()
 
     //archive must be rewritten after discussion with christophe
     if((ii+1)%nsba == 0){
-      ufield.buildView(elasticFields,curtime,ii+1,false);
-      ipf.buildView(elasticFields,curtime,ii+1,false);
+      ufield.buildView(elasticFields,curtime,ii+1,"displacement",-1,false);
+      ipf.buildView(elasticFields,curtime,ii+1,"VonMises",-1,false);
+      ipf.buildView(elasticFields,curtime,ii+1,"sigmaxx",0,false);
+      ipf.buildView(elasticFields,curtime,ii+1,"sigmayy",1,false);
+      ipf.buildView(elasticFields,curtime,ii+1,"tauxy",3,false);
     }
-    // This part works only for the developed test cases (number are written)
+    // Archiving crack tip position (works only if there is no crack branching)
+    ipf.archCrackTipPosition(curtime);
 
     // test of fracture "in a balanced configuration"
     ipf.evalFracture(IPState::current);

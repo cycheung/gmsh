@@ -177,6 +177,13 @@ class LocalBasis{
     fullMatrix<double> gett() const {return t;}
     inline double getT(const int i, const int j) const {return T(i,j);}
     inline double gett(const int i, const int j) const {return t(i,j);}
+    // get a orthonormal basis
+    inline SVector3 getOrthonormalVector(const int i) const{
+    if(i<2)
+      return phi0[i]*(1/phi0[i].norm());
+    else
+      return t0*(1/t0.norm());
+    }
 
     // Print
     void print() const {
