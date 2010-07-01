@@ -496,6 +496,7 @@ void IsotropicElasticForceInterfaceTermC0Plate::get(MElement *ele,int npts,IntPt
   std::vector<double> disp;
   disp.resize(nbdof_m+nbdof_p);
   ufield->get(iele,disp);
+
   // sum on Gauss' points
   ipf->getBroken(iele,_elemtype,vbroken,vDeltanNeg);
   //for(int i=0;i<npts;i++){ if(vbroken[i]) printf("%d true\n",iele->getNum()); else printf("%d false\n",iele->getNum());}
@@ -564,7 +565,6 @@ void IsotropicElasticForceInterfaceTermC0Plate::get(MElement *ele,int npts,IntPt
           m(j+(jj*nbFF_p)+nbdof_m) += ( me_comp[jj] + Bhs * me_stab[jj]);
       }
     }
-
     // Add extra terms for fullDg formulation
     if(fullDg){
       // Shape functions evaluated in u,v
@@ -781,7 +781,6 @@ void IsotropicElasticForceVirtualInterfaceTermC0Plate::get(MElement *ele,int npt
   const LocalBasis *lb[3];
   double Bhat_m[256][3][2][2];
   LinearElasticShellHookeTensor HOOKehat_m;
-  LinearElasticShellHookeTensor HOOKe_m;
   LinearElasticShellHookeTensor *Hhat_m=&HOOKehat_m;
   double Deltat_m[256][3][3];
   double Cmt,wJ;
@@ -796,14 +795,13 @@ void IsotropicElasticForceVirtualInterfaceTermC0Plate::get(MElement *ele,int npt
 
   // displacement
   std::vector<double> disp;
-  disp.resize(nbdof_m);
+  disp.clear();
   ufield->get(iele,disp);
-
   // sum on Gauss' points
-  for (int i = 0; i < npts; i++)
+  for(int i = 0; i < npts; i++)
   {
     // Coordonate of Gauss' point i
-    const double u = GP[i].pt[0]; const double v = GP[i].pt[1]; const double w = GP[i].pt[2];
+   const double u = GP[i].pt[0]; const double v = GP[i].pt[1]; const double w = GP[i].pt[2];
     // Weight of Gauss' point i
     const double weight = GP[i].weight;
     //printf("Abscisse of gauss point %f\n",u);
@@ -815,24 +813,23 @@ void IsotropicElasticForceVirtualInterfaceTermC0Plate::get(MElement *ele,int npt
     DgC0LinearTerm<SVector3>::space1.gradfuvw(velem[0],uem, vem, w, Grads_m); // w = 0
     DgC0LinearTerm<SVector3>::space1.hessfuvw(velem[0],uem, vem, w, Hess_m);
 
-    // get data
+
+     // get data
     ipf->getVirtualMomentReductionAndLocalBasis(iele,i,npts,_elemtype,IPState::current,mhatmean,lb);
-    wJ=weight * lb[2]->getJacobian();
+     wJ=weight * lb[2]->getJacobian();
     // Compute of Deltat_tilde
     compute_Deltat_tildeBound(lb[0],Grads_m,nbFF_m,Deltat_m,lb[2]);
 
-    for(int jj=0;jj<3;jj++){me_stab[jj]=0;}
     // Consistency
-    double dt[3];
+    double dtmalpha[3];
     for(int alpha=0;alpha<2;alpha++){
       SVector3 malpha = mhatmean(alpha,0)*lb[2]->getphi0(0)+mhatmean(alpha,1)*lb[2]->getphi0(1);
-        for(int j=0;j<nbFF_m;j++){
-          matTvectprod(Deltat_m[j],malpha,dt);
-          for(int k=0;k<3;k++)
-           m(j+k*nbFF_m)+= - (wJ*dt[k]*(-scaldot(lb[2]->getphi0(1),lb[2]->getphi0(alpha))));
-          }
+      for(int j=0;j<nbFF_m;j++){
+        matTvectprod(Deltat_m[j],malpha,dtmalpha);
+        for(int k=0;k<3;k++)
+          m(j+k*nbFF_m)+= - (wJ*dtmalpha[k]*(-scaldot(lb[2]->getphi0(1),lb[2]->getphi0(alpha))));
+      }
     }
-
 
     // Compatibility and stability
     // Compute of Bhat vector (1 component for now because 1 dof (z) ) --> it's a vector of length == nbFF
@@ -843,8 +840,9 @@ void IsotropicElasticForceVirtualInterfaceTermC0Plate::get(MElement *ele,int npt
     for(int j=0;j<nbFF_m;j++){
       compC0PlateForceTermsBound(Hhat_m,nbFF_m,Bhat_m[j],Deltat_m,lb[2],disp,me_comp);
       stabilityC0PlateForceTermsBound(nbFF_m,Hhat_m,Deltat_m[j],Deltat_m,lb[2],disp,me_stab);
-      for(int jj=0;jj<3;jj++)
+      for(int jj=0;jj<3;jj++){
         m(j+jj*nbFF_m) += (me_comp[jj] - Bhs * me_stab[jj] );
+      }
     }
     // Because component are push_back in Grads in gradfuvw idem for hess
     Grads_m.clear(); Hess_m.clear(); Grads.clear();

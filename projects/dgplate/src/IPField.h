@@ -483,7 +483,9 @@ class IPField : public elementField {
                                          const LocalBasis *lb[3]);
   void getVirtualMomentReductionAndLocalBasis(MInterfaceElement *iele, const int gaussnum, const int numOfGaussPoint,
                                               SolElementType::eltype et, IPState::whichState ws, reductionElement &mhatmean,
-                                              const LocalBasis *lb[3]);
+                                              const LocalBasis **lb);
+  void getVirtualMomentReduction(MInterfaceElement *iele, const int gaussnum, const int numOfGaussPoint,
+                                              SolElementType::eltype et, IPState::whichState ws, reductionElement &mhatmean);
 
   void getStress(const MElement *ele, const int gaussnum, IPState::whichState st, double stress[6]);
   void getStressMembrane(const MElement *ele, const int gaussnum, IPState::whichState st, double stress[6], double & h);

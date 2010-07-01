@@ -65,12 +65,22 @@ static inline void dot(const double a[3], const SVector3 &b, double c[3]){
 }
 
 inline void matTvectprod(const double m[3][3], const SVector3 &v, double v2[3]){
+  //v2[0] = 0.; v2[1]=0.; v2[2]=0.;
   double temp[3];
   for(int i=0;i<3;i++){
     temp[0] = m[0][i]; temp[1] = m[1][i]; temp[2] = m[2][i];
     v2[i] = dot(temp,v);
   }
 }
+inline void matTvectprod(const double m[3][3], const SVector3 &v, SVector3 &v2){
+  v2[0] = 0.; v2[1]=0.; v2[2]=0.;
+  double temp[3];
+  for(int i=0;i<3;i++){
+    temp[0] = m[0][i]; temp[1] = m[1][i]; temp[2] = m[2][i];
+    v2[i] = dot(temp,v);
+  }
+}
+
 
 inline void matTvectprod(const double m[3][3], const double v[3],  double v2[3]){
   double temp[3];
@@ -407,7 +417,9 @@ inline void stabilityC0PlateForceTerms(const int n_p,const int n_m, const Linear
       }
 }
 
-inline void compC0PlateForceTermsBound(const LinearElasticShellHookeTensor *Hhat, const int n, const double Bhat[3][2][2], const double Dt_m[256][3][3], const LocalBasis *lb, const std::vector<double> &disp, double me[3]){
+inline void compC0PlateForceTermsBound(const LinearElasticShellHookeTensor *Hhat, const int n, const double Bhat[3][2][2],
+                                       const double Dt_m[256][3][3], const LocalBasis *lb, const std::vector<double> &disp,
+                                       double me[3]){
   double mtemp[3][3];
   double v1[3],v2[3];
   double temp=0.;
@@ -427,7 +439,8 @@ inline void compC0PlateForceTermsBound(const LinearElasticShellHookeTensor *Hhat
         }
 }
 
-inline void stabilityC0PlateForceTermsBound(const int n_m,const LinearElasticShellHookeTensor *Hhat,const double Dt[3][3],const double Dt_m[256][3][3], const LocalBasis *lb, const std::vector<double> &disp, double me[3]){
+inline void stabilityC0PlateForceTermsBound(const int n_m,const LinearElasticShellHookeTensor *Hhat,const double Dt[3][3],
+                                            const double Dt_m[256][3][3], const LocalBasis *lb, const std::vector<double> &disp, double me[3]){
   for(int i=0;i<3;i++) me[i]=0.;
   double v1[3],v2[3];
   double mtemp[3][3];

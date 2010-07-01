@@ -108,20 +108,20 @@ template<class Assembler> void FixNodalDofs(DgC0FunctionSpaceBase &space,MElemen
   for (int i=0;i<nv;++i) tabV.push_back(e->getVertex(i));
   MInterfaceElement *ielem=NULL;
   // Find the interface element linked with e
-  int ind;
+  int ind, posfind;
   if(nv==1) ind =0; // BC to applied on a vertex --> look at extremities too
   else ind = 2;
   for(std::vector<MInterfaceElement*>::iterator it=inter.begin();it!=inter.end();++it){
     int nn = (*it)->getNumVertices();
     for(int i=ind;i<nn;i++)  // pass node on extremities
-      if(tabV[ind]==(*it)->getVertex(i)) ielem=*it;
+      if(tabV[ind]==(*it)->getVertex(i)) {ielem=*it; posfind = i;}
   }
   // If not find on external edge. Look in internal edge
   if(ielem==NULL){
     for(std::vector<MInterfaceElement*>::iterator it=internalInterface.begin();it!=internalInterface.end();++it){
       int nn = (*it)->getNumVertices();
       for(int i=ind;i<nn;i++)  // pass node on extremities
-        if(tabV[ind]==(*it)->getVertex(i)) {ielem=*it; InternalEdge=true;}
+        if(tabV[ind]==(*it)->getVertex(i)) {ielem=*it; posfind = i; InternalEdge=true;}
     }
   }
   std::vector<Dof> R;
@@ -129,13 +129,23 @@ template<class Assembler> void FixNodalDofs(DgC0FunctionSpaceBase &space,MElemen
   else{
     int nvi=ielem->getNumVertices();
     std::vector<int> vernum;
-    vernum.reserve(nvi);
-    for(int i=0;i<nvi;i++) vernum.push_back(0);
+    vernum.resize(nvi);
+    //for(int i=0;i<nvi;i++) vernum.push_back(0);
     ielem->getLocalVertexNum(0,vernum);
+    if(nv == 1){ // if boundary condition is applied on a vertex
+      int temp = vernum[posfind];
+      vernum.clear();
+      vernum.push_back(temp);
+    }
     std::vector<int> *pver = &vernum;
     space.getKeys(ielem->getElem(0),R,true,pver);
     if(InternalEdge){
       ielem->getLocalVertexNum(1,vernum);
+      if(nv == 1){ // if boundary condition is applied on a vertex
+        int temp = vernum[posfind];
+        vernum.clear();
+        vernum.push_back(temp);
+      }
       space.getKeys(ielem->getElem(1),R,true,pver);
     }
     for (std::vector<Dof>::iterator itd=R.begin();itd!=R.end();++itd)

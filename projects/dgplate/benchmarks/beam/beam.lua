@@ -13,7 +13,7 @@ nu = 0.   -- Poisson's ratio
 h = 0.01  -- thickness
 meshfile="beam50.msh" -- name of mesh file
 -- integration
-nsimp = 3 -- number of Simpson's points (odd)
+nsimp = 1 -- number of Simpson's points (odd)
 
 -- solver
 sol = 1 --Gmm=0 (default) Taucs=1 PETsc=2
@@ -21,7 +21,7 @@ beta1 = 10. -- value of stabilization parameter
 beta2 = 10.
 beta3 = 10.
 soltype = 1 -- StaticLinear=0 (default) StaticNonLinear=1
-nstep = 1   -- number of step (used only if soltype=1)
+nstep = 10   -- number of step (used only if soltype=1)
 ftime =1.   -- Final time (used only if soltype=1)
 tol=1.e-6   -- relative tolerance for NR scheme (used only if soltype=1)
 nstepArch=1 -- Number of step between 2 archiving (used only if soltype=1)

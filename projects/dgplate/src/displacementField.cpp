@@ -167,18 +167,19 @@ void displacementField::get(MElement *ele,std::vector<double> &udofs, const int 
 }
 
 void displacementField::get(MInterfaceElement* iele, std::vector<double> &udofs){
+  udofs.resize(0);
   std::vector<double> utemp;
   int usizem = numcomp*iele->getElem(0)->getNumVertices();
-  utemp.reserve(usizem);
+  utemp.resize(usizem);
   this->get(iele->getElem(0),utemp);
   for(int i=0;i<usizem;i++)
-    udofs[i]=utemp[i];
+    udofs.push_back(utemp[i]);
   if(!(iele->getElem(0)==iele->getElem(1))){// Virtual interface element
     int usizep=numcomp*iele->getElem(1)->getNumVertices();
     utemp.resize(usizep);
     this->get(iele->getElem(1),utemp);
     for(int i=0;i<usizep;i++)
-      udofs[i+usizem] = utemp[i];
+      udofs.push_back(utemp[i]);
   }
 }
 

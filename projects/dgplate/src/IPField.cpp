@@ -309,7 +309,7 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getStressR
 
     // mean
     for(int i=0;i<2;i++)
-      for(int j=0;j<3;j++){
+      for(int j=0;j<2;j++){
         nhatmean(i,j) += nhat(i,j);
         nhatmean(i,j)*=0.5;
       }
@@ -351,7 +351,7 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getStressR
     stressReductionHat(nalpha,lb,nhat);
     // mean
     for(int i=0;i<2;i++)
-      for(int j=0;j<3;j++){
+      for(int j=0;j<2;j++){
         nhatmean(i,j) += nhat(i,j);
         nhatmean(i,j)*=0.5;
       }
@@ -393,7 +393,7 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getMomentR
 
     // mean
     for(int i=0;i<2;i++)
-      for(int j=0;j<3;j++){
+      for(int j=0;j<2;j++){
         mhatmean(i,j) += mhat(i,j);
         mhatmean(i,j)*=0.5;
       }
@@ -433,7 +433,7 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getMomentR
     stressReductionHat(malpha,lb,mhat);
     // mean
     for(int i=0;i<2;i++)
-      for(int j=0;j<3;j++){
+      for(int j=0;j<2;j++){
         mhatmean(i,j) += mhat(i,j);
         mhatmean(i,j)*=0.5;
       }
@@ -479,7 +479,7 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getMomentR
 
     // mean
     for(int i=0;i<2;i++)
-      for(int j=0;j<3;j++){
+      for(int j=0;j<2;j++){
         mhatmean(i,j) += mhat(i,j);
         mhatmean(i,j)*=0.5;
       }
@@ -521,7 +521,7 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getMomentR
     stressReductionHat(malpha,lb,mhat);
     // mean
     for(int i=0;i<2;i++)
-      for(int j=0;j<3;j++){
+      for(int j=0;j<2;j++){
         mhatmean(i,j) += mhat(i,j);
         mhatmean(i,j)*=0.5;
       }
@@ -581,7 +581,7 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getReducti
 
     // mean
     for(int i=0;i<2;i++)
-      for(int j=0;j<3;j++){
+      for(int j=0;j<2;j++){
         mhatmean(i,j) += mhat(i,j);
         nhatmean(i,j) += nhat(i,j);
         mhatmean(i,j)*=0.5;
@@ -637,7 +637,7 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getReducti
       stressReductionHat(malpha,lb,mhat);
       // mean
       for(int i=0;i<2;i++)
-        for(int j=0;j<3;j++){
+        for(int j=0;j<2;j++){
           nhatmean(i,j) += nhat(i,j);
           nhatmean(i,j)*=0.5;
           mhatmean(i,j) += mhat(i,j);
@@ -655,7 +655,7 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getVirtual
                                                                                          const int gaussnum,const int numOfGaussPoint,
                                                                                          SolElementType::eltype et, IPState::whichState ws,
                                                                                          reductionElement &mhatmean,
-                                                                                         const LocalBasis* lbb[3]){
+                                                                                         const LocalBasis** lbb){
   if(et == SolElementType::PlatePlaneStress){
     double stressMembrane[6];
     double stressBending[6];
@@ -676,7 +676,7 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getVirtual
 
     // mean
     for(int i=0;i<2;i++)
-      for(int j=0;j<3;j++){
+      for(int j=0;j<2;j++){
         mhatmean(i,j)*=0.5;
       }
   }
@@ -704,14 +704,13 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getVirtual
 
     // mean
     for(int i=0;i<2;i++)
-      for(int j=0;j<3;j++){
+      for(int j=0;j<2;j++){
         mhatmean(i,j)*=0.5;
       }
 
   }
   else Msg::Error("GetStressReduction is not implemented for SolelemType %d",et);
 }
-
 
 template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getReductionFracture(const MInterfaceElement *iele,
                                                                                              const int numgauss, const int npts,
@@ -782,7 +781,7 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::initialBro
   for(int i=0;i<vips->size();i++){
     ips = (*vips)[i];
     ipv = dynamic_cast<IPVariablePlateOIWF*>(ips->getState(IPState::initial));
-    ipv->setBroken(mlt->getSigmac(), mlt->getGc(), mlt->getBeta(), n0,m0,du,dr, ipv->getLocalBasisOfInterface(),false);
+    ipv->setBroken(mlt->getSigmac(), mlt->getGc(), mlt->getBeta(), n0,m0,du,dr, ipv->getLocalBasisOfInterface(),true);
   }
   ctp.first = iele;
   ctp.second = vips->size()/2;
