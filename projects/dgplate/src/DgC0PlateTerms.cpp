@@ -367,7 +367,6 @@ void IsotropicElasticStiffInterfaceTermC0Plate::get(MElement *ele,int npts,IntPt
 
         // get displacement vector
         std::vector<double> disp;
-        disp.resize(nbdof_m+nbdof_p);
         ufield->get(iele,disp);
 
         // pertubation on displacement vector
@@ -494,7 +493,6 @@ void IsotropicElasticForceInterfaceTermC0Plate::get(MElement *ele,int npts,IntPt
   const double B3hs= beta3/h_s;
   // displacement
   std::vector<double> disp;
-  disp.resize(nbdof_m+nbdof_p);
   ufield->get(iele,disp);
 
   // sum on Gauss' points
@@ -795,7 +793,6 @@ void IsotropicElasticForceVirtualInterfaceTermC0Plate::get(MElement *ele,int npt
 
   // displacement
   std::vector<double> disp;
-  disp.clear();
   ufield->get(iele,disp);
   // sum on Gauss' points
   for(int i = 0; i < npts; i++)

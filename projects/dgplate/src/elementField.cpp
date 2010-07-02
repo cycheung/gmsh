@@ -95,13 +95,13 @@ void elementField::buildView(const std::vector<DGelasticField> &elasticFields,co
         for (groupOfElements::elementContainer::const_iterator it = elasticFields[i].g->begin(); it != elasticFields[i].g->end(); ++it){
           MElement *ele = *it;
           int numv = ele->getNumVertices();
-          fieldData.resize(numcomp*numv);
           this->get(ele,fieldData,cc);
           fprintf(fp, "%d %d",ele->getNum(),numv);
           for(int i=0;i<numv;i++)
             for(int j=0;j<numcomp;j++)
               fprintf(fp, " %.16g",fieldData[i+j*numv]);
           fprintf(fp,"\n");
+          fieldData.clear();
         }
     }
     else if(type == ElementData){

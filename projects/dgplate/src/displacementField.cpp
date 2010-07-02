@@ -81,17 +81,18 @@ void displacementField::update(){
     for(std::map<long int, std::vector<double> >::iterator it=umap.begin(); it!=umap.end();++it){
       long int ent = (*it).first;
       std::vector<double> u;
-      u.resize(numcomp);
+      //u.resize(numcomp);
       double du;
       for(int j=0;j<numcomp;j++){
         Dof R=Dof(ent,DgC0PlateDof::createTypeWithThreeInts(j,_field));
         pAssembler->getDofValue(R,du);
         bool in=false;
         for(std::vector<Dof>::iterator itD=fixedDof.begin(); itD<fixedDof.end();++itD) if(*itD==R){in=true;break;}
-        if(in) u[j] = du;
-        else   u[j]=(*it).second[j]+du;
+        if(in) u.push_back(du);
+        else   u.push_back((*it).second[j]+du);
       }
       umap[ent]=u;
+      u.clear();
     }
   }
   else{ // fullDg formulation
@@ -99,7 +100,7 @@ void displacementField::update(){
       long int ent = (*it).first;
       std::vector<double> u;
       int usize=(*it).second.size();
-      u.resize(usize);
+      //u.resize(usize);
       double du;
       int numnodes = usize/numcomp;
       for(int i=0;i<numnodes;i++){
@@ -109,12 +110,13 @@ void displacementField::update(){
           pAssembler->getDofValue(R,du);
           for(std::vector<Dof>::iterator itD=fixedDof.begin(); itD<fixedDof.end();++itD) if(*itD==R){in=true;break;}
           if(in)
-            u[i*numcomp+j] = du;
+            u.push_back(du);
           else
-            u[i*numcomp+j] = (*it).second[i*numcomp+j]+du;
+            u.push_back((*it).second[i*numcomp+j]+du);
         }
       }
       umap[ent]=u;
+      u.clear();
     }
   }
 }
@@ -144,42 +146,42 @@ void displacementField::get(MElement *ele,std::vector<double> &udofs, const int 
   if(!fullDg){
     // nb vertices
     int nbvertex = ele->getNumVertices();
-    for(int i=0;i<nbvertex;i++){
-      ent = ele->getVertex(i)->getNum();
-      for(int j=0;j<numcomp;j++){
+    for(int j=0;j<numcomp;j++){
+      for(int i=0;i<nbvertex;i++){
+        ent = ele->getVertex(i)->getNum();
         Dof D= Dof(ent,DgC0PlateDof::createTypeWithThreeInts(j,_field));
         this->get(D,du);
-        udofs[i+j*nbvertex] = du;
+        udofs.push_back(du);
       }
     }
   }
   else{
     ent = ele->getNum();
     int nbvertex = ele->getNumVertices();
-    for(int i=0;i<nbvertex;i++){
-      for(int j=0;j<numcomp;j++){
+    for(int j=0;j<numcomp;j++){
+      for(int i=0;i<nbvertex;i++){
         Dof D= Dof(ent,DgC0PlateDof::createTypeWithThreeInts(j,_field,i));
         this->get(D,du);
-        udofs[i+j*nbvertex] = du;
+        udofs.push_back(du);
       }
     }
   }
 }
 
 void displacementField::get(MInterfaceElement* iele, std::vector<double> &udofs){
-  udofs.resize(0);
-  std::vector<double> utemp;
-  int usizem = numcomp*iele->getElem(0)->getNumVertices();
-  utemp.resize(usizem);
-  this->get(iele->getElem(0),utemp);
-  for(int i=0;i<usizem;i++)
-    udofs.push_back(utemp[i]);
+//  udofs.resize(0);
+//  std::vector<double> utemp;
+//  int usizem = numcomp*iele->getElem(0)->getNumVertices();
+//  utemp.resize(usizem);
+  this->get(iele->getElem(0),udofs);
+//  for(int i=0;i<usizem;i++)
+//    udofs.push_back(utemp[i]);
   if(!(iele->getElem(0)==iele->getElem(1))){// Virtual interface element
-    int usizep=numcomp*iele->getElem(1)->getNumVertices();
-    utemp.resize(usizep);
-    this->get(iele->getElem(1),utemp);
-    for(int i=0;i<usizep;i++)
-      udofs.push_back(utemp[i]);
+    //int usizep=numcomp*iele->getElem(1)->getNumVertices();
+    //utemp.resize(usizep);
+    this->get(iele->getElem(1),udofs);
+    //for(int i=0;i<usizep;i++)
+    //  udofs.push_back(utemp[i]);
   }
 }
 

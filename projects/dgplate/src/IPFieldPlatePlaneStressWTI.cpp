@@ -31,9 +31,7 @@ template<> void IPField<DGelasticField, DgC0FunctionSpace<SVector3> >::compute1s
     int nbdofp = _space->getNumKeys(ep);
     int nbFFm = em->getNumVertices();
     int nbFFp = ep->getNumVertices();
-    dispm.resize(nbdofm);
     _ufield->get(em,dispm);
-    dispp.resize(nbdofp);
     _ufield->get(ep,dispp);
     std::vector<IPState*> *vips = _AIPS->getIPstate(ie->getNum());
     for(int j=0;j<npts;j++){
@@ -67,7 +65,7 @@ template<> void IPField<DGelasticField, DgC0FunctionSpace<SVector3> >::compute1s
       ipv->computeStressAndDeformation(mlaw,&lbp,nbFFp,nbdofp,dispp,Gradp,Hessp);
 
       // appened method in gradfuvw
-      Grads.clear(); Gradm.clear();Gradp.clear(); Hessm.clear(); Hessp.clear();
+      Grads.clear(); Gradm.clear();Gradp.clear(); Hessm.clear(); Hessp.clear(); dispm.clear(); dispp.clear();
     }
   }
 
@@ -82,7 +80,6 @@ template<> void IPField<DGelasticField, DgC0FunctionSpace<SVector3> >::compute1s
     // vector with nodal displacement
     int nbdof = _space->getNumKeys(e);
     int nbFF = e->getNumVertices();
-    disp.resize(nbdof);
     _ufield->get(e,disp);
 
     std::vector<IPState*> *vips = _AIPS->getIPstate(ie->getNum());
@@ -104,7 +101,7 @@ template<> void IPField<DGelasticField, DgC0FunctionSpace<SVector3> >::compute1s
       ipv->setLocalBasisOfInterface(lbs);
       linearElasticLawPlaneStress *mlaw = dynamic_cast<linearElasticLawPlaneStress*>(ef->getMaterialLaw());
       ipv->computeStressAndDeformation(mlaw,&lbm,nbFF,nbdof,disp,Gradm,Hessm);
-      Gradm.clear(); Grads.clear(); Hessm.clear();
+      Gradm.clear(); Grads.clear(); Hessm.clear(); disp.clear();
     }
   }
   // bulk
@@ -114,7 +111,6 @@ template<> void IPField<DGelasticField, DgC0FunctionSpace<SVector3> >::compute1s
     int npts_bulk=_intBulk->getIntPoints(e,&GP);
     int nbdof = _space->getNumKeys(e);
     int nbFF = e->getNumVertices();
-    disp.resize(nbdof);
     _ufield->get(e,disp);
 
     std::vector<IPState*> *vips = _AIPS->getIPstate(e->getNum());
@@ -129,7 +125,7 @@ template<> void IPField<DGelasticField, DgC0FunctionSpace<SVector3> >::compute1s
       linearElasticLawPlaneStress *mlaw = dynamic_cast<linearElasticLawPlaneStress*>(ef->getMaterialLaw());
       ipv->computeStressAndDeformation(mlaw,nbFF,nbdof,disp,Grads,Hessm);
       // appened method in gradfuvw
-      Grads.clear(); Hessm.clear();
+      Grads.clear(); Hessm.clear(); disp.clear();
     }
   }
 }

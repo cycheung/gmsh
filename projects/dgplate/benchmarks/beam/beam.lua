@@ -11,9 +11,9 @@ nu = 0.   -- Poisson's ratio
 
 -- geometry
 h = 0.01  -- thickness
-meshfile="beam50.msh" -- name of mesh file
+meshfile="beam6.msh" -- name of mesh file
 -- integration
-nsimp = 1 -- number of Simpson's points (odd)
+nsimp = 3 -- number of Simpson's points (odd)
 
 -- solver
 sol = 1 --Gmm=0 (default) Taucs=1 PETsc=2
@@ -35,7 +35,7 @@ law1 = linearElasticLawPlaneStress(lawnum,E,nu)
 
 -- creation of ElasticField
 nfield =99 -- number of the field (physical number of surface)
-fullDg = 0 --  formulation CgDg=0 fullDg =1
+fullDg = 1 --  formulation CgDg=0 fullDg =1
 myfield1 = DGelasticField()
 myfield1:tag(1000)
 myfield1:thickness(h)

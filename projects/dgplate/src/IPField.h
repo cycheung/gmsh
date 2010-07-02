@@ -364,19 +364,19 @@ class IPField : public elementField {
   virtual void get(MElement *ele, std::vector<double> &stress, const int cc=-1){
     switch(cc){
       case -1 :
-        stress[0]= this->getVonMises(ele,IPState::current,max,0);
+        stress[0]= this->getVonMises(ele,IPState::current,mean,0);
         break;
       case 0 :
-        stress[0] = this->getStressWithOperation(ele,IPState::current,max,component::xx,0);
+        stress[0] = this->getStressWithOperation(ele,IPState::current,mean,component::xx,0);
         break;
       case 1 :
-        stress[0] = this->getStressWithOperation(ele,IPState::current,max,component::yy);
+        stress[0] = this->getStressWithOperation(ele,IPState::current,mean,component::yy);
         break;
       case 2 :
-        stress[0] = this->getStressWithOperation(ele,IPState::current,max,component::zz);
+        stress[0] = this->getStressWithOperation(ele,IPState::current,mean,component::zz);
         break;
       case 3 :
-        stress[0] = this->getStressWithOperation(ele,IPState::current,max,component::xy);
+        stress[0] = this->getStressWithOperation(ele,IPState::current,mean,component::xy);
         break;
     }
   }
