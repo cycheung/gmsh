@@ -84,14 +84,8 @@ static inline void diff(const SVector3 &a,const SVector3 &b,SVector3 &c);
 double epsilongd(const int gamma, const int delta, const LocalBasis *lb,const std::vector<TensorialTraits<double>::GradType> &Grads,
                   const std::vector<double> &disp);
 
-double rhogd(const int gamma, const int delta, const LocalBasis *lb,const std::vector<TensorialTraits<double>::HessType> &hess,
-             const std::vector<double> &disp);
-
-void stressReduction(const LinearElasticShellHookeTensor *H,const std::vector<TensorialTraits<double>::GradType> &Grads,
-                     const LocalBasis *lb,const std::vector<double> &disp, reductionElement &n);
-
-void momentReduction(const LinearElasticShellHookeTensor *H,const std::vector<TensorialTraits<double>::HessType> &hess,
-                     const LocalBasis *lb,const std::vector<double> &disp, reductionElement &m);
+double rhogd(const int gamma, const int delta, const LocalBasis *lb,const std::vector<TensorialTraits<double>::GradType> &Grads,
+             const std::vector<TensorialTraits<double>::HessType> &hess,const std::vector<double> &disp);
 
 void stressReductionHat(const reductionElement &n,const LocalBasis *lb, reductionElement &nhat);
 // Should be somewhere else ??

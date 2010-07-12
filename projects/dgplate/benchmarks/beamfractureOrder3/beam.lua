@@ -19,7 +19,7 @@ meshfile="beamO3.msh" -- name of mesh file
 nsimp = 3 -- number of Simpson's points (odd)
 
 -- solver
-sol = 2 --Gmm=0 (default) Taucs=1 PETsc=2
+sol = 1 --Gmm=0 (default) Taucs=1 PETsc=2
 beta1 =10. -- value of stabilization parameter
 beta2 =10.
 beta3 =10.

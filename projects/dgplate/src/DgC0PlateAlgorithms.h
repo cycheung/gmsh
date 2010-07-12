@@ -78,12 +78,12 @@ template<class Iterator,class Assembler> void Assemble(DgC0LinearTermBase &term,
     // node where the boundary conditions has to be applied
     int nvi=ielem->getNumVertices();
     std::vector<int> vernum;
+    std::vector<int> te;
     vernum.reserve(nvi);
     for(int i=0;i<nvi;i++) vernum.push_back(0);
       ielem->getLocalVertexNum(0,vernum);
     std::vector<int> *pver = &vernum;
     if(ind==0){
-      std::vector<int> te;
       te.push_back(vernum[kind]);
       pver = &te;
     }

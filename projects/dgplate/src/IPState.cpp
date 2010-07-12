@@ -22,9 +22,9 @@ void IPVariablePlate::computeStressAndDeformation(linearElasticLawPlaneStress *m
   epsilon[1] = epsilongd(1,1,&lb,Grads,disp);
   epsilon[3] = epsilongd(0,1,&lb,Grads,disp);
   epsilon[2] = epsilon[4] = epsilon[5] = 0.;
-  rho[0] = rhogd(0,0,&lb,Hess,disp);
-  rho[1] = rhogd(1,1,&lb,Hess,disp);
-  rho[3] = rhogd(0,1,&lb,Hess,disp);
+  rho[0] = rhogd(0,0,&lb,Grads,Hess,disp);
+  rho[1] = rhogd(1,1,&lb,Grads,Hess,disp);
+  rho[3] = rhogd(0,1,&lb,Grads,Hess,disp);
   rho[2]=rho[4]=rho[5]=0.;
   // stress thanks to material law
   mtl->stress(&lb,epsilon,sigmaMembrane);
@@ -40,9 +40,9 @@ void IPVariablePlate::computeStressAndDeformation(linearElasticLawPlaneStress *m
   epsilon[1] = epsilongd(1,1,lbe,Grads,disp);
   epsilon[3] = epsilongd(0,1,lbe,Grads,disp);
   epsilon[2] = epsilon[4] = epsilon[5] = 0.;
-  rho[0] = rhogd(0,0,lbe,Hess,disp);
-  rho[1] = rhogd(1,1,lbe,Hess,disp);
-  rho[3] = rhogd(0,1,lbe,Hess,disp);
+  rho[0] = rhogd(0,0,lbe,Grads,Hess,disp);
+  rho[1] = rhogd(1,1,lbe,Grads,Hess,disp);
+  rho[3] = rhogd(0,1,lbe,Grads,Hess,disp);
   rho[2] = rho[4] = rho[5] =0.;
   // stress thanks to material law
   mtl->stress(lbe,epsilon,sigmaMembrane);
@@ -60,9 +60,9 @@ void IPVariablePlateWithThicknessIntegration::computeStressAndDeformation(linear
   double eps22 = epsilongd(1,1,&lb,Grads,disp);
   double eps12 = epsilongd(0,1,&lb,Grads,disp);
   // "\xi^3 independant bending part"
-  double rho11 = rhogd(0,0,&lb,Hess,disp);
-  double rho22 = rhogd(1,1,&lb,Hess,disp);
-  double rho12 = rhogd(0,1,&lb,Hess,disp);
+  double rho11 = rhogd(0,0,&lb,Grads,Hess,disp);
+  double rho22 = rhogd(1,1,&lb,Grads,Hess,disp);
+  double rho12 = rhogd(0,1,&lb,Grads,Hess,disp);
   for(int i=0;i<nsimp;i++){
     epsilon[i][0] = eps11 + zsimp[i]*rho11; // TODO rewrite epsilongd and rhogd more efficiently
     epsilon[i][1] = eps22 + zsimp[i]*rho22;
@@ -84,9 +84,9 @@ void IPVariablePlateWithThicknessIntegration::computeStressAndDeformation(linear
   double eps22 = epsilongd(1,1,lbe,Grads,disp);
   double eps12 = epsilongd(0,1,lbe,Grads,disp);
   // "\xi^3 independant bending part"
-  double rho11 = rhogd(0,0,lbe,Hess,disp);
-  double rho22 = rhogd(1,1,lbe,Hess,disp);
-  double rho12 = rhogd(0,1,lbe,Hess,disp);
+  double rho11 = rhogd(0,0,lbe,Grads,Hess,disp);
+  double rho22 = rhogd(1,1,lbe,Grads,Hess,disp);
+  double rho12 = rhogd(0,1,lbe,Grads,Hess,disp);
   for(int i=0;i<nsimp;i++){
     epsilon[i][0] = eps11 + zsimp[i]*rho11; // TODO rewrite epsilongd and rhogd more efficiently
     epsilon[i][1] = eps22 + zsimp[i]*rho22;

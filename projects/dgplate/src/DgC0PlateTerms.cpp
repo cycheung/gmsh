@@ -24,7 +24,7 @@ void IsotropicElasticStiffBulkTermC0Plate::get(MElement *ele,int npts,IntPt *GP,
     m.setAll(0.);
     std::vector<TensorialTraits<double>::HessType> Hess;
     std::vector<TensorialTraits<double>::GradType> Grad;
-    double Bn[256][3][2][2]; // max order 256 or dynamical allocation ?? better than std::vector and fullMatrix ?? create a class with this variable
+    double Bn[256][3][2][2], Bm[256][3][2][2]; // max order 256 or dynamical allocation ?? better than std::vector and fullMatrix ?? create a class with this variable
     LocalBasis LB;
     LocalBasis *lb=&LB; // two last line in 1 operation ??
     double me_bending[3][3];
@@ -41,7 +41,7 @@ void IsotropicElasticStiffBulkTermC0Plate::get(MElement *ele,int npts,IntPt *GP,
       DgC0BilinearTerm<SVector3,SVector3>::space1.gradfuvw(ele,u, v, w, Grad); // a optimiser the jacobian cannot be given in argument...
       DgC0BilinearTerm<SVector3,SVector3>::space1.hessfuvw(ele,u, v, w, Hess); // a optimiser
 
-      lb->set(ele,Grad); // This function can become a method of MElement Plante lors du calcul de l'énergie  à cause de  std::vector<TensorialTraits<SVector3>::GradType> qui retourne un vecteur vide prob de template??
+      lb->set(ele,Grad,Hess); // This function can become a method of MElement Plante lors du calcul de l'énergie  à cause de  std::vector<TensorialTraits<SVector3>::GradType> qui retourne un vecteur vide prob de template??
 
       // multiplication of constant by detJ and weight
       Cmt = lb->getJacobian() * weight *Cm;
@@ -51,11 +51,12 @@ void IsotropicElasticStiffBulkTermC0Plate::get(MElement *ele,int npts,IntPt *GP,
 
       // compute Bn value
       compute_Bn(lb,Grad,nbFF,Bn);
+      Compute_Bm(lb,Grad,Hess,nbFF,Bm);
 
      // loop on SF to construct the elementary (bulk) stiffness matrix at the Gauss' point i
      for(int j=0; j<nbFF;j++)
        for(int k=0;k<nbFF;k++){
-         BulkC0PlateDGStiffnessBendingTerms(Hess[j],Hess[k],H,lb,me_bending);
+         BulkC0PlateDGStiffnessBendingTerms(Bm[j],Bm[k],H,me_bending);
          BulkC0PlateDGStiffnessMembraneTerms(Bn[j],Bn[k],H,me_membrane);
          for(int jj=0;jj<3;jj++)
            for(int kk=0;kk<3;kk++)
@@ -108,6 +109,7 @@ void IsotropicElasticForceBulkTermC0Plate::get(MElement *ele,int npts,IntPt *GP,
   m.scale(0.);
   std::vector<TensorialTraits<double>::HessType> Hess;
   std::vector<TensorialTraits<double>::GradType> Grad;
+  double Bm[256][3][2][2];
   reductionElement nalpha,malpha;
 
   // sum on Gauss' points
@@ -122,15 +124,15 @@ void IsotropicElasticForceBulkTermC0Plate::get(MElement *ele,int npts,IntPt *GP,
     // It give the value of second derivative of SF in the isoparametric configuration
     DgC0LinearTerm<SVector3>::space1.gradfuvw(ele,u, v, w, Grad); // a optimiser the jacobian cannot be given in argument...
     DgC0LinearTerm<SVector3>::space1.hessfuvw(ele,u, v, w, Hess); // a optimiser
-
     // not very elegant but very usefull
     const LocalBasis *lb = ipf->getReductionAndLocalBasis(ele,i,_elemtype,IPState::current,nalpha,malpha);
+    Compute_Bm(lb,Grad,Hess,nbFF,Bm);
     wJ = lb->getJacobian() * weight;
     for(int j=0; j<nbFF;j++){
       for(int k=0;k<3;k++)
         for(int alpha=0;alpha<2;alpha++)
           for(int beta=0;beta<2;beta++)
-            m(j+k*nbFF)+=wJ*(Grad[j](alpha)*nalpha(alpha,beta)*lb->getphi0(beta,k)- Hess[j](alpha,beta)*malpha(alpha,beta)*lb->gett0(k));
+            m(j+k*nbFF)+=wJ*(Grad[j](alpha)*nalpha(alpha,beta)*lb->getphi0(beta,k)+ Bm[j][k][alpha][beta]*malpha(alpha,beta));
     }
   // clear the hessian and Grad because the components append in hessfuvw and gradfuvw
   Hess.clear(); Grad.clear();
@@ -163,7 +165,7 @@ void IsotropicElasticStiffInterfaceTermC0Plate::get(MElement *ele,int npts,IntPt
     std::vector<TensorialTraits<double>::HessType> Hess_p;
     LocalBasis LBS,LBP,LBM;
     LocalBasis *lbs=&LBS; LocalBasis *lb_p=&LBP; LocalBasis *lb_m=&LBM;
-    double Bhat_p[256][3][2][2], Bhat_m[256][3][2][2], Bn_m[256][3][2][2], Bn_p[256][3][2][2];
+    double Bhat_p[256][3][2][2], Bhat_m[256][3][2][2], Bn_m[256][3][2][2], Bn_p[256][3][2][2],Bm_m[256][3][2][2], Bm_p[256][3][2][2];
     double Bs_m[256][3], Bs_p[256][3];
     LinearElasticShellHookeTensor HOOKEhat_p;
     LinearElasticShellHookeTensor HOOKehat_m;
@@ -204,8 +206,8 @@ void IsotropicElasticStiffInterfaceTermC0Plate::get(MElement *ele,int npts,IntPt
       DgC0BilinearTerm<SVector3,SVector3>::space1.hessfuvw(velem[1],uep, vep, w, Hess_p);
 
       // basis of elements and interface element
-      lb_m->set(velem[0],Grads_m); // This function can become a method of MElement Plante lors du calcul de l'énergie  à cause de  std::vector<TensorialTraits<SVector3>::GradType> prob de template??
-      lb_p->set(velem[1],Grads_p); // This function can become a method of MElement Plante lors du calcul de l'énergie  à cause de  std::vector<TensorialTraits<SVector3>::GradType> prob de template??
+      lb_m->set(velem[0],Grads_m,Hess_m); // This function can become a method of MElement Plante lors du calcul de l'énergie  à cause de  std::vector<TensorialTraits<SVector3>::GradType> prob de template??
+      lb_p->set(velem[1],Grads_p,Hess_p); // This function can become a method of MElement Plante lors du calcul de l'énergie  à cause de  std::vector<TensorialTraits<SVector3>::GradType> prob de template??
       lbs->set(iele,Grads,lb_p->gett0(),lb_m->gett0()); // This function can become a method of MElement Plante lors du calcul de l'énergie  à cause de  std::vector<TensorialTraits<SVector3>::GradType> prob de template??
       // PushForwardTensor
       lb_m->set_pushForward(lbs);
@@ -213,8 +215,10 @@ void IsotropicElasticStiffInterfaceTermC0Plate::get(MElement *ele,int npts,IntPt
 
       if(!vbroken[i]){
         // Compute of Bhat vector (1 component for now because 1 dof (z) ) --> it's a vector of length == nbFF
-        Compute_Bhat(lb_p,Hess_p,nbFF_p,Bhat_p);
-        Compute_Bhat(lb_m,Hess_m,nbFF_m,Bhat_m);
+        Compute_Bm(lb_p,Grads_m,Hess_p,nbFF_p,Bm_p);
+        Compute_Bm(lb_m,Grads_p,Hess_m,nbFF_m,Bm_m);
+        compute_Bhat(lb_p,nbFF_p,Bm_p,Bhat_p);
+        compute_Bhat(lb_m,nbFF_m,Bm_m,Bhat_m);
 
         // Compute of Hooke hat tensor on minus and plus element
         Cmt = weight * lbs->getJacobian()  * Cm; // Eh^3/(12(1-nu^2)) * weight gauss * jacobian
@@ -272,8 +276,8 @@ void IsotropicElasticStiffInterfaceTermC0Plate::get(MElement *ele,int npts,IntPt
           // first value of Bn are needed
           compute_Bn(lb_m,Grads_m,nbFF_m,Bn_m);
           compute_Bn(lb_p,Grads_p,nbFF_p,Bn_p);
-          compute_Bnhat(lb_m,nbFF_m,Bn_m,Bhat_m);
-          compute_Bnhat(lb_p,nbFF_p,Bn_p,Bhat_p);
+          compute_Bhat(lb_m,nbFF_m,Bn_m,Bhat_m);
+          compute_Bhat(lb_p,nbFF_p,Bn_p,Bhat_p);
 
           // Compute Hooke tensor
           Cnt = weight*lbs->getJacobian()*Cn;
@@ -470,7 +474,7 @@ void IsotropicElasticForceInterfaceTermC0Plate::get(MElement *ele,int npts,IntPt
   std::vector<TensorialTraits<double>::HessType> Hess_m;
   std::vector<TensorialTraits<double>::HessType> Hess_p;
   const LocalBasis* lb[3];
-  double Bhat_p[256][3][2][2],Bhat_m[256][3][2][2];
+  double Bhat_p[256][3][2][2],Bhat_m[256][3][2][2], Bm_p[256][3][2][2],Bm_m[256][3][2][2];
   double Bs_p[256][3],Bs_m[256][3];
   LinearElasticShellHookeTensor HOOKEhat_p; LinearElasticShellHookeTensor *Hhat_p=&HOOKEhat_p;
   LinearElasticShellHookeTensor HOOKehat_m; LinearElasticShellHookeTensor *Hhat_m=&HOOKehat_m;
@@ -541,8 +545,11 @@ void IsotropicElasticForceInterfaceTermC0Plate::get(MElement *ele,int npts,IntPt
 
     // Compatibility and stability (if not broken)
     if(!vbroken[i]){
-      Compute_Bhat(lb[1],Hess_p,nbFF_p,Bhat_p);
-      Compute_Bhat(lb[0],Hess_m,nbFF_m,Bhat_m);
+      Compute_Bm(lb[1],Grads_p,Hess_p,nbFF_p,Bm_p);
+      Compute_Bm(lb[0],Grads_m,Hess_m,nbFF_m,Bm_m);
+      compute_Bhat(lb[1],nbFF_p,Bm_p,Bhat_p);
+      compute_Bhat(lb[0],nbFF_m,Bm_m,Bhat_m);
+
       // Compute of Hooke hat tensor on minus and plus element
       Cmt = wJ*Cm; // Eh^3/(12(1-nu^2)) * weight gauss * jacobian
       Hhat_p->hat(lb[1],Cmt,nu);
@@ -661,7 +668,7 @@ void IsotropicElasticStiffVirtualInterfaceTermC0Plate::get(MElement *ele,int npt
     LocalBasis LBS,LBM;
     LocalBasis *lbs=&LBS; LocalBasis *lb_m=&LBM;
     //std::vector<std::vector<fullMatrix<double> > > Bhat_m;
-    double Bhat_m[256][3][2][2];
+    double Bhat_m[256][3][2][2], Bm_m[256][3][2][2];
     LinearElasticShellHookeTensor HOOKehat_m;
     LinearElasticShellHookeTensor *Hhat_m=&HOOKehat_m;
     double Deltat_m[256][3][3],Deltat_p[256][3][3];
@@ -692,14 +699,15 @@ void IsotropicElasticStiffVirtualInterfaceTermC0Plate::get(MElement *ele,int npt
       DgC0BilinearTerm<SVector3,SVector3>::space1.hessfuvw(velem[0],uem, vem, w, Hess_m);
 
       // basis of elements and interface element
-      lb_m->set(velem[0],Grads_m); // This function can become a method of MElement Plante lors du calcul de l'énergie  à cause de  std::vector<TensorialTraits<SVector3>::GradType> prob de template??
+      lb_m->set(velem[0],Grads_m,Hess_m); // This function can become a method of MElement Plante lors du calcul de l'énergie  à cause de  std::vector<TensorialTraits<SVector3>::GradType> prob de template??
       lbs->set(iele,Grads,lb_m->gett0()); // This function can become a method of MElement Plante lors du calcul de l'énergie  à cause de  std::vector<TensorialTraits<SVector3>::GradType> prob de template??
 
       // PushForwardTensor
       lb_m->set_pushForward(lbs);
 
       // Compute of Bhat vector (1 component for now because 1 dof (z) ) --> it's a vector of length == nbFF
-      Compute_Bhat(lb_m,Hess_m,nbFF_m,Bhat_m);
+      Compute_Bm(lb_m,Grads_m,Hess_m,nbFF_m,Bm_m);
+      compute_Bhat(lb_m,nbFF_m,Bm_m,Bhat_m);
       // Compute of Hooke hat tensor on minus and plus element
       Cmt = weight * lbs->getJacobian()  * Cm; // Eh^3/(12(1-nu^2)) * weight gauss * jacobian
       Hhat_m->hat(lb_m,Cmt,nu);
@@ -777,7 +785,7 @@ void IsotropicElasticForceVirtualInterfaceTermC0Plate::get(MElement *ele,int npt
   std::vector<TensorialTraits<double>::GradType> Grads;
   std::vector<TensorialTraits<double>::HessType> Hess_m;
   const LocalBasis *lb[3];
-  double Bhat_m[256][3][2][2];
+  double Bhat_m[256][3][2][2], Bm_m[256][3][2][2];
   LinearElasticShellHookeTensor HOOKehat_m;
   LinearElasticShellHookeTensor *Hhat_m=&HOOKehat_m;
   double Deltat_m[256][3][3];
@@ -830,7 +838,8 @@ void IsotropicElasticForceVirtualInterfaceTermC0Plate::get(MElement *ele,int npt
 
     // Compatibility and stability
     // Compute of Bhat vector (1 component for now because 1 dof (z) ) --> it's a vector of length == nbFF
-    Compute_Bhat(lb[0],Hess_m,nbFF_m,Bhat_m);
+    Compute_Bm(lb[0],Grads_m,Hess_m,nbFF_m,Bm_m);
+    compute_Bhat(lb[0],nbFF_m,Bm_m,Bhat_m);
     Cmt = wJ * Cm; // Eh^3/(12(1-nu^2)) * weight gauss * jacobian
     Hhat_m->hat(lb[0],Cmt,nu);
     // Assemblage

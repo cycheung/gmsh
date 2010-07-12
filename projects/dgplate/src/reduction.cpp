@@ -92,44 +92,34 @@ double epsilongd(const int gamma, const int delta, const LocalBasis *lb,const st
   return eps;
 }
 
-double rhogd(const int gamma, const int delta, const LocalBasis *lb,const std::vector<TensorialTraits<double>::HessType> &hess, const std::vector<double> &disp){
+double rhogd(const int gamma, const int delta, const LocalBasis *lb,
+             const std::vector<TensorialTraits<double>::GradType> &Grads, const std::vector<TensorialTraits<double>::HessType> &hess,
+             const std::vector<double> &disp){
   int nbFF=hess.size();
-  double rho = 0.,u_t;
-  SVector3 u;
-  for(int i=0;i<nbFF;i++){
+  double rho = 0.;
+  double invJ = 1./lb->getJacobian();
+  SVector3 u(0.,0.,0.);
+  SVector3 u1(0.,0.,0.), u2(0.,0.,0.);
+ /* for(int i=0;i<nbFF;i++){
     u(0)=disp[i]; u(1)=disp[i+nbFF]; u(2)=disp[i+2*nbFF];
     u_t=scaldot(u,lb->gett0());
     rho-=(u_t*hess[i](gamma,delta));
+  }*/
+  for(int i=0;i<nbFF;i++){
+    u(0)+=hess[i](gamma,delta)*disp[i]; u(1)+=hess[i](gamma,delta)*disp[i+nbFF];  u(2)+=hess[i](gamma,delta)*disp[i+2*nbFF];
+    u1(0)+=Grads[i](0)*disp[i]; u1(1)+=Grads[i](0)*disp[i+nbFF];  u1(2)+=Grads[i](0)*disp[i+2*nbFF];
+    u2(0)+=Grads[i](1)*disp[i]; u2(1)+=Grads[i](1)*disp[i+nbFF];  u2(1)+=Grads[i](0)*disp[i+2*nbFF];
   }
+  rho -= scaldot(u,lb->gett0());
+  double scal = scaldot(lb->getderivphi0(gamma,delta),lb->gett0());
+  SVector3 t1 = crossprod(lb->getphi0(0),lb->gett0());
+  SVector3 t2 = crossprod(lb->getphi0(1),lb->gett0());
+  t1*=scal;
+  t2*=scal;
+  t1+=crossprod(lb->getderivphi0(gamma,delta),lb->getphi0(1));
+  t2+=crossprod(lb->getderivphi0(gamma,delta),lb->getphi0(0));
+  rho += invJ*(scaldot(u1,t2)-scaldot(u2,t1));
   return rho;
-}
-
-void stressReduction(const LinearElasticShellHookeTensor *H,const std::vector<TensorialTraits<double>::GradType> &Grads,
-                     const LocalBasis *lb,const std::vector<double> &disp, reductionElement &n){
-  n.setAll(0.);
-  double eps_gd;
-  for(int gamma=0;gamma<2;gamma++)
-    for(int delta=0;delta<2;delta++)
-    {
-      eps_gd=epsilongd(gamma,delta,lb,Grads,disp);
-        for(int alpha=0;alpha<2;alpha++)
-          for(int beta=0;beta<2;beta++)
-            n(alpha,beta) += H->get(alpha,beta,gamma,delta)*eps_gd;
-    }
-}
-
-void momentReduction(const LinearElasticShellHookeTensor *H,const std::vector<TensorialTraits<double>::HessType> &hess,
-                     const LocalBasis *lb,const std::vector<double> &disp, reductionElement &m){
-  m.setAll(0.);
-  double rho_gd;
-  for(int gamma=0;gamma<2;gamma++)
-    for(int delta=0;delta<2;delta++)
-    {
-      rho_gd=rhogd(gamma,delta,lb,hess,disp);
-      for(int alpha=0;alpha<2;alpha++)
-        for(int beta=0;beta<2;beta++)
-          m(alpha,beta) += H->get(alpha,beta,gamma,delta)*rho_gd;
-    }
 }
 
 void stressReductionHat(const reductionElement &n,const LocalBasis *lb, reductionElement &nhat){

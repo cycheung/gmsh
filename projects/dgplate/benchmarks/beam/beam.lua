@@ -7,7 +7,7 @@
 -- material law
 lawnum = 1 -- unique number of the law
 E = 100.e9 -- Young's modulus
-nu = 0.   -- Poisson's ratio
+nu = 0.3   -- Poisson's ratio
 
 -- geometry
 h = 0.01  -- thickness
@@ -35,7 +35,7 @@ law1 = linearElasticLawPlaneStress(lawnum,E,nu)
 
 -- creation of ElasticField
 nfield =99 -- number of the field (physical number of surface)
-fullDg = 1 --  formulation CgDg=0 fullDg =1
+fullDg = 0 --  formulation CgDg=0 fullDg =1
 myfield1 = DGelasticField()
 myfield1:tag(1000)
 myfield1:thickness(h)

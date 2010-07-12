@@ -102,7 +102,8 @@ class IPVariablePlate : public IPVariable{
     virtual double getRho(const int i) const{return rho[i];}
     virtual void getSigma(double sig[6]){for(int i=0;i<6;i++) sig[i]=sigmaMembrane[i]+sigmaBending[i];}
     virtual void getEpsilon(double eps[6]){for(int i=0;i<6;i++) eps[i]=epsilon[i]+rho[i];}
-    virtual void setLocalBasis(MElement *e, const std::vector<TensorialTraits<double>::GradType> &Grads){lb.set(e,Grads);}
+    virtual void setLocalBasis(MElement *e, const std::vector<TensorialTraits<double>::GradType> &Grads,
+                               std::vector<TensorialTraits<double>::HessType> &Hess){lb.set(e,Grads,Hess);}
     virtual void setLocalBasis(const LocalBasis &lbe){lb = lbe;}
     virtual const LocalBasis * getLocalBasis() const {return &lb;}
 };
@@ -216,8 +217,9 @@ class IPVariablePlateWithThicknessIntegration : public IPVariable{
     void computeStressAndDeformation(linearElasticLawPlaneStress*,const LocalBasis*,const int, const int,
                                      const std::vector<double>&disp, const std::vector<TensorialTraits<double>::GradType>&,
                                      const std::vector<TensorialTraits<double>::HessType>&);
-    virtual void setLocalBasis(MElement *e, const std::vector<TensorialTraits<double>::GradType> &Grads){
-      lb.set(e,Grads);
+    virtual void setLocalBasis(MElement *e, const std::vector<TensorialTraits<double>::GradType> &Grads,
+                               const std::vector<TensorialTraits<double>::HessType> &Hess){
+      lb.set(e,Grads,Hess);
     }
 /*    virtual void setLocalBasis(MInterfaceElement *ie,const std::vector<TensorialTraits<double>::GradType> &Grads, const SVector3 &t0p, const SVector3 &t0m)
     {

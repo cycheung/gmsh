@@ -55,8 +55,8 @@ template<> void IPField<DGelasticField, DgC0FunctionSpace<SVector3> >::compute1s
       _space->gradfuvw(ie,GP[j].pt[0],GP[j].pt[1],GP[j].pt[2],Grads);
       // local basis on element is needed to compute the local basis on interfaceelement (normal)
       LocalBasis lbm,lbp,lbs;
-      lbm.set(em,Gradm);
-      lbp.set(ep,Gradp);
+      lbm.set(em,Gradm,Hessm);
+      lbp.set(ep,Gradp,Hessp);
       lbs.set(ie,Grads,lbm.gett0(),lbp.gett0());
       lbm.set_pushForward(&lbs);
       lbp.set_pushForward(&lbs);
@@ -119,7 +119,7 @@ template<> void IPField<DGelasticField, DgC0FunctionSpace<SVector3> >::compute1s
       _space->hessfuvw(e,uem,vem,0.,Hessm);
       // local basis on element is needed to compute the local basis on interfaceelement (normal)
       LocalBasis lbm,lbs;
-      lbm.set(e,Gradm);
+      lbm.set(e,Gradm,Hessm);
       lbs.set(ie,Grads,lbm.gett0());
       lbm.set_pushForward(&lbs);
       IPState* ips = (*vips)[j];
@@ -148,7 +148,7 @@ template<> void IPField<DGelasticField, DgC0FunctionSpace<SVector3> >::compute1s
       // local basis on element is needed to compute the local basis on interfaceelement (normal)
       IPState* ips = (*vips)[j];
       IPVariablePlateWithThicknessIntegration *ipv = dynamic_cast<IPVariablePlateWithThicknessIntegration*>(ips->getState(ws));
-      ipv->setLocalBasis(e,Grads);
+      ipv->setLocalBasis(e,Grads,Hessm);
       linearElasticLawPlaneStress *mlaw = dynamic_cast<linearElasticLawPlaneStress*>(ef->getMaterialLaw());
       ipv->computeStressAndDeformation(mlaw,nbFF,nbdof,disp,Grads,Hessm);
       // appened method in gradfuvw

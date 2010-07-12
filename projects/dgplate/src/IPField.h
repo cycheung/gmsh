@@ -284,7 +284,7 @@ class IPField : public elementField {
           this->compute1statePlatePlaneStress(ws,&(*_efield)[i]);
           break;
         case SolElementType::PlatePlaneStressWTI :
-          this->compute1statePlatePlaneStressWTI(ws,&(*_efield)[i]);
+        this->compute1statePlatePlaneStressWTI(ws,&(*_efield)[i]);
           break;
         case SolElementType::PlatePlaneStressWF :
           this->compute1statePlatePlaneStressWF(ws,&(*_efield)[i]); // The state is compute in the same way as there is not fracture

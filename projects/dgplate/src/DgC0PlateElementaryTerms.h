@@ -115,16 +115,16 @@ inline void BulkC0PlateDGStiffnessMembraneTerms(const double Bj[3][2][2],const d
     }
 }
 
-inline void BulkC0PlateDGStiffnessBendingTerms(TensorialTraits<double>::HessType &hessj, TensorialTraits<double>::HessType &hessk, const LinearElasticShellHookeTensor *H, const LocalBasis *lb, double me[3][3]){
+inline void BulkC0PlateDGStiffnessBendingTerms(const double Bmj[3][2][2], const double Bmk[3][2][2], const LinearElasticShellHookeTensor *H, double me[3][3]){
   double mtemp[3][3];
   for(int i=0;i<3;i++) for(int j=0;j<3;j++) me[i][j]=0.;
   double B1[3],B2[3];
   for(int alpha=0;alpha<2;alpha++)
     for(int beta=0;beta<2;beta++){
-      B1[0]=-hessj(alpha,beta)*lb->gett0(0); B1[1]=-hessj(alpha,beta)*lb->gett0(1); B1[2]=-hessj(alpha,beta)*lb->gett0(2);
+      B1[0]= Bmj[0][alpha][beta]; B1[1]= Bmj[1][alpha][beta]; B1[2]= Bmj[2][alpha][beta];
       for(int gamma=0;gamma<2;gamma++)
         for(int delta=0;delta<2;delta++){
-          B2[0]=-hessk(gamma,delta)*lb->gett0(0); B2[1]=-hessk(gamma,delta)*lb->gett0(1); B2[2]=-hessk(gamma,delta)*lb->gett0(2);
+          B2[0]= Bmk[0][gamma][delta]; B2[1]= Bmk[1][gamma][delta]; B2[2]= Bmk[2][gamma][delta];
           diaprod(B1,B2,mtemp);
           for(int jj=0;jj<3;jj++)
             for(int kk=0;kk<3;kk++)
@@ -474,6 +474,50 @@ void compute_Bn(const LocalBasis *lb, const std::vector<TensorialTraits<double>:
 
 }
 
+/*void  Compute_Bm(const LocalBasis *lb,const std::vector<TensorialTraits<double>::HessType> &Hess, const int &n, double B[256][3][2][2]){
+  for(int i=0;i<n;i++){
+    for(int ii=0;ii<3;ii++){
+      B[i][ii][0][0] = -lb->gett0(ii)*Hess[i](0,0);
+      B[i][ii][0][1] = -lb->gett0(ii)*Hess[i](0,1);
+      B[i][ii][1][0] = -lb->gett0(ii)*Hess[i](1,0);
+      B[i][ii][1][1] = -lb->gett0(ii)*Hess[i](1,1);
+    }
+  }
+}*/
+
+void  Compute_Bm(const LocalBasis *lb,const std::vector<TensorialTraits<double>::GradType> &Grads,
+                 const std::vector<TensorialTraits<double>::HessType> &Hess, const int &n, double B[256][3][2][2]){
+  SVector3 t1(0.,0.,0.), t2(0.,0.,0.), p1(0.,0.,0.), p2(0.,0.,0.);
+  SVector3 t1t(0.,0.,0.),t2t(0.,0.,0.),p1t(0.,0.,0.),p2t(0.,0.,0.);
+  double scalt,scalt1, scalt2, scalp1, scalp2;
+  double invJ = 1./lb->getJacobian();
+  for(int alpha=0;alpha<2;alpha++){
+    for(int beta=0;beta<2;beta++){
+      scalt = invJ * scaldot(lb->getderivphi0(alpha,beta),lb->gett0());
+      t1 = crossprod(lb->getphi0(0),lb->gett0());
+      t2 = crossprod(lb->getphi0(1),lb->gett0());
+      p1 = crossprod(lb->getderivphi0(alpha,beta),lb->getphi0(0));
+      p2 = crossprod(lb->getderivphi0(alpha,beta),lb->getphi0(1));
+      for(int i=0;i<n;i++){
+        scalt1 = scalt * Grads[i](0);
+        scalt2 = scalt * Grads[i](1);
+        scalp1 = invJ*Grads[i](0);
+        scalp2 = invJ*Grads[i](1);
+        t1t = scalt2 * t1;
+        t2t = scalt1 * t2;
+        p1t = scalp2 * p1;
+        p2t = scalp1 * p2;
+        t1t+=p1t;
+        t2t+=p2t;
+        t2t-=t1t;
+        for(int ii=0;ii<3;ii++){
+          B[i][ii][alpha][beta] = t2t(ii)-lb->gett0(ii)*Hess[i](alpha,beta);
+        }
+      }
+    }
+  }
+}
+
 // Compute value needed in getinter
 void compute_Bs(const LocalBasis *lb, const std::vector<TensorialTraits<double>::ValType> &Vals, const int n, double B[][3]){
   for(int i=0;i<n;i++){
@@ -482,7 +526,7 @@ void compute_Bs(const LocalBasis *lb, const std::vector<TensorialTraits<double>:
       }
 }
 
-void compute_Bnhat(const LocalBasis *lb, const int n, const double B[256][3][2][2], double Bhat[256][3][2][2]){
+void compute_Bhat(const LocalBasis *lb, const int n, const double B[256][3][2][2], double Bhat[256][3][2][2]){
   for(int i=0;i<n;i++){
     for(int ii=0;ii<3;ii++){
       Bhat[i][ii][0][0] =0.; Bhat[i][ii][0][1]=0.; Bhat[i][ii][1][0]=0.; Bhat[i][ii][1][1]=0.;
@@ -492,21 +536,6 @@ void compute_Bnhat(const LocalBasis *lb, const int n, const double B[256][3][2][
           Bhat[i][ii][0][1] += lb->gett(0,j)*B[i][ii][j][k]*lb->gett(1,k);
           Bhat[i][ii][1][0] += lb->gett(1,j)*B[i][ii][j][k]*lb->gett(0,k);
           Bhat[i][ii][1][1] += lb->gett(1,j)*B[i][ii][j][k]*lb->gett(1,k);
-        }
-    }
-  }
-}
-
-void  Compute_Bhat(const LocalBasis *lb,const std::vector<TensorialTraits<double>::HessType> &Hess, const int &n, double B[256][3][2][2]){
-  for(int i=0;i<n;i++){
-    for(int ii=0;ii<3;ii++){
-      B[i][ii][0][0] =0.; B[i][ii][0][1]=0.; B[i][ii][1][0]=0.; B[i][ii][1][1]=0.;
-      for(int j=0;j<2;j++)
-        for(int k=0;k<2;k++){
-          B[i][ii][0][0] += -lb->gett0(ii)*lb->gett(0,j)*Hess[i](j,k)*lb->gett(0,k);
-          B[i][ii][0][1] += -lb->gett0(ii)*lb->gett(0,j)*Hess[i](j,k)*lb->gett(1,k);
-          B[i][ii][1][0] += -lb->gett0(ii)*lb->gett(1,j)*Hess[i](j,k)*lb->gett(0,k);
-          B[i][ii][1][1] += -lb->gett0(ii)*lb->gett(1,j)*Hess[i](j,k)*lb->gett(1,k);
         }
     }
   }
