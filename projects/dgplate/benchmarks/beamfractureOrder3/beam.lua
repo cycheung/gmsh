@@ -66,8 +66,10 @@ mysolver:prescribedDisplacement("Edge",61,0,0.)
 mysolver:prescribedDisplacement("Edge",61,1,0.)
 mysolver:prescribedDisplacement("Edge",61,2,0.)
 mysolver:prescribedDisplacement("Edge",71,2,0.001)
+
 mysolver:AddThetaConstraint(31)
 mysolver:AddThetaConstraint(61)
+
 mysolver:ArchivingEdgeForce(61,2)
 mysolver:ArchivingEdgeForce(31,2)
 mysolver:ArchivingEdgeForce(71,2)

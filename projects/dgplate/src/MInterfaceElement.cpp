@@ -125,11 +125,29 @@ double MInterfaceElement::characSize(MElement *e)
     Area += weight * detJ;
   }
   // perimeter
-  int nside = e->getNumEdges();
+  //old
+/*  int nside = e->getNumEdges();
+  double perimeter2 = 0.;
   for( int i = 0; i < nside; i++){
     // Distance between the two extremities
     MEdge edge = e->getEdge(i);
-    perimeter += edge.getVertex(0)->distance(edge.getVertex(1));
+    perimeter2 += edge.getVertex(0)->distance(edge.getVertex(1));
+  }*/
+  int nside = e->getNumEdges();
+  GaussQuadrature Integ_Bound(GaussQuadrature::ValVal);
+  std::vector<MVertex*> vver;
+  for(int i=0;i<nside;i++){
+    IntPt *GPb;
+    e->getEdgeVertices(i,vver);
+    MLineN mlin = MLineN(vver);
+    int npts = Integ_Bound.getIntPoints(&mlin,&GPb);
+    for(int j=0;j<npts; j++){
+      const double u = GPb[j].pt[0]; const double v = GPb[j].pt[1]; const double w = GPb[j].pt[2];
+      const double weight = GPb[j].weight; const double detJ = mlin.getJacobian(u, v, w, jac);
+      perimeter +=weight*detJ;
+    }
+    vver.clear();
   }
+
   return Area/perimeter;
 }

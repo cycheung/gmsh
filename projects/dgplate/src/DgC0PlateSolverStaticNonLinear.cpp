@@ -163,7 +163,7 @@ void DgC0PlateSolver::computeStiffMatrix(linearSystem<double> *lsys, dofManager<
   {
   // Initialization of elementary terms in function of the field and space
   IsotropicElasticStiffBulkTermC0Plate Eterm(*LagSpace,elasticFields[i].getMaterialLaw(),elasticFields[i]._h,
-                                             elasticFields[i].getFormulation());
+                                             elasticFields[i].getFormulation(), ufield,ipf,elasticFields[i].getSolElemType());
   // Assembling loop on Elementary terms
   MyAssemble(Eterm,*LagSpace,elasticFields[i].g->begin(),elasticFields[i].g->end(),Integ_Bulk,*pAssembler);
 

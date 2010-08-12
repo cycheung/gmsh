@@ -15,6 +15,46 @@
 #include "LocalBasis.h"
 #include "SVector3.h"
 
+// Fix the two following functions (Normally they are in DgC0PlateElementaryTerms.h)
+static double scld(const SVector3 &a,const SVector3 &b){
+  double c=0.;
+  for(int i=0;i<3;i++)
+    c+= a[i]*b[i];
+  return c;
+}
+static void  computeBm(const LocalBasis *lb,const std::vector<TensorialTraits<double>::GradType> &Grads,
+                 const std::vector<TensorialTraits<double>::HessType> &Hess, const int &n, double B[256][3][2][2]){
+  SVector3 t1(0.,0.,0.), t2(0.,0.,0.), p1(0.,0.,0.), p2(0.,0.,0.);
+  SVector3 t1t(0.,0.,0.),t2t(0.,0.,0.),p1t(0.,0.,0.),p2t(0.,0.,0.);
+  double scalt,scalt1, scalt2, scalp1, scalp2;
+  double invJ = 1./lb->getJacobian();
+  for(int alpha=0;alpha<2;alpha++){
+    for(int beta=0;beta<2;beta++){
+      scalt = invJ * scld(lb->getderivphi0(alpha,beta),lb->gett0());
+      t1 = crossprod(lb->getphi0(0),lb->gett0());
+      t2 = crossprod(lb->getphi0(1),lb->gett0());
+      p1 = crossprod(lb->getderivphi0(alpha,beta),lb->getphi0(0));
+      p2 = crossprod(lb->getderivphi0(alpha,beta),lb->getphi0(1));
+      for(int i=0;i<n;i++){
+        scalt1 = scalt * Grads[i](0);
+        scalt2 = scalt * Grads[i](1);
+        scalp1 = invJ*Grads[i](0);
+        scalp2 = invJ*Grads[i](1);
+        t1t = scalt2 * t1;
+        t2t = scalt1 * t2;
+        p1t = scalp2 * p1;
+        p2t = scalp1 * p2;
+        t1t+=p1t;
+        t2t+=p2t;
+        t2t-=t1t;
+        for(int ii=0;ii<3;ii++){
+          B[i][ii][alpha][beta] = t2t(ii)-lb->gett0(ii)*Hess[i](alpha,beta);
+        }
+      }
+    }
+  }
+}
+
 // class for store reduction element m(alpha,beta) and n(alpha,beta)
 class reductionElement{
  protected :

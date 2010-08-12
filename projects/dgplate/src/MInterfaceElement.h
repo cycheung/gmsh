@@ -38,7 +38,7 @@ class MInterfaceElement : public MLineN{ // or don't derivate but in this case a
     MElement ** getElem(){return _numElem;}
 
     // Give the number of minus 0 or plus 1 element
-    MElement * getElem(int index){return _numElem[index];}
+    MElement * getElem(int index) {return _numElem[index];}
     // Number of InterfaceElement == number of minus element if no int is given (cheat for dof on interface)
     //int getNum() const{printf("ahazh");return _numElem[0]->getNum();};
 

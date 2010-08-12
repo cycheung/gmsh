@@ -32,6 +32,8 @@ Physical Surface(99) = {11, 10};
 Physical Line(61) = {6};
 Physical Line(31) = {3};
 Physical Line(71) = {7};
+Physical Point(5) = {5};
+Physical Point(6) = {6};
 Transfinite Line {1, 2, 4, 5} = 5 Using Progression 1;
 Transfinite Line {6, 7, 3} = 2 Using Progression 1;
 Transfinite Surface {10};

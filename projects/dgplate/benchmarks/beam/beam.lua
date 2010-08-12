@@ -11,19 +11,19 @@ nu = 0.3   -- Poisson's ratio
 
 -- geometry
 h = 0.01  -- thickness
-meshfile="beam6.msh" -- name of mesh file
+meshfile="beam50.msh" -- name of mesh file
 -- integration
-nsimp = 3 -- number of Simpson's points (odd)
+nsimp = 1 -- number of Simpson's points (odd)
 
 -- solver
-sol = 1 --Gmm=0 (default) Taucs=1 PETsc=2
-beta1 = 10. -- value of stabilization parameter
-beta2 = 10.
-beta3 = 10.
+sol = 2 --Gmm=0 (default) Taucs=1 PETsc=2
+beta1 = 100. -- value of stabilization parameter
+beta2 = 100.
+beta3 = 10000.
 soltype = 1 -- StaticLinear=0 (default) StaticNonLinear=1
 nstep = 10   -- number of step (used only if soltype=1)
 ftime =1.   -- Final time (used only if soltype=1)
-tol=1.e-6   -- relative tolerance for NR scheme (used only if soltype=1)
+tol=1.e-4   -- relative tolerance for NR scheme (used only if soltype=1)
 nstepArch=1 -- Number of step between 2 archiving (used only if soltype=1)
 
 --[[
@@ -35,7 +35,7 @@ law1 = linearElasticLawPlaneStress(lawnum,E,nu)
 
 -- creation of ElasticField
 nfield =99 -- number of the field (physical number of surface)
-fullDg = 0 --  formulation CgDg=0 fullDg =1
+fullDg = 1 --  formulation CgDg=0 fullDg =1
 myfield1 = DGelasticField()
 myfield1:tag(1000)
 myfield1:thickness(h)

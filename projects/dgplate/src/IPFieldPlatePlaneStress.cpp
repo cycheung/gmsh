@@ -62,8 +62,9 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::compute1st
       ipv->computeStressAndDeformation(mlaw,nbFFp,nbdofp,dispp,Gradp,Hessp);
 
       // appened method in gradfuvw
-       Grads.clear(); Gradm.clear();Gradp.clear(); Hessm.clear(); Hessp.clear(); dispm.clear(); dispp.clear();
+       Grads.clear(); Gradm.clear();Gradp.clear(); Hessm.clear(); Hessp.clear();
     }
+    dispm.clear(); dispp.clear();
   }
 
   // Virtual interface element
@@ -96,8 +97,9 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::compute1st
       ipv->setLocalBasisOfInterface(lbs);
       linearElasticLawPlaneStress *mlaw = dynamic_cast<linearElasticLawPlaneStress*>(ef->getMaterialLaw());
       ipv->computeStressAndDeformation(mlaw,nbFF,nbdof,disp,Gradm,Hessm);
-      Gradm.clear(); Grads.clear(); Hessm.clear(); disp.clear();
+      Gradm.clear(); Grads.clear(); Hessm.clear();
     }
+    disp.clear();
   }
   // bulk
   for (groupOfElements::elementContainer::const_iterator it = ef->g->begin(); it != ef->g->end(); ++it){
@@ -119,11 +121,132 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::compute1st
       linearElasticLawPlaneStress *mlaw = dynamic_cast<linearElasticLawPlaneStress*>(ef->getMaterialLaw());
       ipv->computeStressAndDeformation(mlaw,nbFF,nbdof,disp,Grads,Hessm);
       // appened method in gradfuvw
-      Grads.clear(); Hessm.clear(); disp.clear();
+      Grads.clear(); Hessm.clear();
     }
+    disp.clear();
   }
 }
 
+// Compute ipv on a interfaceElement
+template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::computeIpvPlatePlaneStress(MInterfaceElement *ie,
+                                                                                                 const int num,
+                                                                                                 const IPState::whichState ws,
+                                                                                                 DGelasticField* ef,
+                                                                                                 const bool virt){
+  SVector3 val; // value of a vertex displacement
+  IntPt *GP;
+  std::vector<TensorialTraits<double>::GradType> Grads,Gradm,Gradp;
+  std::vector<TensorialTraits<double>::HessType> Hessm,Hessp;
+  double uem,vem,uep,vep;
+  std::vector<double> dispm,dispp;
+  if(!virt){
+    MElement *em = ie->getElem(0);
+    MElement *ep = ie->getElem(1);
+    // gauss point
+    int npts = _intBound->getIntPoints(ie,&GP);
+    // vector with nodal displacement
+    int nbdofm = _space->getNumKeys(em);
+    int nbdofp = _space->getNumKeys(ep);
+    int nbFFm = em->getNumVertices();
+    int nbFFp = ep->getNumVertices();
+    _ufield->get(em,dispm);
+    _ufield->get(ep,dispp);
+    std::vector<IPState*> *vips = _AIPS->getIPstate(ie->getNum());
+    for(int j=num;j<num+npts;j++){
+      // key of gauss point grad value at gauss point
+      ie->getuvOnElem(GP[j-num].pt[0],uem,vem,uep,vep);
+      _space->gradfuvw(em,uem,vem,0.,Gradm);
+      _space->hessfuvw(em,uem,vem,0.,Hessm);
+      _space->gradfuvw(ep,uep,vep,0.,Gradp);
+      _space->hessfuvw(ep,uep,vep,0.,Hessp);
+      _space->gradfuvw(ie,GP[j-num].pt[0],GP[j-num].pt[1],GP[j-num].pt[2],Grads);
+      // local basis on element is needed to compute the local basis on interfaceelement (normal)
+      LocalBasis lbm,lbp,lbs;
+      lbm.set(em,Gradm,Hessm);
+      lbp.set(ep,Gradp,Hessp);
+      lbs.set(ie,Grads,lbm.gett0(),lbp.gett0());
+      lbm.set_pushForward(&lbs);
+      lbp.set_pushForward(&lbs);
+      IPState* ips = (*vips)[j];
+      IPVariablePlateOnInterface *ipv = dynamic_cast<IPVariablePlateOnInterface*>(ips->getState(ws));
+      ipv->setLocalBasisOfInterface(lbs);
+      linearElasticLawPlaneStress *mlaw = dynamic_cast<linearElasticLawPlaneStress*>(ef->getMaterialLaw());
+      if(num==0){
+        ipv->setLocalBasis(lbm);
+        ipv->computeStressAndDeformation(mlaw,nbFFm,nbdofm,dispm,Gradm,Hessm);
+      }
+      else{
+        ipv->setLocalBasis(lbp);
+        ipv->computeStressAndDeformation(mlaw,nbFFp,nbdofp,dispp,Gradp,Hessp);
+      }
+
+      // appened method in gradfuvw
+       Grads.clear(); Gradm.clear();Gradp.clear(); Hessm.clear(); Hessp.clear();
+    }
+    dispm.clear(); dispp.clear();
+  }
+  else{  // Virtual interface element
+  std::vector<double> disp;
+    MElement *e = ie->getElem(0);
+    int edge = ie->getEdgeNumber(0);
+    int npts_inter=_intBound->getIntPoints(ie,&GP);
+    // vector with nodal displacement
+    int nbdof = _space->getNumKeys(e);
+    int nbFF = e->getNumVertices();
+    _ufield->get(e,disp);
+    std::vector<IPState*> *vips = _AIPS->getIPstate(ie->getNum());
+    for(int j=0;j<npts_inter;j++){
+      // key of gauss point grad value at gauss point
+      ie->getuvOnElem(GP[j].pt[0],uem,vem,uep,vep);
+      _space->gradfuvw(e,uem,vem,0.,Gradm);
+      _space->gradfuvw(ie,GP[j].pt[0],GP[j].pt[1],GP[j].pt[2],Grads);
+      _space->hessfuvw(e,uem,vem,0.,Hessm);
+      // local basis on element is needed to compute the local basis on interfaceelement (normal)
+      LocalBasis lbm,lbs;
+      lbm.set(e,Gradm,Hessm);
+      lbs.set(ie,Grads,lbm.gett0());
+      lbm.set_pushForward(&lbs);
+      IPState* ips = (*vips)[j];
+      IPVariablePlateOnInterface *ipv = dynamic_cast<IPVariablePlateOnInterface*>(ips->getState(ws));
+      ipv->setLocalBasis(lbm);
+      ipv->setLocalBasisOfInterface(lbs);
+      linearElasticLawPlaneStress *mlaw = dynamic_cast<linearElasticLawPlaneStress*>(ef->getMaterialLaw());
+      ipv->computeStressAndDeformation(mlaw,nbFF,nbdof,disp,Gradm,Hessm);
+      Gradm.clear(); Grads.clear(); Hessm.clear();
+    }
+    disp.clear();
+  }
+}
+
+template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::computeIpvPlatePlaneStress(MElement *e, IPState::whichState ws,
+                                                                                                 DGelasticField* ef){
+  SVector3 val; // value of a vertex displacement
+  IntPt *GP;
+  std::vector<TensorialTraits<double>::GradType> Grads;
+  std::vector<TensorialTraits<double>::HessType> Hessm;
+  std::vector<double> disp;
+  // bulk
+  int edge = e->getNumEdges();
+  int npts_bulk=_intBulk->getIntPoints(e,&GP);
+  int nbdof = _space->getNumKeys(e);
+  int nbFF = e->getNumVertices();
+  _ufield->get(e,disp);
+  std::vector<IPState*> *vips = _AIPS->getIPstate(e->getNum());
+  for(int j=0;j<npts_bulk;j++){
+    //grad value at gauss point
+    _space->gradfuvw(e,GP[j].pt[0],GP[j].pt[1],GP[j].pt[2],Grads);
+    _space->hessfuvw(e,GP[j].pt[0],GP[j].pt[1],GP[j].pt[2],Hessm);
+    // local basis on element is needed to compute the local basis on interfaceelement (normal)
+    IPState* ips = (*vips)[j];
+    IPVariablePlate *ipv = dynamic_cast<IPVariablePlate*>(ips->getState(ws));
+    ipv->setLocalBasis(e,Grads,Hessm);
+    linearElasticLawPlaneStress *mlaw = dynamic_cast<linearElasticLawPlaneStress*>(ef->getMaterialLaw());
+    ipv->computeStressAndDeformation(mlaw,nbFF,nbdof,disp,Grads,Hessm);
+    // appened method in gradfuvw
+    Grads.clear(); Hessm.clear();
+  }
+  disp.clear();
+}
 
 
 // Function to compute VonMises stress

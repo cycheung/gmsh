@@ -65,33 +65,44 @@ void IsotropicElasticStiffBulkTermC0Plate::get(MElement *ele,int npts,IntPt *GP,
      // clear the hessian and Grad because the components append in hessfuvw and gradfuvw
      Hess.clear(); Grad.clear();
     }
-/*    m.print("bulk");
+/*   m.print("bulk");
+   m.setAll(0.);
     // By numerical perturbation (Verification OK)
-    double eps=1.e-8;
+    double eps=1.e-6;
+    double epsm = -eps;
     fullVector<double> fp(nbdof);
     fullVector<double> fm(nbdof);
     fp.scale(0.);
     fm.scale(0.);
-    fullMatrix<double> m2(nbdof,nbdof); m2.setAll(0.);
+    //fullMatrix<double> m2(nbdof,nbdof); m2.setAll(0.);
     DgC0LinearTerm<SVector3> *lterm = this->getLinearTerm();
-
+    Dof D(0,0);
     //displacementField ufield(pAssembler,elasticFields,3,LagSpace->getId())
     for(int j=0;j<ele->getNumVertices();j++){
       for(int jj=0;jj<3;jj++){
-        Dof D(ele->getVertex(j)->getNum(),DgC0PlateDof::createTypeWithThreeInts(jj,1000));
+        if(!fullDg)
+          D = Dof(ele->getVertex(j)->getNum(),DgC0PlateDof::createTypeWithThreeInts(jj,1000));
+        else
+          D = Dof(ele->getNum(),DgC0PlateDof::createTypeWithThreeInts(jj,1000,j));
         fm.scale(0.);fp.scale(0.);
         ufield->set(D,eps);
+        //ipf->compute1state(IPState::current);
+        ipf->computeIpv(ele,IPState::current);
         lterm->get(ele,npts,GP,fp);
-        double epsm = -eps;
         ufield->set(D,epsm);
+        ufield->set(D,epsm);
+//        ipf->compute1state(IPState::current);
+        ipf->computeIpv(ele,IPState::current);
         lterm->get(ele,npts,GP,fm);
-        double zer=0.;
-        ufield->set(D,zer);
+        ufield->set(D,eps);
         for(int k=0;k<nbdof;k++)
-          m2(k,jj*ele->getNumVertices()+j)=(fp(k)-fm(k))/(2.*eps);
+          m(k,jj*ele->getNumVertices()+j)=(fp(k)-fm(k))/(2.*eps);
       }
     }
-    m2.print("Bulk pert");*/
+//    ipf->compute1state(IPState::current);
+      ipf->computeIpv(ele,IPState::current);
+    m.print("Bulk pert");*/
+
   }
   else
     printf("not implemented\n");
@@ -126,6 +137,7 @@ void IsotropicElasticForceBulkTermC0Plate::get(MElement *ele,int npts,IntPt *GP,
     DgC0LinearTerm<SVector3>::space1.hessfuvw(ele,u, v, w, Hess); // a optimiser
     // not very elegant but very usefull
     const LocalBasis *lb = ipf->getReductionAndLocalBasis(ele,i,_elemtype,IPState::current,nalpha,malpha);
+
     Compute_Bm(lb,Grad,Hess,nbFF,Bm);
     wJ = lb->getJacobian() * weight;
     for(int j=0; j<nbFF;j++){
@@ -215,8 +227,8 @@ void IsotropicElasticStiffInterfaceTermC0Plate::get(MElement *ele,int npts,IntPt
 
       if(!vbroken[i]){
         // Compute of Bhat vector (1 component for now because 1 dof (z) ) --> it's a vector of length == nbFF
-        Compute_Bm(lb_p,Grads_m,Hess_p,nbFF_p,Bm_p);
-        Compute_Bm(lb_m,Grads_p,Hess_m,nbFF_m,Bm_m);
+        Compute_Bm(lb_p,Grads_p,Hess_p,nbFF_p,Bm_p);
+        Compute_Bm(lb_m,Grads_m,Hess_m,nbFF_m,Bm_m);
         compute_Bhat(lb_p,nbFF_p,Bm_p,Bhat_p);
         compute_Bhat(lb_m,nbFF_m,Bm_m,Bhat_m);
 
@@ -229,7 +241,6 @@ void IsotropicElasticStiffInterfaceTermC0Plate::get(MElement *ele,int npts,IntPt
         // Compute of Deltat_tilde
         compute_Deltat_tilde(lb_p,Grads_p,nbFF_p,Deltat_p);
         compute_Deltat_tilde(lb_m,Grads_m,nbFF_m,Deltat_m);
-
         for(int j=0;j<nbFF_m;j++){
           for(int k=0;k<nbFF_m;k++){
             consC0PlateStiffnessTerms(Hhat_m,Bhat_m[k],Deltat_m[j],lbs,me_cons);
@@ -333,13 +344,13 @@ void IsotropicElasticStiffInterfaceTermC0Plate::get(MElement *ele,int npts,IntPt
               stabilityC0PlateStiffnessShearingTerms(Bs_m[j], Bs_m[k],me_stab);
               for(int jj=0;jj<3;jj++)
                 for(int kk=0;kk<3;kk++)
-                  {m(j+jj*nbFF_m,k+kk*nbFF_m) += Cst * me_stab[jj][kk]; }//printf("-- %d %d %f\n",jj,kk,Cst * me_stab[jj][kk]);}
+                  {m(j+jj*nbFF_m,k+kk*nbFF_m) += Cst * me_stab[jj][kk]; }//printf("-- %d %d %f\n",jj,kk,Cst * me_stab[jj][kk]);
             }
             for(int k=0;k<nbFF_p;k++){
               stabilityC0PlateStiffnessShearingTerms(Bs_m[j], Bs_p[k],me_stab);
               for(int jj=0;jj<3;jj++)
                 for(int kk=0;kk<3;kk++)
-                  {m(j+jj*nbFF_m,k+nbdof_m+kk*nbFF_p) += -Cst * me_stab[jj][kk]; }//printf("-+ %d %d %f\n",jj,kk,Cst * me_stab[jj][kk]);}
+                  {m(j+jj*nbFF_m,k+nbdof_m+kk*nbFF_p) += -Cst * me_stab[jj][kk]; }//printf("-+ %d %d %f\n",jj,kk,Cst * me_stab[jj][kk]);
             }
           }
           for(int j=0;j<nbFF_p;j++){
@@ -347,20 +358,22 @@ void IsotropicElasticStiffInterfaceTermC0Plate::get(MElement *ele,int npts,IntPt
               stabilityC0PlateStiffnessShearingTerms(Bs_p[j], Bs_m[k],me_stab);
               for(int jj=0;jj<3;jj++)
                 for(int kk=0;kk<3;kk++)
-                  {m(j+(jj*nbFF_p)+nbdof_m,k+kk*nbFF_m) += -Cst * me_stab[jj][kk]; }//printf("+- %d %d %f\n",jj,kk,Cst * me_stab[jj][kk]);}
+                  {m(j+(jj*nbFF_p)+nbdof_m,k+kk*nbFF_m) += -Cst * me_stab[jj][kk]; }//printf("+- %d %d %f\n",jj,kk,Cst * me_stab[jj][kk]);
             }
             for(int k=0;k<nbFF_p;k++){
               stabilityC0PlateStiffnessShearingTerms(Bs_p[j], Bs_p[k],me_stab);
               for(int jj=0;jj<3;jj++)
                 for(int kk=0;kk<3;kk++)
-                  {m(j+(jj*nbFF_p)+nbdof_m,k+(kk*nbFF_p)+nbdof_m) += Cst * me_stab[jj][kk]; }//printf("++ %d %d %f\n",jj,kk,Cst * me_stab[jj][kk]);}
+                  {m(j+(jj*nbFF_p)+nbdof_m,k+(kk*nbFF_p)+nbdof_m) += Cst * me_stab[jj][kk]; }//printf("++ %d %d %f\n",jj,kk,Cst * me_stab[jj][kk]);
             }
           }
+          Val_m.clear();Val_p.clear();
         }
-        Val_m.clear();Val_p.clear();
       }
       else{
         // get matrix by perturbation
+        // WARNING : as the distinction between cg/dg and full dg formulation is only made for the assembling
+        // the perturbation must be applied on cg/dg case as it is a full dg formulation
         DgC0BilinearTerm<SVector3,SVector3>::space1.fuvw(velem[0],uem, vem, w, Val_m);
         DgC0BilinearTerm<SVector3,SVector3>::space1.fuvw(velem[1],uep, vep, w, Val_p);
         //init
@@ -394,60 +407,72 @@ void IsotropicElasticStiffInterfaceTermC0Plate::get(MElement *ele,int npts,IntPt
       // Because component are push_back in Grads in gradfuvw idem for hess
       Grads_m.clear(); Grads_p.clear(); Hess_m.clear(); Hess_p.clear(); Grads.clear();
     }
-/*    m.print("Interface");
+//    m.print("Interface");
+/*    m.setAll(0.);
     // By numerical perturbation (Verification OK)
-    double eps=1.e-8;
+    double eps=1.e-6;
+    double per;
     fullVector<double> fp(nbdof_m+nbdof_p);
     fullVector<double> fm(nbdof_m+nbdof_p);
     fp.scale(0.);
     fm.scale(0.);
-    fullMatrix<double> m2(nbdof_m+nbdof_p,nbdof_m+nbdof_p); m2.setAll(0.);
-    DgC0LinearTerm<SVector3> *lterm = this->getLinearTerm();
+    //fullMatrix<double> m2(nbdof_m+nbdof_p,nbdof_m+nbdof_p); m2.setAll(0.);
+    IsotropicElasticForceInterfaceTermC0Plate *lterm = this->getLinearTerm();
+    lterm->setMinus(true);
+    Dof D(0,0);
     for(int j=0;j<iele->getElem(0)->getNumVertices();j++){
       for(int jj=0;jj<3;jj++){
-        //if(!fullDg)
-        //Dof D(iele->getElem(0)->getVertex(j)->getNum(),DgC0PlateDof::createTypeWithThreeInts(jj,1000));
-        //else
-        Dof D(iele->getElem(0)->getNum(),DgC0PlateDof::createTypeWithThreeInts(jj,1000,j));
+        if(!fullDg)
+          D = Dof(iele->getElem(0)->getVertex(j)->getNum(),DgC0PlateDof::createTypeWithThreeInts(jj,1000));
+        else
+          D = Dof(iele->getElem(0)->getNum(),DgC0PlateDof::createTypeWithThreeInts(jj,1000,j));
         fm.scale(0.);fp.scale(0.);
-        double per = eps;
+        per = eps;
+        lterm->setPertDof(D);
+        lterm->setPert(per);
         ufield->set(D,per);
-        ipf->compute1state(IPState::current);
+        ipf->computeIpv(iele,0,IPState::current); // 0 for - elem and npts for + elem
         lterm->get(iele,npts,GP,fp);
         per = -2.*eps;
         ufield->set(D,per);
-        ipf->compute1state(IPState::current);
+        lterm->setPert(-eps);
+        ipf->computeIpv(iele,0,IPState::current); // 0 for - elem and npts for + elem
         lterm->get(iele,npts,GP,fm);
         per = eps;
         ufield->set(D,per);
         for(int k=0;k<nbdof_m+nbdof_p;k++)
-          m2(k,jj*iele->getElem(0)->getNumVertices()+j)+=(fp(k)-fm(k))/(2.*eps);
+          m(k,jj*iele->getElem(0)->getNumVertices()+j)=(fp(k)-fm(k))/(2.*eps);
       }
     }
+    ipf->computeIpv(iele,0,IPState::current); // 0 for - elem and npts for + elem
+    lterm->setMinus(false);
     for(int j=0;j<iele->getElem(1)->getNumVertices();j++){
       for(int jj=0;jj<3;jj++){
-        //if(!fullDg)
-        //Dof D(iele->getElem(1)->getVertex(j)->getNum(),DgC0PlateDof::createTypeWithThreeInts(jj,1000));
-        //else
-        Dof D(iele->getElem(1)->getNum(),DgC0PlateDof::createTypeWithThreeInts(jj,1000,j));
+        if(!fullDg)
+          D = Dof(iele->getElem(1)->getVertex(j)->getNum(),DgC0PlateDof::createTypeWithThreeInts(jj,1000));
+        else
+          D = Dof(iele->getElem(1)->getNum(),DgC0PlateDof::createTypeWithThreeInts(jj,1000,j));
+        lterm->setPertDof(D);
         fm.scale(0.);fp.scale(0.);
-        double per = eps;
+        per = eps;
         ufield->set(D,per);
-        ipf->compute1state(IPState::current);
+        lterm->setPert(per);
+        ipf->computeIpv(iele,npts,IPState::current); // 0 for - elem and npts for + elem
         lterm->get(iele,npts,GP,fp);
-        per = -2*eps;
+        per = -2.*eps;
+        lterm->setPert(-eps);
         ufield->set(D,per);
-        ipf->compute1state(IPState::current);
+        ipf->computeIpv(iele,npts,IPState::current); // 0 for - elem and npts for + elem
         lterm->get(iele,npts,GP,fm);
         per = eps;
         ufield->set(D,per);
         for(int k=0;k<nbdof_m+nbdof_p;k++)
-          m2(k,nbdof_m+jj*iele->getElem(1)->getNumVertices()+j)+=(fp(k)-fm(k))/(2.*eps);
+          m(k,nbdof_m+jj*iele->getElem(1)->getNumVertices()+j)+=(fp(k)-fm(k))/(2.*eps);
       }
     }
-    ipf->compute1state(IPState::current);
-    m2.print(" interface pert");*/
-
+    ipf->computeIpv(iele,npts,IPState::current); // 0 for - elem and npts for + elem
+    //ipf->compute1state(IPState::current);
+//    m.print(" interface pert");*/
   }
   else
    printf("not implemented\n");
@@ -497,7 +522,10 @@ void IsotropicElasticForceInterfaceTermC0Plate::get(MElement *ele,int npts,IntPt
   const double B3hs= beta3/h_s;
   // displacement
   std::vector<double> disp;
-  ufield->get(iele,disp);
+  if(MatrixByPerturbation)
+    ufield->getForPerturbation(iele,minus,pertDof,pert,disp);
+  else
+    ufield->get(iele,disp);
 
   // sum on Gauss' points
   ipf->getBroken(iele,_elemtype,vbroken,vDeltanNeg);
@@ -530,7 +558,8 @@ void IsotropicElasticForceInterfaceTermC0Plate::get(MElement *ele,int npts,IntPt
     // Assemblage
     double dt[3];
     for(int alpha=0;alpha<2;alpha++){
-      SVector3 malpha = mhatmean(alpha,0)*lb[2]->getphi0(0)+mhatmean(alpha,1)*lb[2]->getphi0(1);
+//      SVector3 malpha = mhatmean(alpha,0)*lb[2]->getphi0(0)+mhatmean(alpha,1)*lb[2]->getphi0(1);
+      SVector3 malpha = mhatmean(0,alpha)*lb[2]->getphi0(0)+mhatmean(1,alpha)*lb[2]->getphi0(1);
       for(int j=0;j<nbFF_m;j++){
         matTvectprod(Deltat_m[j],malpha,dt);
         for(int k=0;k<3;k++)
@@ -555,7 +584,6 @@ void IsotropicElasticForceInterfaceTermC0Plate::get(MElement *ele,int npts,IntPt
       Hhat_p->hat(lb[1],Cmt,nu);
       Hhat_m->hat(lb[0],Cmt,nu);
       Hhatmean->mean(Hhat_p,Hhat_m); // mean value of tensor by component used for stability term
-
       // Assemblage (compatibility and stability)
       for(int j=0;j<nbFF_m;j++){
         compC0PlateForceTerms(Hhat_m,nbFF_m,nbFF_p,Bhat_m[j],Deltat_m,Deltat_p,lb[2],disp,me_comp);
@@ -715,7 +743,7 @@ void IsotropicElasticStiffVirtualInterfaceTermC0Plate::get(MElement *ele,int npt
       // Compute of Deltat_tilde
       compute_Deltat_tildeBound(lb_m,Grads_m,nbFF_m,Deltat_m,lbs);
       // loop on dof ATTENTION SAME NUMBER OF DOF for the two elements TODO take into account a different dof numbers between the two elements There ok because sym ??
-      for(int j=0;j<3;j++) for(int jj=0;jj<3;jj++) me_cons[j][jj] = me_stab[j][jj]=0.;
+      for(int j=0;j<3;j++) for(int jj=0;jj<3;jj++) me_comp[j][jj] = me_stab[j][jj]=0.;
       for(int j=0;j<nbFF_m;j++){
         for(int k=0;k<nbFF_m;k++){
           consC0PlateStiffnessTerms(Hhat_m,Bhat_m[k],Deltat_m[j],lbs,me_cons); // Error Fix IT
@@ -730,25 +758,26 @@ void IsotropicElasticStiffVirtualInterfaceTermC0Plate::get(MElement *ele,int npt
       // Because component are push_back in Grads in gradfuvw idem for hess
       Grads_m.clear(); Hess_m.clear(); Grads.clear();
   }
-//   m.print("InterfaceBound");
+
+/*   m.print("Virtual InterfaceBound");
+   m.setAll(0.);
     // By numerical perturbation (Verification OK)
-/*    double eps=1.e-8;
+    double eps=1.e-5;
+    double per;
     fullVector<double> fp(nbdof_m);
     fullVector<double> fm(nbdof_m);
     fp.scale(0.);
     fm.scale(0.);
-    fullMatrix<double> m2(nbdof_m,nbdof_m); m2.setAll(0.);
     DgC0LinearTerm<SVector3> *lterm = this->getLinearTerm();
-    //std::vector<double> disp;
-    //disp.resize(nbdof_m);
-    //ufield->get(iele,disp);
-    //displacementField ufield(pAssembler,elasticFields,3,LagSpace->getId())
+    Dof D(0,0);
     for(int j=0;j<iele->getElem(0)->getNumVertices();j++){
       for(int jj=0;jj<3;jj++){
-        //Dof D(iele->getElem(0)->getVertex(j)->getNum(),DgC0PlateDof::createTypeWithThreeInts(jj,1000));
-        Dof D(iele->getElem(0)->getNum(),DgC0PlateDof::createTypeWithThreeInts(jj,1000,j));
+        if(!fullDg)
+         D = Dof(iele->getElem(0)->getVertex(j)->getNum(),DgC0PlateDof::createTypeWithThreeInts(jj,1000));
+        else
+         D = Dof(iele->getElem(0)->getNum(),DgC0PlateDof::createTypeWithThreeInts(jj,1000,j));
         fm.scale(0.);fp.scale(0.);
-        double per = eps;
+        per = eps;
         ufield->set(D,per);
         ipf->compute1state(IPState::current);
         lterm->get(iele,npts,GP,fp);
@@ -759,11 +788,11 @@ void IsotropicElasticStiffVirtualInterfaceTermC0Plate::get(MElement *ele,int npt
         per = eps;
         ufield->set(D,per);
         for(int k=0;k<nbdof_m;k++)
-          m2(k,jj*iele->getElem(0)->getNumVertices()+j)=(fp(k)-fm(k))/(2.*eps);
+          m(k,jj*iele->getElem(0)->getNumVertices()+j)=(fp(k)-fm(k))/(2.*eps);
       }
     }
     ipf->compute1state(IPState::current);
-    m2.print("Virtual interface pert");*/
+    m.print("Virtual interface pert");*/
   }
   else
     printf("not implemented\n");

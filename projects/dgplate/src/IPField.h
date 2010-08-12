@@ -32,6 +32,9 @@ class IPField : public elementField {
 
     // function to compute state depends on element type (template in place of dynamic cast ??)
     void compute1statePlatePlaneStress(IPState::whichState ws, T1* ef);
+    void computeIpvPlatePlaneStress(MInterfaceElement* iele, const int num,
+                                    const IPState::whichState ws, T1* ef, const bool virt);
+    void computeIpvPlatePlaneStress(MElement* ele, const IPState::whichState ws, T1* ef);
     double getVMPlatePlaneStress(MElement *ele, const IPState::whichState ws,
                                  const int num, const DGelasticField *elas) const;
     double getSigmaWithOperationPlatePlaneStress(MElement *ele, const IPState::whichState ws, const int num,
@@ -39,6 +42,9 @@ class IPField : public elementField {
 
 
     void compute1statePlatePlaneStressWTI(IPState::whichState ws, T1* ef);
+    void computeIpvPlatePlaneStressWTI(MInterfaceElement* iele, const int num,
+                                       const IPState::whichState ws, T1* ef, const bool virt);
+    void computeIpvPlatePlaneStressWTI(MElement* ele, const IPState::whichState ws, T1* ef);
     double getVMPlatePlaneStressWTI(MElement *ele, const IPState::whichState ws,
                                  const int num, const DGelasticField *elas, const int pos) const;
     double getStressWithOperationPlatePlaneStressWTI(MElement *ele, const IPState::whichState ws, const int num,
@@ -49,6 +55,9 @@ class IPField : public elementField {
     const void getStressReducedWTI(MInterfaceElement *iele,const IPState::whichState ws,
                                   const int num,const DGelasticField *elas, reductionElement &stressTensor,const int pos, const LocalBasis*[2]);
     void compute1statePlatePlaneStressWF(IPState::whichState ws, T1* ef);
+    void computeIpvPlatePlaneStressWF(MInterfaceElement* iele, const int num,
+                                      const IPState::whichState ws, T1* ef, const bool virt);
+    void computeIpvPlatePlaneStressWF(MElement* ele, const IPState::whichState ws, T1* ef);
     void setBroken(MInterfaceElement *ie,IPState::whichState ws, const int numminus, const int numplus,
                    const double svm,const SolElementType::eltype elt, const double Gc, const double betaML, const bool tension_){
 
@@ -290,8 +299,81 @@ class IPField : public elementField {
           this->compute1statePlatePlaneStressWF(ws,&(*_efield)[i]); // The state is compute in the same way as there is not fracture
       }                                                              // an other function computes fracture
     }
-
   }
+  // Add a function to compute ipv on a InterfaceElement
+  void computeIpv(MInterfaceElement *iele, const int num, IPState::whichState ws){
+    // find the type of ipvariable linked to interface element
+    bool flag = false;
+    for(std::vector<DGelasticField>::iterator itf = _efield->begin(); itf != _efield->end(); ++itf){
+      for(std::vector<MInterfaceElement*>::iterator it = itf->gi.begin(); it != itf->gi.end(); ++it){
+        if((*it) == iele ){
+          switch(itf->getSolElemType()){
+            case SolElementType::PlatePlaneStress :
+              this->computeIpvPlatePlaneStress(iele,num,ws,&(*itf),false);
+              break;
+            case SolElementType::PlatePlaneStressWTI :
+              this->computeIpvPlatePlaneStressWTI(iele,num,ws,&(*itf),false);
+              break;
+            case SolElementType::PlatePlaneStressWF :
+              this->computeIpvPlatePlaneStressWF(iele,num,ws,&(*itf),false);
+              break;
+          }
+          flag = true;
+          break;
+        }
+      }
+      if(flag) break;
+      else{  // search on boundary
+        for(std::vector<MInterfaceElement*>::iterator it = itf->gib.begin(); it != itf->gib.end(); ++it){
+          if((*it) == iele ){
+            printf("OK\n");
+            switch(itf->getSolElemType()){
+              case SolElementType::PlatePlaneStress :
+                this->computeIpvPlatePlaneStress(iele,num,ws,&(*itf),true);
+                break;
+              case SolElementType::PlatePlaneStressWTI :
+                this->computeIpvPlatePlaneStressWTI(iele,num,ws,&(*itf),true);
+                break;
+              case SolElementType::PlatePlaneStressWF :
+                this->computeIpvPlatePlaneStressWF(iele,num,ws,&(*itf),true);
+                break;
+            }
+            flag = true;
+            break;
+          }
+        }
+      }
+
+    }
+  }
+
+
+  void computeIpv(MElement *ele, IPState::whichState ws){
+    // find the type of ipvariable linked to interface element
+    bool flag = false;
+    for(std::vector<DGelasticField>::iterator itf = _efield->begin(); itf != _efield->end(); ++itf){
+      for(groupOfElements::elementContainer::iterator it = itf->g->begin(); it != itf->g->end(); ++it){
+        if((*it) == ele ){
+          switch(itf->getSolElemType()){
+            case SolElementType::PlatePlaneStress :
+              this->computeIpvPlatePlaneStress(ele,ws,&(*itf));
+              break;
+            case SolElementType::PlatePlaneStressWTI :
+              this->computeIpvPlatePlaneStressWTI(ele,ws,&(*itf));
+              break;
+            case SolElementType::PlatePlaneStressWF :
+              this->computeIpvPlatePlaneStressWF(ele,ws,&(*itf));
+              break;
+          }
+          flag = true;
+          break;
+        }
+      }
+      if(flag) break;
+    }
+  }
+
+
   // On element only ?? Higher level to pass the associated element (pass edge num)
   double getVonMises(MElement *ele, const IPState::whichState ws, const int num, const int pos=0) const{
     double svm;

@@ -150,18 +150,20 @@ class IsotropicElasticForceBulkTermC0Plate : public DgC0LinearTerm<SVector3>
   virtual void getKeys(MElement *ele, std::vector<Dof> &keys){space1.getKeys(ele,keys,fullDg);}
 }; // IsotropicElasticStiffBulkTermC0Plate
 
+
 class IsotropicElasticStiffBulkTermC0Plate : public DgC0BilinearTerm<SVector3,SVector3>
 {
  protected :
   double E,nu,h,Cm,Cn;
   bool sym,fullDg;
-  //displacementField *ufield;
-  //DgC0LinearTerm<SVector3> *lterm;
+  displacementField *ufield;
+    IPField<DGelasticField,DgC0FunctionSpace<SVector3> > *ipf;
+  DgC0LinearTerm<SVector3> *lterm;
 
  public :
   IsotropicElasticStiffBulkTermC0Plate(DgC0FunctionSpace<SVector3>& space1_,DgC0FunctionSpace<SVector3>& space2_,materialLaw* mlaw,
-                                  double h_,bool FullDG) : DgC0BilinearTerm<SVector3,SVector3>(space1_,space2_),h(h_),
-                                                            fullDg(FullDG)
+                                  double h_,bool FullDG, displacementField *uf, IPField<DGelasticField, DgC0FunctionSpace<SVector3> >*ip, SolElementType::eltype elt) : DgC0BilinearTerm<SVector3,SVector3>(space1_,space2_),h(h_),
+                                                            fullDg(FullDG), ufield(uf), ipf(ip)
   {
     sym=(&space1_==&space2_);
     linearElasticLawPlaneStress *mlt = dynamic_cast<linearElasticLawPlaneStress*>(mlaw);
@@ -169,11 +171,11 @@ class IsotropicElasticStiffBulkTermC0Plate : public DgC0BilinearTerm<SVector3,SV
     nu = mlt->getPoisson();
     Cm = ( E * h_ * h_ * h_ ) / ( 12 * (1 - nu) * (1 + nu) );
     Cn = E*h_/((1-nu)*(1+nu));
-    //lterm = new IsotropicElasticForceBulkTermC0Plate(space1,E,nu,h,fullDg,ufield);
+    lterm = new IsotropicElasticForceBulkTermC0Plate(space1,mlaw,h,fullDg,ufield,ipf,elt,false);
   }
   IsotropicElasticStiffBulkTermC0Plate(DgC0FunctionSpace<SVector3>& space1_, materialLaw* mlaw,
-                                  double h_,bool FullDG) : DgC0BilinearTerm<SVector3,SVector3>(space1_,space1_),
-                                                            h(h_),fullDg(FullDG)
+                                  double h_,bool FullDG, displacementField *uf,IPField<DGelasticField, DgC0FunctionSpace<SVector3> >*ip, SolElementType::eltype elt) : DgC0BilinearTerm<SVector3,SVector3>(space1_,space1_),
+                                                            h(h_),fullDg(FullDG), ufield(uf), ipf(ip)
   {
     linearElasticLawPlaneStress *mlt = dynamic_cast<linearElasticLawPlaneStress*>(mlaw);
     E = mlt->getYoung();
@@ -181,13 +183,13 @@ class IsotropicElasticStiffBulkTermC0Plate : public DgC0BilinearTerm<SVector3,SV
     sym=true;
     Cm = ( E * h_ * h_ * h_ ) / ( 12 * (1 - nu) * (1 + nu) );
     Cn = E*h_/((1-nu)*(1+nu));
-    //lterm = new IsotropicElasticForceBulkTermC0Plate(space1,E,nu,h,fullDg,ufield);
+    lterm = new IsotropicElasticForceBulkTermC0Plate(space1,mlaw,h,fullDg,ufield,ipf,elt,false);
   }
   virtual ~IsotropicElasticStiffBulkTermC0Plate(){}
   virtual void get(MElement *ele,int npts,IntPt *GP,fullMatrix<double> &m);
   //virtual void get(MElement *ele,int npts,IntPt *GP,const fullMatrix<double> &disp, fullMatrix<double> &m);
   virtual void getKeys(MElement *ele, std::vector<Dof> &keys){space1.getKeys(ele,keys,fullDg);}
-  //DgC0LinearTerm<SVector3>* getLinearTerm() const{return lterm;}
+  DgC0LinearTerm<SVector3>* getLinearTerm() const{return lterm;}
 }; // IsotropicElasticStiffBulkTermC0Plate
 
 class IsotropicElasticForceInterfaceTermC0Plate : public DgC0LinearTerm<SVector3>
@@ -199,15 +201,19 @@ class IsotropicElasticForceInterfaceTermC0Plate : public DgC0LinearTerm<SVector3
   displacementField *ufield;
   IPField<DGelasticField,DgC0FunctionSpace<SVector3> > *ipf;
   SolElementType::eltype _elemtype; // TODO Two SolElementType One for minus and one for + element
-
+  bool MatrixByPerturbation, minus; // Use to compute matrix by numerical perturbation
+  Dof pertDof;
+  double pert;
  public :
   IsotropicElasticForceInterfaceTermC0Plate(DgC0FunctionSpace<SVector3>& space1_, materialLaw *mlaw, double beta1_,
                                        double beta2_, double beta3_, double h_, bool FullDg_, displacementField *uf,
                                        IPField<DGelasticField, DgC0FunctionSpace<SVector3> >  *ip,
-                                       SolElementType::eltype et, bool no=false) : DgC0LinearTerm<SVector3>(space1_),
+                                       SolElementType::eltype et,
+                                       bool no=false, bool mbp=false) : DgC0LinearTerm<SVector3>(space1_),
                                                                             beta1(beta1_), beta2(beta2_),beta3(beta3_),h(h_),
                                                                             fullDg(FullDg_), inverseSign(no), ufield(uf), ipf(ip),
-                                                                            _elemtype(et)
+                                                                            _elemtype(et), MatrixByPerturbation(mbp), minus(true),
+                                                                            pert(0.), pertDof(0,0)
   {
     linearElasticLawPlaneStress *mlt = dynamic_cast<linearElasticLawPlaneStress*>(mlaw);
     E = mlt->getYoung();
@@ -223,7 +229,9 @@ class IsotropicElasticForceInterfaceTermC0Plate : public DgC0LinearTerm<SVector3
     space1.getKeys(ie->getElem(0),keys,fullDg);
     space1.getKeys(ie->getElem(1),keys,fullDg);
   }
-
+  void setMinus(const bool e){minus = e;}
+  virtual void setPert(const double eps){pert = eps;}
+  virtual void setPertDof(const Dof &D){pertDof = Dof(D.getEntity(),D.getType());}
 }; // class IsotropicElasticForceInterfaceTermC0Plate
 
 class IsotropicElasticStiffInterfaceTermC0Plate : public DgC0BilinearTerm<SVector3,SVector3>
@@ -254,7 +262,7 @@ class IsotropicElasticStiffInterfaceTermC0Plate : public DgC0BilinearTerm<SVecto
     Cn =  E*h_/((1-nu)*(1+nu));
     Cs = ( E * h_ ) / (2 * ( 1 + nu ) );
     sym=(&space1_==&space2_);
-    lterm = new IsotropicElasticForceInterfaceTermC0Plate (space1,mlaw,beta1,beta2,beta3,h,fullDg,ufield,ipf,_elemtype,false);
+    lterm = new IsotropicElasticForceInterfaceTermC0Plate (space1,mlaw,beta1,beta2,beta3,h,fullDg,ufield,ipf,_elemtype,false,true);
   }
   IsotropicElasticStiffInterfaceTermC0Plate(DgC0FunctionSpace<SVector3>& space1_,materialLaw *mlaw,
                                        double beta1_,double beta2_, double beta3_, double h_, displacementField *uf,
@@ -270,7 +278,7 @@ class IsotropicElasticStiffInterfaceTermC0Plate : public DgC0BilinearTerm<SVecto
     Cn =  E*h_/((1-nu)*(1+nu));
     Cs = ( E * h_ ) / (2 * ( 1 + nu ) );
     sym=true;
-    lterm = new IsotropicElasticForceInterfaceTermC0Plate(space1,mlaw,beta1,beta2,beta3,h,fullDg,ufield,ipf,_elemtype,false);
+    lterm = new IsotropicElasticForceInterfaceTermC0Plate(space1,mlaw,beta1,beta2,beta3,h,fullDg,ufield,ipf,_elemtype,false,true);
   }
   virtual ~IsotropicElasticStiffInterfaceTermC0Plate() {delete lterm;}
   virtual void get(MElement *iele,int npts,IntPt *GP, fullMatrix<double> &m);
@@ -280,7 +288,7 @@ class IsotropicElasticStiffInterfaceTermC0Plate : public DgC0BilinearTerm<SVecto
     space1.getKeys(ie->getElem(0),keys,fullDg);
     space1.getKeys(ie->getElem(1),keys,fullDg);
   }
-  DgC0LinearTerm<SVector3>* getLinearTerm() const{return lterm;}
+  IsotropicElasticForceInterfaceTermC0Plate* getLinearTerm() {return dynamic_cast<IsotropicElasticForceInterfaceTermC0Plate*>(lterm);}
 }; // class IsotropicElasticStiffInterfaceTermC0Plate
 
 

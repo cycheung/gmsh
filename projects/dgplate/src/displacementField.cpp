@@ -185,6 +185,23 @@ void displacementField::get(MInterfaceElement* iele, std::vector<double> &udofs)
   }
 }
 
+void displacementField::getForPerturbation(MInterfaceElement* iele, const bool minus, Dof &D, double pert, std::vector<double> &udofs){
+  double eps = -pert;
+  if(!minus){
+    this->set(D,eps);
+    this->get(iele->getElem(0),udofs);
+    this->set(D,pert);
+  }
+  else{
+    this->get(iele->getElem(0),udofs);
+    this->set(D,eps);
+  }
+  if(!(iele->getElem(0)==iele->getElem(1)))// Virtual interface element
+    this->get(iele->getElem(1),udofs);
+  if(minus)
+    this->set(D,pert);
+}
+
 void displacementField::updateFixedDof(){
   double u;
   long int ent;

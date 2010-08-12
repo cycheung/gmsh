@@ -36,18 +36,24 @@ static void compute_Deltat_tilde(const LocalBasis *lb, const std::vector<Tensori
   vect = crossprod(lb->gett0(),lb->getphi0(0));
   vect2= crossprod(lb->gett0(),lb->getphi0(1));
   double invJ0 = 1./lb->getJacobian();
+  STensor3 mat1;
+  STensor3 mat2;
+  tensprod(lb->gett0(),vect,mat1);
+  tensprod(lb->gett0(),vect2,mat2);
+
+  double scr1[3][3];
+  double scr2[3][3];
+  scr1[0][0] =      0.;           scr1[0][1] = - lb->getphi0(0,2);  scr1[0][2] = lb->getphi0(0,1);
+  scr1[1][0] = lb->getphi0(0,2);  scr1[1][1] = 0.  ;                scr1[1][2] = -lb->getphi0(0,0);
+  scr1[2][0] = -lb->getphi0(0,1); scr1[2][1] = lb->getphi0(0,0);    scr1[2][2] = 0.;
+
+  scr2[0][0] =      0.;           scr2[0][1] = - lb->getphi0(1,2);  scr2[0][2] = lb->getphi0(1,1);
+  scr2[1][0] = lb->getphi0(1,2);  scr2[1][1] = 0.  ;                scr2[1][2] = -lb->getphi0(1,0);
+  scr2[2][0] = -lb->getphi0(1,1); scr2[2][1] = lb->getphi0(1,0);    scr2[2][2] = 0.;
   for(int i=0;i<n;i++){
-    Deltat[i][0][0] = invJ0 *(-lb->gett0(0)*vect(2)*Grads[i](1) + lb->gett0(0)*vect2(2))*Grads[i](0);
-    Deltat[i][1][0] = invJ0 *((lb->getphi0(0,2)-lb->gett0(1)*vect(2))*Grads[i](1) - (lb->getphi0(1,2)-lb->gett0(1)*vect2(2))*Grads[i](0));
-    Deltat[i][2][0] = invJ0 *((-lb->getphi0(0,1)-lb->gett0(2)*vect(2))*Grads[i](1) - (-lb->getphi0(1,1)-lb->gett0(2)*vect2(2))*Grads[i](0));
-
-    Deltat[i][0][1] = invJ0 *((-lb->getphi0(0,2)-lb->gett0(0)*vect(2))*Grads[i](1) - (-lb->getphi0(1,2)-lb->gett0(0)*vect2(2))*Grads[i](0));
-    Deltat[i][1][1] = invJ0 *(-lb->gett0(1)*vect(2)*Grads[i](1) + lb->gett0(1)*vect2(2)*Grads[i](0));
-    Deltat[i][2][1] = invJ0 *((lb->getphi0(0,0)-lb->gett0(2)*vect(2))*Grads[i](1) - (lb->getphi0(1,0)-lb->gett0(2)*vect2(2))*Grads[i](0));
-
-    Deltat[i][0][2] = invJ0 *((lb->getphi0(0,1)-lb->gett0(0)*vect(2))*Grads[i](1) - (lb->getphi0(1,1)-lb->gett0(0)*vect2(2))*Grads[i](0));
-    Deltat[i][1][2] = invJ0 *((-lb->getphi0(0,0)-lb->gett0(1)*vect(2))*Grads[i](1) - (-lb->getphi0(1,0)-lb->gett0(1)*vect2(2))*Grads[i](0));
-    Deltat[i][2][2] = invJ0 *( -lb->gett0(2)*vect(2)*Grads[i](1) + lb->gett0(2)*vect2(2)*Grads[i](0));
+    for(int j=0;j<3;j++)
+      for(int k=0;k<3;k++)
+        Deltat[i][j][k] = invJ0*(Grads[i](1)*(scr1[j][k]-mat1(j,k))-Grads[i](0)*(scr2[j][k]-mat2(j,k)));
   }
 }
 
@@ -97,28 +103,11 @@ double rhogd(const int gamma, const int delta, const LocalBasis *lb,
              const std::vector<double> &disp){
   int nbFF=hess.size();
   double rho = 0.;
-  double invJ = 1./lb->getJacobian();
-  SVector3 u(0.,0.,0.);
-  SVector3 u1(0.,0.,0.), u2(0.,0.,0.);
- /* for(int i=0;i<nbFF;i++){
-    u(0)=disp[i]; u(1)=disp[i+nbFF]; u(2)=disp[i+2*nbFF];
-    u_t=scaldot(u,lb->gett0());
-    rho-=(u_t*hess[i](gamma,delta));
-  }*/
-  for(int i=0;i<nbFF;i++){
-    u(0)+=hess[i](gamma,delta)*disp[i]; u(1)+=hess[i](gamma,delta)*disp[i+nbFF];  u(2)+=hess[i](gamma,delta)*disp[i+2*nbFF];
-    u1(0)+=Grads[i](0)*disp[i]; u1(1)+=Grads[i](0)*disp[i+nbFF];  u1(2)+=Grads[i](0)*disp[i+2*nbFF];
-    u2(0)+=Grads[i](1)*disp[i]; u2(1)+=Grads[i](1)*disp[i+nbFF];  u2(1)+=Grads[i](0)*disp[i+2*nbFF];
-  }
-  rho -= scaldot(u,lb->gett0());
-  double scal = scaldot(lb->getderivphi0(gamma,delta),lb->gett0());
-  SVector3 t1 = crossprod(lb->getphi0(0),lb->gett0());
-  SVector3 t2 = crossprod(lb->getphi0(1),lb->gett0());
-  t1*=scal;
-  t2*=scal;
-  t1+=crossprod(lb->getderivphi0(gamma,delta),lb->getphi0(1));
-  t2+=crossprod(lb->getderivphi0(gamma,delta),lb->getphi0(0));
-  rho += invJ*(scaldot(u1,t2)-scaldot(u2,t1));
+  double Bm[256][3][2][2];
+  computeBm(lb,Grads,hess,nbFF,Bm);
+  for(int j=0;j<nbFF;j++)
+    for(int i=0;i<3;i++)
+      rho += Bm[j][i][gamma][delta]*disp[j+i*nbFF];
   return rho;
 }
 

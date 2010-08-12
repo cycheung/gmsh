@@ -48,6 +48,7 @@ class displacementField : public elementField{
       DgC0PlateDof::getThreeIntsFromType(D.getType(),comp,field,num);
       umap[ent][num*numcomp+comp] += val;
     }
+    void getForPerturbation(MInterfaceElement* iele, const bool minus, Dof &D, double pert, std::vector<double> &udofs);
     void archiving(const double time);
 };
 #endif // DISPLACEMENTFIELD_H_

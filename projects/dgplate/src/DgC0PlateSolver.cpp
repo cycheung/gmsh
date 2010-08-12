@@ -28,28 +28,7 @@
 
 // ElasticField
 void DGelasticField::setFormulation(int b){b==1 ? FullDg=true : FullDg=false;}
-/*void DGelasticField::setMaterialLaw(int m){
-  switch(m){
-    case materialLaw::linearElasticPlaneStress :
-      mat = new linearElasticLawPlaneStress(1,_E,_nu);
-      if(_msimp==1) _elemType = SolElementType::PlatePlaneStress; // change this
-      else _elemType = SolElementType::PlatePlaneStressWTI;
-      break;
-    case materialLaw::linearElasticPlaneStressWithFracture :
-      mat = new linearElasticLawPlaneStressWithFracture(1,_E,_nu,_Gc,_sigmac,_betaML, _muML);
-      _elemType = SolElementType::PlatePlaneStressWF;
-      if(_msimp==1){
-        _msimp=3;
-        Msg::Warning("Impossible to compute a fracture problem with only 1 Simpson's point. The number of Simpson's point is put to 3.\n");
-      }
-      if(!FullDg){
-        FullDg = true;
-        Msg::Warning("Impossible to compute a fracture problem with cG/dG formulation. Switch to full dG formulation\n");
-      }
-      break;
-    default : printf("The chosen material law seems to be inexsistent\n");
-  }
-}*/
+
 void DGelasticField::setMaterialLaw(materialLaw *mlaw){
   mat = mlaw;
   switch(mat->getType()){
@@ -107,12 +86,6 @@ void DgC0PlateSolver::setMesh(const std::string meshFileName)
   pModel->readMSH(meshFileName.c_str());
   _dim = pModel->getNumRegions() ? 3 : 2;
   if (LagSpace) delete LagSpace;
-  // Faudra quelque chose dans le fichier de données qui permettra de choisir
-  //if (_dim==3) LagSpace=new VectorLagrangeFunctionSpace(_tag);
-  //if (_dim==2) LagSpace=new VectorLagrangeFunctionSpace(_tag,VectorLagrangeFunctionSpace::VECTOR_X,VectorLagrangeFunctionSpace::VECTOR_Y);
-  // Plaque un ddl par noeud
-  //LagSpace=new VectorLagrangeFunctionSpace(_tag,VectorLagrangeFunctionSpace::VECTOR_Z);
-  // Plate 3 dof per node
   LagSpace=new DgC0LagrangeFunctionSpace(_tag);
 }
 
@@ -397,7 +370,6 @@ void DgC0PlateSolver::addMaterialLaw(materialLaw* mlaw){
 }
 
 void DgC0PlateSolver::addLinearElasticLawPlaneStress(linearElasticLawPlaneStress* mlaw){
-  //maplaw.insert(std::pair<int,materialLaw*>(mlaw->getNum(),mlaw));
   this->addMaterialLaw(mlaw);
 }
 void DgC0PlateSolver::addLinearElasticLawPlaneStressWithFracture(linearElasticLawPlaneStressWithFracture *mlaw){
@@ -619,7 +591,8 @@ else{
     else printf("Cg/Dg formulation is chosen for elasticField %d\n",elasticFields[i]._tag);
     printf("Number of integration point on thickness : %d\n",elasticFields[i].getmsimp());
     // Initialization of elementary terms in function of the field and space
-    IsotropicElasticStiffBulkTermC0Plate Eterm(*LagSpace,elasticFields[i].getMaterialLaw(),elasticFields[i]._h,elasticFields[i].getFormulation());
+    IsotropicElasticStiffBulkTermC0Plate Eterm(*LagSpace,elasticFields[i].getMaterialLaw(),elasticFields[i]._h,elasticFields[i].getFormulation(),
+                                               &ufield,&ipf,elasticFields[i].getSolElemType());
     // Assembling loop on Elementary terms
     MyAssemble(Eterm,*LagSpace,elasticFields[i].g->begin(),elasticFields[i].g->end(),Integ_Bulk,
                  *pAssembler);

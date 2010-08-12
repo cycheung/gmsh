@@ -82,6 +82,7 @@ class LocalBasis{
     void set(MElement *ele, const std::vector<TensorialTraits<double>::GradType> &Grads,
              const std::vector<TensorialTraits<double>::HessType> & Hess){
       const int nbFF = ele->getNumVertices();
+
       // Compute local basis vector
       this->setphiall(0.);
       for(int i=0;i<2;i++){
