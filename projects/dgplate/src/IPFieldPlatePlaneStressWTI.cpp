@@ -1,7 +1,7 @@
 //
 // C++ Interface: terms
 //
-// Description: Definition of function defined in class IPField for PlatePlaneStress element with thickness integration
+// Description: Definition of function defined in class IPField for ShellPlaneStress element with thickness integration
 //
 //
 // Author:  <Gauthier BECKER>, (C) 2010
@@ -11,8 +11,8 @@
 //
 #include"IPField.h"
 
-template<> void IPField<DGelasticField, DgC0FunctionSpace<SVector3> >::compute1statePlatePlaneStressWTI(IPState::whichState ws,
-                                                                                                        DGelasticField* ef){
+template<> void IPField<partDomain*, DgC0FunctionSpace<SVector3> >::compute1stateShellPlaneStressWTI(IPState::whichState ws,
+                                                                                                        partDomain* ef){
   SVector3 val; // value of a vertex displacement
   IntPt *GP;
   //edge gauss point full dg
@@ -20,12 +20,13 @@ template<> void IPField<DGelasticField, DgC0FunctionSpace<SVector3> >::compute1s
   std::vector<TensorialTraits<double>::HessType> Hessm,Hessp;
   double uem,vem,uep,vep;
   std::vector<double> dispm,dispp;
-  for(std::vector<MInterfaceElement*>::iterator it=ef->gi.begin(); it!=ef->gi.end();++it){
+  dgPartDomain *dgdom = dynamic_cast<dgPartDomain*>(ef);
+  for(std::vector<MInterfaceElement*>::iterator it=dgdom->gi.begin(); it!=dgdom->gi.end();++it){
     MInterfaceElement *ie = *it;
     MElement *em = ie->getElem(0);
     MElement *ep = ie->getElem(1);
     // gauss point
-    int npts = _intBound->getIntPoints(ie,&GP);
+    int npts = dgdom->getInterfaceGaussIntegrationRule()->getIntPoints(ie,&GP);
     // vector with nodal displacement
     int nbdofm = _space->getNumKeys(em);
     int nbdofp = _space->getNumKeys(ep);
@@ -72,12 +73,12 @@ template<> void IPField<DGelasticField, DgC0FunctionSpace<SVector3> >::compute1s
 
   // Virtual interface element
   std::vector<double> disp;
-  for(std::vector<MInterfaceElement*>::iterator it=ef->gib.begin(); it!=ef->gib.end();++it){
+  for(std::vector<MInterfaceElement*>::iterator it=dgdom->gib.begin(); it!=dgdom->gib.end();++it){
     MInterfaceElement *ie = *it;
     // get info for element - and + (gauss point on interface are only created for element - has cg/dg)
     MElement *e = ie->getElem(0);
     int edge = ie->getEdgeNumber(0);
-    int npts_inter=_intBound->getIntPoints(ie,&GP);
+    int npts_inter=dgdom->getInterfaceGaussIntegrationRule()->getIntPoints(ie,&GP);
     // vector with nodal displacement
     int nbdof = _space->getNumKeys(e);
     int nbFF = e->getNumVertices();
@@ -110,7 +111,7 @@ template<> void IPField<DGelasticField, DgC0FunctionSpace<SVector3> >::compute1s
   for (groupOfElements::elementContainer::const_iterator it = ef->g->begin(); it != ef->g->end(); ++it){
     MElement *e = *it;
     int edge = e->getNumEdges();
-    int npts_bulk=_intBulk->getIntPoints(e,&GP);
+    int npts_bulk=ef->getBulkGaussIntegrationRule()->getIntPoints(e,&GP);
     int nbdof = _space->getNumKeys(e);
     int nbFF = e->getNumVertices();
     _ufield->get(e,disp);
@@ -133,10 +134,10 @@ template<> void IPField<DGelasticField, DgC0FunctionSpace<SVector3> >::compute1s
   }
 }
 
-template<> void IPField<DGelasticField, DgC0FunctionSpace<SVector3> >::computeIpvPlatePlaneStressWTI(MInterfaceElement *ie,
+template<> void IPField<partDomain*, DgC0FunctionSpace<SVector3> >::computeIpvShellPlaneStressWTI(MInterfaceElement *ie,
                                                                                                      const int num,
                                                                                                      const IPState::whichState ws,
-                                                                                                     DGelasticField* ef,
+                                                                                                     partDomain* ef,
                                                                                                      const bool virt){
   SVector3 val; // value of a vertex displacement
   IntPt *GP;
@@ -144,12 +145,13 @@ template<> void IPField<DGelasticField, DgC0FunctionSpace<SVector3> >::computeIp
   std::vector<TensorialTraits<double>::GradType> Grads,Gradm,Gradp;
   std::vector<TensorialTraits<double>::HessType> Hessm,Hessp;
   double uem,vem,uep,vep;
+  dgPartDomain* dgdom = dynamic_cast<dgPartDomain*>(ef);
   std::vector<double> dispm,dispp;
   if(!virt){
     MElement *em = ie->getElem(0);
     MElement *ep = ie->getElem(1);
     // gauss point
-    int npts = _intBound->getIntPoints(ie,&GP);
+    int npts = dgdom->getInterfaceGaussIntegrationRule()->getIntPoints(ie,&GP);
     // vector with nodal displacement
     int nbdofm = _space->getNumKeys(em);
     int nbdofp = _space->getNumKeys(ep);
@@ -194,7 +196,7 @@ template<> void IPField<DGelasticField, DgC0FunctionSpace<SVector3> >::computeIp
     std::vector<double> disp;
     MElement *e = ie->getElem(0);
     int edge = ie->getEdgeNumber(0);
-    int npts_inter=_intBound->getIntPoints(ie,&GP);
+    int npts_inter=dgdom->getInterfaceGaussIntegrationRule()->getIntPoints(ie,&GP);
     // vector with nodal displacement
     int nbdof = _space->getNumKeys(e);
     int nbFF = e->getNumVertices();
@@ -225,11 +227,11 @@ template<> void IPField<DGelasticField, DgC0FunctionSpace<SVector3> >::computeIp
   }
 }
 
-template<> void IPField<DGelasticField, DgC0FunctionSpace<SVector3> >::computeIpvPlatePlaneStressWTI(MElement *e, IPState::whichState ws,
-                                                                                                        DGelasticField* ef){
+template<> void IPField<partDomain*, DgC0FunctionSpace<SVector3> >::computeIpvShellPlaneStressWTI(MElement *e, IPState::whichState ws,
+                                                                                                        partDomain* ef){
   int edge = e->getNumEdges();
   IntPt *GP;
-  int npts_bulk=_intBulk->getIntPoints(e,&GP);
+  int npts_bulk=ef->getBulkGaussIntegrationRule()->getIntPoints(e,&GP);
   int nbdof = _space->getNumKeys(e);
   int nbFF = e->getNumVertices();
   std::vector<TensorialTraits<double>::GradType> Grads;
@@ -254,10 +256,10 @@ template<> void IPField<DGelasticField, DgC0FunctionSpace<SVector3> >::computeIp
   disp.clear();
 }
 
-template<> double IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getVMPlatePlaneStressWTI(MElement *ele,
+template<> double IPField<partDomain*,DgC0FunctionSpace<SVector3> >::getVMShellPlaneStressWTI(MElement *ele,
                                                                                                  const IPState::whichState ws,
                                                                                                  const int num,
-                                                                                                 const DGelasticField *elas,
+                                                                                                 const partDomain *elas,
                                                                                                  const int pos) const{
   double svm =0.;
   if(num<10000){ // VonMises at a Gauss Point
@@ -283,7 +285,7 @@ template<> double IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getVMPla
     // loop on IP point
     double svmp;
     IntPt *GP;
-    int npts = _intBulk->getIntPoints(ele,&GP);
+    int npts = elas->getBulkGaussIntegrationRule()->getIntPoints(ele,&GP);
     std::vector<IPState*> *vips = _AIPS->getIPstate(ele->getNum());
 	for(int i=0;i<npts;i++){
       IPState* ips = (*vips)[i];
@@ -326,13 +328,14 @@ template<> double IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getVMPla
 }
 
 
- template<> const LocalBasis* IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getStressReducedWTI(MInterfaceElement *iele,
+ template<> const LocalBasis* IPField<partDomain*,DgC0FunctionSpace<SVector3> >::getStressReducedWTI(MInterfaceElement *iele,
                                                                                                        const IPState::whichState ws,
                                                                                                        const int num,
-                                                                                                       const DGelasticField *elas,
+                                                                                                       partDomain *elas,
                                                                                                        reductionElement &stressTensor,
                                                                                                        const int pos)
 {
+  dgPartDomain* dgdom = dynamic_cast<dgPartDomain*>(elas);
   if(num<10000){ // stressTensor at a Gauss Point
     IPState* ips = (*_AIPS->getIPstate(iele->getNum()))[num];
     IPVariablePlateWithThicknessIntegrationOI *ipv = dynamic_cast<IPVariablePlateWithThicknessIntegrationOI*>(ips->getState(ws));
@@ -350,7 +353,7 @@ template<> double IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getVMPla
     // loop on IP point
     stressTensor.setAll(0.);
     IntPt *GP;
-    int npts = _intBound->getIntPoints(iele,&GP);
+    int npts = dgdom->getInterfaceGaussIntegrationRule()->getIntPoints(iele,&GP);
     std::vector<IPState*> *vips = _AIPS->getIPstate(iele->getNum());
     IPVariablePlateWithThicknessIntegrationOI *ipv;
 	for(int i=0;i<npts;i++){
@@ -389,13 +392,14 @@ template<> double IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getVMPla
   }
 }
 
- template<> const void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getStressReducedWTI(MInterfaceElement *iele,
+ template<> const void IPField<partDomain*,DgC0FunctionSpace<SVector3> >::getStressReducedWTI(MInterfaceElement *iele,
                                                                                                        const IPState::whichState ws,
                                                                                                        const int num,
-                                                                                                       const DGelasticField *elas,
+                                                                                                       partDomain *elas,
                                                                                                        reductionElement &stressTensor,
                                                                                                        const int pos, const LocalBasis* lbb[2])
 {
+  dgPartDomain *dgdom = dynamic_cast<dgPartDomain*>(elas);
   if(num<10000){ // stressTensor at a Gauss Point
     IPState* ips = (*_AIPS->getIPstate(iele->getNum()))[num];
     IPVariablePlateWithThicknessIntegrationOI *ipv = dynamic_cast<IPVariablePlateWithThicknessIntegrationOI*>(ips->getState(ws));
@@ -414,7 +418,7 @@ template<> double IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getVMPla
     // loop on IP point
     stressTensor.setAll(0.);
     IntPt *GP;
-    int npts = _intBound->getIntPoints(iele,&GP);
+    int npts = dgdom->getInterfaceGaussIntegrationRule()->getIntPoints(iele,&GP);
     std::vector<IPState*> *vips = _AIPS->getIPstate(iele->getNum());
     IPVariablePlateWithThicknessIntegrationOI *ipv;
 	for(int i=0;i<npts;i++){
@@ -455,10 +459,10 @@ template<> double IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getVMPla
 }
 
 
-template<> double IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getStressWithOperationPlatePlaneStressWTI(MElement *ele,
+template<> double IPField<partDomain*,DgC0FunctionSpace<SVector3> >::getStressWithOperationShellPlaneStressWTI(MElement *ele,
                                                                                                  const IPState::whichState ws,
                                                                                                  const int num, const component::enumcomp cmp,
-                                                                                                 const DGelasticField *elas,
+                                                                                                 const partDomain *elas,
                                                                                                  const int pos) const{
   double sig =0.;
   if(num<10000){ // VonMises at a Gauss Point
@@ -489,7 +493,7 @@ template<> double IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getStres
     // loop on IP point
     double sigp;
     IntPt *GP;
-    int npts = _intBulk->getIntPoints(ele,&GP);
+    int npts = elas->getBulkGaussIntegrationRule()->getIntPoints(ele,&GP);
     std::vector<IPState*> *vips = _AIPS->getIPstate(ele->getNum());
 	for(int i=0;i<npts;i++){
       IPState* ips = (*vips)[i];

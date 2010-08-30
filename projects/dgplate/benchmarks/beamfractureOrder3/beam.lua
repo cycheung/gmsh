@@ -42,7 +42,7 @@ law1:setMu(mu)
 -- creation of ElasticField
 nfield =99 -- number of the field (physical number of surface)
 fullDg = 1 --  formulation CgDg=0 fullDg =1
-myfield1 = DGelasticField()
+myfield1 = dgLinearShellDomain()
 myfield1:tag(1000)
 myfield1:thickness(h)
 myfield1:simpsonPoints(nsimp)
@@ -51,7 +51,7 @@ myfield1:lawnumber(lawnum)
 -- creation of Solver
 mysolver = DgC0PlateSolver(1000)
 mysolver:readmsh(meshfile)
-mysolver:AddElasticDomain(myfield1,nfield,2)
+mysolver:addDgLinearElasticShellDomain(myfield1,nfield,2)
 mysolver:AddLinearElasticLawPlaneStressWithFracture(law1)
 mysolver:setScheme(soltype)
 mysolver:whichSolver(sol)

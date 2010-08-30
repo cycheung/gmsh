@@ -18,7 +18,7 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
-#include "DgC0PlateSolver.h"
+#include "partDomain.h"
 #include "groupOfElements.h"
 class elementField{
  protected :
@@ -44,7 +44,7 @@ class elementField{
   void setTotElem(const int ne){totelem=ne;}
   virtual void get(MElement *ele,std::vector<double> &fieldData,const int comp=-1)=0; // comp allow to use an enum
                                                                                          // in derivate class to choose which component to save
-  void buildView(const std::vector<DGelasticField> &elasticFields,const double time,
+  void buildView(std::vector<partDomain*> &vdom,const double time,
                   const int nstep, const std::string &valuename, const int cc,const bool binary);
 };
 #endif //

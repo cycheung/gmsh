@@ -542,7 +542,7 @@ void compute_Deltat_tildeBound(const LocalBasis *lb, const std::vector<Tensorial
 
 void computeFintFrac(const MInterfaceElement *iele, const std::vector<double> &disp, const LocalBasis *lbm,
                              const LocalBasis *lbp, const LocalBasis *lbs, const double weight, const int numgauss, const int npts,
-                             const SolElementType::eltype elemtype, const IPField<DGelasticField,DgC0FunctionSpace<SVector3> > *ipf,
+                             const SolElementType::eltype elemtype, const IPField<partDomain*,DgC0FunctionSpace<SVector3> > *ipf,
                              const int nbFF_m, const std::vector<TensorialTraits<double>::ValType> &Vals_m,
                              const std::vector<TensorialTraits<double>::GradType> &Grads_m, const int nbdof_m,
                              const int nbFF_p, const std::vector<TensorialTraits<double>::ValType> &Vals_p,

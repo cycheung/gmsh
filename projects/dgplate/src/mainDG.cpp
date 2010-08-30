@@ -56,10 +56,12 @@ int main (int argc, char* argv[])
   else if(ext==lua){
     #if defined(HAVE_LUA)
     binding *b = binding::instance();
+    partDomain::registerBindings(b);
+    dgPartDomain::registerBindings(b);
+    dgLinearShellDomain::registerBindings(b);
     materialLaw::registerBindings(b);
     linearElasticLawPlaneStress::registerBindings(b);
     linearElasticLawPlaneStressWithFracture::registerBindings(b);
-    DGelasticField::registerBindings(b);
     DgC0PlateSolver::registerBindings(b);
     GmshMergeFile(argv[1]);
     #else

@@ -30,7 +30,7 @@ class displacementField : public elementField{
     std::map<Dof,long int> varch;
 
   public :
-    displacementField(dofManager<double> *pas, std::vector<DGelasticField> &elas,
+    displacementField(dofManager<double> *pas, std::vector<partDomain*> &elas,
                       const int nc, const int field, const std::vector<Dof> &archiving,
                       const bool =true, const std::string="disp.msh"
                                                     ) ;

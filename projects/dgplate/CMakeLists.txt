@@ -15,6 +15,7 @@ include_directories(. ../../Common ../../Numeric ../../Geo ../../Mesh
 
 set(SRC
   src/mainDG.cpp
+  src/partDomain.cpp
   src/DgC0PlateDof.cpp
   src/IPState.cpp
   src/IPFieldPlatePlaneStress.cpp
@@ -35,6 +36,7 @@ set(SRC
   ../dg/dgDofContainer.cpp
   ../dg/dgAlgorithm.cpp
   ../dg/dgDataCacheMap.cpp
+  ../dg/dgDofManager.cpp
 )
 
 if(HAVE_MPI)

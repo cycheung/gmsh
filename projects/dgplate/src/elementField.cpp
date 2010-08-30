@@ -67,7 +67,7 @@ elementField::elementField(const std::string &fnn, const uint32_t fms, const int
   }
 }
 
-void elementField::buildView(const std::vector<DGelasticField> &elasticFields,const double time,
+void elementField::buildView(std::vector<partDomain*> &vdom,const double time,
                               const int nstep, const std::string &valuename, const int cc=-1, const bool binary=false){
   if(view){
     // test file size (and create a new one if needed)
@@ -91,8 +91,10 @@ void elementField::buildView(const std::vector<DGelasticField> &elasticFields,co
     fprintf(fp, "3\n%d\n%d\n%d\n", nstep, numcomp, totelem);
     std::vector<double> fieldData;
     if(type == ElementNodeData){
-      for (unsigned int i = 0; i < elasticFields.size(); ++i)
-        for (groupOfElements::elementContainer::const_iterator it = elasticFields[i].g->begin(); it != elasticFields[i].g->end(); ++it){
+//      for (unsigned int i = 0; i < elasticFields.size(); ++i)
+      for(std::vector<partDomain*>::iterator itdom=vdom.begin(); itdom!=vdom.end(); ++itdom){
+        partDomain *dom = *itdom;
+        for (groupOfElements::elementContainer::const_iterator it = dom->g->begin(); it != dom->g->end(); ++it){
           MElement *ele = *it;
           int numv = ele->getNumVertices();
           this->get(ele,fieldData,cc);
@@ -103,10 +105,11 @@ void elementField::buildView(const std::vector<DGelasticField> &elasticFields,co
           fprintf(fp,"\n");
           fieldData.clear();
         }
+      }
     }
     else if(type == ElementData){
-      for (unsigned int i = 0; i < elasticFields.size(); ++i)
-        for (groupOfElements::elementContainer::const_iterator it = elasticFields[i].g->begin(); it != elasticFields[i].g->end(); ++it){
+      for (unsigned int i = 0; i < vdom.size(); ++i)
+        for (groupOfElements::elementContainer::const_iterator it = vdom[i]->g->begin(); it != vdom[i]->g->end(); ++it){
           MElement *ele = *it;
           fieldData.resize(numcomp);
           this->get(ele,fieldData,cc);

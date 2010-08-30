@@ -193,7 +193,7 @@ void IsotropicElasticStiffInterfaceTermC0Plate::get(MElement *ele,int npts,IntPt
     double me_stab[3][3];
     std::vector<bool> vbroken;
     std::vector<bool> vDeltanNeg;
-    ipf->getBroken(iele,_elemtype,vbroken,vDeltanNeg);
+    ipf->getBroken(iele,npts,_elemtype,vbroken,vDeltanNeg);
     // Characteristic size of interface element
     double h_s = iele->getCharacteristicSize();
     const double Bhs = beta1/h_s;
@@ -528,7 +528,7 @@ void IsotropicElasticForceInterfaceTermC0Plate::get(MElement *ele,int npts,IntPt
     ufield->get(iele,disp);
 
   // sum on Gauss' points
-  ipf->getBroken(iele,_elemtype,vbroken,vDeltanNeg);
+  ipf->getBroken(iele,npts,_elemtype,vbroken,vDeltanNeg);
   //for(int i=0;i<npts;i++){ if(vbroken[i]) printf("%d true\n",iele->getNum()); else printf("%d false\n",iele->getNum());}
   for (int i = 0; i < npts; i++)
   {

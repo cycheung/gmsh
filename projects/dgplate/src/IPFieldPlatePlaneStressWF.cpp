@@ -1,7 +1,7 @@
 //
 // C++ Interface: terms
 //
-// Description: Definition of function defined in class IPField for PlatePlaneStress element with thickness integration and computation of fracture
+// Description: Definition of function defined in class IPField for ShellPlaneStress element with thickness integration and computation of fracture
 //
 //
 // Author:  <Gauthier BECKER>, (C) 2010
@@ -19,8 +19,8 @@ static inline double scaldot(const SVector3 &a, const SVector3 &b){
   return c;
 }
 
-template<> void IPField<DGelasticField, DgC0FunctionSpace<SVector3> >::compute1statePlatePlaneStressWF(IPState::whichState ws,
-                                                                                                        DGelasticField* ef){
+template<> void IPField<partDomain*, DgC0FunctionSpace<SVector3> >::compute1stateShellPlaneStressWF(IPState::whichState ws,
+                                                                                                        partDomain* ef){
   SVector3 val; // value of a vertex displacement
   IntPt *GP;
   //edge gauss point full dg
@@ -30,12 +30,13 @@ template<> void IPField<DGelasticField, DgC0FunctionSpace<SVector3> >::compute1s
   SVector3 ujump;
   double rjump[3];
   std::vector<double> dispm,dispp;
-  for(std::vector<MInterfaceElement*>::iterator it=ef->gi.begin(); it!=ef->gi.end();++it){
+  dgPartDomain* dgdom = dynamic_cast<dgPartDomain*>(ef);
+  for(std::vector<MInterfaceElement*>::iterator it=dgdom->gi.begin(); it!=dgdom->gi.end();++it){
     MInterfaceElement *ie = *it;
     MElement *em = ie->getElem(0);
     MElement *ep = ie->getElem(1);
     // gauss point
-    int npts = _intBound->getIntPoints(ie,&GP);
+    int npts = dgdom->getInterfaceGaussIntegrationRule()->getIntPoints(ie,&GP);
     // vector with nodal displacement
     int nbdofm = _space->getNumKeys(em);
     int nbdofp = _space->getNumKeys(ep);
@@ -99,12 +100,12 @@ template<> void IPField<DGelasticField, DgC0FunctionSpace<SVector3> >::compute1s
 
   // Virtual interface element
   std::vector<double> disp;
-  for(std::vector<MInterfaceElement*>::iterator it=ef->gib.begin(); it!=ef->gib.end();++it){
+  for(std::vector<MInterfaceElement*>::iterator it=dgdom->gib.begin(); it!=dgdom->gib.end();++it){
     MInterfaceElement *ie = *it;
     // get info for element - and + (gauss point on interface are only created for element - has cg/dg)
     MElement *e = ie->getElem(0);
     int edge = ie->getEdgeNumber(0);
-    int npts_inter=_intBound->getIntPoints(ie,&GP);
+    int npts_inter=dgdom->getInterfaceGaussIntegrationRule()->getIntPoints(ie,&GP);
     // vector with nodal displacement
     int nbdof = _space->getNumKeys(e);
     int nbFF = e->getNumVertices();
@@ -137,7 +138,7 @@ template<> void IPField<DGelasticField, DgC0FunctionSpace<SVector3> >::compute1s
   for (groupOfElements::elementContainer::const_iterator it = ef->g->begin(); it != ef->g->end(); ++it){
     MElement *e = *it;
     int edge = e->getNumEdges();
-    int npts_bulk=_intBulk->getIntPoints(e,&GP);
+    int npts_bulk=ef->getBulkGaussIntegrationRule()->getIntPoints(e,&GP);
     int nbdof = _space->getNumKeys(e);
     int nbFF = e->getNumVertices();
     _ufield->get(e,disp);
@@ -159,10 +160,10 @@ template<> void IPField<DGelasticField, DgC0FunctionSpace<SVector3> >::compute1s
   }
 }
 
-template<> void IPField<DGelasticField, DgC0FunctionSpace<SVector3> >::computeIpvPlatePlaneStressWF(MInterfaceElement *ie,
+template<> void IPField<partDomain*, DgC0FunctionSpace<SVector3> >::computeIpvShellPlaneStressWF(MInterfaceElement *ie,
                                                                                                     const int num,
                                                                                                     const IPState::whichState ws,
-                                                                                                    DGelasticField* ef,
+                                                                                                    partDomain* ef,
                                                                                                     const bool virt){
   SVector3 val; // value of a vertex displacement
   IntPt *GP;
@@ -173,11 +174,12 @@ template<> void IPField<DGelasticField, DgC0FunctionSpace<SVector3> >::computeIp
   SVector3 ujump;
   double rjump[3];
   std::vector<double> dispm,dispp;
+  dgPartDomain* dgdom = dynamic_cast<dgPartDomain*>(ef);
   if(!virt){
     MElement *em = ie->getElem(0);
     MElement *ep = ie->getElem(1);
     // gauss point
-    int npts = _intBound->getIntPoints(ie,&GP);
+    int npts = dgdom->getInterfaceGaussIntegrationRule()->getIntPoints(ie,&GP);
     // vector with nodal displacement
     int nbdofm = _space->getNumKeys(em);
     int nbdofp = _space->getNumKeys(ep);
@@ -239,7 +241,7 @@ template<> void IPField<DGelasticField, DgC0FunctionSpace<SVector3> >::computeIp
     std::vector<double> disp;
     MElement *e = ie->getElem(0);
     int edge = ie->getEdgeNumber(0);
-    int npts_inter=_intBound->getIntPoints(ie,&GP);
+    int npts_inter=dgdom->getInterfaceGaussIntegrationRule()->getIntPoints(ie,&GP);
     // vector with nodal displacement
     int nbdof = _space->getNumKeys(e);
     int nbFF = e->getNumVertices();
@@ -270,12 +272,12 @@ template<> void IPField<DGelasticField, DgC0FunctionSpace<SVector3> >::computeIp
   }
 }
 
-template<> void IPField<DGelasticField, DgC0FunctionSpace<SVector3> >::computeIpvPlatePlaneStressWF(MElement *e,IPState::whichState ws,
-                                                                                                        DGelasticField* ef){
+template<> void IPField<partDomain*, DgC0FunctionSpace<SVector3> >::computeIpvShellPlaneStressWF(MElement *e,IPState::whichState ws,
+                                                                                                        partDomain* ef){
 
   int edge = e->getNumEdges();
   IntPt *GP;
-  int npts_bulk=_intBulk->getIntPoints(e,&GP);
+  int npts_bulk=ef->getBulkGaussIntegrationRule()->getIntPoints(e,&GP);
   int nbdof = _space->getNumKeys(e);
   int nbFF = e->getNumVertices();
   std::vector<TensorialTraits<double>::GradType> Grads;

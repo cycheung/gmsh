@@ -13,67 +13,87 @@
 #include "displacementField.h"
 
 // constructor
-displacementField::displacementField(dofManager<double> *pas, std::vector<DGelasticField> &elas,
+displacementField::displacementField(dofManager<double> *pas, std::vector<partDomain*> &vdom,
                                      const int nc, const int field, const std::vector<Dof> &archiving,
                                      const bool view_, const std::string filen
-                                                                         ) : pAssembler(pas), fullDg(elas[0].getFormulation()),
+                                                                         ) : pAssembler(pas),
                                                                             _field(field),
-                                                                            elementField(filen,1000000,nc,elementField::ElementNodeData,view_)
+                                                                            elementField(filen,1000000,nc,
+                                                                            elementField::ElementNodeData,view_)
 {
-  pAssembler->getFixedDof(fixedDof);
-  long int totelem=0;
-  // key depends on formulation (change this !!) //TODO ??
-  if(!fullDg){ // cG/dG
-    // loop on element to initialize ufield
-    for(int i=0;i<elas.size();i++){
-      for(groupOfElements::vertexContainer::const_iterator it = elas[i].g->vbegin(); it != elas[i].g->vend(); ++it){
-        MVertex *ver = *it;
-        std::vector<double> u;
-        for(int j=0;j<numcomp;j++) u.push_back(0.);
-        umap.insert(std::pair<long int,std::vector<double> >(ver->getNum(),u));
-      }
-    }
-    for (unsigned int i = 0; i < elas.size(); ++i)
-      for (groupOfElements::elementContainer::const_iterator it = elas[i].g->begin(); it != elas[i].g->end(); ++it)
-        totelem++;
-   // copy node to archive
-   for(int i=0;i<archiving.size();i++)
-     varch.insert(std::pair<Dof,long int>(archiving[i],archiving[i].getEntity()));
-  }
-  else{ // full Dg
-    for(int i=0;i<elas.size();i++){
-      for(groupOfElements::elementContainer::const_iterator it = elas[i].g->begin(); it != elas[i].g->end(); ++it){
-        totelem++;
-        MElement *ele = *it;
-        int nbval = numcomp*ele->getNumVertices();
-        std::vector<double> u;
-        for(int j=0;j<nbval;j++) u.push_back(0.);
-        umap.insert(std::pair<long int,std::vector<double> >(ele->getNum(),u));
-      }
-    }
-    // Archiving find the element linked to the node
-    for(int i=0;i<archiving.size();i++){
-      long int nodenum = archiving[i].getEntity();
-      int comp,field,num;
-      DgC0PlateDof::getThreeIntsFromType(archiving[i].getType(),comp,field,num);
-      bool flagout = false;
-      // find the element
-      for(int k=0;k<elas.size();k++)
-        for(groupOfElements::elementContainer::const_iterator it = elas[k].g->begin(); it != elas[k].g->end(); ++it){
-          MElement *ele = *it;
-          for(int j=0;j<ele->getNumVertices();j++){
-            if(ele->getVertex(j)->getNum() == nodenum){
-              varch.insert(std::pair<Dof,long int >(Dof(ele->getNum(),DgC0PlateDof::createTypeWithThreeInts(comp,field,j)),nodenum));
-              flagout = true;
-              break;
-            }
-          }
-          if(flagout) break;
+  // test on first domain change this TODO ??
+  partDomain* dom0 = vdom[0];
+  if((dom0->getSolElemType()==SolElementType::ShellPlaneStress) or  (dom0->getSolElemType()==SolElementType::ShellPlaneStressWTI)
+     or (dom0->getSolElemType()==SolElementType::ShellPlaneStressWF)){
+    dgLinearShellDomain* dglshdom0 = dynamic_cast<dgLinearShellDomain*>(dom0);
+    fullDg = dglshdom0->getFormulation();
+    pAssembler->getFixedDof(fixedDof);
+    long int totelem=0;
+    // key depends on formulation (change this !!) //TODO ??
+    if(!fullDg){ // cG/dG
+      // loop on element to initialize ufield
+      //for(int i=0;i<elas.size();i++){
+      for(std::vector<partDomain*>::iterator itdom=vdom.begin(); itdom!=vdom.end(); ++itdom){
+        //dgPartDomain *dgdom = dynamic_cast<dgPartDomain*>(*itdom);
+        partDomain *dom = *itdom;
+        for(groupOfElements::vertexContainer::const_iterator it = dom->g->vbegin(); it != dom->g->vend(); ++it){
+          MVertex *ver = *it;
+          std::vector<double> u;
+          for(int j=0;j<numcomp;j++) u.push_back(0.);
+          umap.insert(std::pair<long int,std::vector<double> >(ver->getNum(),u));
         }
+      }
+//    for (unsigned int i = 0; i < elas.size(); ++i)
+      for(std::vector<partDomain*>::iterator itdom=vdom.begin(); itdom!=vdom.end(); ++itdom){
+        partDomain *dom = *itdom;
+        for (groupOfElements::elementContainer::const_iterator it = dom->g->begin(); it != dom->g->end(); ++it)
+          totelem++;
+      }
+     // copy node to archive
+     for(int i=0;i<archiving.size();i++)
+       varch.insert(std::pair<Dof,long int>(archiving[i],archiving[i].getEntity()));
     }
+    else{ // full Dg
+      //for(int i=0;i<elas.size();i++){
+      for(std::vector<partDomain*>::iterator itdom=vdom.begin(); itdom!=vdom.end(); ++itdom){
+        dgPartDomain *dgdom = dynamic_cast<dgPartDomain*>(*itdom);
+        for(groupOfElements::elementContainer::const_iterator it = dgdom->g->begin(); it != dgdom->g->end(); ++it){
+          totelem++;
+          MElement *ele = *it;
+          int nbval = numcomp*ele->getNumVertices();
+          std::vector<double> u;
+          for(int j=0;j<nbval;j++) u.push_back(0.);
+          umap.insert(std::pair<long int,std::vector<double> >(ele->getNum(),u));
+        }
+      }
+      // Archiving find the element linked to the node
+      for(int i=0;i<archiving.size();i++){
+        long int nodenum = archiving[i].getEntity();
+        int comp,field,num;
+        DgC0PlateDof::getThreeIntsFromType(archiving[i].getType(),comp,field,num);
+        bool flagout = false;
+        // find the element
+ //       for(int k=0;k<elas.size();k++)
+        for(std::vector<partDomain*>::iterator itdom=vdom.begin(); itdom!=vdom.end(); ++itdom){
+          partDomain *dom = *itdom;
+          for(groupOfElements::elementContainer::const_iterator it = dom->g->begin(); it != dom->g->end(); ++it){
+            MElement *ele = *it;
+            for(int j=0;j<ele->getNumVertices();j++){
+              if(ele->getVertex(j)->getNum() == nodenum){
+                varch.insert(std::pair<Dof,long int >(Dof(ele->getNum(),DgC0PlateDof::createTypeWithThreeInts(comp,field,j)),nodenum));
+                flagout = true;
+                break;
+              }
+            }
+            if(flagout) break;
+          }
+        }
+      }
+    }
+    this->setTotElem(totelem); // TODO FIX IT HOW ??
+    this->buildView(vdom,0.,0,"displacement",-1,false);
   }
-  this->setTotElem(totelem); // TODO FIX IT HOW ??
-  this->buildView(elas,0.,0,"displacement",-1,false);
+  else Msg::Error("Displacement field is not defined for this SolElemType");
 }
 
 void displacementField::update(){

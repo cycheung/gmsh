@@ -47,10 +47,10 @@ class GModelWithInterface : public GModel{
     }
 
     // Function to generate interface element on boundary
-    void generateInterfaceElementsOnBoundary(const int &num_phys, std::vector<DGelasticField> elasticFields);
+    void generateInterfaceElementsOnBoundary(const int &num_phys, std::vector<dgLinearShellDomain> elasticFields);
 
     // Function create virtual interface element to applied Dirichlet boundary conditions
-    void generateVirtualInterfaceElement(const int &num_phys, std::vector<DGelasticField> elasticFields);
+    void generateVirtualInterfaceElement(const int &num_phys, std::vector<dgLinearShellDomain> elasticFields);
 
     // Return the boundary interfaceElement linked to an elasticField
     void getBoundInterface(const int num_field,std::vector<MInterfaceElement*> &vie){

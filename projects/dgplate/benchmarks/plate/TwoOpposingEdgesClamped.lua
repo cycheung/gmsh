@@ -17,9 +17,9 @@ nsimp = 1 -- number of Simpson's points (odd)
 
 -- solver
 sol = 1 --Gmm=0 (default) Taucs=1 PETsc=2
-beta1 = 10. -- value of stabilization parameter
-beta2 = 10.
-beta3 = 10.
+beta1 = 100. -- value of stabilization parameter
+beta2 = 100.
+beta3 = 100.
 soltype = 1 -- StaticLinear=0 (default) StaticNonLinear=1
 nstep = 2   -- number of step (used only if soltype=1)
 ftime =1.   -- Final time (used only if soltype=1)
@@ -35,7 +35,7 @@ law1 = linearElasticLawPlaneStress(lawnum,E,nu)
 -- creation of ElasticField
 nfield =99 -- number of the field (physical number of surface)
 fullDg = 1 --  formulation CgDg=0 fullDg =1
-myfield1 = DGelasticField()
+myfield1 = dgLinearShellDomain()
 myfield1:tag(1000)
 myfield1:thickness(h)
 myfield1:simpsonPoints(nsimp)
@@ -45,7 +45,7 @@ myfield1:lawnumber(lawnum)
 -- creation of Solver
 mysolver = DgC0PlateSolver(1000)
 mysolver:readmsh(meshfile)
-mysolver:AddElasticDomain(myfield1,nfield,2)
+mysolver:addDgLinearElasticShellDomain(myfield1,nfield,2)
 mysolver:AddLinearElasticLawPlaneStress(law1)
 mysolver:setScheme(soltype)
 mysolver:whichSolver(sol)

@@ -365,47 +365,51 @@ class IPState{
     // pointer to the elasticField of IP
   public :
     enum whichState{initial, previous, current}; //protected enum ??
-    IPState(bool *st,const DGelasticField* elasf, bool inter) : _st(st), _we(elasf->getSolElemType())
+    IPState(bool *st,partDomain* elasf, bool inter) : _st(st), _we(elasf->getSolElemType())
     {
-      switch(_we){
-        case SolElementType::PlatePlaneStress :
-          if(!inter){
-            _initial = new IPVariablePlate(elasf->_h);
-            _previous = new IPVariablePlate(elasf->_h);
-            _current = new IPVariablePlate(elasf->_h);
-          }
-          else{
-            _initial = new IPVariablePlateOnInterface(elasf->_h);
-            _previous = new IPVariablePlateOnInterface(elasf->_h);
-            _current = new IPVariablePlateOnInterface(elasf->_h);
-          }
-          break;
-        case SolElementType::PlatePlaneStressWTI :
-          if(!inter){
-            _initial = new IPVariablePlateWithThicknessIntegration(elasf->getmsimp(), elasf->_h);
-            _previous = new IPVariablePlateWithThicknessIntegration(elasf->getmsimp(), elasf->_h);
-            _current = new IPVariablePlateWithThicknessIntegration(elasf->getmsimp(), elasf->_h);
-          }
-          else{
-            _initial = new IPVariablePlateWithThicknessIntegrationOI(elasf->getmsimp(), elasf->_h);
-            _previous = new IPVariablePlateWithThicknessIntegrationOI(elasf->getmsimp(), elasf->_h);
-            _current = new IPVariablePlateWithThicknessIntegrationOI(elasf->getmsimp(), elasf->_h);
-          }
-          break;
-        case SolElementType::PlatePlaneStressWF : // TODO ?? Allow to not integrate on bulk element
-          if(!inter){
-            _initial = new IPVariablePlateWithThicknessIntegration(elasf->getmsimp(), elasf->_h);
-            _previous = new IPVariablePlateWithThicknessIntegration(elasf->getmsimp(), elasf->_h);
-            _current = new IPVariablePlateWithThicknessIntegration(elasf->getmsimp(), elasf->_h);
-          }
-          else{
-            _initial = new IPVariablePlateOIWF(elasf->getmsimp(), elasf->_h);
-            _previous = new IPVariablePlateOIWF(elasf->getmsimp(), elasf->_h);
-            _current = new IPVariablePlateOIWF(elasf->getmsimp(), elasf->_h);
-          }
-          break;
-        default : Msg::Error("Impossible to create IPVariable for this element type\n");
+      if((_we==SolElementType::ShellPlaneStress) or (_we==SolElementType::ShellPlaneStressWF) or
+         (_we==SolElementType::ShellPlaneStressWTI)){
+        dgLinearShellDomain *dglshdom = dynamic_cast<dgLinearShellDomain*>(elasf);
+        switch(_we){
+          case SolElementType::ShellPlaneStress :
+            if(!inter){
+              _initial = new IPVariablePlate(dglshdom->getThickness());
+              _previous = new IPVariablePlate(dglshdom->getThickness());
+              _current = new IPVariablePlate(dglshdom->getThickness());
+            }
+            else{
+              _initial = new IPVariablePlateOnInterface(dglshdom->getThickness());
+              _previous = new IPVariablePlateOnInterface(dglshdom->getThickness());
+              _current = new IPVariablePlateOnInterface(dglshdom->getThickness());
+            }
+            break;
+          case SolElementType::ShellPlaneStressWTI :
+            if(!inter){
+              _initial = new IPVariablePlateWithThicknessIntegration(dglshdom->getmsimp(), dglshdom->getThickness());
+              _previous = new IPVariablePlateWithThicknessIntegration(dglshdom->getmsimp(), dglshdom->getThickness());
+              _current = new IPVariablePlateWithThicknessIntegration(dglshdom->getmsimp(), dglshdom->getThickness());
+            }
+            else{
+              _initial = new IPVariablePlateWithThicknessIntegrationOI(dglshdom->getmsimp(), dglshdom->getThickness());
+              _previous = new IPVariablePlateWithThicknessIntegrationOI(dglshdom->getmsimp(), dglshdom->getThickness());
+              _current = new IPVariablePlateWithThicknessIntegrationOI(dglshdom->getmsimp(), dglshdom->getThickness());
+            }
+            break;
+          case SolElementType::ShellPlaneStressWF : // TODO ?? Allow to not integrate on bulk element
+            if(!inter){
+              _initial = new IPVariablePlateWithThicknessIntegration(dglshdom->getmsimp(), dglshdom->getThickness());
+              _previous = new IPVariablePlateWithThicknessIntegration(dglshdom->getmsimp(), dglshdom->getThickness());
+              _current = new IPVariablePlateWithThicknessIntegration(dglshdom->getmsimp(), dglshdom->getThickness());
+            }
+            else{
+              _initial = new IPVariablePlateOIWF(dglshdom->getmsimp(), dglshdom->getThickness());
+              _previous = new IPVariablePlateOIWF(dglshdom->getmsimp(), dglshdom->getThickness());
+              _current = new IPVariablePlateOIWF(dglshdom->getmsimp(), dglshdom->getThickness());
+            }
+            break;
+        }
       }
+      else  Msg::Error("Impossible to create IPVariable for this solElementType\n");
     }
     ~IPState(){
         if(_initial) delete _initial;
@@ -415,7 +419,7 @@ class IPState{
     }
     IPState(IPState &source) : _we(source._we)
     {
-      if(source._we == SolElementType::PlatePlaneStress ){
+      if(source._we == SolElementType::ShellPlaneStress ){
         IPVariablePlate *psinit = dynamic_cast<IPVariablePlate*>(source.getState(IPState::initial));
         IPVariablePlate *pspre = dynamic_cast<IPVariablePlate*>(source.getState(IPState::previous));
         IPVariablePlate *pscur = dynamic_cast<IPVariablePlate*>(source.getState(IPState::current));
@@ -423,7 +427,7 @@ class IPState{
         _previous = new IPVariablePlate(pspre->getThickness());
         _current = new IPVariablePlate(pscur->getThickness());
       }
-      else if((source._we == SolElementType::PlatePlaneStressWTI) or (source._we == SolElementType::PlatePlaneStressWF) ){
+      else if((source._we == SolElementType::ShellPlaneStressWTI) or (source._we == SolElementType::ShellPlaneStressWF) ){
         IPVariablePlateWithThicknessIntegration *psinit = dynamic_cast<IPVariablePlateWithThicknessIntegration*>(source.getState(IPState::initial));
         IPVariablePlateWithThicknessIntegration *pspre = dynamic_cast<IPVariablePlateWithThicknessIntegration*>(source.getState(IPState::previous));
         IPVariablePlateWithThicknessIntegration *pscur = dynamic_cast<IPVariablePlateWithThicknessIntegration*>(source.getState(IPState::current));
@@ -468,7 +472,7 @@ class AllIPState{
     ipstateContainer _mapall;
     // flag to switch previous and current (change the pointer in place of copy all variables)
     bool state;
-    void createAndStoreIP(const MElement *ele,const int npts, const DGelasticField* pelasf){
+    void createAndStoreIP(const MElement *ele,const int npts, partDomain* pelasf){
       // vector with pointer on IPState object linked to the element
       std::vector<IPState*> tp(npts);
       for(int i=0;i<npts;i++){
@@ -477,7 +481,7 @@ class AllIPState{
       }
       _mapall.insert(std::pair<long int,std::vector<IPState*> >(ele->getNum(),tp));
     }
-    void createAndStoreIP(const MInterfaceElement *iele,const int npts, const DGelasticField* pelasf){
+    void createAndStoreIP(const MInterfaceElement *iele,const int npts, dgPartDomain* pelasf){
       // vector with pointer on IPState object linked to the element
       std::vector<IPState*> tp(npts);
       for(int i=0;i<npts;i++){
@@ -488,28 +492,33 @@ class AllIPState{
     }
 
   public :
-    AllIPState(GModelWithInterface *pModel, std::vector<DGelasticField> &elasf, QuadratureBase &integrator_on_bulk, QuadratureBase &integrator_on_inter){
+    AllIPState(GModelWithInterface *pModel, std::vector<partDomain*> &vdom){
       state = true; // at creation of object state is true
       IntPt *GP; // needed to know the number of gauss point
-      for(int i=0;i<elasf.size();i++){
+//      for(int i=0;i<elasf.size();i++){
+      for(std::vector<partDomain*>::iterator itdom=vdom.begin(); itdom!=vdom.end(); ++itdom){
+        partDomain *dom = *itdom;
+        if(dom->IsInterfaceTerms()){
+          dgPartDomain *dgdom = dynamic_cast<dgPartDomain*>(dom);
           // loop
-          for(std::vector<MInterfaceElement*>::iterator it=elasf[i].gi.begin(); it!=elasf[i].gi.end();++it){
+          for(std::vector<MInterfaceElement*>::iterator it=dgdom->gi.begin(); it!=dgdom->gi.end();++it){
             MInterfaceElement *ie = *it;
      	    // 2* because IP is duplicated for fullDg formulation
-            int npts_inter=2*integrator_on_inter.getIntPoints(ie,&GP);
-            createAndStoreIP(ie,npts_inter,&elasf[i]);
+            int npts_inter=2*dgdom->getInterfaceGaussIntegrationRule()->getIntPoints(ie,&GP);
+            createAndStoreIP(ie,npts_inter,dgdom);
           }
-        // Virtual interface element (no duplication)
-        for(std::vector<MInterfaceElement*>::iterator it=elasf[i].gib.begin(); it!=elasf[i].gib.end();++it){
-          MInterfaceElement *ie = *it;
-          int npts_inter=integrator_on_inter.getIntPoints(ie,&GP);
-          createAndStoreIP(ie,npts_inter,&elasf[i]);
+          // Virtual interface element (no duplication)
+          for(std::vector<MInterfaceElement*>::iterator it=dgdom->gib.begin(); it!=dgdom->gib.end();++it){
+            MInterfaceElement *ie = *it;
+            int npts_inter=dgdom->getInterfaceGaussIntegrationRule()->getIntPoints(ie,&GP);
+            createAndStoreIP(ie,npts_inter,dgdom);
+          }
         }
         // bulk element
-        for (groupOfElements::elementContainer::const_iterator it = elasf[i].g->begin(); it != elasf[i].g->end(); ++it){
+        for (groupOfElements::elementContainer::const_iterator it = dom->g->begin(); it != dom->g->end(); ++it){
           MElement *e = *it;
-          int npts_bulk=integrator_on_bulk.getIntPoints(e,&GP);
-          createAndStoreIP(e,npts_bulk,&elasf[i]);
+          int npts_bulk=dom->getBulkGaussIntegrationRule()->getIntPoints(e,&GP);
+          createAndStoreIP(e,npts_bulk,dom);
         }
       }
     }

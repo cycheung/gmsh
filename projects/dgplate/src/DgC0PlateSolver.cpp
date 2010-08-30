@@ -26,59 +26,6 @@
 #include "PViewData.h"
 #endif
 
-// ElasticField
-void DGelasticField::setFormulation(int b){b==1 ? FullDg=true : FullDg=false;}
-
-void DGelasticField::setMaterialLaw(materialLaw *mlaw){
-  mat = mlaw;
-  switch(mat->getType()){
-    case materialLaw::linearElasticPlaneStress :
-      if(_msimp==1) _elemType = SolElementType::PlatePlaneStress; // change this
-      else _elemType = SolElementType::PlatePlaneStressWTI;
-      break;
-    case materialLaw::linearElasticPlaneStressWithFracture :
-      _elemType = SolElementType::PlatePlaneStressWF;
-      if(_msimp==1){
-        _msimp=3;
-        Msg::Warning("Impossible to compute a fracture problem with only 1 Simpson's point. The number of Simpson's point is put to 3.\n");
-      }
-      if(!FullDg){
-        FullDg = true;
-        Msg::Warning("Impossible to compute a fracture problem with cG/dG formulation. Switch to full dG formulation\n");
-      }
-      break;
-  }
-}
-
-void DGelasticField::setLawNum(const int num){_matnum = num;}
-
-void DGelasticField::registerBindings(binding *b)
-{
-  classBinding *cb = b->addClass<DGelasticField>("DGelasticField"); //TODO create MaterialField and derive DGelasticField
-  cb->setDescription("Material field: Give all parameters for material law and numerical integration");
-
-  methodBinding *cm;
-  // Constructor
-  cm = cb->setConstructor<DGelasticField>();
-  cm->setDescription("Initialisation of a linear elastic law. All the methods need to be used to set correctly this field");
-  // method
-  cm = cb->addMethod("thickness", &DGelasticField::setThickness);
-  cm->setArgNames("h",NULL);
-  cm->setDescription("Value of thickness (because beam, plate or shell formulation");
-  cm = cb->addMethod("simpsonPoints", &DGelasticField::setNumberOfSimpsonPoints);
-  cm->setArgNames("num",NULL);
-  cm->setDescription("Set the number of Simpson's point used for this field. If = 1 no integration (linear elastic only). If the given is even 1 is add to this number");
-  cm = cb->addMethod("tag", &DGelasticField::setTag);
-  cm->setArgNames("t",NULL);
-  cm->setDescription("Set the tag of this field");
-  cm = cb->addMethod("formulation", &DGelasticField::setFormulation);
-  cm->setArgNames("b",NULL);
-  cm->setDescription("Set the material law used for this field. LinearElasticPlaneStress=0");
-  cm = cb->addMethod("lawnumber", &DGelasticField::setLawNum);
-  cm->setArgNames("num",NULL);
-  cm->setDescription("Give the number of the law linked to this elasticField");
-}
-
 // DgC0PlateSolver
 void DgC0PlateSolver::setMesh(const std::string meshFileName)
 {
@@ -110,24 +57,25 @@ void DgC0PlateSolver::readInputFile(const std::string fn)
       this->addMaterialLaw(mlaw);
     }
     else if (!strcmp(what, "ElasticDomain")){
-      DGelasticField field; // TODO creation of constructor
-      int b,c;
-      if(fscanf(f, "%d %d %lf %lf %d %d", &field._phys, &field._matnum, &field._h, &b, &c) != 5) return;
-      field._tag = _tag;
-      field.setFormulation(b); // Formulation of element cG/dG full dG
+      dgLinearShellDomain* field = new dgLinearShellDomain(); // TODO creation of constructor
+      int b,c,phys,matnum;
+      double h;
+      if(fscanf(f, "%d %d %lf %lf %d %d", phys, matnum, &b, &c) != 5) return;
+      field->setTag(_tag);
+      field->setFormulation(b); // Formulation of element cG/dG full dG
+      field->setThickness(h);
+      field->setPhysical(phys);
+      field->setLawNum(matnum);
       // set the number of simpsons point for numerical integration on thickness (add one to the number if it is even)
-      c%2==0 ? field._msimp=++c : field._msimp=c;
-      field.g = new groupOfElements (_dim, field._phys);
+      int msimp;
+      c%2==0 ? msimp=++c : msimp=c;
+      field->setNumberOfSimpsonPoints(msimp);
+      field->g = new groupOfElements (_dim, phys);
       // push field in vector
-      elasticFields.push_back(field);
+      //elasticFields.push_back(field);
+      domainVector.push_back(field);
     }
-    else if (!strcmp(what, "Void")){
-      //      elasticField field;
-      //      create enrichment ...
-      //      create the group ...
-      //      assign a tag
-      //      elasticFields.push_back(field);
-    }
+    else if (!strcmp(what, "Void")){}
     else if (!strcmp(what, "NodeDisplacement")){
       double val;
       int node, comp;
@@ -209,6 +157,7 @@ void DgC0PlateSolver::readInputFile(const std::string fn)
       neu._f= simpleFunctionTime<SVector3>(SVector3(val1, val2, val3));
       neu._tag=node;
       neu.onWhat=BoundaryCondition::ON_VERTEX;
+      neu.setGaussIntegrationRule();
       allNeumann.push_back(neu);
     }
     else if (!strcmp(what, "IndependentNodeForce")){
@@ -220,6 +169,7 @@ void DgC0PlateSolver::readInputFile(const std::string fn)
       neu._f= simpleFunctionTime<SVector3>(SVector3(val1, val2, val3),false);
       neu._tag=node;
       neu.onWhat=BoundaryCondition::ON_VERTEX;
+      neu.setGaussIntegrationRule();
       allNeumann.push_back(neu);
     }
     else if (!strcmp(what, "EdgeForce")){
@@ -231,6 +181,7 @@ void DgC0PlateSolver::readInputFile(const std::string fn)
       neu._f= simpleFunctionTime<SVector3>(SVector3(val1, val2, val3));
       neu._tag=edge;
       neu.onWhat=BoundaryCondition::ON_EDGE;
+      neu.setGaussIntegrationRule();
       allNeumann.push_back(neu);
     }
     else if (!strcmp(what, "IndependentEdgeForce")){
@@ -242,6 +193,7 @@ void DgC0PlateSolver::readInputFile(const std::string fn)
       neu._f= simpleFunctionTime<SVector3>(SVector3(val1, val2, val3),false);
       neu._tag=edge;
       neu.onWhat=BoundaryCondition::ON_EDGE;
+      neu.setGaussIntegrationRule();
       allNeumann.push_back(neu);
     }
     else if (!strcmp(what, "FaceForce")){
@@ -253,6 +205,7 @@ void DgC0PlateSolver::readInputFile(const std::string fn)
       neu._f= simpleFunctionTime<SVector3>(SVector3(val1, val2, val3));
       neu._tag=face;
       neu.onWhat=BoundaryCondition::ON_FACE;
+      neu.setGaussIntegrationRule();
       allNeumann.push_back(neu);
     }
     else if (!strcmp(what, "IndependentFaceForce")){
@@ -264,6 +217,7 @@ void DgC0PlateSolver::readInputFile(const std::string fn)
       neu._f= simpleFunctionTime<SVector3>(SVector3(val1, val2, val3),false);
       neu._tag=face;
       neu.onWhat=BoundaryCondition::ON_FACE;
+      neu.setGaussIntegrationRule();
       allNeumann.push_back(neu);
     }
     else if (!strcmp(what, "VolumeForce")){
@@ -275,6 +229,7 @@ void DgC0PlateSolver::readInputFile(const std::string fn)
       neu._f= simpleFunctionTime<SVector3>(SVector3(val1, val2, val3));
       neu._tag=volume;
       neu.onWhat=BoundaryCondition::ON_VOLUME;
+      neu.setGaussIntegrationRule();
       allNeumann.push_back(neu);
     }
     else if (!strcmp(what, "IndependentVolumeForce")){
@@ -286,6 +241,7 @@ void DgC0PlateSolver::readInputFile(const std::string fn)
       neu._f= simpleFunctionTime<SVector3>(SVector3(val1, val2, val3),false);
       neu._tag=volume;
       neu.onWhat=BoundaryCondition::ON_VOLUME;
+      neu.setGaussIntegrationRule();
       allNeumann.push_back(neu);
     }
     else if (!strcmp(what, "MeshFile")){
@@ -353,16 +309,20 @@ void DgC0PlateSolver::init(){
   // create interfaceElement
   this->createInterfaceElement();
 
-  // link the law to the DGElasticField
-  for(int i=0; i<elasticFields.size();i++){
-    materialLaw* mlaw = this->getMaterialLaw(elasticFields[i].getLawNum());
-    elasticFields[i].setMaterialLaw(mlaw);
+  for(std::vector<partDomain*>::iterator it = domainVector.begin(); it!=domainVector.end(); ++it){
+    partDomain *dom = *it;
+    materialLaw* mlaw = this->getMaterialLaw(dom->getLawNum());
+    dom->setMaterialLaw(mlaw);
+    dom->setGaussIntegrationRule();
+    if(dom->IsInterfaceTerms()) hasInterface=true;
   }
 }
 
-void DgC0PlateSolver::addElasticDomain(DGelasticField* ED, const int f, const int d){
+void DgC0PlateSolver::addDgLinearElasticShellDomain(dgLinearShellDomain* ED, const int f, const int d){
   ED->g = new groupOfElements (d, f);
-  elasticFields.push_back(*ED);
+  dgLinearShellDomain *field = new dgLinearShellDomain(*ED);
+  hasInterface = true;
+  domainVector.push_back(field);
 }
 
 void DgC0PlateSolver::addMaterialLaw(materialLaw* mlaw){
@@ -384,9 +344,6 @@ void DgC0PlateSolver::addTheta(const int numphys){
   std::vector<MVertex*> vv;
   pModel->getMeshVerticesForPhysicalGroup(1,numphys,vv);
   pModel->insertThetaBound(numphys,vv);
-  // store the boundary interface element to the elastifFields
-  //for(int i=0;i<elasticFields.size();i++) pModel->getBoundInterface(i,elasticFields[i].gib);
-  //for(int i=0;i<elasticFields.size();i++) pModel->getBoundInterface(elasticFields[i]._phys,elasticFields[i].gib);
 }
 
 void DgC0PlateSolver::addPhysInitBroken(const int numphys){
@@ -394,69 +351,73 @@ void DgC0PlateSolver::addPhysInitBroken(const int numphys){
 }
 
 void DgC0PlateSolver::createInterfaceElement(){
-  // Compute and add interface element to the model
-  // Loop on mesh element and store each edge (which will be distributed between InterfaceElement, Boundary InterfaceElement and VirtualInterfaceElement)
-  // A tag including the vertex number is used to identified the edge common to two elements. In this case a interface element is created
-  std::map<unsigned long int,Iedge> map_edge;
-  // loop on element
-  for (int i = 0; i < elasticFields.size(); ++i)
-  {
-    for (groupOfElements::elementContainer::const_iterator it = elasticFields[i].g->begin(); it != elasticFields[i].g->end(); ++it)
+  // creation only if there has interfaceterm
+  if(hasInterface){
+    // Compute and add interface element to the model
+    // Loop on mesh element and store each edge (which will be distributed between InterfaceElement, Boundary InterfaceElement and VirtualInterfaceElement)
+    // A tag including the vertex number is used to identified the edge common to two elements. In this case a interface element is created
+    std::map<unsigned long int,Iedge> map_edge;
+    // loop on element
+  //  for (int i = 0; i < elasticFields.size(); ++i)
+    for(std::vector<partDomain*>::iterator itdom=domainVector.begin(); itdom !=domainVector.end(); ++itdom)
     {
-      MElement *e=*it;
-      int nedge = e->getNumEdges();
-      for(int j=0;j<nedge;j++){
-        std::vector<MVertex*> vv;
-        e->getEdgeVertices(j,vv);
-        Iedge ie = Iedge(vv,e,elasticFields[i]._phys);
-        unsigned long int key = ie.getkey();
-        const std::map<unsigned long int,Iedge>::iterator it_edge=map_edge.find(key);
-        if(it_edge == map_edge.end()) // The edge doesn't exist -->inserted into the map
-          map_edge.insert(std::pair<unsigned long int,Iedge>(key,ie));
-        else{ // create an interface element and remove the entry in map_edge
-          MInterfaceElement interel =  MInterfaceElement(vv, 0, 0, e, it_edge->second.getElement()); // How to have num and part ?? TODO
-          pModel->storeInterfaceElement(elasticFields[i]._phys,interel);
-          map_edge.erase(it_edge);
+      dgPartDomain* dom = dynamic_cast<dgPartDomain*>(*itdom);
+      for (groupOfElements::elementContainer::const_iterator it = dom->g->begin(); it != dom->g->end(); ++it)
+      {
+        MElement *e=*it;
+        int nedge = e->getNumEdges();
+        for(int j=0;j<nedge;j++){
+          std::vector<MVertex*> vv;
+          e->getEdgeVertices(j,vv);
+          Iedge ie = Iedge(vv,e,dom->getPhysical());
+          unsigned long int key = ie.getkey();
+          const std::map<unsigned long int,Iedge>::iterator it_edge=map_edge.find(key);
+          if(it_edge == map_edge.end()) // The edge doesn't exist -->inserted into the map
+            map_edge.insert(std::pair<unsigned long int,Iedge>(key,ie));
+          else{ // create an interface element and remove the entry in map_edge
+            MInterfaceElement interel =  MInterfaceElement(vv, 0, 0, e, it_edge->second.getElement()); // How to have num and part ?? TODO
+            pModel->storeInterfaceElement(dom->getPhysical(),interel);
+            map_edge.erase(it_edge);
+          }
         }
       }
+      pModel->getInterface(dom->getPhysical(),dom->gi); // Avoid this step ??
     }
-    pModel->getInterface(elasticFields[i]._phys,elasticFields[i].gi); // Avoid this step ??
-  }
-  // At this stage the edge in map_edge must be separated into BoundaryInterfaceElement and Virtual InterfaceElement
-  //pModel->generateInterfaceElementsOnBoundary(num_phys,elasticFields); //TODO don't pass elastic field but I don't know how to access to element in GModel ??
-  for(std::map<unsigned long int,Iedge>::iterator it = map_edge.begin(); it!=map_edge.end();++it){
-    Iedge ie=it->second;
-    std::vector<MVertex*> Mv= ie.getVertices();
-    MInterfaceElement interel = MInterfaceElement(Mv,0,0,ie.getElement(),ie.getElement());
-    pModel->storeVirtualInterfaceElement(interel);
-  }
-  std::vector<MInterfaceElement*> vie;
-  pModel->getVirtualInterface(vie);
+    // At this stage the edge in map_edge must be separated into BoundaryInterfaceElement and Virtual InterfaceElement
+    for(std::map<unsigned long int,Iedge>::iterator it = map_edge.begin(); it!=map_edge.end();++it){
+      Iedge ie=it->second;
+      std::vector<MVertex*> Mv= ie.getVertices();
+      MInterfaceElement interel = MInterfaceElement(Mv,0,0,ie.getElement(),ie.getElement());
+      pModel->storeVirtualInterfaceElement(interel);
+    }
+    std::vector<MInterfaceElement*> vie;
+    pModel->getVirtualInterface(vie);
 
-  std::vector<MVertex*> vv;
-  std::vector<int> thetaBound;
-  pModel->getphysBound(thetaBound);
-  for(int i=0;i<thetaBound.size();i++){
-    pModel->getThetaBound(thetaBound[i],vv);
-    for(std::map<unsigned long int,Iedge>::iterator it_edge = map_edge.begin(); it_edge!=map_edge.end();++it_edge){
-      for(int j=0;j<vv.size();j++){
-        //loop on component of map_edge
-        if(vv[j] == it_edge->second.getFirstInteriorVertex()){ // Ok because 2nd degree min BoundaryInterfaceElement is created only for this vertex
-          std::vector<MVertex*> Mv = it_edge->second.getVertices();
-          MInterfaceElement interel = MInterfaceElement(Mv, 0, 0, it_edge->second.getElement(),it_edge->second.getElement());
-          pModel->storeBoundaryInterfaceElement(it_edge->second.getPhys(),interel);
-          map_edge.erase(it_edge);
-          break;
+    std::vector<MVertex*> vv;
+    std::vector<int> thetaBound;
+    pModel->getphysBound(thetaBound);
+    for(int i=0;i<thetaBound.size();i++){
+      pModel->getThetaBound(thetaBound[i],vv);
+      for(std::map<unsigned long int,Iedge>::iterator it_edge = map_edge.begin(); it_edge!=map_edge.end();++it_edge){
+        for(int j=0;j<vv.size();j++){
+          //loop on component of map_edge
+          if(vv[j] == it_edge->second.getFirstInteriorVertex()){ // Ok because 2nd degree min BoundaryInterfaceElement is created only for this vertex
+            std::vector<MVertex*> Mv = it_edge->second.getVertices();
+            MInterfaceElement interel = MInterfaceElement(Mv, 0, 0, it_edge->second.getElement(),it_edge->second.getElement());
+            pModel->storeBoundaryInterfaceElement(it_edge->second.getPhys(),interel);
+            map_edge.erase(it_edge);
+            break;
+          }
         }
       }
+      vv.clear();
     }
-    vv.clear();
+  //  for(int i=0;i<elasticFields.size();i++)
+    for(std::vector<partDomain*>::iterator it = domainVector.begin(); it!=domainVector.end(); ++it){
+      dgPartDomain *dgdom = dynamic_cast<dgPartDomain*>(*it);
+      pModel->getBoundInterface(dgdom->getPhysical(),dgdom->gib);
+    }
   }
-  for(int i=0;i<elasticFields.size();i++)
-   // pModel->getBoundInterface(i,elasticFields[i].gib);
-   pModel->getBoundInterface(elasticFields[i]._phys,elasticFields[i].gib);
-  //for(int j=0;j<elasticFields[0].gib.size();j++)
-  // printf("elem - %d elem + %d\n",elasticFields[0].gib[j]->getElem(0)->getNum(),elasticFields[0].gib[j]->getElem(1)->getNum());
 }
 
 void DgC0PlateSolver::createInterfaceElement_2(){
@@ -534,87 +495,130 @@ else{
   pModel->getVirtualInterface(vinter); // vector needed to impose boundary condition for fullDg formulation
   std::vector<MInterfaceElement*> vinternalInter;
   pModel->getInterface(vinternalInter);
-  for (unsigned int i = 0; i < allDirichlet.size(); i++)
-  {
-    DgC0PlateFilterDofComponent filter(allDirichlet[i]._comp);
-    if(!elasticFields[0].getFormulation())
-      FixNodalDofs(*LagSpace,allDirichlet[i].g->begin(),allDirichlet[i].g->end(),*pAssembler,allDirichlet[i]._f,filter,false);
-    else{ // BC on face are computed separately
-      if(allDirichlet[i].onWhat == BoundaryCondition::ON_FACE)
-        FixNodalDofs(*LagSpace,allDirichlet[i].g->begin(),allDirichlet[i].g->end(),*pAssembler,allDirichlet[i]._f,filter,true);
-      else
-        FixNodalDofs(*LagSpace,allDirichlet[i].g->begin(),allDirichlet[i].g->end(),*pAssembler,allDirichlet[i]._f,filter,vinter,
-                     vinternalInter);
-    }
- }
 
-  // we number the dofs : when a dof is numbered, it cannot be numbered
-  // again with another number.
-  for (unsigned int i = 0; i < elasticFields.size(); ++i)
-  {
-    // Use formulation of first field CHANGE THIS
-    NumberDofs(*LagSpace, elasticFields[i].g->begin(), elasticFields[i].g->end(),*pAssembler,elasticFields[0].getFormulation());
+  partDomain *dom0 = domainVector[0];
+  if((dom0->getSolElemType()==SolElementType::ShellPlaneStress) or  (dom0->getSolElemType()==SolElementType::ShellPlaneStressWTI) or
+     (dom0->getSolElemType()==SolElementType::ShellPlaneStressWF)){
+   dgLinearShellDomain* dglshdom0 = dynamic_cast<dgLinearShellDomain*>(dom0);
+   for(unsigned int i = 0; i < allDirichlet.size(); i++)
+    {
+      DgC0PlateFilterDofComponent filter(allDirichlet[i]._comp);
+      if(!dglshdom0->getFormulation())
+        FixNodalDofs(*LagSpace,allDirichlet[i].g->begin(),allDirichlet[i].g->end(),*pAssembler,allDirichlet[i]._f,filter,false);
+      else{ // BC on face are computed separately
+        if(allDirichlet[i].onWhat == BoundaryCondition::ON_FACE)
+          FixNodalDofs(*LagSpace,allDirichlet[i].g->begin(),allDirichlet[i].g->end(),*pAssembler,allDirichlet[i]._f,filter,true);
+        else
+          FixNodalDofs(*LagSpace,allDirichlet[i].g->begin(),allDirichlet[i].g->end(),*pAssembler,allDirichlet[i]._f,filter,vinter,vinternalInter);
+      }
+    }
+    // we number the dofs : when a dof is numbered, it cannot be numbered
+    // again with another number.
+    for(std::vector<partDomain*>::iterator itdom = domainVector.begin(); itdom!=domainVector.end(); ++itdom)
+    {
+      partDomain *dom = *itdom;
+      // Use formulation of first field CHANGE THIS
+      NumberDofs(*LagSpace, dom->g->begin(), dom->g->end(),*pAssembler,dglshdom0->getFormulation());
+    }
+    // total number of unkowns to allocate the system
+    double nunk = pAssembler->sizeOfR();
+    // allocate system
+    lsys->allocate(nunk);
+  }
+  else{
+    Msg::Error("Numbering of dof is not implemented for this element type");
+  }
+
+  // displacement field
+  displacementField ufield(pAssembler,domainVector,3,LagSpace->getId(),anoded);
+  // Store stress and deformation at each gauss point
+  // IPState "declaration" reserve place for data
+  IPField<partDomain*,DgC0FunctionSpace<SVector3> > ipf(&domainVector,pAssembler,LagSpace, pModel, &ufield); // Todo fix this
+  ipf.compute1state(IPState::initial);
+  for(std::vector<partDomain*>::iterator itdom = domainVector.begin(); itdom!=domainVector.end(); ++itdom){
+    partDomain *dom = *itdom;
+    if(dom->getSolElemType() == SolElementType::ShellPlaneStress){
+      dgLinearShellDomain *dglshdom = dynamic_cast<dgLinearShellDomain*>(dom);
+      dglshdom->InitializeTerms(*LagSpace,&ufield,&ipf,_beta1,_beta2,_beta3);
+    }
+    else if(dom->getSolElemType() == SolElementType::ShellPlaneStressWF){
+      dgLinearShellDomain *dglshdom = dynamic_cast<dgLinearShellDomain*>(dom);
+      dglshdom->InitializeTerms(*LagSpace,&ufield,&ipf,_beta1,_beta2,_beta3);
+    }
+    else if(dom->getSolElemType() == SolElementType::ShellPlaneStressWTI){
+      dgLinearShellDomain *dglshdom = dynamic_cast<dgLinearShellDomain*>(dom);
+      dglshdom->InitializeTerms(*LagSpace,&ufield,&ipf,_beta1,_beta2,_beta3);
+    }
+    else Msg::Error("Terms are not defined for domain %d",dom->getTag());
   }
 
   // Now we start the assembly process
   // First build the force vector
-
-  GaussQuadrature Integ_Boundary(GaussQuadrature::Val);
-  GaussQuadrature Integ_Bulk(GaussQuadrature::GradGrad);
-  std::cout <<  "Neumann BC"<< std::endl;
-  for (unsigned int i = 0; i < allNeumann.size(); i++)
-  {
-    DgC0LoadTerm<SVector3> Lterm(*LagSpace,allNeumann[i]._f);
-    if(!elasticFields[0].getFormulation())     // Use formulation of first field CHANGE THIS
-      Assemble(Lterm,*LagSpace,allNeumann[i].g->begin(),allNeumann[i].g->end(),Integ_Boundary,*pAssembler,false);
-    else{ // The boundary condition on face are computed separately (because of research of interfaceElement linked to the BC)
-      if(allNeumann[i].onWhat == BoundaryCondition::ON_FACE)
-        Assemble(Lterm,*LagSpace,allNeumann[i].g->begin(),allNeumann[i].g->end(),Integ_Boundary,*pAssembler,true);
-      else
-        Assemble(Lterm,*LagSpace,allNeumann[i].g->begin(),allNeumann[i].g->end(),Integ_Boundary,*pAssembler,vinter);
+//  partDomain *dom0 = domainVector[0];
+  if((dom0->getSolElemType()==SolElementType::ShellPlaneStress) or  (dom0->getSolElemType()==SolElementType::ShellPlaneStressWTI) or
+     (dom0->getSolElemType()==SolElementType::ShellPlaneStressWF)){
+    dgLinearShellDomain *dglsh0 = dynamic_cast<dgLinearShellDomain*>(dom0);
+    // Integratioon Rule of ElasticField 0 for now fix it TODO ??
+    std::cout <<  "Neumann BC"<< std::endl;
+    for (unsigned int i = 0; i < allNeumann.size(); i++)
+    {
+      DgC0LoadTerm<SVector3> Lterm(*LagSpace,allNeumann[i]._f);
+      if(!dglsh0->getFormulation())     // Use formulation of first field CHANGE THIS
+        Assemble(Lterm,*LagSpace,allNeumann[i].g->begin(),allNeumann[i].g->end(),*(allNeumann[i].integ),*pAssembler,false);
+      else{ // The boundary condition on face are computed separately (because of research of interfaceElement linked to the BC)
+        if(allNeumann[i].onWhat == BoundaryCondition::ON_FACE)
+          Assemble(Lterm,*LagSpace,allNeumann[i].g->begin(),allNeumann[i].g->end(),*(allNeumann[i].integ),*pAssembler,true);
+        else
+          Assemble(Lterm,*LagSpace,allNeumann[i].g->begin(),allNeumann[i].g->end(),*(allNeumann[i].integ),*pAssembler,vinter);
+      }
     }
   }
-
-  // displacement field
-  displacementField ufield(pAssembler,elasticFields,3,LagSpace->getId(),anoded);
-  // Store stress and deformation at each gauss point
-  // IPState "declaration" reserve place for data
-  IPField<DGelasticField,DgC0FunctionSpace<SVector3> > ipf(&elasticFields,pAssembler,LagSpace,
-                                                           &Integ_Bulk, &Integ_Boundary, pModel, &ufield);
-  ipf.compute1state(IPState::initial);
+  else{
+    Msg::Error("External forces computation is not yet implemented for element without interface (dof numbering)");
+  }
 
   // bulk material law
-  for (unsigned int i = 0; i < elasticFields.size(); i++)
+/*  for(std::vector<partDomain*>::iterator itdom = domainVector.begin(); itdom!=domainVector.end();++itdom)
   {
     // print the chosen formulation
-    if(elasticFields[i].getFormulation()) printf("Full Dg formulation is chosen for elasticField %d\n",elasticFields[i]._tag);
-    else printf("Cg/Dg formulation is chosen for elasticField %d\n",elasticFields[i]._tag);
-    printf("Number of integration point on thickness : %d\n",elasticFields[i].getmsimp());
+    partDomain *dom = *itdom;
+    // print for shell element
+    if((dom->getSolElemType()==SolElementType::ShellPlaneStress) or  (dom->getSolElemType()==SolElementType::ShellPlaneStressWTI) or
+       (dom->getSolElemType()==SolElementType::ShellPlaneStressWF)){
+      dgLinearShellDomain* dglshdom = dynamic_cast<dgLinearShellDomain*>(dom);
+      if(dglshdom->getFormulation()) printf("Full Dg formulation is chosen for Domain %d\n",dglshdom->getTag());
+      else printf("Cg/Dg formulation is chosen for Domain %d\n",dglshdom->getTag());
+      printf("Number of integration point on thickness : %d\n",dglshdom->getmsimp());
+    }
+
     // Initialization of elementary terms in function of the field and space
-    IsotropicElasticStiffBulkTermC0Plate Eterm(*LagSpace,elasticFields[i].getMaterialLaw(),elasticFields[i]._h,elasticFields[i].getFormulation(),
-                                               &ufield,&ipf,elasticFields[i].getSolElemType());
+    //IsotropicElasticStiffBulkTermC0Plate Eterm(*LagSpace,elasticFields[i].getMaterialLaw(),elasticFields[i].getThickness(),elasticFields[i].getFormulation(),
+    //                                           &ufield,&ipf,elasticFields[i].getSolElemType());
     // Assembling loop on Elementary terms
-    MyAssemble(Eterm,*LagSpace,elasticFields[i].g->begin(),elasticFields[i].g->end(),Integ_Bulk,
+    MyAssemble(*(dom->getBilinearBulkTerm()),*LagSpace,dom->g->begin(),dom->g->end(),*(dom->getBulkGaussIntegrationRule()),
                  *pAssembler);
 
-    // Initialization of elementary  interface terms in function of the field and space
-    IsotropicElasticStiffInterfaceTermC0Plate IEterm(*LagSpace,elasticFields[i].getMaterialLaw(),_beta1,
-                                                _beta2,_beta3,
-                                                elasticFields[i]._h,&ufield, &ipf, elasticFields[i].getSolElemType(),
-                                                elasticFields[i].getFormulation());
-    // Assembling loop on elementary interface terms
-    MyAssemble(IEterm,*LagSpace,elasticFields[i].gi.begin(),elasticFields[i].gi.end(),Integ_Boundary,
-                      *pAssembler); // Use the same GaussQuadrature rule than on the boundary
+    if(dom->IsInterfaceTerms()){
+      dgPartDomain* dgdom = dynamic_cast<dgPartDomain*>(dom);
+      // Initialization of elementary  interface terms in function of the field and space
+      //IsotropicElasticStiffInterfaceTermC0Plate IEterm(*LagSpace,elasticFields[i].getMaterialLaw(),_beta1,
+      //                                            _beta2,_beta3,
+      //                                            elasticFields[i].getThickness(),&ufield, &ipf, elasticFields[i].getSolElemType(),
+      //                                            elasticFields[i].getFormulation());
+      // Assembling loop on elementary interface terms
+      MyAssemble(*(dgdom->getBilinearInterfaceTerm()),*LagSpace,dgdom->gi.begin(),dgdom->gi.end(),*(dgdom->getInterfaceGaussIntegrationRule()),
+                        *pAssembler); // Use the same GaussQuadrature rule than on the boundary
 
-    // Initialization of elementary  interface terms in function of the field and space
-    IsotropicElasticStiffVirtualInterfaceTermC0Plate VIEterm(*LagSpace,elasticFields[i].getMaterialLaw(),_beta1,
-                                                _beta2,_beta3,
-                                                elasticFields[i]._h,&ufield,&ipf,elasticFields[i].getSolElemType(),true,elasticFields[i].getFormulation());
-    // Assembling loop on elementary boundary interface terms
-    MyAssemble(VIEterm,*LagSpace,elasticFields[i].gib.begin(),elasticFields[i].gib.end(),Integ_Boundary,
-                      *pAssembler); // Use the same GaussQuadrature rule than on the boundary
-
-  }
+      // Initialization of elementary  interface terms in function of the field and space
+      //IsotropicElasticStiffVirtualInterfaceTermC0Plate VIEterm(*LagSpace,elasticFields[i].getMaterialLaw(),_beta1,
+      //                                            _beta2,_beta3,
+      //                                            elasticFields[i].getThickness(),&ufield,&ipf,elasticFields[i].getSolElemType(),true,elasticFields[i].getFormulation());
+      // Assembling loop on elementary boundary interface terms
+      MyAssemble(*(dgdom->getBilinearVirtualInterfaceTerm()),*LagSpace,dgdom->gib.begin(),dgdom->gib.end(),
+                 *(dgdom->getInterfaceGaussIntegrationRule()),*pAssembler); // Use the same GaussQuadrature rule than on the boundary
+    }
+  }*/
+  this->computeStiffMatrix(lsys,pAssembler,&ufield,&ipf);
   printf("-- done assembling!\n");
   lsys->systemSolve();
   printf("-- done solving!\n");
@@ -623,8 +627,8 @@ else{
   ufield.update();
   ipf.compute1state(IPState::current);
   // save solution (for visualisation)
-  ipf.buildView(elasticFields,0.,1,"VonMises",-1,false);
-  ufield.buildView(elasticFields,0.,1,"displacement",-1,false);
+  ipf.buildView(domainVector,0.,1,"VonMises",-1,false);
+  ufield.buildView(domainVector,0.,1,"displacement",-1,false);
 }
 
 void DgC0PlateSolver::setSNLData(const int ns, const double et, const double reltol){
@@ -720,6 +724,7 @@ void DgC0PlateSolver::addForce(std::string onwhat, const int numphys, const doub
   else  Msg::Error("Impossible to prescribe a force on a %s\n",onwhat.c_str());
   neu._f= simpleFunctionTime<SVector3>(SVector3(xval, yval, zval));
   neu._tag=numphys;
+  neu.setGaussIntegrationRule();
   allNeumann.push_back(neu);
 }
 
@@ -748,6 +753,7 @@ void DgC0PlateSolver::addIndepForce(std::string onwhat, const int numphys, const
   else  Msg::Error("Impossible to prescribe a force on a %s\n",onwhat.c_str());
   neu._f= simpleFunctionTime<SVector3>(SVector3(xval, yval, zval),false);
   neu._tag=numphys;
+  neu.setGaussIntegrationRule();
   allNeumann.push_back(neu);
 }
 
@@ -759,38 +765,55 @@ void DgC0PlateSolver::addArchivingEdgeForce(const int numphys, const int comp){
 
   std::vector<Dof> vdof;// all dof include in the edge
 
-  // build the dof
-  if(!elasticFields[0].getFormulation()){ //cG/dG case
-    for(int i=0;i<vv.size();i++)
-      vdof.push_back(Dof(vv[i]->getNum(), DgC0PlateDof::createTypeWithThreeInts(comp,LagSpace->getId())));
-  }
-  else{
-    // find elements of the vertex
-    for(int i=0;i<elasticFields.size();i++)
-      for(groupOfElements::elementContainer::const_iterator it = elasticFields[i].g->begin(); it != elasticFields[i].g->end(); ++it){
-        MElement *e = *it;
-        for(int j=0;j<e->getNumVertices();j++){
-          for(int k=0;k<vv.size();k++)
-            if(e->getVertex(j) == vv[k]){
-              vdof.push_back(Dof(e->getNum(),DgC0PlateDof::createTypeWithThreeInts(comp,LagSpace->getId(),j)));
-          }
+  if(hasInterface){
+    // shell element
+    // Test on domain 0 TODO change this ??
+    partDomain *dom0 = domainVector[0];
+    if((dom0->getSolElemType()==SolElementType::ShellPlaneStress) or  (dom0->getSolElemType()==SolElementType::ShellPlaneStressWTI) or
+        (dom0->getSolElemType()==SolElementType::ShellPlaneStressWF)){
+      // build the dof
+      dgLinearShellDomain *dglshdom0 = dynamic_cast<dgLinearShellDomain*>(dom0);
+      if(!dglshdom0->getFormulation()){ //cG/dG case
+        for(int i=0;i<vv.size();i++)
+          vdof.push_back(Dof(vv[i]->getNum(), DgC0PlateDof::createTypeWithThreeInts(comp,LagSpace->getId())));
+      }
+      else{
+        // find elements of the vertex
+        for(std::vector<partDomain*>::iterator itdom=domainVector.begin(); itdom!=domainVector.end();++itdom){
+            dgLinearShellDomain* dglshdom = dynamic_cast<dgLinearShellDomain*>(*itdom);
+            for(groupOfElements::elementContainer::const_iterator it = dglshdom->g->begin(); it != dglshdom->g->end(); ++it){
+              MElement *e = *it;
+              for(int j=0;j<e->getNumVertices();j++){
+                for(int k=0;k<vv.size();k++)
+                  if(e->getVertex(j) == vv[k]){
+                    vdof.push_back(Dof(e->getNum(),DgC0PlateDof::createTypeWithThreeInts(comp,LagSpace->getId(),j)));
+                }
+              }
+            }
         }
       }
-  }
-  // keys = 10*numphys + comp otherwise no way to archive different components
-  int key = 10*numphys+comp;
-  aef[key] = vdof;
-  aefvalue[key] = 0.;
+      // keys = 10*numphys + comp otherwise no way to archive different components
+      int key = 10*numphys+comp;
+      aef[key] = vdof;
+      aefvalue[key] = 0.;
 
-  // remove old file (linux only ??)
-  std::ostringstream oss;
-  oss << numphys;
-  std::string s = oss.str();
-  oss.str("");
-  oss << comp;
-  std::string s2 = oss.str();
-  std::string rfname = "rm force"+s+"comp"+s2+".csv";
-  system(rfname.c_str());
+      // remove old file (linux only ??)
+      std::ostringstream oss;
+      oss << numphys;
+      std::string s = oss.str();
+      oss.str("");
+      oss << comp;
+      std::string s2 = oss.str();
+      std::string rfname = "rm force"+s+"comp"+s2+".csv";
+      system(rfname.c_str());
+    }
+    else{
+      Msg::Error("Archiving force is only implemented for dg shell\n");
+    }
+  }
+  else{
+    Msg::Error("has no rule exist to make dof for formulation without interface it is impossible to archiving a force\n");
+  }
 }
 
 void DgC0PlateSolver::addArchivingNodeDisplacement(const int num, const int comp){
@@ -846,7 +869,7 @@ void DgC0PlateSolver::registerBindings(binding *b)
   cm = cb->addMethod("stepBetweenArchiving", &DgC0PlateSolver::setStepBetweenArchiving);
   cm->setArgNames("na",NULL);
   cm->setDescription("Set the number of step between 2 archiving");
-  cm = cb->addMethod("AddElasticDomain", &DgC0PlateSolver::addElasticDomain);
+  cm = cb->addMethod("addDgLinearElasticShellDomain", &DgC0PlateSolver::addDgLinearElasticShellDomain);
   cm->setArgNames("ED","f","d",NULL);
   cm->setDescription("Add a elastic domain class Second argument is the physical number of the domain. Third is the dimension");
   cm = cb->addMethod("AddLinearElasticLawPlaneStress", &DgC0PlateSolver::addLinearElasticLawPlaneStress);

@@ -36,8 +36,7 @@
 
 // Function to compute the initial norm
 double DgC0PlateSolver::computeNorm0(linearSystem<double> *lsys, dofManager<double> *pAssembler,
-                                     displacementField *ufield, IPField<DGelasticField,DgC0FunctionSpace<SVector3> > *ipf,
-                                     GaussQuadrature &Integ_Boundary, GaussQuadrature &Integ_Bulk,
+                                     displacementField *ufield, IPField<partDomain*,DgC0FunctionSpace<SVector3> > *ipf,
                                      std::vector<MInterfaceElement*> &vinter){
   double normFext,normFint;
   // Set all component of RightHandSide to zero (only RightHandSide is used to compute norm
@@ -45,17 +44,26 @@ double DgC0PlateSolver::computeNorm0(linearSystem<double> *lsys, dofManager<doub
 
   // fext norm
   // compute ext forces
-  for (unsigned int i = 0; i < allNeumann.size(); i++)
-  {
-    DgC0LoadTerm<SVector3> Lterm(*LagSpace,allNeumann[i]._f);
-    if(!elasticFields[0].getFormulation())     // Use formulation of first field CHANGE THIS
-      Assemble(Lterm,*LagSpace,allNeumann[i].g->begin(),allNeumann[i].g->end(),Integ_Boundary,*pAssembler,false);
-    else{ // The boundary condition on face are computed separately (because of research of interfaceElement linked to the BC)
-      if(allNeumann[i].onWhat == BoundaryCondition::ON_FACE)
-        Assemble(Lterm,*LagSpace,allNeumann[i].g->begin(),allNeumann[i].g->end(),Integ_Boundary,*pAssembler,true);
-      else
-        Assemble(Lterm,*LagSpace,allNeumann[i].g->begin(),allNeumann[i].g->end(),Integ_Boundary,*pAssembler,vinter);
+  // Test on dom0 change this TODO ??
+  partDomain *dom0 = domainVector[0];
+  if((dom0->getSolElemType()==SolElementType::ShellPlaneStress) or  (dom0->getSolElemType()==SolElementType::ShellPlaneStressWTI) or
+     (dom0->getSolElemType()==SolElementType::ShellPlaneStressWF)){
+    dgLinearShellDomain *dglshdom0 = dynamic_cast<dgLinearShellDomain*>(dom0);
+    for (unsigned int i = 0; i < allNeumann.size(); i++)
+    {
+      DgC0LoadTerm<SVector3> Lterm(*LagSpace,allNeumann[i]._f);
+      if(!dglshdom0->getFormulation())     // Use formulation of first field CHANGE THIS
+        Assemble(Lterm,*LagSpace,allNeumann[i].g->begin(),allNeumann[i].g->end(),*(allNeumann[i].integ),*pAssembler,false);
+      else{ // The boundary condition on face are computed separately (because of research of interfaceElement linked to the BC)
+        if(allNeumann[i].onWhat == BoundaryCondition::ON_FACE)
+          Assemble(Lterm,*LagSpace,allNeumann[i].g->begin(),allNeumann[i].g->end(),*(allNeumann[i].integ),*pAssembler,true);
+        else
+          Assemble(Lterm,*LagSpace,allNeumann[i].g->begin(),allNeumann[i].g->end(),*(allNeumann[i].integ),*pAssembler,vinter);
+      }
     }
+  }
+  else{
+    Msg::Error("Computation of external force is not implemented for this solElementType (dof numbering)\n");
   }
   // norm
   normFext = lsys->normInfRightHandSide();
@@ -63,33 +71,21 @@ double DgC0PlateSolver::computeNorm0(linearSystem<double> *lsys, dofManager<doub
   // Internal forces
   lsys->zeroRightHandSide();
   // compute internal forces
-  for (unsigned int i = 0; i < elasticFields.size(); i++)
+  for(std::vector<partDomain*>::iterator itdom = domainVector.begin(); itdom!=domainVector.end(); ++itdom)
   {
-    // Initialization of elementary terms in function of the field and space
-    IsotropicElasticForceBulkTermC0Plate Eterm(*LagSpace,elasticFields[i].getMaterialLaw(),
-                                               elasticFields[i]._h,elasticFields[i].getFormulation(),ufield,ipf,
-                                               elasticFields[i].getSolElemType());
+    partDomain *dom = *itdom;
     // Assembling loop on Elementary terms
-    MyAssemble(Eterm,*LagSpace,elasticFields[i].g->begin(),elasticFields[i].g->end(),Integ_Bulk,*pAssembler);
+    MyAssemble(*(dom->getLinearBulkTerm()),*LagSpace,dom->g->begin(),dom->g->end(),*(dom->getBulkGaussIntegrationRule()),*pAssembler);
 
-    // Initialization of elementary  interface terms in function of the field and space
-    IsotropicElasticForceInterfaceTermC0Plate IEterm(*LagSpace,elasticFields[i].getMaterialLaw(),
-                                                     _beta1,_beta2,_beta3,elasticFields[i]._h,
-                                                     elasticFields[i].getFormulation(),ufield,ipf,
-                                                     elasticFields[i].getSolElemType());
-    // Assembling loop on elementary interface terms
-    MyAssemble(IEterm,*LagSpace,elasticFields[i].gi.begin(),elasticFields[i].gi.end(),Integ_Boundary,
-                      *pAssembler); // Use the same GaussQuadrature rule than on the boundary
-
-    // Initialization of elementary  interface terms in function of the field and space
-    IsotropicElasticForceVirtualInterfaceTermC0Plate VIEterm(*LagSpace,elasticFields[i].getMaterialLaw(),
-                                                             _beta1,_beta2,_beta3,
-                                                             elasticFields[i]._h,elasticFields[i].getFormulation(),
-                                                             ufield,ipf,elasticFields[i].getSolElemType());
-    // Assembling loop on elementary boundary interface terms
-    MyAssemble(VIEterm,*LagSpace,elasticFields[i].gib.begin(),elasticFields[i].gib.end(),Integ_Boundary,
-                      *pAssembler); // Use the same GaussQuadrature rule than on the boundary
-
+    if(dom->IsInterfaceTerms()){
+      dgPartDomain* dgdom = dynamic_cast<dgPartDomain*>(dom);
+      // Assembling loop on elementary interface terms
+      MyAssemble(*(dgdom->getLinearInterfaceTerm()),*LagSpace,dgdom->gi.begin(),dgdom->gi.end(),*(dgdom->getInterfaceGaussIntegrationRule()),
+                        *pAssembler); // Use the same GaussQuadrature rule than on the boundary
+      // Assembling loop on elementary boundary interface terms
+      MyAssemble(*(dgdom->getLinearVirtualInterfaceTerm()),*LagSpace,dgdom->gib.begin(),dgdom->gib.end(),*(dgdom->getInterfaceGaussIntegrationRule()),
+                        *pAssembler); // Use the same GaussQuadrature rule than on the boundary
+    }
   }
     //norm
     normFint = lsys->normInfRightHandSide();
@@ -99,106 +95,89 @@ double DgC0PlateSolver::computeNorm0(linearSystem<double> *lsys, dofManager<doub
 }
 // compute Fext-Fint
 double DgC0PlateSolver::computeRightHandSide(linearSystem<double> *lsys, dofManager<double> *pAssembler,
-                                    displacementField *ufield, IPField<DGelasticField,DgC0FunctionSpace<SVector3> > *ipf, GaussQuadrature &Integ_Boundary, GaussQuadrature &Integ_Bulk,
+                                    displacementField *ufield, IPField<partDomain*,DgC0FunctionSpace<SVector3> > *ipf,
                                     std::vector<MInterfaceElement*> &vinter){
   lsys->zeroRightHandSide();
   dofManagerNLS<double> *pA2 = dynamic_cast<dofManagerNLS<double>*>(pAssembler);
   pA2->clearRHSfixed();
-  // compute int forces (inversign=true to inverse the sign of forces before assemble)
-  for (unsigned int i = 0; i < elasticFields.size(); i++)
+  for(std::vector<partDomain*>::iterator itdom=domainVector.begin(); itdom!=domainVector.end();++itdom)
   {
-    // Initialization of elementary terms in function of the field and space
-    IsotropicElasticForceBulkTermC0Plate Eterm(*LagSpace,elasticFields[i].getMaterialLaw(),
-                                               elasticFields[i]._h,elasticFields[i].getFormulation(),ufield,
-                                               ipf,elasticFields[i].getSolElemType(),true);
-    // Assembling loop on Elementary terms
-    MyAssemble(Eterm,*LagSpace,elasticFields[i].g->begin(),elasticFields[i].g->end(),Integ_Bulk,*pAssembler);
+    partDomain *dom = *itdom;
+    dom->inverseLinearTermSign(); // Because rightHandSide = Fext - Fint
+    MyAssemble(*(dom->getLinearBulkTerm()),*LagSpace,dom->g->begin(),dom->g->end(),*(dom->getBulkGaussIntegrationRule()),*pAssembler);
 
-    // Initialization of elementary  interface terms in function of the field and space
-    IsotropicElasticForceInterfaceTermC0Plate IEterm(*LagSpace,elasticFields[i].getMaterialLaw(),
-                                                     _beta1,_beta2,_beta3,elasticFields[i]._h,
-                                                     elasticFields[i].getFormulation(),ufield,
-                                                     ipf,elasticFields[i].getSolElemType(),true);
-    // Assembling loop on elementary interface terms
-    MyAssemble(IEterm,*LagSpace,elasticFields[i].gi.begin(),elasticFields[i].gi.end(),Integ_Boundary,
-                      *pAssembler); // Use the same GaussQuadrature rule than on the boundary
-
-    // Initialization of elementary  interface terms in function of the field and space
-    IsotropicElasticForceVirtualInterfaceTermC0Plate VIEterm(*LagSpace,elasticFields[i].getMaterialLaw(),
-                                                             _beta1, _beta2,_beta3,
-                                                             elasticFields[i]._h,elasticFields[i].getFormulation(),
-                                                             ufield,ipf,elasticFields[i].getSolElemType(),true);
-    // Assembling loop on elementary boundary interface terms
-    MyAssemble(VIEterm,*LagSpace,elasticFields[i].gib.begin(),elasticFields[i].gib.end(),Integ_Boundary,
-                      *pAssembler); // Use the same GaussQuadrature rule than on the boundary
+    if(dom->IsInterfaceTerms()){
+      dgPartDomain *dgdom = dynamic_cast<dgPartDomain*>(dom);
+      // Assembling loop on elementary interface terms
+      MyAssemble(*(dgdom->getLinearInterfaceTerm()),*LagSpace,dgdom->gi.begin(),dgdom->gi.end(),*(dgdom->getInterfaceGaussIntegrationRule()),
+                        *pAssembler); // Use the same GaussQuadrature rule than on the boundary
+      // Assembling loop on elementary boundary interface terms
+      MyAssemble(*(dgdom->getLinearVirtualInterfaceTerm()),*LagSpace,dgdom->gib.begin(),dgdom->gib.end(),
+                 *(dgdom->getInterfaceGaussIntegrationRule()),*pAssembler); // Use the same GaussQuadrature rule than on the boundary
+    }
+    dom->inverseLinearTermSign(); // Otherwise Fint has not the right side
   }
 
   // save Fint component to archive ( write in file when Fint = Fext)
   pA2->getForces(aef,aefvalue);
   // compute ext forces
-  for (unsigned int i = 0; i < allNeumann.size(); i++)
-  {
-    DgC0LoadTerm<SVector3> Lterm(*LagSpace,allNeumann[i]._f);
-    if(!elasticFields[0].getFormulation())     // Use formulation of first field CHANGE THIS
-      Assemble(Lterm,*LagSpace,allNeumann[i].g->begin(),allNeumann[i].g->end(),Integ_Boundary,*pAssembler,false);
-    else{ // The boundary condition on face are computed separately (because of research of interfaceElement linked to the BC)
-      if(allNeumann[i].onWhat == BoundaryCondition::ON_FACE)
-        Assemble(Lterm,*LagSpace,allNeumann[i].g->begin(),allNeumann[i].g->end(),Integ_Boundary,*pAssembler,true);
-      else
-        Assemble(Lterm,*LagSpace,allNeumann[i].g->begin(),allNeumann[i].g->end(),Integ_Boundary,*pAssembler,vinter);
+  partDomain *dom0 = domainVector[0];
+  if((dom0->getSolElemType()==SolElementType::ShellPlaneStress) or  (dom0->getSolElemType()==SolElementType::ShellPlaneStressWTI) or
+     (dom0->getSolElemType()==SolElementType::ShellPlaneStressWF)){
+    dgLinearShellDomain *dglshdom0 = dynamic_cast<dgLinearShellDomain*>(dom0);
+    for (unsigned int i = 0; i < allNeumann.size(); i++)
+    {
+      DgC0LoadTerm<SVector3> Lterm(*LagSpace,allNeumann[i]._f);
+      if(!dglshdom0->getFormulation())     // Use formulation of first field CHANGE THIS
+        Assemble(Lterm,*LagSpace,allNeumann[i].g->begin(),allNeumann[i].g->end(),*(allNeumann[i].integ),*pAssembler,false);
+      else{ // The boundary condition on face are computed separately (because of research of interfaceElement linked to the BC)
+        if(allNeumann[i].onWhat == BoundaryCondition::ON_FACE)
+          Assemble(Lterm,*LagSpace,allNeumann[i].g->begin(),allNeumann[i].g->end(),*(allNeumann[i].integ),*pAssembler,true);
+        else
+          Assemble(Lterm,*LagSpace,allNeumann[i].g->begin(),allNeumann[i].g->end(),*(allNeumann[i].integ),*pAssembler,vinter);
+      }
     }
   }
-
+  else{
+    Msg::Error("Computation of external force is not implemented for this solElementType (dof numbering)\n");
+  }
   return lsys->normInfRightHandSide();
 
 }
 
 void DgC0PlateSolver::computeStiffMatrix(linearSystem<double> *lsys, dofManager<double> *pAssembler,
-                                    displacementField *ufield, IPField<DGelasticField,DgC0FunctionSpace<SVector3> > *ipf, GaussQuadrature &Integ_Boundary, GaussQuadrature &Integ_Bulk,
-                                    std::vector<MInterfaceElement*> &vinter){
+                                    displacementField *ufield, IPField<partDomain*,DgC0FunctionSpace<SVector3> > *ipf){
 
-  lsys->zeroMatrix();
-  //lsys->zeroRightHandSide();
-  for (unsigned int i = 0; i < elasticFields.size(); i++)
+  for(std::vector<partDomain*>::iterator itdom=domainVector.begin(); itdom!=domainVector.end(); ++itdom)
   {
-  // Initialization of elementary terms in function of the field and space
-  IsotropicElasticStiffBulkTermC0Plate Eterm(*LagSpace,elasticFields[i].getMaterialLaw(),elasticFields[i]._h,
-                                             elasticFields[i].getFormulation(), ufield,ipf,elasticFields[i].getSolElemType());
-  // Assembling loop on Elementary terms
-  MyAssemble(Eterm,*LagSpace,elasticFields[i].g->begin(),elasticFields[i].g->end(),Integ_Bulk,*pAssembler);
+    partDomain* dom = *itdom;
+    // Assembling loop on Elementary terms
+    MyAssemble(*(dom->getBilinearBulkTerm()),*LagSpace,dom->g->begin(),dom->g->end(),*(dom->getBulkGaussIntegrationRule()),*pAssembler);
 
-  // Initialization of elementary  interface terms in function of the field and space
-  IsotropicElasticStiffInterfaceTermC0Plate IEterm(*LagSpace,elasticFields[i].getMaterialLaw(),_beta1,
-                                                _beta2,_beta3,
-                                                elasticFields[i]._h,ufield, ipf, elasticFields[i].getSolElemType(),
-                                                elasticFields[i].getFormulation());
-  // Assembling loop on elementary interface terms
-  MyAssemble(IEterm,*LagSpace,elasticFields[i].gi.begin(),elasticFields[i].gi.end(),Integ_Boundary,
-                      *pAssembler); // Use the same GaussQuadrature rule than on the boundary
-
-  // Initialization of elementary  interface terms in function of the field and space
-  IsotropicElasticStiffVirtualInterfaceTermC0Plate VIEterm(*LagSpace,elasticFields[i].getMaterialLaw(),_beta1,
-                                                _beta2,_beta3,
-                                                elasticFields[i]._h,ufield,ipf,elasticFields[i].getSolElemType(),true,elasticFields[i].getFormulation());
-  // Assembling loop on elementary boundary interface terms
-  MyAssemble(VIEterm,*LagSpace,elasticFields[i].gib.begin(),elasticFields[i].gib.end(),Integ_Boundary,
-                      *pAssembler); // Use the same GaussQuadrature rule than on the boundary
+    if(dom->IsInterfaceTerms()){
+      dgPartDomain *dgdom = dynamic_cast<dgPartDomain*>(dom);
+      // Assembling loop on elementary interface terms
+      MyAssemble(*(dgdom->getBilinearInterfaceTerm()),*LagSpace,dgdom->gi.begin(),dgdom->gi.end(),
+                 *(dgdom->getInterfaceGaussIntegrationRule()),*pAssembler); // Use the same GaussQuadrature rule than on the boundary
+     // Assembling loop on elementary boundary interface terms
+      MyAssemble(*(dgdom->getBilinearVirtualInterfaceTerm()),*LagSpace,dgdom->gib.begin(),dgdom->gib.end(),
+                 *(dgdom->getInterfaceGaussIntegrationRule()),*pAssembler); // Use the same GaussQuadrature rule than on the boundary
+    }
   }
 }
 
 // Newton Raphson scheme to solve one step
-void DgC0PlateSolver::NewtonRaphson(linearSystem<double> *lsys, dofManager<double> *pAssembler,
-                                    displacementField *ufield, IPField<DGelasticField,DgC0FunctionSpace<SVector3> > *ipf,GaussQuadrature &integbound, GaussQuadrature &integbulk,
+void DgC0PlateSolver::NewtonRaphson(linearSystem<double> *lsys, dofManager<double> *pAssembler,displacementField *ufield,
+                                    IPField<partDomain*,DgC0FunctionSpace<SVector3> > *ipf,
                                     std::vector<MInterfaceElement*> &vinter){
   // compute ipvariable
   ipf->compute1state(IPState::current);
-  //ipf->evalFracture(IPState::current);
 
   // Compute the norm0 : norm(Fint) + norm(Fext) for relative convergence
-  double norm0 = this->computeNorm0(lsys,pAssembler,ufield,ipf,integbound,integbulk,vinter);
+  double norm0 = this->computeNorm0(lsys,pAssembler,ufield,ipf,vinter);
 
   // Compute Right Hand Side (Fext-Fint)
-  double normFinf = this->computeRightHandSide(lsys,pAssembler,ufield,ipf,integbound,integbulk,vinter);
+  double normFinf = this->computeRightHandSide(lsys,pAssembler,ufield,ipf,vinter);
 
   // loop until convergence
   int iter=0;
@@ -207,7 +186,7 @@ void DgC0PlateSolver::NewtonRaphson(linearSystem<double> *lsys, dofManager<doubl
   while(relnorm>_tol){
     iter++;
     // Compute Stiffness Matrix
-    this->computeStiffMatrix(lsys,pAssembler,ufield,ipf,integbound,integbulk,vinter);
+    this->computeStiffMatrix(lsys,pAssembler,ufield,ipf);
 
     // Solve KDu = Fext-Fint
     lsys->systemSolve();
@@ -220,11 +199,12 @@ void DgC0PlateSolver::NewtonRaphson(linearSystem<double> *lsys, dofManager<doubl
     //double a = 100.;
     //ufield->buildView(pModel,elasticFields,a);
     // new forces
-    normFinf = this->computeRightHandSide(lsys,pAssembler,ufield,ipf,integbound,integbulk,vinter);
+    normFinf = this->computeRightHandSide(lsys,pAssembler,ufield,ipf,vinter);
 
     // Check of convergence
     relnorm = normFinf/norm0;
     printf("iteration n° %d : residu : %lf\n",iter,relnorm);
+    lsys->zeroMatrix(); // here otherwise if it has been in computeMatrix the first iteration is very low HOW ??
   }
 }
 
@@ -234,7 +214,6 @@ void DgC0PlateSolver::solveSNL()
   Msg::Info("SNL Data : nstep =%d endtime=%f",this->getNumStep(),this->getEndTime());
   // init
   this->init();
-
   // Select the solver for linear system Ax=b (KDeltau = Fext-Fint)
   linearSystem<double> *lsys;
   if(DgC0PlateSolver::whatSolver == Taucs){
@@ -277,56 +256,21 @@ void DgC0PlateSolver::solveSNL()
   // give priority to fixations : when a dof is fixed, it cannot be
   // numbered afterwards
 
-  // ATTENTION The BC must be rewrite to take into account different fields (CG/DG and fullDG field for exemple)
+  // ATTENTION The BC must be rewriten to take into account different fields (CG/DG and fullDG field for exemple)
   std::vector<MInterfaceElement*> vinter;
   pModel->getVirtualInterface(vinter); // vector needed to impose boundary condition for fullDg formulation
   std::vector<MInterfaceElement*> vinternalInterface;
   pModel->getInterface(vinternalInterface);
-  for(unsigned int i = 0; i < allDirichlet.size(); i++)
-  {
-    DgC0PlateFilterDofComponent filter(allDirichlet[i]._comp);
-    if(!elasticFields[0].getFormulation())
-      FixNodalDofs(*LagSpace,allDirichlet[i].g->begin(),allDirichlet[i].g->end(),*pAssembler,allDirichlet[i]._f,filter,false);
-    else{ // BC on face are computed separately
-      if(allDirichlet[i].onWhat == BoundaryCondition::ON_FACE)
-        FixNodalDofs(*LagSpace,allDirichlet[i].g->begin(),allDirichlet[i].g->end(),*pAssembler,allDirichlet[i]._f,filter,true);
-      else
-        FixNodalDofs(*LagSpace,allDirichlet[i].g->begin(),allDirichlet[i].g->end(),*pAssembler,allDirichlet[i]._f,filter,vinter,vinternalInterface);
-    }
- }
-  // we number the dofs : when a dof is numbered, it cannot be numbered
-  // again with another number.
-  for (unsigned int i = 0; i < elasticFields.size(); ++i)
-  {
-    // Use formulation of first field CHANGE THIS
-    NumberDofs(*LagSpace, elasticFields[i].g->begin(), elasticFields[i].g->end(),*pAssembler,elasticFields[0].getFormulation());
-  }
-  // total number of unkowns to allocate the system
-  double nunk = pAssembler->sizeOfR();
-  // allocate system
-  lsys->allocate(nunk);
-  // iterative scheme (loop on timestep)
-  double curtime = 0.;
-  double dt = double(endtime)/double(numstep);
-  GaussQuadrature Integ_Boundary(GaussQuadrature::Val);
-  GaussQuadrature Integ_Bulk(GaussQuadrature::GradGrad);
-  displacementField ufield(pAssembler,elasticFields,3,LagSpace->getId(),anoded); // 3 components by nodes User choice ??
-  IPField<DGelasticField,DgC0FunctionSpace<SVector3> > ipf(&elasticFields,pAssembler,LagSpace,
-                                                           &Integ_Bulk, &Integ_Boundary, pModel,&ufield); // Field for GaussPoint
-  ipf.compute1state(IPState::initial);
-  ipf.initialBroken(pModel, initbrokeninter);
-  ipf.copy(IPState::initial,IPState::previous); // if initial stress previous must be initialized before computation
 
-  for(int ii=0;ii<numstep;ii++){
-    curtime+=dt;
-    printf("t= %lf on %lf\n",curtime,endtime);
-
-    // Fixation (prescribed displacement)
-    for(unsigned int i = 0; i < allDirichlet.size(); i++)
+  // test on dom 0 change this TODO ??
+  partDomain *dom0 = domainVector[0];
+  if((dom0->getSolElemType()==SolElementType::ShellPlaneStress) or  (dom0->getSolElemType()==SolElementType::ShellPlaneStressWTI) or
+     (dom0->getSolElemType()==SolElementType::ShellPlaneStressWF)){
+   dgLinearShellDomain* dglshdom0 = dynamic_cast<dgLinearShellDomain*>(dom0);
+   for(unsigned int i = 0; i < allDirichlet.size(); i++)
     {
-      allDirichlet[i]._f.setTime(curtime);
       DgC0PlateFilterDofComponent filter(allDirichlet[i]._comp);
-      if(!elasticFields[0].getFormulation())
+      if(!dglshdom0->getFormulation())
         FixNodalDofs(*LagSpace,allDirichlet[i].g->begin(),allDirichlet[i].g->end(),*pAssembler,allDirichlet[i]._f,filter,false);
       else{ // BC on face are computed separately
         if(allDirichlet[i].onWhat == BoundaryCondition::ON_FACE)
@@ -335,22 +279,92 @@ void DgC0PlateSolver::solveSNL()
           FixNodalDofs(*LagSpace,allDirichlet[i].g->begin(),allDirichlet[i].g->end(),*pAssembler,allDirichlet[i]._f,filter,vinter,vinternalInterface);
       }
     }
+    // we number the dofs : when a dof is numbered, it cannot be numbered
+    // again with another number.
+    for(std::vector<partDomain*>::iterator itdom = domainVector.begin(); itdom!=domainVector.end(); ++itdom)
+    {
+      partDomain *dom = *itdom;
+      // Use formulation of first field CHANGE THIS
+      NumberDofs(*LagSpace, dom->g->begin(), dom->g->end(),*pAssembler,dglshdom0->getFormulation());
+    }
+    // total number of unkowns to allocate the system
+    double nunk = pAssembler->sizeOfR();
+    // allocate system
+    lsys->allocate(nunk);
+  }
+  else{
+    Msg::Error("Numbering of dof is not implemented for this element type");
+  }
+
+  // iterative scheme (loop on timestep)
+  double curtime = 0.;
+  double dt = double(endtime)/double(numstep);
+  displacementField ufield(pAssembler,domainVector,3,LagSpace->getId(),anoded); // 3 components by nodes User choice ??
+  IPField<partDomain*,DgC0FunctionSpace<SVector3> > ipf(&domainVector,pAssembler,LagSpace,pModel,&ufield); // Field for GaussPoint
+  ipf.compute1state(IPState::initial);
+  ipf.initialBroken(pModel, initbrokeninter);
+  ipf.copy(IPState::initial,IPState::previous); // if initial stress previous must be initialized before computation
+  // Initialization of terms
+  for(std::vector<partDomain*>::iterator itdom = domainVector.begin(); itdom!=domainVector.end(); ++itdom){
+    partDomain *dom = *itdom;
+    if(dom->getSolElemType()==SolElementType::ShellPlaneStress ){
+      dgLinearShellDomain *dglshdom = dynamic_cast<dgLinearShellDomain*>(dom);
+      dglshdom->InitializeTerms(*LagSpace,&ufield,&ipf,_beta1,_beta2,_beta3);
+    }
+    else if(dom->getSolElemType() == SolElementType::ShellPlaneStressWF){
+      dgLinearShellDomain *dglshdom = dynamic_cast<dgLinearShellDomain*>(dom);
+      dglshdom->InitializeTerms(*LagSpace,&ufield,&ipf,_beta1,_beta2,_beta3);
+    }
+    else if(dom->getSolElemType() == SolElementType::ShellPlaneStressWTI ){
+      dgLinearShellDomain *dglshdom = dynamic_cast<dgLinearShellDomain*>(dom);
+      dglshdom->InitializeTerms(*LagSpace,&ufield,&ipf,_beta1,_beta2,_beta3);
+    }
+    else
+      Msg::Error("Terms are not defined for domain %d",dom->getTag());
+  }
+
+
+  for(int ii=0;ii<numstep;ii++){
+    curtime+=dt;
+    printf("t= %lf on %lf\n",curtime,endtime);
+
+  if((dom0->getSolElemType()==SolElementType::ShellPlaneStress) or  (dom0->getSolElemType()==SolElementType::ShellPlaneStressWTI) or
+     (dom0->getSolElemType()==SolElementType::ShellPlaneStressWF)){
+    // Fixation (prescribed displacement)
+    dgLinearShellDomain* dglsh0 = dynamic_cast<dgLinearShellDomain*>(dom0);
+    for(unsigned int i = 0; i < allDirichlet.size(); i++)
+    {
+      allDirichlet[i]._f.setTime(curtime);
+      DgC0PlateFilterDofComponent filter(allDirichlet[i]._comp);
+      if(!dglsh0->getFormulation())
+        FixNodalDofs(*LagSpace,allDirichlet[i].g->begin(),allDirichlet[i].g->end(),*pAssembler,allDirichlet[i]._f,filter,false);
+      else{ // BC on face are computed separately
+        if(allDirichlet[i].onWhat == BoundaryCondition::ON_FACE)
+          FixNodalDofs(*LagSpace,allDirichlet[i].g->begin(),allDirichlet[i].g->end(),*pAssembler,allDirichlet[i]._f,filter,true);
+        else
+          FixNodalDofs(*LagSpace,allDirichlet[i].g->begin(),allDirichlet[i].g->end(),*pAssembler,allDirichlet[i]._f,filter,vinter,vinternalInterface);
+      }
+    }
+  }
+  else{
+    Msg::Error("Impossible to fix dof for this solElemType");
+  }
     ufield.updateFixedDof();
     for (unsigned int i = 0; i < allNeumann.size(); i++) allNeumann[i]._f.setTime(curtime);
 
     // Solve one step by NR scheme
-    NewtonRaphson(lsys,pAssembler,&ufield,&ipf,Integ_Boundary,Integ_Bulk,vinter);
+    NewtonRaphson(lsys,pAssembler,&ufield,&ipf,vinter);
 
     //archive must be rewritten after discussion with christophe
     if((ii+1)%nsba == 0){
-      ufield.buildView(elasticFields,curtime,ii+1,"displacement",-1,false);
-      ipf.buildView(elasticFields,curtime,ii+1,"VonMises",-1,false);
-      ipf.buildView(elasticFields,curtime,ii+1,"sigmaxx",0,false);
-      ipf.buildView(elasticFields,curtime,ii+1,"sigmayy",1,false);
-      ipf.buildView(elasticFields,curtime,ii+1,"tauxy",3,false);
+      ufield.buildView(domainVector,curtime,ii+1,"displacement",-1,false);
+      ipf.buildView(domainVector,curtime,ii+1,"VonMises",-1,false);
+      ipf.buildView(domainVector,curtime,ii+1,"sigmaxx",0,false);
+      ipf.buildView(domainVector,curtime,ii+1,"sigmayy",1,false);
+      ipf.buildView(domainVector,curtime,ii+1,"tauxy",3,false);
     }
-    // Archiving crack tip position (works only if there is no crack branching)
-    ipf.archCrackTipPosition(curtime);
+    // Archiving crack tip position (works only if there is no crack branching) no works anymore
+//    ipf.archCrackTipPosition(curtime);
 
     // test of fracture "in a balanced configuration"
     ipf.evalFracture(IPState::current);

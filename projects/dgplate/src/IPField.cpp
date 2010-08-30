@@ -14,14 +14,14 @@
 #include "materialLaw.h"
 
 // Functions to get IP data
-template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getStress(const MElement *ele, const int gaussnum,
+template<> void IPField<partDomain*,DgC0FunctionSpace<SVector3> >::getStress(const MElement *ele, const int gaussnum,
                                                                                 IPState::whichState st, double stress[6]){
   std::vector<IPState*> *vips = _AIPS->getIPstate(ele->getNum());
   IPVariablePlate *ipv = dynamic_cast<IPVariablePlate*>((*vips)[gaussnum]->getState(st));
   ipv->getSigma(stress);
 }
 
-template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getStressMembrane(const MElement *ele, const int gaussnum,
+template<> void IPField<partDomain*,DgC0FunctionSpace<SVector3> >::getStressMembrane(const MElement *ele, const int gaussnum,
                                                                                         IPState::whichState st, double stress[6],
                                                                                         double & h){
   std::vector<IPState*> *vips = _AIPS->getIPstate(ele->getNum());
@@ -30,7 +30,7 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getStressM
   h=ipv->getThickness();
 }
 
-template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getStressBending(const MElement *ele, const int gaussnum,
+template<> void IPField<partDomain*,DgC0FunctionSpace<SVector3> >::getStressBending(const MElement *ele, const int gaussnum,
                                                                                        IPState::whichState st, double stress[6],
                                                                                        double & h){
   std::vector<IPState*> *vips = _AIPS->getIPstate(ele->getNum());
@@ -39,7 +39,7 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getStressB
   h=ipv->getThickness();
 }
 
-template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getStress(const MElement *ele, const int gaussnum,
+template<> void IPField<partDomain*,DgC0FunctionSpace<SVector3> >::getStress(const MElement *ele, const int gaussnum,
                                                                                 IPState::whichState st, double stressM[6],
                                                                                 double stressB[6], double & h){
   std::vector<IPState*> *vips = _AIPS->getIPstate(ele->getNum());
@@ -49,7 +49,7 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getStress(
   h=ipv->getThickness();
 }
 
-template<> const LocalBasis* IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getStressAndLocalBasis(const MElement *ele,
+template<> const LocalBasis* IPField<partDomain*,DgC0FunctionSpace<SVector3> >::getStressAndLocalBasis(const MElement *ele,
                                                                                                           const int gaussnum,
                                                                                                           IPState::whichState st,
                                                                                                           double stressM[6],
@@ -62,7 +62,7 @@ template<> const LocalBasis* IPField<DGelasticField,DgC0FunctionSpace<SVector3> 
   return ipv->getLocalBasis();
 }
 
-template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getStressAndLocalBasis(const MInterfaceElement *ele,
+template<> void IPField<partDomain*,DgC0FunctionSpace<SVector3> >::getStressAndLocalBasis(const MInterfaceElement *ele,
                                                                                              const int gaussnum,
                                                                                              IPState::whichState st,
                                                                                              double stressM[6], double stressB[6],
@@ -76,7 +76,7 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getStressA
   lb[2] = ipv->getLocalBasisOfInterface();
 }
 
-template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getStress(const MElement *ele, const int gaussnum,
+template<> void IPField<partDomain*,DgC0FunctionSpace<SVector3> >::getStress(const MElement *ele, const int gaussnum,
                                                                                 IPState::whichState st, std::vector<tab6> &stress){
   std::vector<IPState*> *vips = _AIPS->getIPstate(ele->getNum());
   IPVariablePlateWithThicknessIntegration *ipv = dynamic_cast<IPVariablePlateWithThicknessIntegration*>((*vips)[gaussnum]->getState(st));
@@ -84,7 +84,7 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getStress(
   ipv->getSigma(stress);
 }
 
-template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getStress(const MElement *ele, const int gaussnum,
+template<> void IPField<partDomain*,DgC0FunctionSpace<SVector3> >::getStress(const MElement *ele, const int gaussnum,
                                                                                 IPState::whichState st, std::vector<tab6> &stress,
                                                                                 std::vector<double> &hsimp){
   std::vector<IPState*> *vips = _AIPS->getIPstate(ele->getNum());
@@ -96,7 +96,7 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getStress(
   ipv->getSimpsonPoint(hsimp);
 }
 
-template<>   LocalBasis* IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getStressAndLocalBasis(const MElement *ele,
+template<>   LocalBasis* IPField<partDomain*,DgC0FunctionSpace<SVector3> >::getStressAndLocalBasis(const MElement *ele,
                                                                                                       const int gaussnum,
                                                                                                       IPState::whichState st,
                                                                                                       std::vector<tab6> &stress,
@@ -111,7 +111,7 @@ template<>   LocalBasis* IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::g
   return ipv->getLocalBasis();
 }
 
-template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getStressAndLocalBasis(const MInterfaceElement *ele,
+template<> void IPField<partDomain*,DgC0FunctionSpace<SVector3> >::getStressAndLocalBasis(const MInterfaceElement *ele,
                                                                                              const int gaussnum,
                                                                                              IPState::whichState st,
                                                                                              std::vector<tab6> &stress,
@@ -129,10 +129,10 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getStressA
 }
 
 // Functions to compute reduction element
-template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getStressReduction(MElement *ele,const int gaussnum,
+template<> void IPField<partDomain*,DgC0FunctionSpace<SVector3> >::getStressReduction(MElement *ele,const int gaussnum,
                                                                                            SolElementType::eltype et,IPState::whichState ws,
                                                                                             reductionElement &nalpha){
-    if(et == SolElementType::PlatePlaneStress ){
+    if(et == SolElementType::ShellPlaneStress ){
       double stress[6];
       double h;
       this->getStressMembrane(ele,gaussnum,ws,stress,h);
@@ -142,7 +142,7 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getStressR
       nalpha(0,1) = nalpha(1,0) = h*stress[3];
       nalpha(1,1) = h*stress[1];
     }
-    else if(et == SolElementType::PlatePlaneStressWTI ){
+    else if(et == SolElementType::ShellPlaneStressWTI ){
       std::vector<tab6> stress ;
       std::vector<double> hsimp;
       this->getStress(ele,gaussnum,ws,stress,hsimp);
@@ -161,10 +161,10 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getStressR
 
   }
 
-template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getMomentReduction(MElement *ele,const int gaussnum,
+template<> void IPField<partDomain*,DgC0FunctionSpace<SVector3> >::getMomentReduction(MElement *ele,const int gaussnum,
                                                                                            SolElementType::eltype et,IPState::whichState ws,
                                                                                             reductionElement &malpha){
-    if(et == SolElementType::PlatePlaneStress ){
+    if(et == SolElementType::ShellPlaneStress ){
       double stress[6];
       double h;
       this->getStressBending(ele,gaussnum,ws,stress,h);
@@ -175,7 +175,7 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getMomentR
       malpha(0,1) = malpha(1,0) = hcubdiv12*stress[3];
       malpha(1,1) = hcubdiv12*stress[1];
     }
-    else if(et == SolElementType::PlatePlaneStressWTI) {
+    else if(et == SolElementType::ShellPlaneStressWTI) {
       std::vector<tab6> stress ;
       std::vector<double> zsimp;
       this->getStress(ele,gaussnum,ws,stress,zsimp);
@@ -192,10 +192,10 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getMomentR
     else Msg::Error("GetStressReduction is not implemented for SolelemType %d",et);
 }
 
-template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getReduction(MElement *ele,const int gaussnum,
+template<> void IPField<partDomain*,DgC0FunctionSpace<SVector3> >::getReduction(MElement *ele,const int gaussnum,
                                                                                            SolElementType::eltype et,IPState::whichState ws,
                                                                                             reductionElement &nalpha, reductionElement &malpha){
-    if(et == SolElementType::PlatePlaneStress ){
+    if(et == SolElementType::ShellPlaneStress ){
       double stressMembrane[6];
       double stressBending[6];
       double h;
@@ -211,7 +211,7 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getReducti
       malpha(0,1) = malpha(1,0)*hcubdiv12*stressBending[3];
       malpha(1,1) = hcubdiv12*stressBending[1];
     }
-    else if(et == SolElementType::PlatePlaneStressWTI){
+    else if(et == SolElementType::ShellPlaneStressWTI){
       std::vector<tab6> stress ;
       std::vector<double> zsimp;
       this->getStress(ele,gaussnum,ws,stress,zsimp);
@@ -232,11 +232,11 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getReducti
     else Msg::Error("GetStressReduction is not implemented for SolelemType %d",et);
 }
 
-template<> const LocalBasis* IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getReductionAndLocalBasis(MElement *ele,const int gaussnum,
+template<> const LocalBasis* IPField<partDomain*,DgC0FunctionSpace<SVector3> >::getReductionAndLocalBasis(MElement *ele,const int gaussnum,
                                                                                            SolElementType::eltype et,IPState::whichState ws,
                                                                                             reductionElement &nalpha, reductionElement &malpha){
     const LocalBasis *lb;
-    if(et == SolElementType::PlatePlaneStress ){
+    if(et == SolElementType::ShellPlaneStress ){
       double stressMembrane[6];
       double stressBending[6];
       double h;
@@ -253,7 +253,7 @@ template<> const LocalBasis* IPField<DGelasticField,DgC0FunctionSpace<SVector3> 
       malpha(1,1) = hcubdiv12*stressBending[1];
       return lb;
     }
-    else if((et == SolElementType::PlatePlaneStressWTI) or (et == SolElementType::PlatePlaneStressWF)){
+    else if((et == SolElementType::ShellPlaneStressWTI) or (et == SolElementType::ShellPlaneStressWF)){
       std::vector<tab6> stress ;
       std::vector<double> zsimp;
       lb = this->getStressAndLocalBasis(ele,gaussnum,ws,stress,zsimp);
@@ -278,11 +278,11 @@ template<> const LocalBasis* IPField<DGelasticField,DgC0FunctionSpace<SVector3> 
     }
 }
 
-template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getStressReduction(MInterfaceElement *iele, const int gaussnum,
+template<> void IPField<partDomain*,DgC0FunctionSpace<SVector3> >::getStressReduction(MInterfaceElement *iele, const int gaussnum,
                                                                                          const int numOfGaussPoint,
                                                                                          SolElementType::eltype et, IPState::whichState ws,
                                                                                          reductionElement &nhatmean){
-  if(et == SolElementType::PlatePlaneStress){
+  if(et == SolElementType::ShellPlaneStress){
     double stressMembrane[6];
     double stressBending[6];
     double h;
@@ -314,7 +314,7 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getStressR
         nhatmean(i,j)*=0.5;
       }
   }
-  else if(et == SolElementType::PlatePlaneStressWTI){
+  else if(et == SolElementType::ShellPlaneStressWTI){
 
     reductionElement nalpha,nhat;
     const LocalBasis *lb;
@@ -360,11 +360,11 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getStressR
   else Msg::Error("GetStressReduction is not implemented for SolelemType %d",et);
 }
 
-template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getMomentReduction(MInterfaceElement *iele, const int gaussnum,
+template<> void IPField<partDomain*,DgC0FunctionSpace<SVector3> >::getMomentReduction(MInterfaceElement *iele, const int gaussnum,
                                                                                          const int numOfGaussPoint,
                                                                                          SolElementType::eltype et, IPState::whichState ws,
                                                                                          reductionElement &mhatmean){
-  if(et == SolElementType::PlatePlaneStress){
+  if(et == SolElementType::ShellPlaneStress){
     double stressMembrane[6];
     double stressBending[6];
     double h;
@@ -398,7 +398,7 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getMomentR
         mhatmean(i,j)*=0.5;
       }
   }
-  else if(et == SolElementType::PlatePlaneStressWTI){
+  else if(et == SolElementType::ShellPlaneStressWTI){
 
     reductionElement malpha,mhat;
     LocalBasis *lb;
@@ -443,12 +443,12 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getMomentR
 }
 
 
-template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getMomentReductionAndLocalBasis(MInterfaceElement *iele,
+template<> void IPField<partDomain*,DgC0FunctionSpace<SVector3> >::getMomentReductionAndLocalBasis(MInterfaceElement *iele,
                                                                                          const int gaussnum,const int numOfGaussPoint,
                                                                                          SolElementType::eltype et, IPState::whichState ws,
                                                                                          reductionElement &mhatmean,
                                                                                          const LocalBasis* lbb[3]){
-  if(et == SolElementType::PlatePlaneStress){
+  if(et == SolElementType::ShellPlaneStress){
     double stressMembrane[6];
     double stressBending[6];
     double h;
@@ -484,7 +484,7 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getMomentR
         mhatmean(i,j)*=0.5;
       }
   }
-  else if((et == SolElementType::PlatePlaneStressWTI)){
+  else if((et == SolElementType::ShellPlaneStressWTI)){
 
     reductionElement malpha,mhat;
     const LocalBasis *lb;
@@ -531,13 +531,13 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getMomentR
 }
 
 
-template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getReductionAndLocalBasis(MInterfaceElement *iele,
+template<> void IPField<partDomain*,DgC0FunctionSpace<SVector3> >::getReductionAndLocalBasis(MInterfaceElement *iele,
                                                                                          const int gaussnum,const int numOfGaussPoint,
                                                                                          SolElementType::eltype et, IPState::whichState ws,
                                                                                          reductionElement &nhatmean,
                                                                                          reductionElement &mhatmean,
                                                                                          const LocalBasis* lbb[3]){
-  if(et == SolElementType::PlatePlaneStress){
+  if(et == SolElementType::ShellPlaneStress){
     double stressMembrane[6];
     double stressBending[6];
     double h;
@@ -588,7 +588,7 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getReducti
         nhatmean(i,j)*=0.5;
       }
   }
-  else if((et == SolElementType::PlatePlaneStressWTI) or (et == SolElementType::PlatePlaneStressWF) ){
+  else if((et == SolElementType::ShellPlaneStressWTI) or (et == SolElementType::ShellPlaneStressWF) ){
 
     reductionElement malpha,mhat;
     reductionElement nalpha,nhat;
@@ -651,12 +651,12 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getReducti
   else Msg::Error("GetStressReduction is not implemented for SolelemType %d",et);
 }
 
-template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getVirtualMomentReductionAndLocalBasis(MInterfaceElement *iele,
+template<> void IPField<partDomain*,DgC0FunctionSpace<SVector3> >::getVirtualMomentReductionAndLocalBasis(MInterfaceElement *iele,
                                                                                          const int gaussnum,const int numOfGaussPoint,
                                                                                          SolElementType::eltype et, IPState::whichState ws,
                                                                                          reductionElement &mhatmean,
                                                                                          const LocalBasis** lbb){
-  if(et == SolElementType::PlatePlaneStress){
+  if(et == SolElementType::ShellPlaneStress){
     double stressMembrane[6];
     double stressBending[6];
     double h;
@@ -680,7 +680,7 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getVirtual
         mhatmean(i,j)*=0.5;
       }
   }
-  else if((et == SolElementType::PlatePlaneStressWTI) or (et == SolElementType::PlatePlaneStressWF)){
+  else if((et == SolElementType::ShellPlaneStressWTI) or (et == SolElementType::ShellPlaneStressWF)){
 
     reductionElement malpha;
     const LocalBasis *lb;
@@ -712,7 +712,7 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getVirtual
   else Msg::Error("GetStressReduction is not implemented for SolelemType %d",et);
 }
 
-template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getReductionFracture(const MInterfaceElement *iele,
+template<> void IPField<partDomain*,DgC0FunctionSpace<SVector3> >::getReductionFracture(const MInterfaceElement *iele,
                                                                                              const int numgauss, const int npts,
                                                                                              const SolElementType::eltype elemtype,
                                                                                              const std::vector<double> disp,
@@ -746,16 +746,18 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getReducti
   double deltat = ipv->computeDeltaTangent(ujump,rjump,ipv->getLocalBasisOfInterface());
   // find elasticField (to know the law to use)
   bool flag=false;
-  DGelasticField *ef;
-  for(int i=0;i<_efield->size();i++){
-    for(std::vector<MInterfaceElement*>::iterator it = (*_efield)[i].gi.begin(); it != (*_efield)[i].gi.end(); ++it){
+  partDomain *ef;
+//  for(int i=0;i<_efield->size();i++){
+  for(std::vector<partDomain*>::iterator itdom=_efield->begin(); itdom!=_efield->end(); ++itdom){
+    dgPartDomain *dgdom = dynamic_cast<dgPartDomain*>(*itdom);
+    for(std::vector<MInterfaceElement*>::iterator it = dgdom->gi.begin(); it != dgdom->gi.end(); ++it){
       MInterfaceElement *ie = *it;
       if(ie==iele){
         flag=true;
         break;
       }
     }
-    if(flag) {ef=&(*_efield)[i]; break;}
+    if(flag) {ef=dgdom; break;}
   }
 
   // use the law
@@ -763,7 +765,7 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::getReducti
   mlaw->getCohesiveReduction(ipv->getm0(),ipv->getn0(),deltan,ipv->getDeltanmax(),deltat,ipv->getDeltatmax(), ipv->getDeltac(),ipv->ifTension(),nhatmean,mhatmean);
 }
 
-template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::initialBroken(MInterfaceElement *iele, materialLaw* mlaw ){
+template<> void IPField<partDomain*,DgC0FunctionSpace<SVector3> >::initialBroken(MInterfaceElement *iele, materialLaw* mlaw ){
   Msg::Info("Interface element %d is broken at initialization",iele->getNum());
   // find the gauss points associated to the interface element iele
   // set broken = true, _tension = true, Gc and sigmac are chosen to the physical value
@@ -787,16 +789,17 @@ template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::initialBro
   ctp.second = vips->size()/2;
 }
 
-template<> void IPField<DGelasticField,DgC0FunctionSpace<SVector3> >::initialBroken(GModelWithInterface* pModel, std::vector<int> &vnumphys){
+template<> void IPField<partDomain*,DgC0FunctionSpace<SVector3> >::initialBroken(GModelWithInterface* pModel, std::vector<int> &vnumphys){
   std::vector<MVertex*> vv;
   for(int i=0;i<vnumphys.size();i++){
     // get the vertex associated to the physical entities
     pModel->getMeshVerticesForPhysicalGroup(1,vnumphys[i],vv);
     // find the InterfaceElement associated to these vertex (identify interior node as degree 2 min)
-    for(std::vector<DGelasticField>::iterator itfield = _efield->begin(); itfield != _efield->end(); ++itfield){
-      for(std::vector<MInterfaceElement*>::iterator it = itfield->gi.begin(); it!=itfield->gi.end(); ++it)
+    for(std::vector<partDomain*>::iterator itfield = _efield->begin(); itfield != _efield->end(); ++itfield){
+      dgPartDomain *dgdom = dynamic_cast<dgPartDomain*>(*itfield);
+      for(std::vector<MInterfaceElement*>::iterator it = dgdom->gi.begin(); it!=dgdom->gi.end(); ++it)
         for(int k=0;k<vv.size();k++)
-          if(vv[k] == (*it)->getVertex(2) ) this->initialBroken(*it, itfield->getMaterialLaw());
+          if(vv[k] == (*it)->getVertex(2) ) this->initialBroken(*it, dgdom->getMaterialLaw());
     }
     vv.clear();
   }
