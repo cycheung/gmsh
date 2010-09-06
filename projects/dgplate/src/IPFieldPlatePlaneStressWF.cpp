@@ -19,8 +19,7 @@ static inline double scaldot(const SVector3 &a, const SVector3 &b){
   return c;
 }
 
-template<> void IPField<partDomain*, DgC0FunctionSpace<SVector3> >::compute1stateShellPlaneStressWF(IPState::whichState ws,
-                                                                                                        partDomain* ef){
+void IPField::compute1stateShellPlaneStressWF(IPState::whichState ws, partDomain* ef){
   SVector3 val; // value of a vertex displacement
   IntPt *GP;
   //edge gauss point full dg
@@ -160,11 +159,8 @@ template<> void IPField<partDomain*, DgC0FunctionSpace<SVector3> >::compute1stat
   }
 }
 
-template<> void IPField<partDomain*, DgC0FunctionSpace<SVector3> >::computeIpvShellPlaneStressWF(MInterfaceElement *ie,
-                                                                                                    const int num,
-                                                                                                    const IPState::whichState ws,
-                                                                                                    partDomain* ef,
-                                                                                                    const bool virt){
+void IPField::computeIpvShellPlaneStressWF(MInterfaceElement *ie, const int num, const IPState::whichState ws, partDomain* ef,
+                                            const bool virt){
   SVector3 val; // value of a vertex displacement
   IntPt *GP;
   //edge gauss point full dg
@@ -272,8 +268,7 @@ template<> void IPField<partDomain*, DgC0FunctionSpace<SVector3> >::computeIpvSh
   }
 }
 
-template<> void IPField<partDomain*, DgC0FunctionSpace<SVector3> >::computeIpvShellPlaneStressWF(MElement *e,IPState::whichState ws,
-                                                                                                        partDomain* ef){
+void IPField::computeIpvShellPlaneStressWF(MElement *e,IPState::whichState ws, partDomain* ef){
 
   int edge = e->getNumEdges();
   IntPt *GP;

@@ -27,6 +27,18 @@ inline void diaprodAdd(const double a[3], const double b[3], double m[3][3]){
       m[i][j]+=a[i]*b[j];
 }
 
+inline void diaprodAdd(const double a[3], const SVector3 &b, double m[3][3]){
+  for(int i=0;i<3;i++)
+    for(int j=0;j<3;j++)
+      m[i][j]+=a[i]*b[j];
+}
+
+inline void diaprodAdd(const SVector3 &a, const double b[3], double m[3][3]){
+  for(int i=0;i<3;i++)
+    for(int j=0;j<3;j++)
+      m[i][j]+=a[i]*b[j];
+}
+
 inline void diaprod(const double a[3], const SVector3 &b, double m[3][3]){
   for(int i=0;i<3;i++)
     for(int j=0;j<3;j++)
@@ -104,24 +116,19 @@ inline void BulkC0PlateDGStiffnessMembraneTerms(const double Bj[3][2][2],const d
   for(int i=0;i<3;i++)
     for(int j=0;j<3;j++)
       me[i][j]=0.; // make a methode in object me ??
-  double mtemp[3][3];
   double v1[3], v2[3];
   for(int a=0;a<2;a++)
     for(int b=0;b<2;b++){
       v2[0] = Bk[0][a][b]; v2[1] = Bk[1][a][b]; v2[2]= Bk[2][a][b]; // make a method
       for(int c=0;c<2;c++)
         for(int d=0;d<2;d++){
-          v1[0] = Bj[0][c][d]; v1[1]=Bj[1][c][d]; v1[2]=Bj[2][c][d]; //make a method
-          diaprod(v1,v2,mtemp);
-          for(int jj=0;jj<3;jj++)
-            for(int kk=0;kk<3;kk++)
-              me[jj][kk]+=(H->get(a,b,c,d)*mtemp[jj][kk]);
+          v1[0] = H->get(a,b,c,d)*Bj[0][c][d]; v1[1]=H->get(a,b,c,d)*Bj[1][c][d]; v1[2]=H->get(a,b,c,d)*Bj[2][c][d]; //make a method
+          diaprodAdd(v1,v2,me);
         }
     }
 }
 
 inline void BulkC0PlateDGStiffnessBendingTerms(const double Bmj[3][2][2], const double Bmk[3][2][2], const LinearElasticShellHookeTensor *H, double me[3][3]){
-  double mtemp[3][3];
   for(int i=0;i<3;i++) for(int j=0;j<3;j++) me[i][j]=0.;
   double B1[3],B2[3];
   for(int alpha=0;alpha<2;alpha++)
@@ -129,11 +136,10 @@ inline void BulkC0PlateDGStiffnessBendingTerms(const double Bmj[3][2][2], const 
       B1[0]= Bmk[0][alpha][beta]; B1[1]= Bmk[1][alpha][beta]; B1[2]= Bmk[2][alpha][beta];
       for(int gamma=0;gamma<2;gamma++)
         for(int delta=0;delta<2;delta++){
-          B2[0]= Bmj[0][gamma][delta]; B2[1]= Bmj[1][gamma][delta]; B2[2]= Bmj[2][gamma][delta];
-          diaprod(B2,B1,mtemp);
-          for(int jj=0;jj<3;jj++)
-            for(int kk=0;kk<3;kk++)
-              me[jj][kk]+=H->get(alpha,beta,gamma,delta)*mtemp[jj][kk];
+          B2[0]= H->get(alpha,beta,gamma,delta)*Bmj[0][gamma][delta];
+          B2[1]= H->get(alpha,beta,gamma,delta)*Bmj[1][gamma][delta];
+          B2[2]= H->get(alpha,beta,gamma,delta)*Bmj[2][gamma][delta];
+          diaprodAdd(B2,B1,me);
         }
     }
 }
@@ -160,57 +166,62 @@ inline void consC0PlateStiffnessTerms(LinearElasticShellHookeTensor *Hhat,const 
 inline void compC0PlateStiffnessTerms(LinearElasticShellHookeTensor *Hhat,const double Bhat[3][2][2],const double dt[3][3], const LocalBasis *lb, double me[3][3]){
   for(int i=0;i<3;i++) for(int j=0;j<3;j++) me[i][j]=0.;
   double v1[3], v2[3];
-  double mtemp[3][3];
   double temp=0.;
-  for(int alpha=0;alpha<2;alpha++)
-    for(int beta=0;beta<2;beta++)
+  double temp2 = 0.;
+  for(int alpha=0;alpha<2;alpha++){
+    matTvectprod(dt,lb->getphi0(alpha),v2);
+    for(int beta=0;beta<2;beta++){
+      temp2 = (-scaldot(lb->getphi0(1),lb->getphi0(beta)));
       for(int gamma=0;gamma<2;gamma++)
         for(int delta=0;delta<2;delta++){
-          v1[0] = Bhat[0][gamma][delta]; v1[1] = Bhat[1][gamma][delta]; v1[2] = Bhat[2][gamma][delta];
-          matTvectprod(dt,lb->getphi0(alpha),v2);
-          diaprod(v1,v2,mtemp);
-          temp = 0.5*Hhat->get(alpha,beta,gamma,delta)*(-scaldot(lb->getphi0(1),lb->getphi0(beta)));
-          for(int i=0;i<3;i++)
-            for(int j=0;j<3;j++)
-              me[i][j] += (mtemp[i][j]*temp);
+          temp = 0.5*Hhat->get(alpha,beta,gamma,delta)*temp2;
+          v1[0] = temp*Bhat[0][gamma][delta];
+          v1[1] = temp*Bhat[1][gamma][delta];
+          v1[2] = temp*Bhat[2][gamma][delta];
+          diaprodAdd(v1,v2,me);
         }
+    }
+  }
 }
 
 inline void stabilityC0PlateStiffnessTerms(LinearElasticShellHookeTensor *Hhat, const double dta[3][3], const double dtb[3][3], const LocalBasis *lb, double me[3][3]){
   for(int i=0;i<3;i++) for(int j=0;j<3;j++) me[i][j]=0.;
-  double mtemp[3][3];
-  double v1[3],v2[3];
+  double v1[3],v2[3],v3[3];
   double temp=0.;
-  for(int alpha=0;alpha<2;alpha++)
-    for(int beta=0;beta<2;beta++)
-      for(int gamma=0;gamma<2;gamma++)
+  double temp2;
+  for(int alpha=0;alpha<2;alpha++){
+    matTvectprod(dtb,lb->getphi0(alpha),v2);
+    for(int beta=0;beta<2;beta++){
+      temp2 = (-scaldot(lb->getphi0(1),lb->getphi0(beta)));
+      for(int gamma=0;gamma<2;gamma++){
+        matTvectprod(dta,lb->getphi0(gamma),v1);
         for(int delta=0;delta<2;delta++){
-          matTvectprod(dta,lb->getphi0(gamma),v1);
-          matTvectprod(dtb,lb->getphi0(alpha),v2);
-          diaprod(v1,v2,mtemp);
-          temp = Hhat->get(alpha,beta,gamma,delta)*(-scaldot(lb->getphi0(1),lb->getphi0(delta)))*(-scaldot(lb->getphi0(1),lb->getphi0(beta)));
-          for(int i=0;i<3;i++)
-            for(int j=0;j<3;j++)
-              me[i][j]+=(mtemp[i][j]*temp);
+          temp = Hhat->get(alpha,beta,gamma,delta)*(-scaldot(lb->getphi0(1),lb->getphi0(delta)))*temp2;
+          v3[0]=temp*v1[0];
+          v3[1]=temp*v1[1];
+          v3[2]=temp*v1[2];
+          diaprodAdd(v3,v2,me);
         }
+      }
+    }
+  }
 }
 
 inline void compC0PlateStiffnessMembraneTerms(LinearElasticShellHookeTensor *Hhat,const double Bhat[3][2][2],const double Na, const LocalBasis *lb, double me[3][3]){
   for(int i=0;i<3;i++) for(int j=0;j<3;j++) me[i][j]=0.;
   double v1[3];// v2[3];
-  double mtemp[3][3];
   double temp=0.;
-  for(int alpha=0;alpha<2;alpha++)
+  double temp2;
+  for(int alpha=0;alpha<2;alpha++){
+    temp2 = (-scaldot(lb->getphi0(1),lb->getphi0(alpha)));
     for(int beta=0;beta<2;beta++)
       for(int gamma=0;gamma<2;gamma++)
         for(int delta=0;delta<2;delta++){
-          v1[0] = Bhat[0][gamma][delta]; v1[1] = Bhat[1][gamma][delta]; v1[2] = Bhat[2][gamma][delta];
-          diaprod(v1,lb->getphi0(beta),mtemp);
-          temp = 0.5*Na*Hhat->get(alpha,beta,gamma,delta)*(-scaldot(lb->getphi0(1),lb->getphi0(alpha)));
-          for(int i=0;i<3;i++)
-            for(int j=0;j<3;j++)
-              me[i][j] += (mtemp[i][j]*temp);
+          temp = 0.5*Na*Hhat->get(alpha,beta,gamma,delta)*temp2;
+          v1[0] = temp*Bhat[0][gamma][delta]; v1[1] = temp*Bhat[1][gamma][delta]; v1[2] = temp*Bhat[2][gamma][delta];
+          diaprodAdd(v1,lb->getphi0(beta),me);
         }
+  }
 }
 
 inline void compC0PlateForceMembraneTerms(const int beta,const int gamma,const int delta,const LocalBasis *lb, const LocalBasis *lbs, const TensorialTraits<double>::GradType &Gradj,const SVector3 &ujump,double me_comp[3]){
@@ -231,35 +242,37 @@ inline void compC0PlateForceMembraneTerms(const int beta,const int gamma,const i
 inline void consC0PlateStiffnessMembraneTerms(LinearElasticShellHookeTensor *Hhat,const double Bhat[3][2][2],const double Na, const LocalBasis *lb, double me[3][3]){
   for(int i=0;i<3;i++) for(int j=0;j<3;j++) me[i][j]=0.;
   double v1[3];
-  double mtemp[3][3];
   double temp=0.;
-  for(int alpha=0;alpha<2;alpha++)
+  double temp2;
+  for(int alpha=0;alpha<2;alpha++){
+    temp2 = (-scaldot(lb->getphi0(1),lb->getphi0(alpha)));
     for(int beta=0;beta<2;beta++)
       for(int gamma=0;gamma<2;gamma++)
         for(int delta=0;delta<2;delta++){
-          temp = 0.5*Na*Hhat->get(alpha,beta,gamma,delta)*(-scaldot(lb->getphi0(1),lb->getphi0(alpha)));
+          temp = 0.5*Na*Hhat->get(alpha,beta,gamma,delta)*temp2;
           v1[0] = temp*Bhat[0][gamma][delta]; v1[1] = temp*Bhat[1][gamma][delta]; v1[2] = temp*Bhat[2][gamma][delta];
-          diaprod(lb->getphi0(beta),v1,mtemp);
-          for(int i=0;i<3;i++)
-            for(int j=0;j<3;j++)
-              me[i][j] += (mtemp[i][j]);
+          diaprodAdd(lb->getphi0(beta),v1,me);
         }
+  }
 }
 
 inline void stabilityC0PlateStiffnessMembraneTerms(LinearElasticShellHookeTensor *Hhat, const double Na, const double Nb, const LocalBasis *lb, double me[3][3]){
   for(int i=0;i<3;i++) for(int j=0;j<3;j++) me[i][j]=0.;
-  double mtemp[3][3];
+  SVector3 v1(0.,0.,0.);
   double temp=0.;
+  double temp2;
   for(int alpha=0;alpha<2;alpha++)
-    for(int beta=0;beta<2;beta++)
+    for(int beta=0;beta<2;beta++){
+      temp2 = (-scaldot(lb->getphi0(1),lb->getphi0(beta)));
       for(int gamma=0;gamma<2;gamma++)
         for(int delta=0;delta<2;delta++){
-          diaprod(lb->getphi0(gamma),lb->getphi0(alpha),mtemp);
-          temp = Na*Nb*Hhat->get(alpha,beta,gamma,delta)*(-scaldot(lb->getphi0(1),lb->getphi0(delta)))*(-scaldot(lb->getphi0(1),lb->getphi0(beta)));
-          for(int i=0;i<3;i++)
-            for(int j=0;j<3;j++)
-              me[i][j]+=(mtemp[i][j]*temp);
+          temp = Na*Nb*Hhat->get(alpha,beta,gamma,delta)*(-scaldot(lb->getphi0(1),lb->getphi0(delta)))*temp2;
+          v1[0] = lb->getphi0(gamma,0)*temp;
+          v1[1] = lb->getphi0(gamma,1)*temp;
+          v1[2] = lb->getphi0(gamma,2)*temp;
+          diaprodAdd(v1,lb->getphi0(alpha),me);
         }
+    }
 }
 
 inline void stabilityC0PlateStiffnessShearingTerms(const double Bj[3], const double Bk[3],double me[3][3]){
@@ -274,9 +287,9 @@ inline void stabilityC0PlateForceMembraneTerms(LinearElasticShellHookeTensor *Hh
   int n_p=Vals_p.size();
   for(int alpha=0;alpha<2;alpha++)
     for(int beta=0;beta<2;beta++)
-      for(int gamma=0;gamma<2;gamma++)
+      for(int gamma=0;gamma<2;gamma++){
+        diaprod(lb->getphi0(gamma),lb->getphi0(alpha),mtemp);
         for(int delta=0;delta<2;delta++){
-          diaprod(lb->getphi0(gamma),lb->getphi0(alpha),mtemp);
           for(int j=0;j<n_m;j++){
             temp = - Vals_m[j](0)*Nb*Hhat->get(alpha,beta,gamma,delta)*(-lb->getphi0(1,delta))*(-lb->getphi0(1,beta));
             for(int i=0;i<3;i++)
@@ -288,6 +301,7 @@ inline void stabilityC0PlateForceMembraneTerms(LinearElasticShellHookeTensor *Hh
               me[i]+=temp*(mtemp[i][0]*disp[j+3*n_m]+mtemp[i][1]*disp[j+n_p+3*n_m]+mtemp[i][2]*disp[j+2*n_p+3*n_m]);
           }
         }
+      }
 }
 
 inline void stabC0PlateForceMembraneTerms(const int beta,const int delta,const LocalBasis *lb,const SVector3 &ujump,double me[3]){
@@ -316,53 +330,60 @@ inline void compC0PlateForceTerms(const LinearElasticShellHookeTensor *Hhat, con
   double mtemp[3][3];
   double v1[3],v2[3];
   double temp=0.;
+  double temp2;
   for(int i=0;i<3;i++) me[i]=0.;
   for(int a=0;a<2;a++)
-    for(int b=0;b<2;b++)
+    for(int b=0;b<2;b++){
+      temp2 = (-scaldot(lb->getphi0(1),lb->getphi0(b)));
       for(int c=0;c<2;c++)
         for(int d=0;d<2;d++){
-          v1[0]=Bhat[0][c][d] ; v1[1]=Bhat[1][c][d]; v1[2]=Bhat[2][c][d];
-          temp = 0.5*Hhat->get(a,b,c,d)*(-scaldot(lb->getphi0(1),lb->getphi0(b)));
+          temp = 0.5*Hhat->get(a,b,c,d)*temp2;
+          v1[0]= temp*Bhat[0][c][d] ; v1[1]=temp*Bhat[1][c][d]; v1[2]=temp*Bhat[2][c][d];
           for(int j=0;j<n_m;j++){
             matTvectprod(Dt_m[j],lb->getphi0(a),v2); // put in a loop but in this time a vector is need to store the result of matTvectprod
             diaprod(v1,v2,mtemp);
             for(int k=0;k<3;k++)
-              me[k] += -temp*(mtemp[k][0]*disp[j]+mtemp[k][1]*disp[j+n_m]+mtemp[k][2]*disp[j+2*n_m]);
+              me[k] += -(mtemp[k][0]*disp[j]+mtemp[k][1]*disp[j+n_m]+mtemp[k][2]*disp[j+2*n_m]);
           }
           for(int j=0;j<n_p;j++){
             matTvectprod(Dt_p[j],lb->getphi0(a),v2); //idem
             diaprod(v1,v2,mtemp);
             for(int k=0;k<3;k++)
-              me[k] += temp*(mtemp[k][0]*disp[j+3*n_m]+mtemp[k][1]*disp[j+n_p+3*n_m]+mtemp[k][2]*disp[j+2*n_p+3*n_m]);
+              me[k] += (mtemp[k][0]*disp[j+3*n_m]+mtemp[k][1]*disp[j+n_p+3*n_m]+mtemp[k][2]*disp[j+2*n_p+3*n_m]);
           }
         }
+    }
 }
 
 inline void stabilityC0PlateForceTerms(const int n_p,const int n_m, const LinearElasticShellHookeTensor *Hhat,const  double Dt[3][3],const double Dt_m[256][3][3],const double Dt_p[256][3][3], const LocalBasis *lb, const std::vector<double> &disp, double me[3]){
   for(int i=0;i<3;i++) me[i]=0.;
-  double v1[3],v2[3];
+  double v1[3],v2[3], v3[3];
   double mtemp[3][3];
   double temp=0.;
+  double temp2;
   for(int a=0;a<2;a++)
-    for(int b=0;b<2;b++)
+    for(int b=0;b<2;b++){
+      temp2 = (-scaldot(lb->getphi0(1),lb->getphi0(b)));
       for(int c=0;c<2;c++){
         matTvectprod(Dt,lb->getphi0(c),v1);
         for(int d=0;d<2;d++){
-          temp = Hhat->get(a,b,c,d)*(-scaldot(lb->getphi0(1),lb->getphi0(d)))*(-scaldot(lb->getphi0(1),lb->getphi0(b)));
+          temp = Hhat->get(a,b,c,d)*(-scaldot(lb->getphi0(1),lb->getphi0(d)))*temp2;
+          v3[0] = temp*v1[0]; v3[1]=temp*v1[1]; v3[2]=temp*v1[2];
           for(int j=0;j<n_m;j++){
             matTvectprod(Dt_m[j],lb->getphi0(a),v2); // can be put on a loop but it is necessary to create a vector to keep the result of matTvectprod
-            diaprod(v1,v2,mtemp);
+            diaprod(v3,v2,mtemp);
             for(int jj=0;jj<3;jj++)
-              me[jj] += -temp*(mtemp[jj][0]*disp[j]+mtemp[jj][1]*disp[j+n_m]+mtemp[jj][2]*disp[j+2*n_m]);
+              me[jj] += -(mtemp[jj][0]*disp[j]+mtemp[jj][1]*disp[j+n_m]+mtemp[jj][2]*disp[j+2*n_m]);
           }
           for(int j=0;j<n_p;j++){
             matTvectprod(Dt_p[j],lb->getphi0(a),v2); // idem
-            diaprod(v1,v2,mtemp);
+            diaprod(v3,v2,mtemp);
             for(int jj=0;jj<3;jj++)
-              me[jj] += temp*(mtemp[jj][0]*disp[j+3*n_m]+mtemp[jj][1]*disp[j+n_p+3*n_m]+mtemp[jj][2]*disp[j+2*n_p+3*n_m]);
+              me[jj] += (mtemp[jj][0]*disp[j+3*n_m]+mtemp[jj][1]*disp[j+n_p+3*n_m]+mtemp[jj][2]*disp[j+2*n_p+3*n_m]);
           }
        }
       }
+    }
 }
 
 inline void compC0PlateForceTermsBound(const LinearElasticShellHookeTensor *Hhat, const int n, const double Bhat[3][2][2],
@@ -371,42 +392,49 @@ inline void compC0PlateForceTermsBound(const LinearElasticShellHookeTensor *Hhat
   double mtemp[3][3];
   double v1[3],v2[3];
   double temp=0.;
+  double temp2;
   for(int i=0;i<3;i++) me[i]=0.;
   for(int a=0;a<2;a++)
-    for(int b=0;b<2;b++)
+    for(int b=0;b<2;b++){
+      temp2 = (-scaldot(lb->getphi0(1),lb->getphi0(b)));
       for(int c=0;c<2;c++)
         for(int d=0;d<2;d++){
-          v1[0]=Bhat[0][c][d] ; v1[1]=Bhat[1][c][d]; v1[2]=Bhat[2][c][d];
-          temp = 0.5*Hhat->get(a,b,c,d)*(-scaldot(lb->getphi0(1),lb->getphi0(b)));
+          temp = 0.5*Hhat->get(a,b,c,d)*temp2;
+          v1[0]= temp*Bhat[0][c][d] ; v1[1]= temp*Bhat[1][c][d]; v1[2]=temp*Bhat[2][c][d];
           for(int j=0;j<n;j++){
             matTvectprod(Dt_m[j],lb->getphi0(a),v2); // put in a loop but in this time a vector is need to store the result of matTvectprod
             diaprod(v1,v2,mtemp);
             for(int k=0;k<3;k++)
-              me[k] += -temp*(mtemp[k][0]*disp[j]+mtemp[k][1]*disp[j+n]+mtemp[k][2]*disp[j+2*n]);
+              me[k] += -(mtemp[k][0]*disp[j]+mtemp[k][1]*disp[j+n]+mtemp[k][2]*disp[j+2*n]);
           }
         }
+    }
 }
 
 inline void stabilityC0PlateForceTermsBound(const int n_m,const LinearElasticShellHookeTensor *Hhat,const double Dt[3][3],
                                             const double Dt_m[256][3][3], const LocalBasis *lb, const std::vector<double> &disp, double me[3]){
   for(int i=0;i<3;i++) me[i]=0.;
-  double v1[3],v2[3];
+  double v1[3],v2[3],v3[3];
   double mtemp[3][3];
   double temp=0.;
+  double temp2;
   for(int a=0;a<2;a++)
-    for(int b=0;b<2;b++)
+    for(int b=0;b<2;b++){
+      temp2 = (-scaldot(lb->getphi0(1),lb->getphi0(b)));
       for(int c=0;c<2;c++){
         matTvectprod(Dt,lb->getphi0(c),v1);
         for(int d=0;d<2;d++){
-          temp = Hhat->get(a,b,c,d)*(-scaldot(lb->getphi0(1),lb->getphi0(d)))*(-scaldot(lb->getphi0(1),lb->getphi0(b)));
+          temp = Hhat->get(a,b,c,d)*(-scaldot(lb->getphi0(1),lb->getphi0(d)))*temp2;
+          v3[0] = temp*v1[0]; v3[1]=temp*v1[1]; v3[2] = temp*v1[2];
           for(int j=0;j<n_m;j++){
             matTvectprod(Dt_m[j],lb->getphi0(a),v2); // can be put on a loop but it is necessary to create a vector to keep the result of matTvectprod
-            diaprod(v1,v2,mtemp);
+            diaprod(v3,v2,mtemp);
             for(int jj=0;jj<3;jj++)
-              me[jj] += -temp*(mtemp[jj][0]*disp[j]+mtemp[jj][1]*disp[j+n_m]+mtemp[jj][2]*disp[j+2*n_m]);
+              me[jj] += -(mtemp[jj][0]*disp[j]+mtemp[jj][1]*disp[j+n_m]+mtemp[jj][2]*disp[j+2*n_m]);
           }
         }
       }
+    }
 }
 
 // Compute value needed in get
@@ -542,7 +570,7 @@ void compute_Deltat_tildeBound(const LocalBasis *lb, const std::vector<Tensorial
 
 void computeFintFrac(const MInterfaceElement *iele, const std::vector<double> &disp, const LocalBasis *lbm,
                              const LocalBasis *lbp, const LocalBasis *lbs, const double weight, const int numgauss, const int npts,
-                             const SolElementType::eltype elemtype, const IPField<partDomain*,DgC0FunctionSpace<SVector3> > *ipf,
+                             const SolElementType::eltype elemtype, const IPField *ipf,
                              const int nbFF_m, const std::vector<TensorialTraits<double>::ValType> &Vals_m,
                              const std::vector<TensorialTraits<double>::GradType> &Grads_m, const int nbdof_m,
                              const int nbFF_p, const std::vector<TensorialTraits<double>::ValType> &Vals_p,

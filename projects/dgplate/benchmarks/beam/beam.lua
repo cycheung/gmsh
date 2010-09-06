@@ -11,7 +11,7 @@ nu = 0.3   -- Poisson's ratio
 
 -- geometry
 h = 0.01  -- thickness
-meshfile="beam50.msh" -- name of mesh file
+meshfile="beam6.msh" -- name of mesh file
 -- integration
 nsimp = 3 -- number of Simpson's points (odd)
 
@@ -20,8 +20,8 @@ sol = 1 --Gmm=0 (default) Taucs=1 PETsc=2
 beta1 = 100. -- value of stabilization parameter
 beta2 = 100.
 beta3 = 100.
-soltype = 0 -- StaticLinear=0 (default) StaticNonLinear=1
-nstep = 10   -- number of step (used only if soltype=1)
+soltype = 1 -- StaticLinear=0 (default) StaticNonLinear=1
+nstep = 5   -- number of step (used only if soltype=1)
 ftime =1.   -- Final time (used only if soltype=1)
 tol=1.e-4   -- relative tolerance for NR scheme (used only if soltype=1)
 nstepArch=1 -- Number of step between 2 archiving (used only if soltype=1)
@@ -45,6 +45,7 @@ myfield1:formulation(fullDg)
 
 -- creation of Solver
 mysolver = DgC0PlateSolver(1000)
+mysolver:formulation(fullDg)
 mysolver:readmsh(meshfile)
 mysolver:addDgLinearElasticShellDomain(myfield1,nfield,2)
 mysolver:AddLinearElasticLawPlaneStress(law1)
@@ -63,5 +64,7 @@ mysolver:prescribedDisplacement("Edge",41,2,0.)
 --mysolver:prescribedDisplacement("Edge",21,1,0.4)
 --mysolver:prescribedForce("Face",99,0.,0.,1000.)
 mysolver:prescribedForce("Edge",21,0.,0.,-10000.)
+--mysolver:pressureOnPhysicalGroup(99,1000.)
 mysolver:AddThetaConstraint(41)
+--mysolver:AddThetaConstraint(21)
 mysolver:solve()

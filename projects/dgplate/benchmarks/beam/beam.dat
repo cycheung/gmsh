@@ -1,3 +1,4 @@
+formulation 0
 MeshFile beam6.msh
 //                   num  E    nu
 ElasticPlaneStressLaw 1 100.e9 0.3

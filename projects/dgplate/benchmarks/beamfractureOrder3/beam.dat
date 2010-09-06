@@ -1,3 +1,4 @@
+formulation 1
 MeshFile beamO3.msh
 //                              lawnum    E   nu    Gc   sigma_c  beta mu
 ElasticPlaneStressLawWithFracture  1   71.e9  0.   8800.  400.e6  0.87 0.01

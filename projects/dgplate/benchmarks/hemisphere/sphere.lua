@@ -13,17 +13,17 @@ nu = 0.3
 
 -- geometry
 h = 0.04
-meshfile = "sphereO3.msh"
+meshfile = "sphere.msh"
 -- integration
 nsimp = 1 
 
 -- solver
 sol = 2 
-beta1 = 100.
+beta1 = 10.
 beta2 = 10.
 beta3 = 10.
 soltype = 1 
-nstep = 1
+nstep = 1 
 ftime = 1.
 tol = 1.e-6
 nstepArch = 1
@@ -47,6 +47,7 @@ myfield1:formulation(fullDg)
 
 -- creation of Solver
 mysolver = DgC0PlateSolver(1000)
+mysolver:formulation(fullDg)
 mysolver:readmsh(meshfile)
 mysolver:addDgLinearElasticShellDomain(myfield1,nfield,2)
 mysolver:AddLinearElasticLawPlaneStress(law1)

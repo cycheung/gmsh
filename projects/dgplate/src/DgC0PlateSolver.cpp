@@ -33,7 +33,10 @@ void DgC0PlateSolver::setMesh(const std::string meshFileName)
   pModel->readMSH(meshFileName.c_str());
   _dim = pModel->getNumRegions() ? 3 : 2;
   if (LagSpace) delete LagSpace;
-  LagSpace=new DgC0LagrangeFunctionSpace(_tag);
+  if(fullDg)
+    LagSpace = new DgC0FullDgLagrangeFunctionSpace(_tag);
+  else
+    LagSpace = new DgC0CgDgLagrangeFunctionSpace(_tag);
 }
 
 void DgC0PlateSolver::readInputFile(const std::string fn)
@@ -287,15 +290,26 @@ void DgC0PlateSolver::readInputFile(const std::string fn)
       fscanf(f,"%d",&na);
       this->setStepBetweenArchiving(na);
     }
-    else if(!strcmp(what, "ArchivingEdgeForce")){
+    else if(!strcmp(what, "ArchivingForceOnPhysicalGroup")){
       int numphys,comp;
       fscanf(f,"%d %d",&numphys,&comp);
-      this->addArchivingEdgeForce(numphys,comp);
+      this->addArchivingForceForPhysicalGroup(numphys,comp);
     }
     else if(!strcmp(what, "ArchivingNodeDisplacement")){
       int num,comp;
       fscanf(f,"%d %d",&num,&comp);
       this->addArchivingNodeDisplacement(num,comp);
+    }
+    else if(!strcmp(what, "PressureOnPhysicalGroup")){
+      int physnum;
+      double press;
+      fscanf(f, "%d %lf",&physnum,&press);
+      this->addPressureOnPhysicalGroup(physnum,press);
+    }
+    else if(!strcmp(what, "formulation")){
+      int fdg;
+      fscanf(f, "%d",&fdg);
+      this->setFormulation(fdg);
     }
     else {
       Msg::Error("Invalid input : %s", what);
@@ -506,10 +520,12 @@ else{
       if(!dglshdom0->getFormulation())
         FixNodalDofs(*LagSpace,allDirichlet[i].g->begin(),allDirichlet[i].g->end(),*pAssembler,allDirichlet[i]._f,filter,false);
       else{ // BC on face are computed separately
+        // Full dg only --> dynamic cast OK
+        DgC0FullDgFunctionSpaceBase *dgspace = dynamic_cast<DgC0FullDgFunctionSpaceBase*>(LagSpace);
         if(allDirichlet[i].onWhat == BoundaryCondition::ON_FACE)
           FixNodalDofs(*LagSpace,allDirichlet[i].g->begin(),allDirichlet[i].g->end(),*pAssembler,allDirichlet[i]._f,filter,true);
         else
-          FixNodalDofs(*LagSpace,allDirichlet[i].g->begin(),allDirichlet[i].g->end(),*pAssembler,allDirichlet[i]._f,filter,vinter,vinternalInter);
+          FixNodalDofs(*dgspace,allDirichlet[i].g->begin(),allDirichlet[i].g->end(),*pAssembler,allDirichlet[i]._f,filter,vinter,vinternalInter);
       }
     }
     // we number the dofs : when a dof is numbered, it cannot be numbered
@@ -530,10 +546,12 @@ else{
   }
 
   // displacement field
-  displacementField ufield(pAssembler,domainVector,3,LagSpace->getId(),anoded);
+  // iField is not included in FunctionSpace --> a dynamic cast is necesary to have the function change this ??
+  DgC0FunctionSpace<SVector3>* dgspace = dynamic_cast<DgC0FunctionSpace<SVector3>*>(LagSpace);
+  displacementField ufield(pAssembler,domainVector,3,dgspace->getId(),anoded);
   // Store stress and deformation at each gauss point
   // IPState "declaration" reserve place for data
-  IPField<partDomain*,DgC0FunctionSpace<SVector3> > ipf(&domainVector,pAssembler,LagSpace, pModel, &ufield); // Todo fix this
+  IPField ipf(&domainVector,pAssembler,dgspace, pModel, &ufield); // Todo fix this
   ipf.compute1state(IPState::initial);
   for(std::vector<partDomain*>::iterator itdom = domainVector.begin(); itdom!=domainVector.end(); ++itdom){
     partDomain *dom = *itdom;
@@ -560,16 +578,25 @@ else{
     dgLinearShellDomain *dglsh0 = dynamic_cast<dgLinearShellDomain*>(dom0);
     // Integratioon Rule of ElasticField 0 for now fix it TODO ??
     std::cout <<  "Neumann BC"<< std::endl;
+// REMOVE THIS DYNAMIC CAST
+DgC0FunctionSpace<SVector3>* dgspace = dynamic_cast<DgC0FunctionSpace<SVector3>*>(LagSpace);
     for (unsigned int i = 0; i < allNeumann.size(); i++)
     {
-      DgC0LoadTerm<SVector3> Lterm(*LagSpace,allNeumann[i]._f);
-      if(!dglsh0->getFormulation())     // Use formulation of first field CHANGE THIS
-        Assemble(Lterm,*LagSpace,allNeumann[i].g->begin(),allNeumann[i].g->end(),*(allNeumann[i].integ),*pAssembler,false);
-      else{ // The boundary condition on face are computed separately (because of research of interfaceElement linked to the BC)
-        if(allNeumann[i].onWhat == BoundaryCondition::ON_FACE)
-          Assemble(Lterm,*LagSpace,allNeumann[i].g->begin(),allNeumann[i].g->end(),*(allNeumann[i].integ),*pAssembler,true);
-        else
-          Assemble(Lterm,*LagSpace,allNeumann[i].g->begin(),allNeumann[i].g->end(),*(allNeumann[i].integ),*pAssembler,vinter);
+      if(!(allNeumann[i].onWhat == BoundaryCondition::PRESSURE)){
+        DgC0LoadTerm<SVector3> Lterm(*dgspace,allNeumann[i]._f);
+        if(!dglsh0->getFormulation())     // Use formulation of first field CHANGE THIS
+          Assemble(Lterm,*LagSpace,allNeumann[i].g->begin(),allNeumann[i].g->end(),*(allNeumann[i].integ),*pAssembler,false);
+        else{ // The boundary condition on face are computed separately (because of research of interfaceElement linked to the BC)
+          if(allNeumann[i].onWhat == BoundaryCondition::ON_FACE)
+            Assemble(Lterm,*LagSpace,allNeumann[i].g->begin(),allNeumann[i].g->end(),*(allNeumann[i].integ),*pAssembler,true);
+          else
+            Assemble(Lterm,*LagSpace,allNeumann[i].g->begin(),allNeumann[i].g->end(),*(allNeumann[i].integ),*pAssembler,vinter);
+        }
+      }
+      else{
+        DgC0PressureLoadTerm<SVector3> Lterm(*dgspace,allNeumann[i]._f);
+        Assemble(Lterm,*LagSpace,allNeumann[i].g->begin(),allNeumann[i].g->end(),*(allNeumann[i].integ),
+                 *pAssembler,dglsh0->getFormulation()); // Use first domain change this
       }
     }
   }
@@ -757,59 +784,65 @@ void DgC0PlateSolver::addIndepForce(std::string onwhat, const int numphys, const
   allNeumann.push_back(neu);
 }
 
+void DgC0PlateSolver::addPressureOnPhysicalGroup(const int numphys, const double press){
+  neumannBC neu;
+  neu.g = new groupOfElements(2,numphys); // Always group of face ??
+  neu.onWhat = BoundaryCondition::PRESSURE;
+  neu._f = simpleFunctionTime<SVector3>(SVector3(press,press,press),true); // Use a SVector3 because it was defined like this in
+                                                                             // NeumannBC change this ??
+  neu._tag=numphys;
+  neu.setGaussIntegrationRule();
+  allNeumann.push_back(neu);
+}
 
-void DgC0PlateSolver::addArchivingEdgeForce(const int numphys, const int comp){
+void DgC0PlateSolver::addArchivingForceForPhysicalGroup(const int numphys, const int comp){
   // get the node of the edge
   std::vector<MVertex*> vv;
   pModel->getMeshVerticesForPhysicalGroup(1,numphys,vv);
 
   std::vector<Dof> vdof;// all dof include in the edge
 
+  // No getId function in FunctionSpace --> dynamic_cast CHANGE THIS ??
+  DgC0FunctionSpace<SVector3>* dgspace = dynamic_cast<DgC0FunctionSpace<SVector3>*>(LagSpace);
   if(hasInterface){
     // shell element
     // Test on domain 0 TODO change this ??
     partDomain *dom0 = domainVector[0];
-    if((dom0->getSolElemType()==SolElementType::ShellPlaneStress) or  (dom0->getSolElemType()==SolElementType::ShellPlaneStressWTI) or
-        (dom0->getSolElemType()==SolElementType::ShellPlaneStressWF)){
-      // build the dof
-      dgLinearShellDomain *dglshdom0 = dynamic_cast<dgLinearShellDomain*>(dom0);
-      if(!dglshdom0->getFormulation()){ //cG/dG case
-        for(int i=0;i<vv.size();i++)
-          vdof.push_back(Dof(vv[i]->getNum(), DgC0PlateDof::createTypeWithThreeInts(comp,LagSpace->getId())));
-      }
-      else{
-        // find elements of the vertex
-        for(std::vector<partDomain*>::iterator itdom=domainVector.begin(); itdom!=domainVector.end();++itdom){
-            dgLinearShellDomain* dglshdom = dynamic_cast<dgLinearShellDomain*>(*itdom);
-            for(groupOfElements::elementContainer::const_iterator it = dglshdom->g->begin(); it != dglshdom->g->end(); ++it){
-              MElement *e = *it;
-              for(int j=0;j<e->getNumVertices();j++){
-                for(int k=0;k<vv.size();k++)
-                  if(e->getVertex(j) == vv[k]){
-                    vdof.push_back(Dof(e->getNum(),DgC0PlateDof::createTypeWithThreeInts(comp,LagSpace->getId(),j)));
-                }
-              }
-            }
-        }
-      }
-      // keys = 10*numphys + comp otherwise no way to archive different components
-      int key = 10*numphys+comp;
-      aef[key] = vdof;
-      aefvalue[key] = 0.;
-
-      // remove old file (linux only ??)
-      std::ostringstream oss;
-      oss << numphys;
-      std::string s = oss.str();
-      oss.str("");
-      oss << comp;
-      std::string s2 = oss.str();
-      std::string rfname = "rm force"+s+"comp"+s2+".csv";
-      system(rfname.c_str());
+    // build the dof
+    dgLinearShellDomain *dglshdom0 = dynamic_cast<dgLinearShellDomain*>(dom0);
+    if(!dglshdom0->getFormulation()){ //cG/dG case
+      for(int i=0;i<vv.size();i++)
+        vdof.push_back(Dof(vv[i]->getNum(), DgC0PlateDof::createTypeWithThreeInts(comp,dgspace->getId())));
     }
     else{
-      Msg::Error("Archiving force is only implemented for dg shell\n");
+      // find elements of the vertex
+      for(std::vector<partDomain*>::iterator itdom=domainVector.begin(); itdom!=domainVector.end();++itdom){
+          dgLinearShellDomain* dglshdom = dynamic_cast<dgLinearShellDomain*>(*itdom);
+          for(groupOfElements::elementContainer::const_iterator it = dglshdom->g->begin(); it != dglshdom->g->end(); ++it){
+            MElement *e = *it;
+            for(int j=0;j<e->getNumVertices();j++){
+              for(int k=0;k<vv.size();k++)
+                if(e->getVertex(j) == vv[k]){
+                  vdof.push_back(Dof(e->getNum(),DgC0PlateDof::createTypeWithThreeInts(comp,dgspace->getId(),j)));
+              }
+            }
+          }
+      }
     }
+    // keys = 10*numphys + comp otherwise no way to archive different components
+    int key = 10*numphys+comp;
+    aef[key] = vdof;
+    aefvalue[key] = 0.;
+
+    // remove old file (linux only ??)
+    std::ostringstream oss;
+    oss << numphys;
+    std::string s = oss.str();
+    oss.str("");
+    oss << comp;
+    std::string s2 = oss.str();
+    std::string rfname = "rm force"+s+"comp"+s2+".csv";
+    system(rfname.c_str());
   }
   else{
     Msg::Error("has no rule exist to make dof for formulation without interface it is impossible to archiving a force\n");
@@ -818,7 +851,9 @@ void DgC0PlateSolver::addArchivingEdgeForce(const int numphys, const int comp){
 
 void DgC0PlateSolver::addArchivingNodeDisplacement(const int num, const int comp){
   // no distinction between cG/dG and full Dg formulation. class Displacement Field manage it
-  anoded.push_back(Dof(num,DgC0PlateDof::createTypeWithThreeInts(comp,LagSpace->getId())));
+  // FunctionSpace has no getId function --> dynamic cast CHANGE THIS ??
+  DgC0FunctionSpace<SVector3>* dgspace = dynamic_cast<DgC0FunctionSpace<SVector3>*>(LagSpace);
+  anoded.push_back(Dof(num,DgC0PlateDof::createTypeWithThreeInts(comp,dgspace->getId())));
   // remove old file (linux only ??)
   std::ostringstream oss;
   oss << num;
@@ -893,9 +928,9 @@ void DgC0PlateSolver::registerBindings(binding *b)
   cm = cb->addMethod("independentPrescribedForce", &DgC0PlateSolver::addIndepForce);
   cm->setArgNames("onwhat","numphys","xval","yval","zval",NULL);
   cm->setDescription("Add a prescribed force independent of time. First argument value (string) : Node, Edge, Face, Volume");
-  cm = cb->addMethod("ArchivingEdgeForce", &DgC0PlateSolver::addArchivingEdgeForce);
+  cm = cb->addMethod("ArchivingForceOnPhysicalGroup", &DgC0PlateSolver::addArchivingForceForPhysicalGroup);
   cm->setArgNames("numphys","comp",NULL);
-  cm->setDescription("Archive an force on an edge. First argument is the physical number of the edge the second is the comp x=0 y=1 z=2");
+  cm->setDescription("Archive an force on an physical group. First argument is the physical number of the edge the second is the comp x=0 y=1 z=2");
   cm = cb->addMethod("ArchivingNodalDisplacement", &DgC0PlateSolver::addArchivingNodeDisplacement);
   cm->setArgNames("num","comp",NULL);
   cm->setDescription("Archiving a nodal displacement. First argument is the number of node the second is the comp x=0 y=1, z=2");
@@ -905,6 +940,12 @@ void DgC0PlateSolver::registerBindings(binding *b)
   cm = cb->addMethod("broken", &DgC0PlateSolver::addPhysInitBroken);
   cm->setArgNames("numphys",NULL);
   cm->setDescription("Initial broken of interface given by a physical number");
+  cm = cb->addMethod("pressureOnPhysicalGroup", &DgC0PlateSolver::addPressureOnPhysicalGroup);
+  cm->setArgNames("numphys","pres",NULL);
+  cm->setDescription("Set a pressure pres on the physical group numphys");
+  cm = cb->addMethod("formulation", &DgC0PlateSolver::setFormulation);
+  cm->setArgNames("f",NULL);
+  cm->setDescription("If f =0 Cg/Dg formulation otherwise fullDg formulation");
   // delete other functions ??
 /*  cm = cb->addMethod("AddNodalDisplacement", &DgC0PlateSolver::addNodalDisp);
   cm->setArgNames("node","comp","value",NULL);

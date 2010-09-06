@@ -18,18 +18,20 @@ void elementField::updateFileName(){
   std::ostringstream oss;
   oss << ++numfile;
   std::string s = oss.str();
+  std::string snum;
   // cut filename and its extension
   size_t ext_pos;
-  if(numfile==1)
+  if(numfile==1){
     ext_pos = fileName.find_last_of('.');
+    snum = "0";
+  }
   else{
-    oss.clear();
+    oss.str("");
     oss << numfile-1;
-    std::string snum = oss.str();
+    snum = oss.str();
     ext_pos = fileName.find_last_of(snum);
   }
-  std::string newname = fileName;
-  newname.resize(ext_pos);
+  std::string newname(fileName,0,ext_pos-(snum.size()-1));
   ext_pos = fileName.find_last_of('.');
   std::string ext(fileName,ext_pos+1,fileName.size());
   fileName  = newname+s+"."+ext;

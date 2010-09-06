@@ -24,13 +24,13 @@ class PView;
 class groupOfElements;
 class binding;
 class displacementField;
-template<class T1,class T2> class IPField;
+class IPField;
 template<class T1,class T2> class DgC0BilinearTerm;
 template<class T1> class DgC0LinearTerm;
 
 struct BoundaryCondition
 {
-  enum location{UNDEF,ON_VERTEX,ON_EDGE,ON_FACE,ON_VOLUME};
+  enum location{UNDEF,ON_VERTEX,ON_EDGE,ON_FACE,ON_VOLUME,PRESSURE};
   location onWhat; // on vertices or elements
   int _tag; // tag for the dofManager
   groupOfElements *g; // support for this BC
@@ -57,7 +57,7 @@ struct neumannBC  : public BoundaryCondition
     else
       integ = new GaussQuadrature(GaussQuadrature::ValVal);
   }
-  //~neumannBC(){delete integ;} // segmentation fault si delete ??
+  //~neumannBC(){delete integ;} // segmentation fault si delete ?? car push_back in allNeumann puis "neu" est effacé lors de l'initialisation
 };
 
 class DgC0PlateSolver
@@ -66,10 +66,8 @@ class DgC0PlateSolver
   GModelWithInterface *pModel;
   int _dim, _tag;
   dofManager<double> *pAssembler;
-  DgC0FunctionSpace<SVector3> *LagSpace;
+  FunctionSpace<SVector3> *LagSpace;
   dgGroupCollection _groups;
-  // young modulus and poisson coefficient per physical
-  //std::vector<partDomain> elasticFields;
   std::vector<partDomain*> domainVector;
   // neumann BC
   std::vector<neumannBC> allNeumann;
@@ -79,7 +77,6 @@ class DgC0PlateSolver
   std::map<int,materialLaw*> maplaw;
   // physical entities that are initialy broken
   std::vector<int> initbrokeninter;
-
 
   // map to archive force
   std::map<int,std::vector<Dof> > aef;
@@ -94,6 +91,7 @@ class DgC0PlateSolver
   double _tol; // relative tolerance for iteration not used for StaticLinearScheme but it is not necesary to derive class because (small useless data)
   int nsba; // number of step between 2 archiving (=1 by default)
   bool hasInterface;
+  bool fullDg; // Used to know which functionSpace has to be created. Remove this when FunctionSpace will be declared in partDomain
 
   // Function to initiate the solver before solve
   // (create interfaceElement and link the materialLaw and dgLinearShellDomain)
@@ -101,19 +99,19 @@ class DgC0PlateSolver
 
   // Function used by non linear solver
   void NewtonRaphson(linearSystem<double> *lsys, dofManager<double> *pAssembler, displacementField *ufield,
-                     IPField<partDomain*,DgC0FunctionSpace<SVector3> > *ipf,
+                     IPField *ipf,
                      std::vector<MInterfaceElement*> &vinter);
 
   double computeNorm0(linearSystem<double> *lsys, dofManager<double> *pAssembler, displacementField *ufield,
-                      IPField<partDomain*,DgC0FunctionSpace<SVector3> > *ipf,
+                      IPField *ipf,
                       std::vector<MInterfaceElement*> &vinter);
 
   double computeRightHandSide(linearSystem<double> *lsys, dofManager<double> *pAssembler, displacementField *ufield,
-                                    IPField<partDomain*,DgC0FunctionSpace<SVector3> > *ipf,
+                                    IPField *ipf,
                                     std::vector<MInterfaceElement*> &vinter);
 
   void computeStiffMatrix(linearSystem<double> *lsys, dofManager<double> *pAssembler,
-                                    displacementField *ufield, IPField<partDomain*,DgC0FunctionSpace<SVector3> > *ipf);
+                                    displacementField *ufield, IPField *ipf);
 
  public : //protected with lua ??
   enum solver{ Gmm=0,Taucs=1,Petsc=2};
@@ -121,7 +119,7 @@ class DgC0PlateSolver
   solver whatSolver; //  Solver used to solve
   scheme whatScheme; // scheme used to solve equation
  public:
-  DgC0PlateSolver(int tag) : _tag(tag),LagSpace(0),pAssembler(0), numstep(1), endtime(1.), _tol(1.e-6), nsba(1),
+  DgC0PlateSolver(int tag) : _tag(tag), fullDg(false), LagSpace(0),pAssembler(0), numstep(1), endtime(1.), _tol(1.e-6), nsba(1),
                              whatSolver(DgC0PlateSolver::Gmm), whatScheme(DgC0PlateSolver::StaticLinear),
                              _beta1(10.), _beta2(10.), _beta3(10.), hasInterface(false){} // default Gmm and static linear scheme
 
@@ -138,6 +136,8 @@ class DgC0PlateSolver
   void setScheme(const int s){whatScheme=(scheme)s;}
   void setSNLData(const int ns, const double et, const double reltol);
   void setStepBetweenArchiving(const int n){nsba = n;}
+  void setFormulation(const int f){ f==0 ? fullDg = false : fullDg = true;}
+  bool getFormulation() const{return fullDg;}
   int getStepBetweenArchiving() const{return nsba;}
   int getNumStep() const{return numstep;}
   double getEndTime() const{return endtime;}
@@ -149,7 +149,7 @@ class DgC0PlateSolver
   virtual materialLaw* getMaterialLaw(const int num);
   virtual bool IsInterface() const{return hasInterface;}
 
-  // create interfaceelement with dgGoupOfElement from dg projet doesn't work (segmentation fault)
+  // create interfaceelement with dgGoupOfElement from dg project doesn't work (segmentation fault)
   virtual void createInterfaceElement_2();
 
   virtual std::vector<Dof> getDofArchForce();
@@ -164,9 +164,10 @@ class DgC0PlateSolver
   virtual void addForce(std::string onwhat, const int numphys, const double xval, const double yval, const double zval);
   virtual void addIndepDisp(std::string onwhat, const int numphys, const int comp, const double value);
   virtual void addIndepForce(std::string onwhat, const int numphys, const double xval, const double yval, const double zval);
-  virtual void addArchivingEdgeForce(const int numphys, const int comp);
+  virtual void addArchivingForceForPhysicalGroup(const int numphys, const int comp);
   virtual void addArchivingNodeDisplacement(const int num, const int comp);
   virtual void addPhysInitBroken(const int phys);
+  virtual void addPressureOnPhysicalGroup(const int numphys, const double press);
   static void registerBindings(binding *b);
 };
 

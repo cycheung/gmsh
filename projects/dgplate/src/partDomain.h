@@ -21,7 +21,7 @@
 template<class T1, class T2> class DgC0BilinearTerm;
 template<class T1> class DgC0LinearTerm;
 class displacementField;
-template<class T1,class T2> class IPField;
+class IPField;
 struct SolElementType{
   enum eltype{ShellPlaneStress, ShellPlaneStressWTI, ShellPlaneStressWF};
 };
@@ -139,7 +139,7 @@ class dgLinearShellDomain : public dgPartDomain{
   //~dgLinearShellDomain(){delete mat; delete g;} //If I delete mat here plante why ?? delete g ??
   double getThickness() const;
   virtual void setGaussIntegrationRule();
-  void InitializeTerms(DgC0FunctionSpace<SVector3>& space1_,displacementField *uf,IPField<partDomain*,DgC0FunctionSpace<SVector3> >*ip,
+  void InitializeTerms(FunctionSpace<SVector3>& space1_,displacementField *uf,IPField *ip,
                        double beta1, double beta2, double beta3);
   // lua interaction
   // function used by lua to set the properties

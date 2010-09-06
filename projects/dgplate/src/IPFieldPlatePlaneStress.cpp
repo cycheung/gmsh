@@ -11,7 +11,7 @@
 //
 #include "IPField.h"
 // Functions to update 1 State
-template<> void IPField<partDomain*,DgC0FunctionSpace<SVector3> >::compute1stateShellPlaneStress(IPState::whichState ws, partDomain* ef){
+void IPField::compute1stateShellPlaneStress(IPState::whichState ws, partDomain* ef){
   SVector3 val; // value of a vertex displacement
   IntPt *GP;
   std::vector<TensorialTraits<double>::GradType> Grads,Gradm,Gradp;
@@ -129,11 +129,8 @@ template<> void IPField<partDomain*,DgC0FunctionSpace<SVector3> >::compute1state
 }
 
 // Compute ipv on a interfaceElement
-template<> void IPField<partDomain*,DgC0FunctionSpace<SVector3> >::computeIpvShellPlaneStress(MInterfaceElement *ie,
-                                                                                                 const int num,
-                                                                                                 const IPState::whichState ws,
-                                                                                                 partDomain* ef,
-                                                                                                 const bool virt){
+void IPField::computeIpvShellPlaneStress(MInterfaceElement *ie, const int num, const IPState::whichState ws,
+                                          partDomain* ef, const bool virt){
   SVector3 val; // value of a vertex displacement
   IntPt *GP;
   std::vector<TensorialTraits<double>::GradType> Grads,Gradm,Gradp;
@@ -220,8 +217,7 @@ template<> void IPField<partDomain*,DgC0FunctionSpace<SVector3> >::computeIpvShe
   }
 }
 
-template<> void IPField<partDomain*,DgC0FunctionSpace<SVector3> >::computeIpvShellPlaneStress(MElement *e, IPState::whichState ws,
-                                                                                                 partDomain* ef){
+void IPField::computeIpvShellPlaneStress(MElement *e, IPState::whichState ws, partDomain* ef){
   SVector3 val; // value of a vertex displacement
   IntPt *GP;
   std::vector<TensorialTraits<double>::GradType> Grads;
@@ -252,10 +248,8 @@ template<> void IPField<partDomain*,DgC0FunctionSpace<SVector3> >::computeIpvShe
 
 
 // Function to compute VonMises stress
-template<> double IPField<partDomain*,DgC0FunctionSpace<SVector3> >::getVMShellPlaneStress(MElement *ele,
-                                                                                              const IPState::whichState ws,
-                                                                                              const int num,
-                                                                                              const partDomain *elas) const{
+double IPField::getVMShellPlaneStress(MElement *ele, const IPState::whichState ws, const int num,
+                                       const partDomain *elas) const{
   double svm =0.;
   if(num<10000){ // VonMises at a Gauss Point
     IPState* ips = (*_AIPS->getIPstate(ele->getNum()))[num];
@@ -320,10 +314,8 @@ template<> double IPField<partDomain*,DgC0FunctionSpace<SVector3> >::getVMShellP
 }
 
 // Function to compute VonMises stress
-template<> double IPField<partDomain*,DgC0FunctionSpace<SVector3> >::getSigmaWithOperationShellPlaneStress(MElement *ele,
-                                                                                              const IPState::whichState ws,
-                                                                                              const int num, const component::enumcomp cmp,
-                                                                                              const partDomain *elas) const{
+double IPField::getSigmaWithOperationShellPlaneStress(MElement *ele, const IPState::whichState ws, const int num,
+                                                      const component::enumcomp cmp, const partDomain *elas) const{
   double sig =0.;
   if(num<10000){ // VonMises at a Gauss Point
     IPState* ips = (*_AIPS->getIPstate(ele->getNum()))[num];

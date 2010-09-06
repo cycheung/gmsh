@@ -36,7 +36,7 @@
 
 // Function to compute the initial norm
 double DgC0PlateSolver::computeNorm0(linearSystem<double> *lsys, dofManager<double> *pAssembler,
-                                     displacementField *ufield, IPField<partDomain*,DgC0FunctionSpace<SVector3> > *ipf,
+                                     displacementField *ufield, IPField *ipf,
                                      std::vector<MInterfaceElement*> &vinter){
   double normFext,normFint;
   // Set all component of RightHandSide to zero (only RightHandSide is used to compute norm
@@ -49,16 +49,24 @@ double DgC0PlateSolver::computeNorm0(linearSystem<double> *lsys, dofManager<doub
   if((dom0->getSolElemType()==SolElementType::ShellPlaneStress) or  (dom0->getSolElemType()==SolElementType::ShellPlaneStressWTI) or
      (dom0->getSolElemType()==SolElementType::ShellPlaneStressWF)){
     dgLinearShellDomain *dglshdom0 = dynamic_cast<dgLinearShellDomain*>(dom0);
+    DgC0FunctionSpace<SVector3>* dgspace = dynamic_cast<DgC0FunctionSpace<SVector3>*>(LagSpace);
     for (unsigned int i = 0; i < allNeumann.size(); i++)
     {
-      DgC0LoadTerm<SVector3> Lterm(*LagSpace,allNeumann[i]._f);
-      if(!dglshdom0->getFormulation())     // Use formulation of first field CHANGE THIS
-        Assemble(Lterm,*LagSpace,allNeumann[i].g->begin(),allNeumann[i].g->end(),*(allNeumann[i].integ),*pAssembler,false);
-      else{ // The boundary condition on face are computed separately (because of research of interfaceElement linked to the BC)
-        if(allNeumann[i].onWhat == BoundaryCondition::ON_FACE)
-          Assemble(Lterm,*LagSpace,allNeumann[i].g->begin(),allNeumann[i].g->end(),*(allNeumann[i].integ),*pAssembler,true);
-        else
-          Assemble(Lterm,*LagSpace,allNeumann[i].g->begin(),allNeumann[i].g->end(),*(allNeumann[i].integ),*pAssembler,vinter);
+      if(!(allNeumann[i].onWhat == BoundaryCondition::PRESSURE)){
+        DgC0LoadTerm<SVector3> Lterm(*dgspace,allNeumann[i]._f);
+        if(!dglshdom0->getFormulation())     // Use formulation of first field CHANGE THIS
+          Assemble(Lterm,*LagSpace,allNeumann[i].g->begin(),allNeumann[i].g->end(),*(allNeumann[i].integ),*pAssembler,false);
+        else{ // The boundary condition on face are computed separately (because of research of interfaceElement linked to the BC)
+          if(allNeumann[i].onWhat == BoundaryCondition::ON_FACE)
+            Assemble(Lterm,*LagSpace,allNeumann[i].g->begin(),allNeumann[i].g->end(),*(allNeumann[i].integ),*pAssembler,true);
+          else
+            Assemble(Lterm,*LagSpace,allNeumann[i].g->begin(),allNeumann[i].g->end(),*(allNeumann[i].integ),*pAssembler,vinter);
+        }
+      }
+      else{
+        DgC0PressureLoadTerm<SVector3> Lterm(*dgspace,allNeumann[i]._f);
+        Assemble(Lterm,*LagSpace,allNeumann[i].g->begin(),allNeumann[i].g->end(),*(allNeumann[i].integ),
+                 *pAssembler,dglshdom0->getFormulation()); // Use first domain change this
       }
     }
   }
@@ -75,15 +83,15 @@ double DgC0PlateSolver::computeNorm0(linearSystem<double> *lsys, dofManager<doub
   {
     partDomain *dom = *itdom;
     // Assembling loop on Elementary terms
-    MyAssemble(*(dom->getLinearBulkTerm()),*LagSpace,dom->g->begin(),dom->g->end(),*(dom->getBulkGaussIntegrationRule()),*pAssembler);
+    Assemble(*(dom->getLinearBulkTerm()),*LagSpace,dom->g->begin(),dom->g->end(),*(dom->getBulkGaussIntegrationRule()),*pAssembler);
 
     if(dom->IsInterfaceTerms()){
       dgPartDomain* dgdom = dynamic_cast<dgPartDomain*>(dom);
       // Assembling loop on elementary interface terms
-      MyAssemble(*(dgdom->getLinearInterfaceTerm()),*LagSpace,dgdom->gi.begin(),dgdom->gi.end(),*(dgdom->getInterfaceGaussIntegrationRule()),
+      MyAssembleOnInterface(*(dgdom->getLinearInterfaceTerm()),*LagSpace,dgdom->gi.begin(),dgdom->gi.end(),*(dgdom->getInterfaceGaussIntegrationRule()),
                         *pAssembler); // Use the same GaussQuadrature rule than on the boundary
       // Assembling loop on elementary boundary interface terms
-      MyAssemble(*(dgdom->getLinearVirtualInterfaceTerm()),*LagSpace,dgdom->gib.begin(),dgdom->gib.end(),*(dgdom->getInterfaceGaussIntegrationRule()),
+      MyAssembleOnInterface(*(dgdom->getLinearVirtualInterfaceTerm()),*LagSpace,dgdom->gib.begin(),dgdom->gib.end(),*(dgdom->getInterfaceGaussIntegrationRule()),
                         *pAssembler); // Use the same GaussQuadrature rule than on the boundary
     }
   }
@@ -95,7 +103,7 @@ double DgC0PlateSolver::computeNorm0(linearSystem<double> *lsys, dofManager<doub
 }
 // compute Fext-Fint
 double DgC0PlateSolver::computeRightHandSide(linearSystem<double> *lsys, dofManager<double> *pAssembler,
-                                    displacementField *ufield, IPField<partDomain*,DgC0FunctionSpace<SVector3> > *ipf,
+                                    displacementField *ufield, IPField *ipf,
                                     std::vector<MInterfaceElement*> &vinter){
   lsys->zeroRightHandSide();
   dofManagerNLS<double> *pA2 = dynamic_cast<dofManagerNLS<double>*>(pAssembler);
@@ -104,15 +112,15 @@ double DgC0PlateSolver::computeRightHandSide(linearSystem<double> *lsys, dofMana
   {
     partDomain *dom = *itdom;
     dom->inverseLinearTermSign(); // Because rightHandSide = Fext - Fint
-    MyAssemble(*(dom->getLinearBulkTerm()),*LagSpace,dom->g->begin(),dom->g->end(),*(dom->getBulkGaussIntegrationRule()),*pAssembler);
+    Assemble(*(dom->getLinearBulkTerm()),*LagSpace,dom->g->begin(),dom->g->end(),*(dom->getBulkGaussIntegrationRule()),*pAssembler);
 
     if(dom->IsInterfaceTerms()){
       dgPartDomain *dgdom = dynamic_cast<dgPartDomain*>(dom);
       // Assembling loop on elementary interface terms
-      MyAssemble(*(dgdom->getLinearInterfaceTerm()),*LagSpace,dgdom->gi.begin(),dgdom->gi.end(),*(dgdom->getInterfaceGaussIntegrationRule()),
+      MyAssembleOnInterface(*(dgdom->getLinearInterfaceTerm()),*LagSpace,dgdom->gi.begin(),dgdom->gi.end(),*(dgdom->getInterfaceGaussIntegrationRule()),
                         *pAssembler); // Use the same GaussQuadrature rule than on the boundary
       // Assembling loop on elementary boundary interface terms
-      MyAssemble(*(dgdom->getLinearVirtualInterfaceTerm()),*LagSpace,dgdom->gib.begin(),dgdom->gib.end(),
+      MyAssembleOnInterface(*(dgdom->getLinearVirtualInterfaceTerm()),*LagSpace,dgdom->gib.begin(),dgdom->gib.end(),
                  *(dgdom->getInterfaceGaussIntegrationRule()),*pAssembler); // Use the same GaussQuadrature rule than on the boundary
     }
     dom->inverseLinearTermSign(); // Otherwise Fint has not the right side
@@ -125,16 +133,25 @@ double DgC0PlateSolver::computeRightHandSide(linearSystem<double> *lsys, dofMana
   if((dom0->getSolElemType()==SolElementType::ShellPlaneStress) or  (dom0->getSolElemType()==SolElementType::ShellPlaneStressWTI) or
      (dom0->getSolElemType()==SolElementType::ShellPlaneStressWF)){
     dgLinearShellDomain *dglshdom0 = dynamic_cast<dgLinearShellDomain*>(dom0);
+    DgC0FunctionSpace<SVector3> *dgspace = dynamic_cast<DgC0FunctionSpace<SVector3>*>(LagSpace);
     for (unsigned int i = 0; i < allNeumann.size(); i++)
     {
-      DgC0LoadTerm<SVector3> Lterm(*LagSpace,allNeumann[i]._f);
-      if(!dglshdom0->getFormulation())     // Use formulation of first field CHANGE THIS
-        Assemble(Lterm,*LagSpace,allNeumann[i].g->begin(),allNeumann[i].g->end(),*(allNeumann[i].integ),*pAssembler,false);
-      else{ // The boundary condition on face are computed separately (because of research of interfaceElement linked to the BC)
-        if(allNeumann[i].onWhat == BoundaryCondition::ON_FACE)
-          Assemble(Lterm,*LagSpace,allNeumann[i].g->begin(),allNeumann[i].g->end(),*(allNeumann[i].integ),*pAssembler,true);
-        else
-          Assemble(Lterm,*LagSpace,allNeumann[i].g->begin(),allNeumann[i].g->end(),*(allNeumann[i].integ),*pAssembler,vinter);
+      if(!(allNeumann[i].onWhat == BoundaryCondition::PRESSURE)){
+        DgC0LoadTerm<SVector3> Lterm(*dgspace,allNeumann[i]._f);
+        if(!dglshdom0->getFormulation())     // Use formulation of first field CHANGE THIS
+          Assemble(Lterm,*LagSpace,allNeumann[i].g->begin(),allNeumann[i].g->end(),*(allNeumann[i].integ),*pAssembler,false);
+        else{ // The boundary condition on face are computed separately (because of research of interfaceElement linked to the BC)
+          if(allNeumann[i].onWhat == BoundaryCondition::ON_FACE)
+            Assemble(Lterm,*LagSpace,allNeumann[i].g->begin(),allNeumann[i].g->end(),*(allNeumann[i].integ),*pAssembler,true);
+          else
+            Assemble(Lterm,*LagSpace,allNeumann[i].g->begin(),allNeumann[i].g->end(),*(allNeumann[i].integ),*pAssembler,vinter);
+        }
+      }
+      else{
+        DgC0PressureLoadTerm<SVector3> Lterm(*dgspace,allNeumann[i]._f);
+        Assemble(Lterm,*LagSpace,allNeumann[i].g->begin(),allNeumann[i].g->end(),*(allNeumann[i].integ),
+                 *pAssembler,dglshdom0->getFormulation()); // Use first domain change this ??
+
       }
     }
   }
@@ -146,21 +163,21 @@ double DgC0PlateSolver::computeRightHandSide(linearSystem<double> *lsys, dofMana
 }
 
 void DgC0PlateSolver::computeStiffMatrix(linearSystem<double> *lsys, dofManager<double> *pAssembler,
-                                    displacementField *ufield, IPField<partDomain*,DgC0FunctionSpace<SVector3> > *ipf){
+                                    displacementField *ufield, IPField *ipf){
 
   for(std::vector<partDomain*>::iterator itdom=domainVector.begin(); itdom!=domainVector.end(); ++itdom)
   {
     partDomain* dom = *itdom;
     // Assembling loop on Elementary terms
-    MyAssemble(*(dom->getBilinearBulkTerm()),*LagSpace,dom->g->begin(),dom->g->end(),*(dom->getBulkGaussIntegrationRule()),*pAssembler);
+    Assemble(*(dom->getBilinearBulkTerm()),*LagSpace,dom->g->begin(),dom->g->end(),*(dom->getBulkGaussIntegrationRule()),*pAssembler);
 
     if(dom->IsInterfaceTerms()){
       dgPartDomain *dgdom = dynamic_cast<dgPartDomain*>(dom);
       // Assembling loop on elementary interface terms
-      MyAssemble(*(dgdom->getBilinearInterfaceTerm()),*LagSpace,dgdom->gi.begin(),dgdom->gi.end(),
+      MyAssembleOnInterface(*(dgdom->getBilinearInterfaceTerm()),*LagSpace,dgdom->gi.begin(),dgdom->gi.end(),
                  *(dgdom->getInterfaceGaussIntegrationRule()),*pAssembler); // Use the same GaussQuadrature rule than on the boundary
      // Assembling loop on elementary boundary interface terms
-      MyAssemble(*(dgdom->getBilinearVirtualInterfaceTerm()),*LagSpace,dgdom->gib.begin(),dgdom->gib.end(),
+      MyAssembleOnInterface(*(dgdom->getBilinearVirtualInterfaceTerm()),*LagSpace,dgdom->gib.begin(),dgdom->gib.end(),
                  *(dgdom->getInterfaceGaussIntegrationRule()),*pAssembler); // Use the same GaussQuadrature rule than on the boundary
     }
   }
@@ -168,7 +185,7 @@ void DgC0PlateSolver::computeStiffMatrix(linearSystem<double> *lsys, dofManager<
 
 // Newton Raphson scheme to solve one step
 void DgC0PlateSolver::NewtonRaphson(linearSystem<double> *lsys, dofManager<double> *pAssembler,displacementField *ufield,
-                                    IPField<partDomain*,DgC0FunctionSpace<SVector3> > *ipf,
+                                    IPField *ipf,
                                     std::vector<MInterfaceElement*> &vinter){
   // compute ipvariable
   ipf->compute1state(IPState::current);
@@ -273,10 +290,12 @@ void DgC0PlateSolver::solveSNL()
       if(!dglshdom0->getFormulation())
         FixNodalDofs(*LagSpace,allDirichlet[i].g->begin(),allDirichlet[i].g->end(),*pAssembler,allDirichlet[i]._f,filter,false);
       else{ // BC on face are computed separately
+        // Full dg only --> dynamic cast OK
+        DgC0FullDgFunctionSpaceBase* dgspace = dynamic_cast<DgC0FullDgFunctionSpaceBase*>(LagSpace);
         if(allDirichlet[i].onWhat == BoundaryCondition::ON_FACE)
           FixNodalDofs(*LagSpace,allDirichlet[i].g->begin(),allDirichlet[i].g->end(),*pAssembler,allDirichlet[i]._f,filter,true);
         else
-          FixNodalDofs(*LagSpace,allDirichlet[i].g->begin(),allDirichlet[i].g->end(),*pAssembler,allDirichlet[i]._f,filter,vinter,vinternalInterface);
+          FixNodalDofs(*dgspace,allDirichlet[i].g->begin(),allDirichlet[i].g->end(),*pAssembler,allDirichlet[i]._f,filter,vinter,vinternalInterface);
       }
     }
     // we number the dofs : when a dof is numbered, it cannot be numbered
@@ -299,8 +318,10 @@ void DgC0PlateSolver::solveSNL()
   // iterative scheme (loop on timestep)
   double curtime = 0.;
   double dt = double(endtime)/double(numstep);
-  displacementField ufield(pAssembler,domainVector,3,LagSpace->getId(),anoded); // 3 components by nodes User choice ??
-  IPField<partDomain*,DgC0FunctionSpace<SVector3> > ipf(&domainVector,pAssembler,LagSpace,pModel,&ufield); // Field for GaussPoint
+// No getId function in FunctionSpace --> dynamic_cast change this
+  DgC0FunctionSpace<SVector3> *dgspace = dynamic_cast<DgC0FunctionSpace<SVector3>*>(LagSpace);
+  displacementField ufield(pAssembler,domainVector,3,dgspace->getId(),anoded); // 3 components by nodes User choice ??
+  IPField ipf(&domainVector,pAssembler,dgspace,pModel,&ufield); // Field for GaussPoint
   ipf.compute1state(IPState::initial);
   ipf.initialBroken(pModel, initbrokeninter);
   ipf.copy(IPState::initial,IPState::previous); // if initial stress previous must be initialized before computation
@@ -339,10 +360,12 @@ void DgC0PlateSolver::solveSNL()
       if(!dglsh0->getFormulation())
         FixNodalDofs(*LagSpace,allDirichlet[i].g->begin(),allDirichlet[i].g->end(),*pAssembler,allDirichlet[i]._f,filter,false);
       else{ // BC on face are computed separately
+        // Full Dg only --> dynamic cast OK
+        DgC0FullDgFunctionSpaceBase *dgspace = dynamic_cast<DgC0FullDgFunctionSpaceBase*>(LagSpace);
         if(allDirichlet[i].onWhat == BoundaryCondition::ON_FACE)
           FixNodalDofs(*LagSpace,allDirichlet[i].g->begin(),allDirichlet[i].g->end(),*pAssembler,allDirichlet[i]._f,filter,true);
         else
-          FixNodalDofs(*LagSpace,allDirichlet[i].g->begin(),allDirichlet[i].g->end(),*pAssembler,allDirichlet[i]._f,filter,vinter,vinternalInterface);
+          FixNodalDofs(*dgspace,allDirichlet[i].g->begin(),allDirichlet[i].g->end(),*pAssembler,allDirichlet[i]._f,filter,vinter,vinternalInterface);
       }
     }
   }

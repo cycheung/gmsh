@@ -20,45 +20,45 @@
 #include "MInterfaceElement.h"
 #include "DgC0PlateFunctionSpace.h"
 
-// One  != with Solver/solverAlgorithms term.getKeys instead of space.getKeys
-template<class Iterator,class Assembler> void MyAssemble(DgC0BilinearTermBase &term,DgC0FunctionSpaceBase &space,Iterator itbegin,Iterator itend,QuadratureBase &integrator,
+// One !=ce Dynamic cast on function space to have the good getKeysFunction oninterface
+// and iterator on interfaceElement
+template<class Iterator,class Assembler> void MyAssembleOnInterface(BilinearTermBase &term,FunctionSpaceBase &space,Iterator itbegin,Iterator itend,QuadratureBase &integrator,
                                                          Assembler &assembler) // symmetric
 {
   fullMatrix<typename Assembler::dataMat> localMatrix;
   std::vector<Dof> R;
+  DgC0FunctionSpaceBase *dgspace = dynamic_cast<DgC0FunctionSpaceBase*>(&space);
   for (Iterator it = itbegin;it!=itend; ++it)
   {
-    MElement *e = *it;
+    MInterfaceElement *e = *it;
     R.clear();
     IntPt *GP;
     int npts=integrator.getIntPoints(e,&GP);
     term.get(e,npts,GP,localMatrix);
-    term.getKeys(e,R);
+    dgspace->getKeys(e,R);
     assembler.assemble(R, localMatrix);
   }
 }
-// Idem for forces
-template<class Iterator,class Assembler> void MyAssemble(DgC0LinearTermBase &term,DgC0FunctionSpaceBase &space,Iterator itbegin,
+template<class Iterator,class Assembler> void MyAssembleOnInterface(LinearTermBase &term,FunctionSpaceBase &space,Iterator itbegin,
                                                          Iterator itend,QuadratureBase &integrator,Assembler &assembler) // symmetric
 {
   fullVector<typename Assembler::dataMat> localVector;
   std::vector<Dof> R;
+  DgC0FunctionSpaceBase *dgspace = dynamic_cast<DgC0FunctionSpaceBase*>(&space);
   for (Iterator it = itbegin;it!=itend; ++it)
   {
-    MElement *e = *it;
+    MInterfaceElement *e = *it;
     R.clear();
     IntPt *GP;
     int npts=integrator.getIntPoints(e,&GP);
     term.get(e,npts,GP,localVector);
-    //printf("Element %d\n",e->getNum());
-    //for(int i=0;i<localVector.size();i++) printf("%lf\n",localVector(i));
-    term.getKeys(e,R);
+    dgspace->getKeys(e,R);
     assembler.assemble(R, localVector);
   }
 }
 
 
-template<class Iterator,class Assembler> void Assemble(DgC0LinearTermBase &term,DgC0FunctionSpaceBase &space,Iterator itbegin,
+template<class Iterator,class Assembler> void Assemble(LinearTermBase &term,FunctionSpaceBase &space,Iterator itbegin,
                                                        Iterator itend,QuadratureBase &integrator,Assembler &assembler,
                                                        std::vector<MInterfaceElement*> vinter)
 {
@@ -95,14 +95,15 @@ template<class Iterator,class Assembler> void Assemble(DgC0LinearTermBase &term,
     IntPt *GP;
     int npts=integrator.getIntPoints(e,&GP);
     term.get(e,npts,GP,localVector);
-    space.getKeys(ielem->getElem(0),R,true,pver);
+    DgC0FullDgFunctionSpaceBase* dgspace = dynamic_cast<DgC0FullDgFunctionSpaceBase*>(&space);
+    dgspace->getKeys(ielem->getElem(0),R,pver);
     assembler.assemble(R, localVector);
   }
 }
 
 // Dirichlet
 // TODO regroup this fuinction with FixNodalDofs
-template<class Assembler> void FixNodalDofs(DgC0FunctionSpaceBase &space,MElement *e,Assembler &assembler,
+template<class Assembler> void FixNodalDofs(DgC0FullDgFunctionSpaceBase &space,MElement *e,Assembler &assembler,
                                             simpleFunction<typename Assembler::dataVec> &fct,FilterDof &filter,
                                             std::vector<MInterfaceElement*> &inter, std::vector<MInterfaceElement*> &internalInterface)
 {
@@ -142,7 +143,8 @@ template<class Assembler> void FixNodalDofs(DgC0FunctionSpaceBase &space,MElemen
       vernum.push_back(temp);
     }
     std::vector<int> *pver = &vernum;
-    space.getKeys(ielem->getElem(0),R,true,pver);
+//    DgC0FunctionSpaceBase* dgspace = dynamic_cast<DgC0FunctionSpaceBase*>(&space);
+    space.getKeys(ielem->getElem(0),R,pver);
     if(InternalEdge){
       ielem->getLocalVertexNum(1,vernum);
       if(nv == 1){ // if boundary condition is applied on a vertex
@@ -150,7 +152,7 @@ template<class Assembler> void FixNodalDofs(DgC0FunctionSpaceBase &space,MElemen
         vernum.clear();
         vernum.push_back(temp);
       }
-      space.getKeys(ielem->getElem(1),R,true,pver);
+      space.getKeys(ielem->getElem(1),R,pver);
     }
     for (std::vector<Dof>::iterator itd=R.begin();itd!=R.end();++itd)
     {
@@ -171,7 +173,7 @@ template<class Assembler> void FixNodalDofs(DgC0FunctionSpaceBase &space,MElemen
   }
 }
 
-template<class Iterator,class Assembler> void FixNodalDofs(DgC0FunctionSpaceBase &space,Iterator itbegin,Iterator itend,Assembler &assembler,
+template<class Iterator,class Assembler> void FixNodalDofs(DgC0FullDgFunctionSpaceBase &space,Iterator itbegin,Iterator itend,Assembler &assembler,
                                                            simpleFunction<typename Assembler::dataVec> &fct,FilterDof &filter,
                                                            std::vector<MInterfaceElement*> &inter,std::vector<MInterfaceElement*> &vinternalinter)
 {
@@ -182,24 +184,26 @@ template<class Iterator,class Assembler> void FixNodalDofs(DgC0FunctionSpaceBase
 }
 
 // Allow to know the total number of dof
-template<class Iterator,class Assembler> void NumberDofs(DgC0FunctionSpaceBase &space,Iterator itbegin,Iterator itend,Assembler &assembler,bool fullDg)
+template<class Iterator,class Assembler> void NumberDofs(FunctionSpaceBase &space,Iterator itbegin,Iterator itend,Assembler &assembler,bool fullDg)
 {
  for (Iterator it=itbegin;it!=itend;++it)
   {
     MElement *e=*it;
     std::vector<Dof> R;
-    space.getKeys(e,R,fullDg);
+    DgC0FunctionSpace<SVector3> *dgspace = dynamic_cast<DgC0FunctionSpace<SVector3>*>(&space);
+    dgspace->getKeys(e,R);
     int nbdofs=R.size();
     for (int i=0;i<nbdofs;++i) assembler.numberDof(R[i]);
   }
 }
 
-template<class Assembler> void FixNodalDofs(DgC0FunctionSpaceBase &space,MElement *e,Assembler &assembler,simpleFunction<typename Assembler::dataVec> &fct,FilterDof &filter,bool fullDg)
+template<class Assembler> void FixNodalDofs(FunctionSpaceBase &space,MElement *e,Assembler &assembler,simpleFunction<typename Assembler::dataVec> &fct,FilterDof &filter,bool fullDg)
 {
   std::vector<MVertex*> tabV;
   int nv=e->getNumVertices();
   std::vector<Dof> R;
-  space.getKeys(e,R,fullDg);
+  DgC0FunctionSpace<SVector3> *dgspace = dynamic_cast<DgC0FunctionSpace<SVector3>*>(&space);
+  dgspace->getKeys(e,R);
   tabV.reserve(nv);
   for (int i=0;i<nv;++i) tabV.push_back(e->getVertex(i));
 
@@ -241,7 +245,7 @@ template<class Assembler> void FixNodalDofs(DgC0FunctionSpaceBase &space,MElemen
   }
 }
 
-template<class Iterator,class Assembler> void FixNodalDofs(DgC0FunctionSpaceBase &space,Iterator itbegin,Iterator itend,Assembler &assembler,simpleFunction<typename Assembler::dataVec> &fct,FilterDof &filter,bool fullDg)
+template<class Iterator,class Assembler> void FixNodalDofs(FunctionSpaceBase &space,Iterator itbegin,Iterator itend,Assembler &assembler,simpleFunction<typename Assembler::dataVec> &fct,FilterDof &filter,bool fullDg)
 {
   for (Iterator it=itbegin;it!=itend;++it)
   {
@@ -249,7 +253,7 @@ template<class Iterator,class Assembler> void FixNodalDofs(DgC0FunctionSpaceBase
   }
 }
 
-template<class Iterator,class Assembler> void Assemble(DgC0LinearTermBase &term,DgC0FunctionSpaceBase &space,Iterator itbegin,Iterator itend,QuadratureBase &integrator,
+template<class Iterator,class Assembler> void Assemble(LinearTermBase &term,FunctionSpaceBase &space,Iterator itbegin,Iterator itend,QuadratureBase &integrator,
                                                        Assembler &assembler,bool fullDg)
 {
   fullVector<typename Assembler::dataMat> localVector;
@@ -261,7 +265,8 @@ template<class Iterator,class Assembler> void Assemble(DgC0LinearTermBase &term,
     IntPt *GP;
     int npts=integrator.getIntPoints(e,&GP);
     term.get(e,npts,GP,localVector);
-    space.getKeys(e,R,fullDg);
+    DgC0FunctionSpace<SVector3> *dgspace = dynamic_cast<DgC0FunctionSpace<SVector3>*>(&space);
+    dgspace->getKeys(e,R);
     assembler.assemble(R, localVector);
   }
 }

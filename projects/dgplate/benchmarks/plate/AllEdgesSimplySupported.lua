@@ -44,6 +44,7 @@ myfield1:lawnumber(lawnum)
 
 -- creation of Solver
 mysolver = DgC0PlateSolver(1000)
+mysolver:formulation(fullDg)
 mysolver:readmsh(meshfile)
 mysolver:addDgLinearElasticShellDomain(myfield1,nfield,2)
 mysolver:AddLinearElasticLawPlaneStress(law1)

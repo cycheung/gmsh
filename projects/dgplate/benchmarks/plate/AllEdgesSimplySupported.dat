@@ -1,3 +1,4 @@
+formulation 0
 MeshFile plate.msh
 //                   num  E    nu
 ElasticPlaneStressLaw 1  1.e6  0.3

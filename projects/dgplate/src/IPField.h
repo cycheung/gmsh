@@ -17,34 +17,31 @@
 #include"IPState.h"
 #include "displacementField.h"
 #include "elementField.h"
-template<class T1, class T2>
 class IPField : public elementField {
   protected :
-    std::vector<T1>* _efield;
+    std::vector<partDomain*>* _efield;
     dofManager<double> *_dm;
-    T2* _space;
-    //QuadratureBase *_intBulk;
-    //QuadratureBase *_intBound;
+    DgC0FunctionSpace<SVector3> *_space;
     AllIPState *_AIPS;
     displacementField *_ufield; // space field ??
 
     std::pair<MInterfaceElement*,int> ctp; // use to know the crack tip position;
 
     // function to compute state depends on element type (template in place of dynamic cast ??)
-    void compute1stateShellPlaneStress(IPState::whichState ws, T1 ef);
+    void compute1stateShellPlaneStress(IPState::whichState ws, partDomain* ef);
     void computeIpvShellPlaneStress(MInterfaceElement* iele, const int num,
-                                    const IPState::whichState ws, T1 ef, const bool virt);
-    void computeIpvShellPlaneStress(MElement* ele, const IPState::whichState ws, T1 ef);
+                                    const IPState::whichState ws, partDomain* ef, const bool virt);
+    void computeIpvShellPlaneStress(MElement* ele, const IPState::whichState ws, partDomain* ef);
     double getVMShellPlaneStress(MElement *ele, const IPState::whichState ws,
                                  const int num, const partDomain *elas) const;
     double getSigmaWithOperationShellPlaneStress(MElement *ele, const IPState::whichState ws, const int num,
                                                      const component::enumcomp cmp, const partDomain *elas) const;
 
 
-    void compute1stateShellPlaneStressWTI(IPState::whichState ws, T1 ef);
+    void compute1stateShellPlaneStressWTI(IPState::whichState ws, partDomain* ef);
     void computeIpvShellPlaneStressWTI(MInterfaceElement* iele, const int num,
-                                       const IPState::whichState ws, T1 ef, const bool virt);
-    void computeIpvShellPlaneStressWTI(MElement* ele, const IPState::whichState ws, T1 ef);
+                                       const IPState::whichState ws, partDomain* ef, const bool virt);
+    void computeIpvShellPlaneStressWTI(MElement* ele, const IPState::whichState ws, partDomain* ef);
     double getVMShellPlaneStressWTI(MElement *ele, const IPState::whichState ws,
                                  const int num, const partDomain *elas, const int pos) const;
     double getStressWithOperationShellPlaneStressWTI(MElement *ele, const IPState::whichState ws, const int num,
@@ -54,10 +51,10 @@ class IPField : public elementField {
 
     const void getStressReducedWTI(MInterfaceElement *iele,const IPState::whichState ws,
                                   const int num,partDomain *elas, reductionElement &stressTensor,const int pos, const LocalBasis*[2]);
-    void compute1stateShellPlaneStressWF(IPState::whichState ws, T1 ef);
+    void compute1stateShellPlaneStressWF(IPState::whichState ws, partDomain* ef);
     void computeIpvShellPlaneStressWF(MInterfaceElement* iele, const int num,
-                                      const IPState::whichState ws, T1 ef, const bool virt);
-    void computeIpvShellPlaneStressWF(MElement* ele, const IPState::whichState ws, T1 ef);
+                                      const IPState::whichState ws, partDomain* ef, const bool virt);
+    void computeIpvShellPlaneStressWF(MElement* ele, const IPState::whichState ws, partDomain* ef);
     void setBroken(MInterfaceElement *ie,IPState::whichState ws, const int numminus, const int numplus, GaussQuadrature *intBound,
                    const double svm,const SolElementType::eltype elt, const double Gc, const double betaML, const bool tension_){
 
@@ -113,7 +110,7 @@ class IPField : public elementField {
     }
     // fracture criteria is based on Camacho & Ortiz Modelling of impact damage (Int J. Solids Structures 1996)
     // here this criteria is evaluated on lower and upper fiber of plate.
-    void computeFracture(IPState::whichState ws, T1 ef){
+    void computeFracture(IPState::whichState ws, partDomain* ef){
       if(ef->getSolElemType() == SolElementType::ShellPlaneStressWF){
         // For now no fracture at extremities (only MInterfaceElement and no VirtualInterfaceElement)
         IntPt *GP;
@@ -240,16 +237,19 @@ class IPField : public elementField {
                                               reductionElement &nhatmean, reductionElement &mhatmean){
     // find elasticField
     bool flag=false;
-    dgLinearShellDomain *ef;
-    for(int i=0;i<_efield->size();i++){
-      for(std::vector<MInterfaceElement*>::iterator it = (*_efield)[i].gi.begin(); it != (*_efield)[i].gi.end(); ++it){
+    dgPartDomain *ef;
+//    for(int i=0;i<_efield->size();i++){
+    for(std::vector<partDomain*>::iterator itdom= _efield->begin(); itdom!=_efield->end(); ++itdom){
+      //partDomain *dom = *itdom;
+      dgPartDomain *dgdom = dynamic_cast<dgPartDomain*>(*itdom);
+      for(std::vector<MInterfaceElement*>::iterator it = dgdom->gi.begin(); it != dgdom->gi.end(); ++it){
         MInterfaceElement *ie = *it;
         if(ie==iele){
           flag=true;
           break;
         }
       }
-      if(flag) {ef=&(*_efield)[i]; break;}
+      if(flag) {ef=dgdom; break;}
     }
     // get ipv
     IPVariablePlateOIWF *ipv;
@@ -269,10 +269,10 @@ class IPField : public elementField {
 
  public :
   enum ElemValue{mean=10001, max=10002, min=10003}; // enum to select a particular value on element
-  IPField(std::vector< T1 >* ef,dofManager<double>* pa,T2* sp,
+  IPField(std::vector<partDomain*>* ef,dofManager<double>* pa,DgC0FunctionSpace<SVector3>* sp,
           GModelWithInterface *pmo, displacementField* uf) : _efield(ef), _dm(pa), _space(sp),
                                                                            _ufield(uf),
-                                                                           elementField("stress.msh",1000000,1,
+                                                                           elementField("stress.msh",100000000,1,
                                                                                         elementField::ElementData,true){
   ctp.first = NULL; ctp.second = -1;
   system ("rm crackTipPosition.csv");
@@ -314,18 +314,19 @@ class IPField : public elementField {
   void computeIpv(MInterfaceElement *iele, const int num, IPState::whichState ws){
     // find the type of ipvariable linked to interface element
     bool flag = false;
-    for(std::vector<dgLinearShellDomain>::iterator itf = _efield->begin(); itf != _efield->end(); ++itf){
-      for(std::vector<MInterfaceElement*>::iterator it = itf->gi.begin(); it != itf->gi.end(); ++it){
+    for(std::vector<partDomain*>::iterator itf = _efield->begin(); itf != _efield->end(); ++itf){
+      dgPartDomain *dgdom = dynamic_cast<dgPartDomain*>(*itf);
+      for(std::vector<MInterfaceElement*>::iterator it = dgdom->gi.begin(); it != dgdom->gi.end(); ++it){
         if((*it) == iele ){
-          switch(itf->getSolElemType()){
+          switch(dgdom->getSolElemType()){
             case SolElementType::ShellPlaneStress :
-              this->computeIpvShellPlaneStress(iele,num,ws,&(*itf),false);
+              this->computeIpvShellPlaneStress(iele,num,ws,dgdom,false);
               break;
             case SolElementType::ShellPlaneStressWTI :
-              this->computeIpvShellPlaneStressWTI(iele,num,ws,&(*itf),false);
+              this->computeIpvShellPlaneStressWTI(iele,num,ws,dgdom,false);
               break;
             case SolElementType::ShellPlaneStressWF :
-              this->computeIpvShellPlaneStressWF(iele,num,ws,&(*itf),false);
+              this->computeIpvShellPlaneStressWF(iele,num,ws,dgdom,false);
               break;
           }
           flag = true;
@@ -334,18 +335,18 @@ class IPField : public elementField {
       }
       if(flag) break;
       else{  // search on boundary
-        for(std::vector<MInterfaceElement*>::iterator it = itf->gib.begin(); it != itf->gib.end(); ++it){
+        for(std::vector<MInterfaceElement*>::iterator it = dgdom->gib.begin(); it != dgdom->gib.end(); ++it){
           if((*it) == iele ){
             printf("OK\n");
-            switch(itf->getSolElemType()){
+            switch(dgdom->getSolElemType()){
               case SolElementType::ShellPlaneStress :
-                this->computeIpvShellPlaneStress(iele,num,ws,&(*itf),true);
+                this->computeIpvShellPlaneStress(iele,num,ws,dgdom,true);
                 break;
               case SolElementType::ShellPlaneStressWTI :
-                this->computeIpvShellPlaneStressWTI(iele,num,ws,&(*itf),true);
+                this->computeIpvShellPlaneStressWTI(iele,num,ws,dgdom,true);
                 break;
               case SolElementType::ShellPlaneStressWF :
-                this->computeIpvShellPlaneStressWF(iele,num,ws,&(*itf),true);
+                this->computeIpvShellPlaneStressWF(iele,num,ws,dgdom,true);
                 break;
             }
             flag = true;
@@ -361,18 +362,19 @@ class IPField : public elementField {
   void computeIpv(MElement *ele, IPState::whichState ws){
     // find the type of ipvariable linked to interface element
     bool flag = false;
-    for(std::vector<dgLinearShellDomain>::iterator itf = _efield->begin(); itf != _efield->end(); ++itf){
-      for(groupOfElements::elementContainer::iterator it = itf->g->begin(); it != itf->g->end(); ++it){
+    for(std::vector<partDomain*>::iterator itf = _efield->begin(); itf != _efield->end(); ++itf){
+      partDomain *dom = *itf;
+      for(groupOfElements::elementContainer::iterator it = dom->g->begin(); it != dom->g->end(); ++it){
         if((*it) == ele ){
-          switch(itf->getSolElemType()){
+          switch(dom->getSolElemType()){
             case SolElementType::ShellPlaneStress :
-              this->computeIpvShellPlaneStress(ele,ws,&(*itf));
+              this->computeIpvShellPlaneStress(ele,ws,dom);
               break;
             case SolElementType::ShellPlaneStressWTI :
-              this->computeIpvShellPlaneStressWTI(ele,ws,&(*itf));
+              this->computeIpvShellPlaneStressWTI(ele,ws,dom);
               break;
             case SolElementType::ShellPlaneStressWF :
-              this->computeIpvShellPlaneStressWF(ele,ws,&(*itf));
+              this->computeIpvShellPlaneStressWF(ele,ws,dom);
               break;
           }
           flag = true;

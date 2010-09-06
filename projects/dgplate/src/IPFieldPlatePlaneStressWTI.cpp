@@ -11,8 +11,7 @@
 //
 #include"IPField.h"
 
-template<> void IPField<partDomain*, DgC0FunctionSpace<SVector3> >::compute1stateShellPlaneStressWTI(IPState::whichState ws,
-                                                                                                        partDomain* ef){
+void IPField::compute1stateShellPlaneStressWTI(IPState::whichState ws, partDomain* ef){
   SVector3 val; // value of a vertex displacement
   IntPt *GP;
   //edge gauss point full dg
@@ -134,11 +133,8 @@ template<> void IPField<partDomain*, DgC0FunctionSpace<SVector3> >::compute1stat
   }
 }
 
-template<> void IPField<partDomain*, DgC0FunctionSpace<SVector3> >::computeIpvShellPlaneStressWTI(MInterfaceElement *ie,
-                                                                                                     const int num,
-                                                                                                     const IPState::whichState ws,
-                                                                                                     partDomain* ef,
-                                                                                                     const bool virt){
+void IPField::computeIpvShellPlaneStressWTI(MInterfaceElement *ie, const int num, const IPState::whichState ws,
+                                             partDomain* ef, const bool virt){
   SVector3 val; // value of a vertex displacement
   IntPt *GP;
   //edge gauss point full dg
@@ -227,8 +223,7 @@ template<> void IPField<partDomain*, DgC0FunctionSpace<SVector3> >::computeIpvSh
   }
 }
 
-template<> void IPField<partDomain*, DgC0FunctionSpace<SVector3> >::computeIpvShellPlaneStressWTI(MElement *e, IPState::whichState ws,
-                                                                                                        partDomain* ef){
+void IPField::computeIpvShellPlaneStressWTI(MElement *e, IPState::whichState ws, partDomain* ef){
   int edge = e->getNumEdges();
   IntPt *GP;
   int npts_bulk=ef->getBulkGaussIntegrationRule()->getIntPoints(e,&GP);
@@ -256,11 +251,8 @@ template<> void IPField<partDomain*, DgC0FunctionSpace<SVector3> >::computeIpvSh
   disp.clear();
 }
 
-template<> double IPField<partDomain*,DgC0FunctionSpace<SVector3> >::getVMShellPlaneStressWTI(MElement *ele,
-                                                                                                 const IPState::whichState ws,
-                                                                                                 const int num,
-                                                                                                 const partDomain *elas,
-                                                                                                 const int pos) const{
+double IPField::getVMShellPlaneStressWTI(MElement *ele, const IPState::whichState ws, const int num, const partDomain *elas,
+                                          const int pos) const{
   double svm =0.;
   if(num<10000){ // VonMises at a Gauss Point
     IPState* ips = (*_AIPS->getIPstate(ele->getNum()))[num];
@@ -328,12 +320,8 @@ template<> double IPField<partDomain*,DgC0FunctionSpace<SVector3> >::getVMShellP
 }
 
 
- template<> const LocalBasis* IPField<partDomain*,DgC0FunctionSpace<SVector3> >::getStressReducedWTI(MInterfaceElement *iele,
-                                                                                                       const IPState::whichState ws,
-                                                                                                       const int num,
-                                                                                                       partDomain *elas,
-                                                                                                       reductionElement &stressTensor,
-                                                                                                       const int pos)
+ const LocalBasis* IPField::getStressReducedWTI(MInterfaceElement *iele, const IPState::whichState ws, const int num,
+                                                 partDomain *elas, reductionElement &stressTensor, const int pos)
 {
   dgPartDomain* dgdom = dynamic_cast<dgPartDomain*>(elas);
   if(num<10000){ // stressTensor at a Gauss Point
@@ -392,12 +380,8 @@ template<> double IPField<partDomain*,DgC0FunctionSpace<SVector3> >::getVMShellP
   }
 }
 
- template<> const void IPField<partDomain*,DgC0FunctionSpace<SVector3> >::getStressReducedWTI(MInterfaceElement *iele,
-                                                                                                       const IPState::whichState ws,
-                                                                                                       const int num,
-                                                                                                       partDomain *elas,
-                                                                                                       reductionElement &stressTensor,
-                                                                                                       const int pos, const LocalBasis* lbb[2])
+ const void IPField::getStressReducedWTI(MInterfaceElement *iele, const IPState::whichState ws, const int num,
+                                          partDomain *elas, reductionElement &stressTensor, const int pos, const LocalBasis* lbb[2])
 {
   dgPartDomain *dgdom = dynamic_cast<dgPartDomain*>(elas);
   if(num<10000){ // stressTensor at a Gauss Point
@@ -459,11 +443,9 @@ template<> double IPField<partDomain*,DgC0FunctionSpace<SVector3> >::getVMShellP
 }
 
 
-template<> double IPField<partDomain*,DgC0FunctionSpace<SVector3> >::getStressWithOperationShellPlaneStressWTI(MElement *ele,
-                                                                                                 const IPState::whichState ws,
-                                                                                                 const int num, const component::enumcomp cmp,
-                                                                                                 const partDomain *elas,
-                                                                                                 const int pos) const{
+double IPField::getStressWithOperationShellPlaneStressWTI(MElement *ele, const IPState::whichState ws, const int num,
+                                                          const component::enumcomp cmp, const partDomain *elas,
+                                                          const int pos) const{
   double sig =0.;
   if(num<10000){ // VonMises at a Gauss Point
     IPState* ips = (*_AIPS->getIPstate(ele->getNum()))[num];

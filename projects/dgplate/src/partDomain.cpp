@@ -85,16 +85,17 @@ void dgLinearShellDomain::setMaterialLaw(materialLaw *mlaw){
   }
 }
 
-void dgLinearShellDomain::InitializeTerms(DgC0FunctionSpace<SVector3>& space1_,displacementField *uf,
-                                         IPField<partDomain*,DgC0FunctionSpace<SVector3> >*ip,
+void dgLinearShellDomain::InitializeTerms(FunctionSpace<SVector3>& space1_,displacementField *uf,
+                                         IPField*ip,
                                          double beta1, double beta2, double beta3){
-  btermBulk = new IsotropicElasticStiffBulkTermC0Plate(space1_,mat,_h,FullDg,uf,ip,_elemType);
-  btermBound = new IsotropicElasticStiffInterfaceTermC0Plate(space1_,mat,beta1,beta2,beta3, _h,uf,ip,_elemType,FullDg,1.e-8);
+  DgC0FunctionSpace<SVector3>* dgspace = dynamic_cast<DgC0FunctionSpace<SVector3>*>(&space1_);
+  btermBulk = new IsotropicElasticStiffBulkTermC0Plate(*dgspace,mat,_h,FullDg,uf,ip,_elemType);
+  btermBound = new IsotropicElasticStiffInterfaceTermC0Plate(*dgspace,mat,beta1,beta2,beta3, _h,uf,ip,_elemType,FullDg,1.e-8);
   // remove the true ??
-  btermVirtBound = new IsotropicElasticStiffVirtualInterfaceTermC0Plate(space1_,mat,beta1,beta2,beta3,_h,uf,ip,_elemType,true, FullDg);
-  ltermBulk = new IsotropicElasticForceBulkTermC0Plate(space1_,mat,_h,FullDg,uf,ip,_elemType,false);
-  ltermBound = new IsotropicElasticForceInterfaceTermC0Plate(space1_, mat,beta1,beta2,beta3,_h,FullDg,uf,ip,_elemType,false,false);
-  ltermVirtBound = new IsotropicElasticForceVirtualInterfaceTermC0Plate(space1_,mat,beta1,beta2,beta3,_h, FullDg,uf,ip,_elemType,false);
+  btermVirtBound = new IsotropicElasticStiffVirtualInterfaceTermC0Plate(*dgspace,mat,beta1,beta2,beta3,_h,uf,ip,_elemType, FullDg);
+  ltermBulk = new IsotropicElasticForceBulkTermC0Plate(*dgspace,mat,_h,FullDg,uf,ip,_elemType);
+  ltermBound = new IsotropicElasticForceInterfaceTermC0Plate(*dgspace, mat,beta1,beta2,beta3,_h,FullDg,uf,ip,_elemType);
+  ltermVirtBound = new IsotropicElasticForceVirtualInterfaceTermC0Plate(*dgspace,mat,beta1,beta2,beta3,_h, FullDg,uf,ip,_elemType);
 }
 
 void dgLinearShellDomain::setLawNum(const int num){_matnum = num;}

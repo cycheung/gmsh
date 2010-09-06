@@ -18,7 +18,7 @@ displacementField::displacementField(dofManager<double> *pas, std::vector<partDo
                                      const bool view_, const std::string filen
                                                                          ) : pAssembler(pas),
                                                                             _field(field),
-                                                                            elementField(filen,1000000,nc,
+                                                                            elementField(filen,100000000,nc,
                                                                             elementField::ElementNodeData,view_)
 {
   // test on first domain change this TODO ??
