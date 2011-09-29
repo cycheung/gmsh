@@ -54,15 +54,13 @@ namespace onelab{
     // client code(s) for which this parameter makes sense
     std::set<std::string> _clients;
   public:
-    parameter(const std::string &client, const std::string &name, 
-              const std::string &shortHelp="", const std::string &help="")
-      : _name(name), _shortHelp(shortHelp), _help(help)
-    {
-      _clients.insert(client);
-    }
+    parameter(const std::string &name, const std::string &shortHelp="", 
+              const std::string &help="")
+      : _name(name), _shortHelp(shortHelp), _help(help){}
     void setShortHelp(std::string &shortHelp){ _shortHelp = shortHelp; }
     void setHelp(std::string &help){ _help = help; }
     void setClients(std::set<std::string> &clients){ _clients = clients; }
+    void addClient(std::string &client){ _clients.insert(client); }
     void addClients(std::set<std::string> &clients)
     { 
       _clients.insert(clients.begin(), clients.end()); 
@@ -103,13 +101,13 @@ namespace onelab{
     std::vector<double> _choices;
   public:
     number(const std::string &name) 
-      : parameter("", name), _value(0.), _defaultValue(0.), 
+      : parameter(name), _value(0.), _defaultValue(0.), 
         _min(1.), _max(0.), _step(0.)
     {
     }
-    number(const std::string &client, const std::string &name, double defaultValue,
+    number(const std::string &name, double defaultValue,
            const std::string &shortHelp="", const std::string &help="") 
-      : parameter(client, name, shortHelp, help), _value(defaultValue), 
+      : parameter(name, shortHelp, help), _value(defaultValue), 
         _defaultValue(defaultValue), _min(1.), _max(0.), _step(0.)
     {
     }
@@ -144,13 +142,12 @@ namespace onelab{
     std::vector<std::string> _choices;
   public:
     string(const std::string &name) 
-      : parameter("", name), _value(""), _defaultValue("")
+      : parameter(name), _value(""), _defaultValue("")
     {
     }
-    string(const std::string &client, const std::string &name, 
-           const std::string &defaultValue, const std::string &shortHelp="",
-           const std::string &help="") 
-      : parameter(client, name, shortHelp, help), _value(defaultValue), 
+    string(const std::string &name, const std::string &defaultValue, 
+           const std::string &shortHelp="", const std::string &help="") 
+      : parameter(name, shortHelp, help), _value(defaultValue), 
         _defaultValue(defaultValue)
     {
     }
@@ -180,13 +177,12 @@ namespace onelab{
     std::vector<std::string> _choices;
   public:
     region(const std::string &name) 
-      : parameter("", name), _value(""), _defaultValue("")
+      : parameter(name), _value(""), _defaultValue("")
     {
     }
-    region(const std::string &client, const std::string &name, 
-           const std::string &defaultValue, const std::string &shortHelp="",
-           const std::string &help="") 
-      : parameter(client, name, shortHelp, help), _value(defaultValue), 
+    region(const std::string &name, const std::string &defaultValue,
+           const std::string &shortHelp="", const std::string &help="") 
+      : parameter(name, shortHelp, help), _value(defaultValue), 
         _defaultValue(defaultValue)
     {
     }
@@ -218,13 +214,12 @@ namespace onelab{
     std::vector<std::string> _choices;
   public:
     function(const std::string &name) 
-      : parameter("", name), _value(""), _defaultValue("")
+      : parameter(name), _value(""), _defaultValue("")
     {
     }
-    function(const std::string &client, const std::string &name, 
-             const std::string &defaultValue, const std::string &shortHelp="",
-             const std::string &help="") 
-      : parameter(client, name, shortHelp, help), _value(defaultValue), 
+    function(const std::string &name, const std::string &defaultValue,
+             const std::string &shortHelp="", const std::string &help="") 
+      : parameter(name, shortHelp, help), _value(defaultValue), 
         _defaultValue(defaultValue)
     {
     }
@@ -369,7 +364,12 @@ namespace onelab{
       if(!_server) _server = new server(address);
       return _server;
     }
-    template <class T> void set(T &p){ _parameterSpace.set(p); }
+    template <class T> void set(T &p)
+    {
+      // this needs to be locked to avoid race conditions when several
+      // clients try to set a parameter at the same time
+      _parameterSpace.set(p); 
+    }
     template <class T> void get(std::vector<T> &p, const std::string &name="")
     {
       _parameterSpace.get(p, name); 
@@ -390,26 +390,77 @@ namespace onelab{
   protected:
     // the name of the client
     std::string _name;
-    // the command-line to run a separate code if necessary
-    std::string _commandLine;
-    // the GmshClient if the client is distant
-    //GmshClient *_gmshClient;
-    // the pointer to the server if the client is local
+  public:
+    client(const std::string &name) : _name(name){}
+    virtual ~client(){}
+    virtual bool analyze(){ return false; }
+    virtual bool compute(const std::string &what){ return false; }
+  };
+
+  class localClient : public client{
+  protected:
+    // the pointer to the server
     server *_server;
   public:
-    client(const std::string &name, const std::string &commandLine="",
-           const std::string &serverAddress="") 
-      : _name(name), _commandLine(commandLine), /*_gmshClient(0),*/ _server(0)
+    localClient(const std::string &name) : client(name)
     {
-      if(serverAddress.empty()){
-        // client and server are in the same process
-        _server = server::instance();
-        _server->registerClient(_name, this);
-      }
-      else{
+      _server = server::instance();
+      _server->registerClient(_name, this);
+    }
+    virtual ~localClient(){}
+    template <class T> bool set(T &parameter)
+    {
+      parameter.addClient(_name);
+      _server->set(parameter);
+      return true;
+    }
+    template <class T> bool get(std::vector<T> &parameters,
+                                const std::string &name="")
+    {
+      _server->get(parameters, name);
+      return true;
+    }
+  };
+
+  class localNetworkClient : public localClient{
+  private:
+    std::string _commandLine;
+  public:
+    localNetworkClient(const std::string &name, const std::string &commandLine)
+      : localClient(name), _commandLine(commandLine)
+    {
+      // new GmshServer()
+    }
+    virtual ~localNetworkClient()
+    {
+      // delete GmshServer
+    }
+    virtual bool analyze()
+    {
+      // launch distant client using command line and the server address
+      // send analyze request
+      // while(client stop)
+      //   wait for data from client
+    }
+    virtual bool compute(const std::string &what)
+    {
+      // launch remote client using command line and the server address
+      // send compute request
+      // while(client stop)
+      //   wait for data from client
+    }
+  };
+
+  class remoteNetworkClient : public client{
+  private:
+    std::string _serverAddress;
+  public:
+    remoteNetworkClient(const std::string &name, const std::string &serverAddress)
+      : client(name), _serverAddress(serverAddress)
+    {
         /*
         _gmshClient = new GmshClient();
-        if(_gmshClient->Connect(serverAddress.c_str()) < 0){
+        if(_gmshClient->Connect(_serverAddress.c_str()) < 0){
           throw "Could not connect";
           delete _gmshClient;
           _gmshClient = 0;
@@ -418,9 +469,8 @@ namespace onelab{
           _gmshClient->Start();
         }
         */
-      }
     }
-    virtual ~client()
+    virtual ~remoteNetworkClient()
     {
       /*
       if(_gmshClient){
@@ -431,71 +481,21 @@ namespace onelab{
       }
       */
     }
-    // run client code
-    virtual void run(){}
-    template <class T> bool send(T &parameter)
+    template <class T> bool set(T &parameter)
     {
-      if(_server){
-        _server->set(parameter);
-        return true;
-      }
-      else{
-        // send over socket
-        return false;
-      }
+      parameter.addClient(_name);
+      // send over socket
+      return false;
     }
-    template <class T> bool receive(std::vector<T> &parameters, 
-                                    const std::string &name="")
+    template <class T> bool get(std::vector<T> &parameters, 
+                                const std::string &name="")
     {
-      if(_server){
-        _server->get(parameters, name);
-        return true;
-      }
-      else{
-        // receive over socket
-        return false;
-      }
+      // ask for data
+      // while(1){
+      //  wait for answer
+      // }
+      return false;
     }
-  };
-
-  // example of a command-line client, that communicates with a
-  // remote code using GmshSocket
-  class commandLineClient : public client {
-  public:
-    commandLineClient(const std::string &name, const std::string &commandLine) 
-      : client(name, commandLine, "")
-    {
-    }
-    virtual void run()
-    {
-      // new GmshServer()
-      // GmshServer->Start(_commandLine)
-      // do{
-      //   listen to client and respond to its queries
-      // } while(we get stop signal from client)
-      // GmshServer->Shutdown()
-    }
-  };
-
-  // example of a local client, that can interact directly with the
-  // parameters stored in the server
-  class gmshClient : public client {
-  public:
-    gmshClient() : client("gmsh", "", "") {}
-    virtual void run()
-    {
-      // get parameters from _server
-      // export .geo.opt
-      // e.g. reparse, mesh, saveMesh for current model
-    }
-  };
-
-  // example of a distant client, that interacts with the
-  // commandLineClient through GmshSocket
-  class getdpClient : public client {
-  public:
-    getdpClient(const std::string &serverAddress) 
-      : client("getdp", "", serverAddress) {}
   };
 
 }
