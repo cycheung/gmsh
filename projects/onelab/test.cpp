@@ -25,11 +25,16 @@ int main()
   // server changes parameters (e.g. graphically)
 
   // server starts client, client gets parameters and runs
-  std::vector<onelab::number> numbers;
   onelab::localClient c2("getdp");
+  std::vector<onelab::number> numbers;
   c2.get(numbers);
   for(unsigned int i = 0; i < numbers.size(); i++)
     std::cout << numbers[i].toChar() << std::endl;
+
+  std::vector<onelab::function> functions;
+  c2.get(functions);
+  for(unsigned int i = 0; i < functions.size(); i++)
+    std::cout << functions[i].toChar() << std::endl;
 
 }
 
