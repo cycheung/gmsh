@@ -281,7 +281,7 @@ namespace onelab{
     std::set<function*, parameterLessThan> _functions;
     // set a parameter in the parameter space; if it already exists,
     // use the new value but make sure to add new clients if necessary
-    template <class T> void _set(T &p, std::set<T*, parameterLessThan> &parameters)
+    template <class T> bool _set(T &p, std::set<T*, parameterLessThan> &parameters)
     {
       std::set<std::string> clients;
       typename std::set<T*, parameterLessThan>::iterator it = parameters.find(&p);
@@ -294,10 +294,11 @@ namespace onelab{
       T* newp = new T(p);
       newp->addClients(clients);
       parameters.insert(newp);
+      return true;
     }
     // get the parameter matching the given name, or all the
     // parameters in the category if no name is given
-    template <class T> void _get(std::vector<T> &p, const std::string &name,
+    template <class T> bool _get(std::vector<T> &p, const std::string &name,
                                  std::set<T*, parameterLessThan> &parameters)
     {
       if(name.empty()){
@@ -311,6 +312,7 @@ namespace onelab{
         if(it != parameters.end())
           p.push_back(**it);
       }
+      return true;
     }
   public:
     parameterSpace(){}
@@ -329,25 +331,25 @@ namespace onelab{
           it != _functions.end(); it++)
         delete *it;
     }
-    void set(number &p){ _set(p, _numbers); }
-    void set(string &p){ _set(p, _strings); }
-    void set(region &p){ _set(p, _regions); }
-    void set(function &p){ _set(p, _functions); }
-    void get(std::vector<number> &p, const std::string &name="")
+    bool set(number &p){ return _set(p, _numbers); }
+    bool set(string &p){ return _set(p, _strings); }
+    bool set(region &p){ return _set(p, _regions); }
+    bool set(function &p){ return _set(p, _functions); }
+    bool get(std::vector<number> &p, const std::string &name="")
     {
-      _get(p, name, _numbers); 
+      return _get(p, name, _numbers); 
     }
-    void get(std::vector<string> &p, const std::string &name="")
+    bool get(std::vector<string> &p, const std::string &name="")
     {
-      _get(p, name, _strings); 
+      return _get(p, name, _strings); 
     }
-    void get(std::vector<region> &p, const std::string &name="")
+    bool get(std::vector<region> &p, const std::string &name="")
     {
-      _get(p, name, _regions); 
+      return _get(p, name, _regions); 
     }
-    void get(std::vector<function> &p, const std::string &name="")
+    bool get(std::vector<function> &p, const std::string &name="")
     {
-      _get(p, name, _functions);
+      return _get(p, name, _functions);
     }
   };
 
@@ -359,7 +361,7 @@ namespace onelab{
     static server *_server;
     // the address of the server
     std::string _address;
-    // the connected clients, indexed by address
+    // the connected clients, indexed by name
     std::map<std::string, client*> _clients;
     // the parameter space
     parameterSpace _parameterSpace;
@@ -371,19 +373,21 @@ namespace onelab{
       if(!_server) _server = new server(address);
       return _server;
     }
-    template <class T> void set(T &p)
+    template <class T> bool set(T &p)
     {
       // this needs to be locked to avoid race conditions when several
       // clients try to set a parameter at the same time
-      _parameterSpace.set(p); 
+      return _parameterSpace.set(p); 
     }
-    template <class T> void get(std::vector<T> &p, const std::string &name="")
+    template <class T> bool get(std::vector<T> &p, const std::string &name="")
     {
-      _parameterSpace.get(p, name); 
+      return _parameterSpace.get(p, name); 
     }
-    void registerClient(const std::string &name, client *c)
+    bool registerClient(const std::string &name, client *c)
     {
+      if(_clients.count(name)) return false;
       _clients[name] = c;
+      return true;
     }
     typedef std::map<std::string, client*>::iterator citer;
     citer firstClient(){ return _clients.begin(); }
