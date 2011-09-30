@@ -76,7 +76,14 @@ namespace onelab{
     const std::string &getShortHelp() const { return _shortHelp; }
     const std::string &getHelp() const { return _help; }
     const std::set<std::string> &getClients() const { return _clients; }
-    std::string charSep(){ return "|"; }
+    char charSep(){ return '\0'; }
+    std::string sanitize(const std::string &in)
+    {
+      std::string out(in);
+      for(unsigned int i = 0; i < in.size(); i++)
+        if(out[i] == charSep()) out[i] = ' ';
+      return out;
+    }
     virtual std::string toChar() = 0;
     virtual void fromChar(const std::string &c){}
   };
@@ -122,9 +129,9 @@ namespace onelab{
     std::string toChar()
     {
       std::ostringstream sstream;
-      sstream << getType() << charSep() << getName() << charSep() 
-              << getShortHelp() << charSep() << getHelp() << charSep()
-              << _value << charSep()
+      sstream << getType() << charSep() << sanitize(getName()) << charSep() 
+              << sanitize(getShortHelp()) << charSep() 
+              << sanitize(getHelp()) << charSep() << _value << charSep()
               << _defaultValue << charSep()
               << _min << charSep() << _max << charSep() << _step << charSep()
               << _choices.size() << charSep();
@@ -159,13 +166,13 @@ namespace onelab{
     std::string toChar()
     {
       std::ostringstream sstream;
-      sstream << getType() << charSep() << getName() << charSep() 
-              << getShortHelp() << charSep() << getHelp() << charSep()
-              << _value << charSep()
-              << _defaultValue << charSep()
+      sstream << getType() << charSep() << sanitize(getName()) << charSep() 
+              << sanitize(getShortHelp()) << charSep() 
+              << sanitize(getHelp()) << charSep() << sanitize(_value) << charSep()
+              << sanitize(_defaultValue) << charSep()
               << _choices.size() << charSep();
       for(unsigned int i = 0; i < _choices.size(); i++)
-        sstream << _choices[i] << charSep();
+        sstream << sanitize(_choices[i]) << charSep();
       return sstream.str();
     }
   };
@@ -192,10 +199,9 @@ namespace onelab{
     std::string toChar()
     {
       std::ostringstream sstream;
-      sstream << getType() << charSep() << getName() << charSep() 
-              << getShortHelp() << charSep() << getHelp() << charSep()
-              << _value << charSep()
-              << _defaultValue << charSep()
+      sstream << getType() << charSep() << sanitize(getName()) << charSep() 
+              << sanitize(getShortHelp()) << charSep() << sanitize(getHelp()) 
+              << charSep() << _value << charSep() << _defaultValue << charSep()
               << _choices.size() << charSep();
       for(unsigned int i = 0; i < _choices.size(); i++)
         sstream << _choices[i] << charSep();
@@ -249,17 +255,18 @@ namespace onelab{
     std::string toChar()
     {
       std::ostringstream sstream;
-      sstream << getType() << charSep() << getName() << charSep() 
-              << getShortHelp() << charSep() << getHelp() << charSep()
-              << _value << charSep()
-              << _defaultValue << charSep()
+      sstream << getType() << charSep() << sanitize(getName()) << charSep() 
+              << sanitize(getShortHelp()) << charSep() 
+              << sanitize(getHelp()) << charSep() << sanitize(_value) << charSep()
+              << sanitize(_defaultValue) << charSep()
               << _pieceWiseValues.size() << charSep();
         for(std::map<std::string, std::string>::const_iterator it =
               _pieceWiseValues.begin(); it != _pieceWiseValues.end(); it++)
-          sstream << it->first << charSep() << it->second << charSep();
+          sstream << sanitize(it->first) << charSep() 
+                  << sanitize(it->second) << charSep();
       sstream << _choices.size() << charSep();
       for(unsigned int i = 0; i < _choices.size(); i++)
-        sstream << _choices[i] << charSep();
+        sstream << sanitize(_choices[i]) << charSep();
       return sstream.str();
     }
   };
