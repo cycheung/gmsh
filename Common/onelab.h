@@ -1,4 +1,4 @@
-// ONELAB - Copyright (C) 2011 ULg/UCL
+// ONELAB - Copyright (C) 2011 ULg-UCL
 //
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -22,24 +22,20 @@
 // ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
 // OF THIS SOFTWARE.
 
+#ifndef _ONELAB_H_
+#define _ONELAB_H_
+
 #include <string>
 #include <vector>
 #include <set>
 #include <map>
 #include <iostream>
 #include <sstream>
-//#include "GmshSocket.h"
+#include "GmshSocket.h";
 
 namespace onelab{
 
   typedef enum { NUMBER = 1, STRING = 2, REGION = 3, FUNCTION = 4 } parameterType;
-
-  class number;
-  class string;
-  class region;
-  class function;
-  class client;
-  class server;
 
   // The base parameter class.
   class parameter{
@@ -137,6 +133,10 @@ namespace onelab{
               << _choices.size() << charSep();
       for(unsigned int i = 0; i < _choices.size(); i++)
         sstream << _choices[i] << charSep();
+      sstream << getClients().size() << charSep();
+      for(std::set<std::string>::iterator it = getClients().begin();
+          it != getClients().end(); it++)
+        sstream << *it << charSep();
       return sstream.str();
     }
   };
@@ -173,6 +173,10 @@ namespace onelab{
               << _choices.size() << charSep();
       for(unsigned int i = 0; i < _choices.size(); i++)
         sstream << sanitize(_choices[i]) << charSep();
+      sstream << getClients().size() << charSep();
+      for(std::set<std::string>::iterator it = getClients().begin();
+          it != getClients().end(); it++)
+        sstream << *it << charSep();
       return sstream.str();
     }
   };
@@ -205,6 +209,10 @@ namespace onelab{
               << _choices.size() << charSep();
       for(unsigned int i = 0; i < _choices.size(); i++)
         sstream << _choices[i] << charSep();
+      sstream << getClients().size() << charSep();
+      for(std::set<std::string>::iterator it = getClients().begin();
+          it != getClients().end(); it++)
+        sstream << *it << charSep();
       return sstream.str();
     }
   };
@@ -267,6 +275,10 @@ namespace onelab{
       sstream << _choices.size() << charSep();
       for(unsigned int i = 0; i < _choices.size(); i++)
         sstream << sanitize(_choices[i]) << charSep();
+      sstream << getClients().size() << charSep();
+      for(std::set<std::string>::iterator it = getClients().begin();
+          it != getClients().end(); it++)
+        sstream << *it << charSep();
       return sstream.str();
     }
   };
@@ -353,6 +365,20 @@ namespace onelab{
     }
   };
 
+  // The onelab client: a class that communicates with the onelab
+  // server. Each client should be derived from this one.
+  class client{
+  protected:
+    // the name of the client
+    std::string _name;
+  public:
+    client(const std::string &name) : _name(name){}
+    virtual ~client(){}
+    std::string getName(){ return _name; }
+    virtual bool run(const std::string &what) = 0;
+    virtual bool kill() = 0;
+  };
+
   // The onelab server: a singleton that stores the parameter space
   // and interacts with onelab clients.
   class server{
@@ -383,31 +409,19 @@ namespace onelab{
     {
       return _parameterSpace.get(p, name); 
     }
-    bool registerClient(const std::string &name, client *c)
+    bool registerClient(client *c)
     {
-      if(_clients.count(name)) return false;
-      _clients[name] = c;
+      if(_clients.count(c->getName())) return false;
+      _clients[c->getName()] = c;
       return true;
     }
     typedef std::map<std::string, client*>::iterator citer;
     citer firstClient(){ return _clients.begin(); }
     citer lastClient(){ return _clients.end(); }
     citer findClient(const std::string &name){ return _clients.find(name); }
+    int getNumClients(){ return _clients.size(); }
   };
     
-  // The onelab client: a class that communicates with the onelab
-  // server. Each client should be derived from this one.
-  class client{
-  protected:
-    // the name of the client
-    std::string _name;
-  public:
-    client(const std::string &name) : _name(name){}
-    virtual ~client(){}
-    virtual bool analyze(){ return false; }
-    virtual bool compute(const std::string &what){ return false; }
-  };
-
   class localClient : public client{
   protected:
     // the pointer to the server
@@ -416,7 +430,7 @@ namespace onelab{
     localClient(const std::string &name) : client(name)
     {
       _server = server::instance();
-      _server->registerClient(_name, this);
+      _server->registerClient(this);
     }
     virtual ~localClient(){}
     template <class T> bool set(T &parameter)
@@ -431,82 +445,103 @@ namespace onelab{
       _server->get(parameters, name);
       return true;
     }
+    virtual bool run(const std::string &what){ return false; }
+    virtual bool kill(){ return false; }
   };
 
   class localNetworkClient : public localClient{
   private:
+    // command line to launch the remote network client
     std::string _commandLine;
+    // pid of the remote network client
+    int _pid;
   public:
     localNetworkClient(const std::string &name, const std::string &commandLine)
-      : localClient(name), _commandLine(commandLine)
-    {
-      // new GmshServer()
-    }
-    virtual ~localNetworkClient()
-    {
-      // delete GmshServer
-    }
-    virtual bool analyze()
-    {
-      // launch distant client using command line and the server address
-      // send analyze request
-      // while(client stop)
-      //   wait for data from client
-    }
-    virtual bool compute(const std::string &what)
-    {
-      // launch remote client using command line and the server address
-      // send compute request
-      // while(client stop)
-      //   wait for data from client
-    }
+      : localClient(name), _commandLine(commandLine){}
+    virtual ~localNetworkClient(){}
+    int getPid(){ return _pid; }
+    void setPid(int pid){ _pid = pid; }
+    virtual bool run(const std::string &what);
+    virtual bool kill();
   };
 
   class remoteNetworkClient : public client{
   private:
     std::string _serverAddress;
+    // underlying GmshClient
+    GmshClient *_gmshClient;
   public:
     remoteNetworkClient(const std::string &name, const std::string &serverAddress)
       : client(name), _serverAddress(serverAddress)
     {
-        /*
-        _gmshClient = new GmshClient();
-        if(_gmshClient->Connect(_serverAddress.c_str()) < 0){
-          throw "Could not connect";
-          delete _gmshClient;
-          _gmshClient = 0;
-        }
-        else{
-          _gmshClient->Start();
-        }
-        */
+      _gmshClient = new GmshClient();
+      if(_gmshClient->Connect(_serverAddress.c_str()) < 0){
+        delete _gmshClient;
+        _gmshClient = 0;
+      }
+      else{
+        _gmshClient->Start();
+      }
     }
     virtual ~remoteNetworkClient()
     {
-      /*
       if(_gmshClient){
         _gmshClient->Stop();
         _gmshClient->Disconnect();
         delete _gmshClient;
         _gmshClient = 0;
       }
-      */
     }
     template <class T> bool set(T &parameter)
     {
+      if(!_gmshClient) return false;
       parameter.addClient(_name);
-      // send over socket
-      return false;
+      std::string msg = parameter.toChar();
+      _gmshClient->SendMessage(GmshSocket::GMSH_ONELAB_PARAM, msg.size(), &msg[0]);
+      return true;
     }
     template <class T> bool get(std::vector<T> &parameters, 
                                 const std::string &name="")
     {
-      // ask for data
-      // while(1){
-      //  wait for answer
-      // }
-      return false;
+      if(!_gmshClient) return false;
+      T parameter(name);
+      parameter.addClient(_name);
+      std::string msg = parameter.toChar();
+      _gmshClient->SendMessage(GmshSocket::GMSH_ONELAB_PARAM, msg.size(), &msg[0]);
+      while(1){
+        // stop if we have no communications for 30 seconds
+        int ret = _gmshClient->Select(30, 0);
+        if(!ret){
+          _gmshClient->Info("Timout: aborting remote get");
+          return false;
+        }
+        else if(ret < 0){
+          _gmshClient->Error("Error on select: aborting remote get");
+          return false;
+        }
+        int type, length, swap;
+        if(!_gmshClient->ReceiveHeader(&type, &length, &swap)){
+          _gmshClient->Error("Did not receive message header: aborting remote get");
+          return false;
+        }
+        std::string msg(length);
+        if(!_gmshClient->ReceiveMessage(length, &msg[0])){
+          _gmshClient->Error("Did not receive message body: aborting remote get");
+          return false;
+        }
+        if(type == GmshSocket::GMSH_ONELAB_PARAM){
+          printf("Remote: got %s!\n", msg.c_str());
+          return true;
+        }
+        else{
+          _gmshClient->Error("Unknown message type: aborting remote get");
+          return false;
+        }
+      }
+      return true;
     }
   };
 
 }
+
+#endif
