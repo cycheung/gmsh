@@ -7,12 +7,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-//#include "GmshConfig.h"
 #include "OnelabMessage.h"
 #include "GmshSocket.h"
-//#include "Gmsh.h"
-//#include "Options.h"
-//#include "Context.h"
 #include "OS.h"
 
 

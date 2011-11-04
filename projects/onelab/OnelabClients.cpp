@@ -54,14 +54,38 @@ bool onelab::localNetworkClient::run(const std::string &what)
   _pid = 0;
   onelabServer *server = new onelabServer(this);
  
-  //std::string sockname = "localhost:1631";
-  std::string sockname = "localhost:0";
-  //  std::string command = _commandLine + " " + what + " -onelab " + sockname + "  &";
-  std::string command = _commandLine + " " + what;
+  std::string socketName = ":";
+  std::string sockname;
+  std::ostringstream tmp;
+  if(!strstr(socketName.c_str(), ":")){
+    // Unix socket
+    tmp << socketName << getId();
+    //sockname = FixWindowsPath(tmp.str());
+  }
+  else{
+    // TCP/IP socket
+    if(socketName.size() && socketName[0] == ':')
+      tmp << GetHostName(); // prepend hostname if only the port number is given
+    //tmp << socketName << getId();
+    tmp << socketName ;
+  }
+  sockname = tmp.str();
+
+  //std::string command = FixWindowsPath(_commandLine);
+  std::string command = _commandLine;
+  if(command.size()){
+    command += " " + what + " " + _socketSwitch + " ";
+  }
+  else{
+    Msg::Info("Listening on socket '%s'", sockname.c_str());
+  }
+
+  std::cout << "FHF sockname=" << sockname.c_str() << std::endl;
+  std::cout << "FHF command=" << command.c_str() << std::endl;
 
   int sock;
   try{
-    sock = server->Start(command.c_str(), sockname.c_str(), 30);
+    sock = server->Start(command.c_str(), sockname.c_str(), 10);
   }
   catch(const char *err){
     Msg::Error("%s (on socket '%s')", err, sockname.c_str());
@@ -255,10 +279,13 @@ bool PromptUser::menu(std::string message, std::string modelName, std::string cl
   std::vector<onelab::string> strings;
 
   newStep();
+  if (!getInteractivity()) return true;
   choice=0;
   do {
-    std::cout << "\n\nONELAB: " << message << " -- step=" << getStep() << " ----\n\n";
+    std::cout << "\nONELAB: " << message << " with " << clientName ;
+    std::cout << " -- step = " << getStep() << " --\n\n";
     std::cout << " 1- View database\n 2- View free parameters\n 3- Get a value\n 4- Set a value\n 5- List modified files\n 6- Execute one step\n 7- Quit metamodel\n";
+    sleep(1);
     std::cout << "\nONELAB: your choice? "; std::cin >> choice;
 
     if (choice==1){
