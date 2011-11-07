@@ -4,5 +4,5 @@ export GMSH_DIR=$HOME/SOLVERS/gmsh
 export COMMON_DIR=$GMSH_DIR/Common
 export ONELAB_DIR=$GMSH_DIR/projects/onelab
 
-g++ -I $COMMON_DIR -I $ONELAB_DIR $ONELAB_DIR/*.cpp metamodel.cpp -o onelab
+g++ -I $ONELAB_DIR -I $COMMON_DIR $COMMON_DIR/OS.cpp $ONELAB_DIR/*.cpp metamodel.cpp -o onelab
 
