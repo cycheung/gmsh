@@ -1,6 +1,6 @@
 
 
-export GMSH_DIR=$HOME/SOLVERS/gmsh
+export GMSH_DIR=$HOME/develop/gmsh
 export COMMON_DIR=$GMSH_DIR/Common
 export ONELAB_DIR=$GMSH_DIR/projects/onelab
 
