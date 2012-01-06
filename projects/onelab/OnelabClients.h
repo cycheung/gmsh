@@ -79,7 +79,7 @@ public:
   InterfacedElmer(const std::string &name) : InterfacedClient(name) {
     setName("elmer");
     setExtension(".sif");
-    setCommandLine("sh ElmerSolver.sh");
+    setCommandLine("elmer");
   }
   ~InterfacedElmer(){}
 };
