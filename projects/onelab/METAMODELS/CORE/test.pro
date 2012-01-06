@@ -35,15 +35,15 @@ Group {
   Domain_S   = Region[ {/*IndP1, IndP2*/} ] ;
   Domain_M   = Region[ {Mag} ] ;
 
-  DefineConstant[Val_Rint = {0.2, Path "1Geometry/1"},
-                 Val_Rext = {0.3, Path "1Geometry/2"}];
+  DefineConstant[Val_Rint = {0.2, Path "Parameters/Geometry/1"},
+                 Val_Rext = {0.3, Path "Parameters/Geometry/2"}];
 }
 
 Function {
 
   mu0     = 4.e-7 * Pi ;
-  DefineConstant[ murCore = {10., Path "2Materials"} ];
-  DefineConstant[ murMag = {1, Path "2Materials"} ];
+  DefineConstant[ murCore = {10., Path "Parameters/Materials"} ];
+  DefineConstant[ murMag = {1, Path "Parameters/Materials"} ];
   If(murCore == 100)
     DefineConstant[ SimplifiedModel = {0, Choices{0, 1}} ];
   EndIf
@@ -53,10 +53,10 @@ Function {
   nu [ Mag ]   = 1. / (murMag * mu0) ;
 
   mu [ Region[{Air, IndP1, IndP2, IndS1, IndS2, AirInf, Gap}] ]  = mu0 ;
-  mu [ Core ]  = murCore * mu0 ;
+  mu [ Core ]  = murCore * mu0;
   mu [ Mag ]   = murMag * mu0 ;
 
-  DefineConstant[ Hc = {920000, ShortHelp "Coercive H field", Path "3Constraints"} ];
+  DefineConstant[ Hc = {920000, ShortHelp "Coercive H field", Path "Parameters/Sources"} ];
   hc [ Mag ]   = Vector[0., Hc, 0.] ;
 
   Itot = 4737;
@@ -92,7 +92,7 @@ PostOperation {
 
   { Name phi ; NameOfPostProcessing MagSta_phi;
     Operation {
-      //Print[ phi, OnElementsOf Domain, File "phi.pos"] ;
+      Print[ phi, OnElementsOf Domain, File "phi.pos"] ;
       Print[ b,   OnElementsOf Domain, File "b_phi.pos" ] ;
       //Print[ h,   OnElementsOf Domain, File "h_phi.pos", Depth 0 ] ;
       //Print[ b,   OnPlane {{-0.1,0,0}{0.1, 0, 0}{-0.1,0.1,0}} {60,30}, File "b_phi_grid.pos" ] ;
@@ -106,7 +106,7 @@ PostOperation {
 
   { Name a ; NameOfPostProcessing MagSta_a;
     Operation {
-      //Print[ a, OnElementsOf Domain, File "a.pos"] ;
+      Print[ a, OnElementsOf Domain, File "a.pos"] ;
       //Print[ a, OnElementsOf Domain, File > "a.pos", ChangeOfCoordinates {$X,-$Y,$Z}, ChangeOfValues {2*$Val0/2}] ;
       Print[ b, OnElementsOf Domain, File "b_a.pos" ] ;
       // Print[ h, OnElementsOf Domain, File "h_a.pos", Depth 0 ] ;

@@ -2,54 +2,89 @@
 #include <string>
 #include "OnelabClients.h"
 
-std::vector<double> variables(5);
-std::string modelName="test";
-PromptUser *OL = new PromptUser("shell");
+onelab::server *onelab::server::_server = 0;
+onelab::remoteNetworkClient *loader = 0;
+
+bool analyzeOnly=false;
+std::string modelName = "test";
+
+//Onelab clients of the metamodel
+PromptUser *OL = new PromptUser("shell"); 
+//EncapsulatedTest *myTest = new EncapsulatedTest("../../remote");
 EncapsulatedGmsh *myMesher = new EncapsulatedGmsh("gmsh");
 EncapsulatedGetdp *mySolver = new EncapsulatedGetdp("getdp");
 
+int main(int argc, char *argv[]){
+  int modelNumber=0;
+  std::string sockName = "";
 
-int metamodel(int modelNumber){
-  switch (modelNumber){
-  case 1:
-    OL->setNumber("1Geometry/2Val_Rext",0.5);
-    simulation();
-    break;
-  case 0:
-  default:
-    simulation();
-    break;
+  OL->setVerbosity(0); //default
+
+  getOptions(argc, argv, modelNumber, analyzeOnly, sockName);
+
+  loader = new onelab::remoteNetworkClient("loader", sockName);
+  Msg::InitializeOnelab("metamodel",""); // _onelabClient = new onelab::localClient("metamodel");
+
+  if (sockName.size())
+    std::cout << "ONELAB: " << Msg::Synchronize_Down(loader) << " parameters downloaded" << std::endl;
+ 
+  std::cout << OL->showParamSpace();
+
+  if (analyzeOnly)
+    analyze();
+  else{
+    switch (modelNumber){
+    case 1:
+      OL->setVerbosity(4);
+      OL->setNumber("Parameters/Geometry/2Val_Rext", 0.5);
+      compute();
+      break;
+    case 0:
+    default:
+      compute();
+      break;
+    }
   }
+
+  if (sockName.size()){
+    std::cout << "ONELAB: " << Msg::Synchronize_Up(loader) << " parameters uploaded" << std::endl;
+    delete loader;
+  }
+
+  Msg::FinalizeOnelab();
 }
 
+int analyze(){
+  myMesher->analyze("",modelName);
+  mySolver->analyze("",modelName);
+  std::cout << OL->showParamSpace() << std::endl;
+  return 1;
+}
 
-int simulation(){
-  // std::string sockname("localhost:");
-  // const char *port = strstr(sockname.c_str(), ":");
-  // int portno = atoi(port + 1); 
-  // std::cout << "sockname=<" << sockname << "> portno=" << portno << std::endl;
-  // exit(1);
-  
-  //printf("FHF server has %d Clients\n", onelab::server::instance()->getNumClients());
+int compute(){
 
-  if (OL->getInteractivity()) {
-    myMesher->analyze(modelName); //populate parameterspace
-    OL->menu("About to mesh",modelName,myMesher->getName());
-  }
+  newStep();
+
+  //myTest->run("", modelName)
+
+  checkIfPresent(modelName+".geo");
   myMesher->run("-2", modelName);
+  checkIfModified(modelName+".msh");
+  OL->setString("Gmsh/MshFileName", modelName+".msh");
+   
+  OL->setString("GetDP/1ModelName", modelName+".pro");
+  checkIfPresent(modelName+".pro");
+  mySolver->run("-sol MagSta_phi",modelName);
+  checkIfModified(modelName+".res");
 
-  mySolver->analyze(modelName); //populate parameterspace
-  if (OL->getInteractivity()) {
-    OL->menu("About to solve",modelName,mySolver->getName());
-  }
-  mySolver->sol("",modelName);
+  mySolver->run("-pos phi",modelName);
+  checkIfModified("phi.pos");
+  checkIfModified("b_phi.pos");
 
-  if (OL->getInteractivity()) {
-    OL->menu("About to post",modelName,mySolver->getName());
-  }
+  std::cout << "Simulation completed successfully" << std::endl;
 
-  mySolver->pos("",modelName);
+  if(loader)
+    loader->sendMergeFileRequest( modelName+".geo phi.pos b_phi.pos");
 
-  if (checkWhetherModified("b_phi.pos"))
-    std::cout << "Simulation completed successfully" << std::endl;
+  return 1;
 }
