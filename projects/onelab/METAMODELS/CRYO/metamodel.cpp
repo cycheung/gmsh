@@ -2,50 +2,99 @@
 #include <string>
 #include "OnelabClients.h"
 
+onelab::server *onelab::server::_server = 0;
+onelab::remoteNetworkClient *loader = 0;
 
 std::string modelName="cryo";
 PromptUser *OL = new PromptUser("onelab");
-InterfacedElmer *elmer = new InterfacedElmer("elmer");
-std::vector<double> variables(5);
+EncapsulatedGmsh *myMesher = new EncapsulatedGmsh("gmsh");
+InterfacedElmer *mySolver = new InterfacedElmer("elmer");
+std::ofstream resfile("results.txt");
 
 
-int metamodel(int modelNumber){
-  switch (modelNumber){
-  case 1:
-    variables[0] = 77;
-    std::cout << "With Tcold =" << variables[0] << " K " << std::endl;
-    simulation();
-    std::cout << "\nThe optimum time is " << variables[1] << " sec." << std::endl;
-    break;
-  case 0:
-  default:
-    simulation();
-    break;
+int main(int argc, char *argv[]){
+  bool analyzeOnly=false;
+  int modelNumber=0;
+  std::string sockName = "";
+
+  getOptions(argc, argv, modelNumber, analyzeOnly, sockName);
+
+  loader = new onelab::remoteNetworkClient("loader", sockName);
+  Msg::InitializeOnelab("metamodel",""); // _onelabClient = new onelab::localClient("metamodel");
+
+  if (loader)
+    std::cout << "ONELAB: " << Msg::Synchronize_Down(loader) << " parameters downloaded" << std::endl;
+
+  if (analyzeOnly)
+    analyze();
+  else{
+    switch (modelNumber){
+    case 1:
+      OL->setVerbosity(0);
+      OL->setNumber("Tcold",77);
+      resfile << "With Tcold =" << OL->getNumber("Tcold") << " K " << std::endl;
+      resfile << "The optimum time is " << OL->getNumber("tmin") << " sec." << std::endl;
+      compute();
+      break;
+    case 2: //Computation of the Tcold vs tmin characteristic with a larger time step
+      OL->setNumber("NumStep",20); // overrides default value defined in .sif_onelab file
+      OL->setNumber("TimeStep",0.1); // idem
+      for (int temp=60; temp<120; temp+=10){
+	OL->setNumber("Tcold",temp);
+	compute();
+	resfile << OL->stateToChar() << std::endl; // record -> db
+      }
+      break;
+    case 0:
+    default:
+      compute();
+      break;
+    }
   }
+
+  if (loader){
+    std::cout << "ONELAB: " << Msg::Synchronize_Up(loader) << " parameters uploaded" << std::endl;
+    delete loader;
+  }
+
+  Msg::FinalizeOnelab();
 }
 
-int simulation(){ 
 
-  elmer->analyze(modelName); // populate parameterspace
+int analyze(){
+  myMesher->analyze("",modelName);
+  mySolver->analyze("",modelName);
+  std::cout << OL->showParamSpace() << std::endl;
+  return 1;
+}
 
-  if (OL->getInteractivity())
-    OL->menu("About to convert",modelName,elmer->getName());
+int compute(){
 
-  elmer->convert(modelName); 
+  newStep();
 
-  OL->setNumber("Tcold",variables[0]); // overrides default value
-  OL->setNumber("NumStep",50); // overrides default value
-  OL->setNumber("TimeStep",0.05); // overrides default value
+  checkIfPresent(modelName+".geo");
+  myMesher->run("-2", modelName);
+  checkIfModified(modelName+".msh");
+  OL->setString("Gmsh/MshFileName", modelName+".msh");
 
-  if (OL->getInteractivity())
-    OL->menu("About to solve with ELMER",modelName,elmer->getName());
+  std::string cmd="ElmerGrid 14 2 " + modelName + ".msh -o " + modelName;
+  systemCall(cmd); // no server access needed
 
-  elmer->run("",modelName);
+  checkIfPresent(modelName+".sif_onelab");
+  checkIfPresent("ProbePoints.sif");
+  mySolver->analyze("", modelName);  //std::cout << OL->showParamSpace();
+  mySolver->run("",modelName);
+  checkIfModified(modelName+".sif");
+  checkIfModified("solution.pos");
+  checkIfModified("tempevol.txt");
 
-  array data = read_array("tempevol.txt",' '); // temperature over time at probe point
-  variables[1] = find_in_array((int)(1./OL->getNumber("TimeStep")),2,data); // temperature after 2s
-  
-  system("gmsh - solution.pos script.pos.opt &> gmsh.script.log"); // no server access needed
+  std::cout << "Simulation completed successfully" << std::endl;
+
+  if(loader){
+    loader->sendMergeFileRequest("solution.pos");
+  }
+  cmd="gmsh - solution.pos script.pos.opt"; // compute objective function 
+  systemCall(cmd); 
 
   std::vector<double> v1=extract_column(8,read_array("f1.txt",' '));
   std::vector<double> v2=extract_column(8,read_array("f2.txt",' '));
@@ -57,5 +106,15 @@ int simulation(){
     temp = v1[i]+v2[i];
     if (temp<min){ imin=i; min=temp;}
   }
-  variables[1] = time[imin];
+  OL->setNumber("tmin",time[imin]);
+  std::cout << std::endl << "Simulation result: tmin=" << time[imin] << std::endl;
+
+  double teval=2.; // evaluation at time=2s
+  array data = read_array("tempevol.txt",' '); // temperature over time at probe point
+  double T2s = find_in_array((int)(teval/OL->getNumber("TimeStep")),2,data); // temperature after 2s
+  
+  OL->setNumber("T2s",T2s,"temperature at (Xloc, Yloc) after 2 sec");
+  std::cout << "Simulation result: T2s="  << T2s << std::endl;
+
+  return 1;
 }

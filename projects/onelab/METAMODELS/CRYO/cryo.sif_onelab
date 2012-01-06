@@ -1,13 +1,15 @@
-onelab.number Tcold.Help(Applied cold temperature)
-onelab.number Tcold.Default(77); Tcold.Min(50); Tcold.Max(100);
-onelab.number NumStep.Help(Number of time steps); NumStep.Default(200);
-onelab.number TimeStep.Help(Time step in seconds); TimeStep.Default(0.025);
+
+onelab.number Tcold.Create(77); Tcold.Min(50); Tcold.Max(100);
+onelab.number Tcold.Help(Applied cold temperature);
+onelab.number NumStep.Create(50); 
+onelab.number NumStep.Help(Number of time steps); 
+onelab.number TimeStep.Create(0.1); TimeStep.Help(Time step in seconds); 
 
 onelab.include(ProbePoints.sif)
 
 Header
   CHECK KEYWORDS Warn
-  Mesh DB "." "geom"
+  Mesh DB "." "cryo"
   Include Path ""
   Results Directory ""
 End
@@ -24,7 +26,6 @@ Simulation
   Output Intervals = 1
   Solver Input File = "cryo.sif"
   !Max Output Level = 0
-  !Max Output Level = onelab.getValue(VERBOSITY)
 End
 
 Constants
