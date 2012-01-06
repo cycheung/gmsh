@@ -49,7 +49,7 @@ bool onelab::localNetworkClient::run(const std::string &what)
   onelabServer *server = new onelabServer(this);
  
   //std::string socketName = ":";
-  std::string socketName = "/Users/frhenrotte/.gmshsock";
+  std::string socketName = getUserHomedir() + ".gmshsock";
   std::string sockname;
   std::ostringstream tmp;
   if(!strstr(socketName.c_str(), ":")){
@@ -834,11 +834,22 @@ int getStep(){
 }
 
 
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
+std::string getUserHomedir(){
+  struct passwd *pw = getpwuid(getuid());
+  std::string str(pw->pw_dir);
+  str.append("/");
+  return str;
+}
+
 #include <sys/param.h>
 std::string getCurrentWorkdir(){
   char path[MAXPATHLEN];
   getcwd(path, MAXPATHLEN);
-  std::string pwd = path;
+  std::string str = path;
+  return str;
 }
 
 #include <sys/stat.h>		

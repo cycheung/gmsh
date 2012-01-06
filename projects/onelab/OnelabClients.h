@@ -24,6 +24,10 @@ int newStep();
 void appendOption(std::string &str, const std::string &what, const int val);
 void appendOption(std::string &str, const std::string &what);
 int getOptions(int argc, char *argv[],int &modelNumber, bool &analyzeOnly, std::string &sockName);
+std::string getCurrentWorkdir();
+std::string getUserHomedir();
+
+
 int systemCall(std::string cmd);
 
 typedef std::vector <std::vector <double> > array;
