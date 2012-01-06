@@ -9,6 +9,7 @@
 #include <map>
 #include <string>
 #include <stdarg.h>
+#include "onelab.h"
 
 class GmshClient;
 
@@ -40,6 +41,8 @@ class Msg {
   static std::string _commandLine, _launchDate;
   // communication with Gmsh when run remotely
   static GmshClient *_client;
+  // communication with onelab server
+  static onelab::client *_onelabClient;
  public:
   Msg() {}
   static void Init(int argc, char **argv);
@@ -80,6 +83,20 @@ class Msg {
   static void InitClient(std::string sockname);
   static GmshClient *GetClient(){ return _client; }
   static void FinalizeClient();
+  static void InitializeOnelab(const std::string &name, const std::string &sockname);
+  static void SetOnelabNumber(std::string name, double val);
+  static void SetOnelabNumber(onelab::number s);
+  static void GetOnelabNumber(std::string name, double *val);
+  static void SetOnelabString(std::string name, std::string val);
+  static void SetOnelabString(onelab::string s);
+  //static void GetOnelabString(std::string name, char **val);
+  static void ExchangeOnelabParameter(const std::string &key,
+                                  std::vector<double> &val,
+                                  std::map<std::string, std::vector<double> > &fopt,
+				  std::map<std::string, std::vector<std::string> > &copt);
+  static int Synchronize_Down(onelab::remoteNetworkClient *loader);
+  static int Synchronize_Up(onelab::remoteNetworkClient *loader);
+  static void FinalizeOnelab();
 };
 
 #endif

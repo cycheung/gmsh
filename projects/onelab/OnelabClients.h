@@ -6,15 +6,32 @@
 #ifndef _ONELAB_CLIENTS_H_
 #define _ONELAB_CLIENTS_H_
 
+#include <stdlib.h>
+#include <fstream>
+#include <iostream>
+#include <sstream>
+
+#include "OS.h"
 #include "onelab.h"
+#include "OnelabMessage.h"
 
 int metamodel(int modelNumber);
-int simulation();
+int analyze();
+int compute();
+bool checkIfPresent(std::string filename);
+bool checkIfModified(std::string filename);
+int newStep();
+void appendOption(std::string &str, const std::string &what, const int val);
+void appendOption(std::string &str, const std::string &what);
+int getOptions(int argc, char *argv[],int &modelNumber, bool &analyzeOnly, std::string &sockName);
+int systemCall(std::string cmd);
 
 typedef std::vector <std::vector <double> > array;
 array read_array(std::string filename, char sep);
 double find_in_array(const int i, const int j, const std::vector <std::vector <double> > &data);
 std::vector<double> extract_column(const int j, array data);
+
+
 
 class PromptUser : public onelab::localClient {
 public:
@@ -22,11 +39,12 @@ public:
   ~PromptUser(){}
   int  getVerbosity();
   void setVerbosity(const int ival);
-  int getInteractivity();
-  void setInteractivity(const int ival);
-  void setNumber(std::string paramName, const double val);
+  void setNumber(const std::string paramName, const double val, const std::string &str="");
   double getNumber(const std::string paramName);
-  bool menu(std::string options, std::string modelName, std::string clientName);
+  void setString(const std::string paramName, const std::string &val, const std::string &str="");
+  std::string stateToChar();  
+  std::string showParamSpace();
+  bool menu(std::string options, std::string modelName);
 };
 
 
@@ -40,7 +58,7 @@ public:
   void setExtension(const std::string ext) { _extension.assign(ext); }
   void setCommandLine(const std::string cmd) { _commandLine.assign(cmd); }
 
-  bool analyze(std::string modelName);
+  bool analyze(const std::string options, const std::string modelName);
   bool analyze_oneline(std::string line, std::ifstream &infile) ;
   bool analyze_ifstatement(std::ifstream &infile, bool condition) ;
   bool analyze_onefile(std::string ifilename);
@@ -82,27 +100,40 @@ public:
   ~InterfacedGetdp(){}
 };
 
+class EncapsulatedTest : public onelab::localNetworkClient {
+public:
+  EncapsulatedTest(const std::string &name) : onelab::localNetworkClient(name,name) {}
+  ~EncapsulatedTest(){}
+  bool analyze(const std::string options, const std::string modelName);
+  bool run(const std::string options, const std::string modelName);
+};
+
+
 class EncapsulatedGmsh : public onelab::localNetworkClient {
 public:
-  EncapsulatedGmsh(const std::string &name) : onelab::localNetworkClient(name, name) {}
+  EncapsulatedGmsh(const std::string &name) : onelab::localNetworkClient(name,name) {}
   ~EncapsulatedGmsh(){}
-  int appendVerbosity(std::string &str);
-  bool analyze(std::string modelName);
-  bool run(std::string options, std::string modelName);
+  int  getVerbosity();
+  bool analyze(const std::string options, const std::string modelName);
+  bool run(const std::string options, const std::string modelName);
 };
 
 
 class EncapsulatedGetdp : public onelab::localNetworkClient {
 public:
-  EncapsulatedGetdp(const std::string &name) : onelab::localNetworkClient(name, name) {}
+  EncapsulatedGetdp(const std::string &name) : onelab::localNetworkClient(name,name) {}
   ~EncapsulatedGetdp(){}
-  int appendVerbosity(std::string &str);
-  int appendResolution(std::string &str);
-  int appendPostpro(std::string &str);
-  bool analyze(std::string modelName);
-  bool run(std::string options, std::string modelName);
-  bool sol(std::string options, std::string modelName);
-  bool pos(std::string options, std::string modelName);
+  int  getVerbosity();
+  bool analyze(const std::string options, const std::string modelName);
+  bool run(const std::string options, const std::string modelName);
+};
+
+class MetaModel : public onelab::localNetworkClient {
+ public:
+  MetaModel(const std::string &name) : onelab::localNetworkClient(name,name) {}
+  ~MetaModel(){}
+  bool analyze(const std::string options, const std::string modelName);
+  bool run(const std::string options, const std::string modelName);
 };
 
 #endif

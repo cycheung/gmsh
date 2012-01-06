@@ -26,6 +26,7 @@ GmshMessage *Msg::_callback = 0;
 std::string Msg::_commandLine;
 std::string Msg::_launchDate;
 GmshClient *Msg::_client = 0;
+onelab::client *Msg::_onelabClient = 0;
 
 #if defined(HAVE_NO_VSNPRINTF)
 static int vsnprintf(char *str, size_t size, const char *fmt, va_list ap)
@@ -398,5 +399,178 @@ void Msg::Barrier()
 int Msg::GetNumThreads(){ return 1; }
 int Msg::GetMaxThreads(){ return 1; }
 int Msg::GetThreadNum(){ return 0; }
+
+
+void Msg::InitializeOnelab(const std::string &name, const std::string &sockname)
+{
+  if(_onelabClient) delete _onelabClient;
+  if (sockname.empty())
+    _onelabClient = new onelab::localClient(name);
+  else{
+    onelab::remoteNetworkClient *c = new onelab::remoteNetworkClient(name, sockname);
+    std::cout << "ONELAB: cree remote client" << name.c_str() << std::endl;
+    _onelabClient = c;
+    _client = c->getGmshClient();
+  }
+}
+
+
+void Msg::GetOnelabNumber(std::string name, double *val)
+{
+  if(_onelabClient){
+    std::vector<onelab::number> ps;
+    _onelabClient->get(ps, name);
+    if(ps.size()){
+      *val = ps[0].getValue();
+      return;
+    }
+  }
+  *val = 0;
+}
+
+void Msg::SetOnelabNumber(std::string name, double val)
+{
+  if(_onelabClient){
+    onelab::number o(name, val);
+    _onelabClient->set(o);
+  }
+}
+
+void Msg::SetOnelabNumber(onelab::number s)
+{
+  if(_onelabClient){
+    _onelabClient->set(s);
+  }
+}
+
+// void Msg::GetOnelabString(std::string name, char **val)
+// {
+//   if(_onelabClient){
+//     std::vector<onelab::string> ps;
+//     _onelabClient->get(ps, name);
+//     if(ps.size() && ps[0].getValue().size()){
+//       *val = strSave(ps[0].getValue().c_str());
+//       return;
+//     }
+//   }
+//   *val = 0;
+// }
+
+void Msg::SetOnelabString(std::string name, std::string val)
+{
+  if(_onelabClient){
+    onelab::string o(name, val);
+    _onelabClient->set(o);
+  }
+}
+void Msg::SetOnelabString(onelab::string s)
+{
+  if(_onelabClient){
+    _onelabClient->set(s);
+  }
+}
+
+void Msg::ExchangeOnelabParameter(const std::string &key,
+                                  std::vector<double> &val,
+                                  std::map<std::string, std::vector<double> > &fopt,
+                                  std::map<std::string, std::vector<std::string> > &copt)
+{
+  if(!_onelabClient || val.empty()) return;
+
+  std::string name(key);
+  if(copt.count("Path")){
+    std::string path = copt["Path"][0];
+    // if path ends with a number, assume it's for ordering purposes
+    if(path.size() && path[path.size() - 1] >= '0' && path[path.size() - 1] <= '9')
+      name = path + name;
+    else if(path.size() && path[path.size() - 1] == '/')
+      name = path + name;
+    else
+      name = path + "/" + name;
+  }
+  std::vector<onelab::number> ps;
+  _onelabClient->get(ps, name);
+  if(ps.size()){ // use value from server
+    val[0] = ps[0].getValue();
+  }
+  else{ // send value to server
+    onelab::number o(name, val[0]);
+    if(fopt.count("Range") && fopt["Range"].size() == 2){
+      o.setMin(fopt["Range"][0]); o.setMax(fopt["Range"][1]);
+    }
+    else if(fopt.count("Min") && fopt.count("Max")){
+      o.setMin(fopt["Min"][0]); o.setMax(fopt["Max"][0]);
+    }
+    else if(fopt.count("Min")){
+      o.setMin(fopt["Min"][0]); o.setMax(1.e200);
+    }
+    else if(fopt.count("Max")){
+      o.setMax(fopt["Max"][0]); o.setMin(-1.e200);
+    }
+    if(fopt.count("Step")) o.setStep(fopt["Step"][0]);
+    if(fopt.count("Choices")) o.setChoices(fopt["Choices"]);
+    if(copt.count("Help")) o.setHelp(copt["Help"][0]);
+    if(copt.count("ShortHelp")) o.setShortHelp(copt["ShortHelp"][0]);
+    _onelabClient->set(o);
+  }
+}
+
+int Msg::Synchronize_Down(onelab::remoteNetworkClient *loader){
+
+  std::vector<onelab::number> numbers;
+  onelab::number o;
+  loader->get(numbers,"");
+  if(numbers.size()){
+    for(std::vector<onelab::number>::const_iterator it = numbers.begin();
+	it != numbers.end(); it++){
+      o.fromChar((*it).toChar());
+      Msg::SetOnelabNumber(o);
+    }
+  }
+  std::vector<onelab::string> strings;
+  onelab::string s;
+  loader->get(strings,"");
+  if(strings.size()){
+    for(std::vector<onelab::string>::const_iterator it = strings.begin();
+  	it != strings.end(); it++){
+      s.fromChar((*it).toChar());
+      Msg::SetOnelabString(s);
+    }
+  }
+  return(numbers.size()+strings.size());
+}
+
+int Msg::Synchronize_Up(onelab::remoteNetworkClient *loader){
+  std::vector<onelab::number> numbers;
+  onelab::number number;
+  _onelabClient->get(numbers,"");
+  if(numbers.size()){
+    for(std::vector<onelab::number>::const_iterator it = numbers.begin();
+	it != numbers.end(); it++){
+      number.fromChar((*it).toChar());
+      loader->set(number);
+    }
+  }
+
+  std::vector<onelab::string> strings;
+  onelab::string string;
+  _onelabClient->get(strings,"");
+  if(strings.size()){
+    for(std::vector<onelab::string>::const_iterator it = strings.begin();
+	it != strings.end(); it++){
+      string.fromChar((*it).toChar());
+      loader->set(string);
+    }
+  }
+  return(numbers.size()+strings.size());
+}
+
+void Msg::FinalizeOnelab(){
+  if(_onelabClient){
+    delete _onelabClient;
+    _onelabClient = 0;
+    _client = 0;
+  }
+}
 
 
