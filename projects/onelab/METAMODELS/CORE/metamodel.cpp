@@ -6,7 +6,7 @@ onelab::server *onelab::server::_server = 0;
 onelab::remoteNetworkClient *loader = 0;
 
 bool analyzeOnly=false;
-std::string modelName = "test";
+std::string modelName = "";
 
 //Onelab clients of the metamodel
 PromptUser *OL = new PromptUser("shell"); 
@@ -20,7 +20,8 @@ int main(int argc, char *argv[]){
 
   OL->setVerbosity(0); //default
 
-  getOptions(argc, argv, modelNumber, analyzeOnly, sockName);
+  getOptions(argc, argv, modelNumber, analyzeOnly, modelName, sockName);
+  modelName="test";
 
   loader = new onelab::remoteNetworkClient("loader", sockName);
   Msg::InitializeOnelab("metamodel",""); // _onelabClient = new onelab::localClient("metamodel");
@@ -83,8 +84,10 @@ int compute(){
 
   std::cout << "Simulation completed successfully" << std::endl;
 
-  if(loader)
-    loader->sendMergeFileRequest( modelName+".geo phi.pos b_phi.pos");
+  OL->setString("GetDP/9Output files","phi.pos");
+  GmshDisplay(loader,modelName,OL->getChoices("GetDP/9Output files"));
+
+  std::cout << OL->showParamSpace() << std::endl;	      
 
   return 1;
 }
