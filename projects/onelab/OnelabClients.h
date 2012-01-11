@@ -15,15 +15,19 @@
 #include "onelab.h"
 #include "OnelabMessage.h"
 
+int getOptions(int argc, char *argv[],int &modelNumber, bool &analyzeOnly, std::string &name, std::string &sockName);
+std::string itoa(const int i);
 int metamodel(int modelNumber);
 int analyze();
 int compute();
 bool checkIfPresent(std::string filename);
 bool checkIfModified(std::string filename);
+bool fileExist(std::string filename);
 int newStep();
 void appendOption(std::string &str, const std::string &what, const int val);
 void appendOption(std::string &str, const std::string &what);
-int getOptions(int argc, char *argv[],int &modelNumber, bool &analyzeOnly, std::string &sockName);
+void GmshDisplay(onelab::remoteNetworkClient *loader, std::string fileName, std::vector<std::string> choices);
+void GmshDisplay(onelab::remoteNetworkClient *loader, std::string modelName, std::string fileName);
 std::string getCurrentWorkdir();
 std::string getUserHomedir();
 
@@ -43,9 +47,11 @@ public:
   ~PromptUser(){}
   int  getVerbosity();
   void setVerbosity(const int ival);
-  void setNumber(const std::string paramName, const double val, const std::string &str="");
+  void setNumber(const std::string paramName, const double val, const std::string &help="");
   double getNumber(const std::string paramName);
-  void setString(const std::string paramName, const std::string &val, const std::string &str="");
+  void setString(const std::string paramName, const std::string &val, const std::string &help="");
+  std::string getString(const std::string paramName);
+  std::vector<std::string> getChoices(const std::string paramName);
   std::string stateToChar();  
   std::string showParamSpace();
   bool menu(std::string options, std::string modelName);
@@ -77,17 +83,17 @@ public:
 class InterfacedElmer : public InterfacedClient {
 public:
   InterfacedElmer(const std::string &name) : InterfacedClient(name) {
-    setName("elmer");
+    setName(name);
     setExtension(".sif");
-    setCommandLine("elmer");
+    setCommandLine("ElmerSolver");
   }
   ~InterfacedElmer(){}
 };
 
 class InterfacedGmsh : public InterfacedClient {
-public:
-  InterfacedGmsh(const std::string &name) : InterfacedClient(name) {
-    setName("gmsh");
+ public:
+ InterfacedGmsh(const std::string &name) : InterfacedClient(name) {
+    setName(name);
     setExtension(".geo");
     setCommandLine("gmsh");
   }
@@ -97,7 +103,7 @@ public:
 class InterfacedGetdp : public InterfacedClient {
 public:
   InterfacedGetdp(const std::string &name) : InterfacedClient(name) {
-    setName("getdp");
+    setName(name);
     setExtension(".pro");
     setCommandLine("getdp");
   }
@@ -115,7 +121,7 @@ public:
 
 class EncapsulatedGmsh : public onelab::localNetworkClient {
 public:
-  EncapsulatedGmsh(const std::string &name) : onelab::localNetworkClient(name,name) {}
+  EncapsulatedGmsh(const std::string &name) : onelab::localNetworkClient(name,"gmsh") {}
   ~EncapsulatedGmsh(){}
   int  getVerbosity();
   bool analyze(const std::string options, const std::string modelName);
@@ -125,7 +131,7 @@ public:
 
 class EncapsulatedGetdp : public onelab::localNetworkClient {
 public:
-  EncapsulatedGetdp(const std::string &name) : onelab::localNetworkClient(name,name) {}
+  EncapsulatedGetdp(const std::string &name) : onelab::localNetworkClient(name,"getdp") {}
   ~EncapsulatedGetdp(){}
   int  getVerbosity();
   bool analyze(const std::string options, const std::string modelName);

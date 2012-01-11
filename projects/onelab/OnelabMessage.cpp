@@ -443,18 +443,28 @@ void Msg::SetOnelabNumber(onelab::number s)
   }
 }
 
-// void Msg::GetOnelabString(std::string name, char **val)
+// std::string Msg::GetOnelabString(std::string name)
+// {
+//   std::string str="";
+//   if(_onelabClient){
+//     std::vector<onelab::string> ps;
+//     _onelabClient->get(ps, name);
+//     if(ps.size() && ps[0].getValue().size())
+//       str = ps[0].getValue();
+//   }
+//   return str;
+// }
+// std::vector<std::string> Msg::GetOnelabChoices(std::string name)
 // {
 //   if(_onelabClient){
 //     std::vector<onelab::string> ps;
 //     _onelabClient->get(ps, name);
 //     if(ps.size() && ps[0].getValue().size()){
-//       *val = strSave(ps[0].getValue().c_str());
-//       return;
+//       return ps[0].getChoices();
 //     }
 //   }
-//   *val = 0;
 // }
+
 
 void Msg::SetOnelabString(std::string name, std::string val)
 {
@@ -515,6 +525,52 @@ void Msg::ExchangeOnelabParameter(const std::string &key,
   }
 }
 
+
+void Msg::AddOnelabNumberChoice(std::string name, double val)
+{
+  if(_onelabClient){
+    std::vector<double> choices;
+    std::vector<onelab::number> ps;
+    _onelabClient->get(ps, name);
+    if(ps.size()){
+      choices = ps[0].getChoices();
+    }
+    else{
+      ps.resize(1);
+      ps[0].setName(name);
+    }
+    ps[0].setValue(val);
+    choices.push_back(val);
+    ps[0].setChoices(choices);
+    _onelabClient->set(ps[0]);
+  }
+}
+
+void Msg::AddOnelabStringChoice(std::string name, std::string kind,
+                                    std::string value)
+{
+  if(_onelabClient){
+    std::vector<std::string> choices;
+    std::vector<onelab::string> ps;
+    _onelabClient->get(ps, name);
+    if(ps.size()){
+      choices = ps[0].getChoices();
+      if(std::find(choices.begin(), choices.end(), value) == choices.end())
+        choices.push_back(value);
+    }
+    else{
+      ps.resize(1);
+      ps[0].setName(name);
+      ps[0].setKind(kind);
+      choices.push_back(value);
+    }
+    ps[0].setValue(value);
+    ps[0].setChoices(choices);
+    _onelabClient->set(ps[0]);
+  }
+}
+
+
 int Msg::Synchronize_Down(onelab::remoteNetworkClient *loader){
 
   std::vector<onelab::number> numbers;
@@ -551,7 +607,6 @@ int Msg::Synchronize_Up(onelab::remoteNetworkClient *loader){
       loader->set(number);
     }
   }
-
   std::vector<onelab::string> strings;
   onelab::string string;
   _onelabClient->get(strings,"");

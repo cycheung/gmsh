@@ -142,7 +142,7 @@ bool onelab::localNetworkClient::run(const std::string &what)
           set(p);
         }
         else
-          Msg::Error("FIXME not done for this parameter type");
+          Msg::Fatal("FIXME not done for this parameter type");
       }
       break;
     case GmshSocket::GMSH_PARAMETER_QUERY:
@@ -259,25 +259,12 @@ void PromptUser::setVerbosity(const int ival){
   number.setValue(ival);
   set(number);
 }
-// int PromptUser::getInteractivity(){
-//   std::vector<onelab::number> numbers;
-//   get(numbers,"INTERACTIVITY");
-//   if (numbers.size())
-//     return numbers[0].getValue();
-//   else
-//     return 1;
-// }
-// void PromptUser::setInteractivity(const int ival){
-//   onelab::number number;
-//   number.setName("INTERACTIVITY");
-//   number.setValue(ival);
-//   set(number);
-// }
-void PromptUser::setNumber(const std::string paramName, const double val, const std::string &str){
+
+void PromptUser::setNumber(const std::string paramName, const double val, const std::string &help){
   onelab::number number;
   number.setName(paramName);
   number.setValue(val);
-  number.setHelp(str);
+  number.setHelp(help);
   set(number);
 }
 double PromptUser::getNumber(const std::string paramName){
@@ -288,12 +275,28 @@ double PromptUser::getNumber(const std::string paramName){
   else
     Msg::Fatal("Unknown parameter %s",paramName.c_str());
 }
-void PromptUser::setString(const std::string paramName, const std::string &val, const std::string &str){
+void PromptUser::setString(const std::string paramName, const std::string &val, const std::string &help){
   onelab::string string;
   string.setName(paramName);
   string.setValue(val);
-  string.setHelp(str);
+  string.setHelp(help);
   set(string);
+}
+std::string PromptUser::getString(const std::string paramName){
+  std::vector<onelab::string> strings;
+  get(strings,paramName);
+  if (strings.size())
+    return strings[0].getValue();
+  else
+    Msg::Fatal("Unknown parameter %s",paramName.c_str());
+}
+std::vector<std::string> PromptUser::getChoices(const std::string paramName){
+  std::vector<onelab::string> strings;
+  get(strings,paramName);
+  if (strings.size())
+    return strings[0].getChoices();
+  else
+    Msg::Fatal("Unknown parameter %s",paramName.c_str());
 }
 
 std::string PromptUser::stateToChar(){
@@ -307,7 +310,7 @@ std::string PromptUser::stateToChar(){
 }
 
 std::string PromptUser::showParamSpace(){
-  std::string db = "ONELAB: parameter space state:\n";
+  std::string db = "ONELAB parameter space: size=" + itoa(onelab::server::instance()->NumParam()) + "\n";
   db.append(onelab::server::instance()->toChar());
   for(unsigned int i = 0; i < db.size(); i++)
     if(db[i] == onelab::parameter::charSep()) db[i] = '|';
@@ -315,7 +318,7 @@ std::string PromptUser::showParamSpace(){
 }
 
 bool PromptUser::menu(std::string options, std::string modelName) { 
-  int choice, counter1=0,counter2=0;
+  int choice, counter1=0, counter2=0;
   std::string answ;
   std::string name;
   onelab::number x;
@@ -445,7 +448,7 @@ bool InterfacedClient::analyze_oneline(std::string line, std::ifstream &infile) 
   int pos0,pos,cursor;
   char sep=';';
   std::string buff;
-  std::string onelab("onelab"), number("onelab.number"), include("onelab.include"), iftrue("onelab.iftrue");
+  std::string onelab("onelab"), number("onelab.number"), string("onelab.string"), include("onelab.include"), iftrue("onelab.iftrue");
 
   if ( (pos=line.find(number)) != std::string::npos) {// onelab.number
     cursor = pos+number.length();
@@ -462,6 +465,14 @@ bool InterfacedClient::analyze_oneline(std::string line, std::ifstream &infile) 
 	  ps[0].setName(name);
 	  ps[0].setValue(atof(value.c_str()));
 	}
+	else if(!action.compare("Add")){
+	  ps.resize(1);
+	  ps[0].setName(name);
+	  ps[0].setValue(atof(value.c_str()));
+	  std::vector<double> choices;
+	  choices.push_back(atof(value.c_str()));
+	  ps[0].setChoices(choices);
+	}
 	else{
 	  Msg::Fatal("ONELAB: parameter '%s' has not been created",name.c_str());
 	} 
@@ -473,6 +484,57 @@ bool InterfacedClient::analyze_oneline(std::string line, std::ifstream &infile) 
 	  ps[0].setMax(atof(value.c_str()));
 	else if (!action.compare("Help"))
 	  ps[0].setHelp(value.c_str());
+	else if(!action.compare("Add")) {
+	  std::vector<double> choices;
+	  choices = ps[0].getChoices();
+	  choices.push_back(atof(value.c_str()));
+	  ps[0].setChoices(choices);
+	}
+	else if(!action.compare("Create") || !action.compare("Default")) {}
+	else
+	  Msg::Fatal("ONELAB unknown action: %s",action.c_str());
+      }
+      set(ps[0]); 
+      //std::cout << ps[0]->toChar() << std::endl;
+      cursor=pos+1;
+    }
+  }
+  else if ( (pos=line.find(string)) != std::string::npos) {// onelab.string
+    cursor = pos+number.length();
+    while ( (pos=line.find_first_of(sep,cursor)) != std::string::npos){
+      //std::cout << line.substr(cursor,pos-cursor) << std::endl;
+      std::string name, action, value;
+      extract(line.substr(cursor,pos-cursor),name,action,value);
+      std::vector<onelab::string> ps;
+      get(ps, name);
+
+      if(!ps.size()){ // param does not exist
+	if(!action.compare("Create") || !action.compare("Default")){ 
+	  ps.resize(1);
+	  ps[0].setName(name);
+	  ps[0].setValue(value.c_str());
+	}
+	else if(!action.compare("Add")){ 
+	  ps.resize(1);
+	  ps[0].setName(name);
+	  ps[0].setValue(value.c_str());
+	  std::vector<std::string> choices;
+	  choices.push_back(value.c_str());
+	  ps[0].setChoices(choices);
+	}
+	else{
+	  Msg::Fatal("ONELAB: parameter '%s' has not been created",name.c_str());
+	} 
+      }
+      else{ // param already created
+	if (!action.compare("Help"))
+	  ps[0].setHelp(value.c_str());
+	else if(!action.compare("Add")) {
+	  std::vector<std::string> choices;
+	  choices = ps[0].getChoices();
+	  choices.push_back(value.c_str());
+	  ps[0].setChoices(choices);
+	}
 	else if(!action.compare("Create") || !action.compare("Default")) {}
 	else
 	  Msg::Fatal("ONELAB unknown action: %s",action.c_str());
@@ -487,7 +549,7 @@ bool InterfacedClient::analyze_oneline(std::string line, std::ifstream &infile) 
     pos=line.find_first_of(')',cursor)+1;
     std::string boolParam;
     enclosed(line.substr(cursor,pos-cursor),boolParam);
-    std::cout << "iftrue " << boolParam << std::endl;
+    //std::cout << "iftrue " << boolParam << std::endl;
     
     get(numbers,boolParam);
     if (numbers.size()){
@@ -569,13 +631,16 @@ bool InterfacedClient::convert_oneline(std::string line, std::ifstream &infile, 
   int pos0,pos,cursor;
   char sep=';';
   std::string buff;
-  std::string onelab("onelab"), number("onelab.number"), include("onelab.include"), getValue("onelab.getValue");
+  std::string onelab("onelab"), number("onelab.number"), string("onelab.string"), include("onelab.include"), getValue("onelab.getValue");
   std::string iftrue("onelab.iftrue");
 
   if ( (pos=line.find(onelab)) == std::string::npos) // not a onelab line
     outfile << line << std::endl; 
   else{ 
     if ( (pos=line.find(number)) != std::string::npos) {// onelab.number
+      //skip the line
+    }
+    else if ( (pos=line.find(string)) != std::string::npos) {// onelab.string
       //skip the line
     }
     else if ( (pos=line.find(include)) != std::string::npos) {// onelab.include
@@ -639,7 +704,6 @@ bool InterfacedClient::convert_onefile(std::string ifilename, std::ofstream &out
   int pos0,pos,cursor;
   char sep=';';
   std::string line,buff;
-  std::string onelab("onelab"), number("onelab.number"), include("onelab.include"), getValue("onelab.getValue");
   std::ifstream infile(ifilename.c_str());
 
   if (infile.is_open()){
@@ -671,7 +735,7 @@ bool InterfacedClient::convert(std::string modelName) {
 }
 
 bool InterfacedClient::run(const std::string options, const std::string modelName) { 
-  convert(modelName);
+  //convert(modelName);
   std::string commandLine = _commandLine + " " + modelName + _extension;
   commandLine.append(" " +options);
   //commandLine.append(" &> " + _name + ".log");
@@ -719,43 +783,19 @@ bool EncapsulatedGmsh::analyze(const std::string options, const std::string mode
 }
 
 bool EncapsulatedGmsh::run(const std::string options, const std::string modelName) {
-  onelab::server::citer it= onelab::server::instance()->findClient(getName());
-  onelab::client *c = it->second;
-  std::string commandLine = modelName + ".geo " + options ;
-  appendOption(commandLine,"-v",getVerbosity());
-  c->run(commandLine);
+  std::cout << "ONELAB run gmsh?:"<< getName() << " " << onelab::server::instance()->getChanged(getName()) << std::endl;
+  if(!fileExist(modelName+".msh") || onelab::server::instance()->getChanged(getName())){
+    onelab::server::citer it= onelab::server::instance()->findClient(getName());
+    onelab::client *c = it->second;
+    std::string commandLine = modelName + ".geo " + options ;
+    appendOption(commandLine,"-v",getVerbosity());
+    c->run(commandLine);
+  }
+  else
+    std::cout << "ONELAB: Skip meshing" << std::endl;
   return true;
 }
 
-// int EncapsulatedGetdp::appendVerbosity(std::string &str){
-//   std::vector<onelab::number> numbers;
-//   int verb=0;
-//   get(numbers,"VERBOSITY");
-//   if (numbers.size())
-//     verb = numbers[0].getValue();
-//   std::stringstream Num;
-//   Num << verb;
-//   str.append(" -v " + Num.str() + " ");
-//   return verb;
-// }
-// int EncapsulatedGetdp::appendResolution(std::string &str){
-//   std::vector<onelab::string> strings;
-//   get(strings,"GetDP/1resolution");
-//   if (strings.size())
-//     str.append(" -sol " + strings[0].getValue() + " ");
-//   else
-//     Msg::Fatal("Resolution <GetDP/1resolution> not defined");
-//   return strings.size();
-// }
-// int EncapsulatedGetdp::appendPostpro(std::string &str){
-//   std::vector<onelab::string> strings;
-//   get(strings,"GetDP/2Post-Operation");
-//   if (strings.size())
-//     str.append(" -pos " + strings[0].getValue() + " ");
-//   else
-//     Msg::Fatal("Resolution <GetDP/2Post-Operation> not defined");
-//   return strings.size();
-// }
 int EncapsulatedGetdp::getVerbosity(){
   std::vector<onelab::number> numbers;
   get(numbers,"VERBOSITY");
@@ -768,7 +808,7 @@ bool EncapsulatedGetdp::analyze(const std::string options, const std::string mod
   onelab::server::citer it= onelab::server::instance()->findClient(getName());
   onelab::client *c = it->second;
   std::string commandLine = modelName + " " + options  ;
-  appendOption(commandLine,"-v",getVerbosity());
+  appendOption(commandLine,"-a -v",getVerbosity());
   c->run(modelName);
   return 1;
 }
@@ -780,24 +820,6 @@ bool EncapsulatedGetdp::run(const std::string options, const std::string modelNa
   c->run(commandLine);
   return true;
 }
-// bool EncapsulatedGetdp::sol(const std::string options, const std::string modelName) {
-//   onelab::server::citer it= onelab::server::instance()->findClient(getName());
-//   onelab::client *c = it->second;
-//   std::string commandLine = modelName + " " + options  ;
-//   appendResolution(commandLine);
-//   appendOption(commandLine,"-v",verbosity) ;
-//   c->run(commandLine);
-//   return true;
-// }
-// bool EncapsulatedGetdp::pos(const std::string options, const std::string modelName) {
-//   onelab::server::citer it= onelab::server::instance()->findClient(getName());
-//   onelab::client *c = it->second;
-//   std::string commandLine = modelName + " " + options;
-//   appendPostpro(commandLine);
-//   appendOption(commandLine,"-v",verbosity) ;
-//   c->run(commandLine);
-//   return true;
-// }
 
 bool MetaModel::run(const std::string options, const std::string modelName) {
   onelab::server::citer it= onelab::server::instance()->findClient(getName());
@@ -818,6 +840,55 @@ bool MetaModel::analyze(const std::string options, const std::string modelName) 
 /*
 ONELAB additional tools
  */
+
+
+int getOptions(int argc, char *argv[],int &modelNumber, bool &analyzeOnly, std::string &name, std::string &sockName){
+  int i = 1;
+  while(i < argc) {
+    if(argv[i][0] == '-') {
+      if(!strcmp(argv[i] + 1, "m")) {
+	i++;
+	modelNumber = (atoi(argv[i]));
+        i++;        
+      }
+      else if(!strcmp(argv[i] + 1, "onelab")) {
+	i++;
+	sockName = argv[i];
+        i++;
+      }
+      else if(!strcmp(argv[i] + 1, "c")) {
+	i++;
+	std::cout << argv[0] << " has " << onelab::server::instance()->getNumClients() << " clients\n" ;
+	for(onelab::server::citer it = onelab::server::instance()->firstClient();
+	    it != onelab::server::instance()->lastClient(); it++){
+	  std::cout << it->second->getId() << ':' << it->second->getName() << "/" << std::endl;
+	}
+	exit(1);
+      }
+      else if(!strcmp(argv[i] + 1, "a")) {
+	i++;
+	analyzeOnly=true;
+      }
+      else {
+	printf("Usage: %s [-m num -a -c]\n", argv[0]);
+	printf("Options are:\nm      model number\n");
+	printf("a      analyze only\n");
+	printf("c      list of clients\n");
+	exit(1);
+      }
+    }
+    else{
+      name=argv[i];
+      i++;
+    }
+  }
+}
+
+std::string itoa(const int i){
+  std::ostringstream tmp;
+  tmp << i ;
+  return tmp.str();
+}
 
 int onelab_step;
 int newStep(){
@@ -854,6 +925,18 @@ std::string getCurrentWorkdir(){
 
 #include <sys/stat.h>		
 #include <ctime>
+
+bool fileExist(std::string filename){
+  struct stat buf;
+  if(!stat(filename.c_str(), &buf)){
+    std::string cmd = "touch " + filename;
+    system(cmd.c_str());
+    return true;
+  }
+  else
+    return false;
+}
+
 bool checkIfPresent(std::string filename){
   struct stat buf;
   if (!stat(filename.c_str(), &buf))
@@ -877,6 +960,25 @@ bool checkIfModified(std::string filename){
 int systemCall(std::string cmd){
   printf("ONELAB System call(%s)\n", cmd.c_str());
   return system(cmd.c_str()); 
+}
+
+void GmshDisplay(onelab::remoteNetworkClient *loader, std::string modelName, std::vector<std::string> choices){
+  std::string cmd="gmsh " + modelName + ".geo ";
+  for(unsigned int i = 0; i < choices.size(); i++){
+    checkIfModified(choices[i]);
+    if(loader)
+      loader->sendMergeFileRequest(choices[i]);
+    cmd.append(choices[i]+" ");
+  }
+  if(!loader) systemCall(cmd.append(" &"));
+}
+void GmshDisplay(onelab::remoteNetworkClient *loader, std::string modelName, std::string fileName){
+  if(loader)
+    loader->sendMergeFileRequest(fileName);
+  else {
+    std::string cmd= "gmsh " + modelName + ".geo " + fileName + " &";
+    systemCall(cmd);
+  }
 }
 
 
@@ -932,49 +1034,5 @@ array read_array(std::string filename, char sep){
   }
   return array;
 }
-
-
-int getOptions(int argc, char *argv[],int &modelNumber, bool &analyzeOnly, std::string &sockName){
-  int i = 1;
-  while(i < argc) {
-    if(argv[i][0] == '-') {
-      if(!strcmp(argv[i] + 1, "m")) {
-	i++;
-	modelNumber = (atoi(argv[i]));
-        i++;        
-      }
-      else if(!strcmp(argv[i] + 1, "onelab")) {
-	i++;
-	sockName = argv[i];
-        i++;
-      }
-      else if(!strcmp(argv[i] + 1, "c")) {
-	i++;
-	std::cout << argv[0] << " has " << onelab::server::instance()->nbClients() << " clients\n" ;
-	for(onelab::server::citer it = onelab::server::instance()->firstClient();
-	    it != onelab::server::instance()->lastClient(); it++){
-	  std::cout << it->second->getId() << ':' << it->second->getName() << std::endl;
-	}
-	exit(1);
-      }
-      else if(!strcmp(argv[i] + 1, "a")) {
-	i++;
-	analyzeOnly=true;
-      }
-      else {
-	printf("Usage: %s [-m num -sol -c]\n", argv[0]);
-	printf("Options are:\nm      model number\n");
-	printf("c      list of clients\n");
-	printf("a      analyze only\n");
-	exit(1);
-      }
-    }
-    else{
-      std::string dummy=argv[i];
-      i++;
-    }
-  }
-}
-
 
   

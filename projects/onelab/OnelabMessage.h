@@ -89,11 +89,14 @@ class Msg {
   static void GetOnelabNumber(std::string name, double *val);
   static void SetOnelabString(std::string name, std::string val);
   static void SetOnelabString(onelab::string s);
-  //static void GetOnelabString(std::string name, char **val);
+  /* static std::string GetOnelabString(std::string name); */
+  /* static std::vector<std::string> GetOnelabChoices(std::string name); */
   static void ExchangeOnelabParameter(const std::string &key,
                                   std::vector<double> &val,
                                   std::map<std::string, std::vector<double> > &fopt,
 				  std::map<std::string, std::vector<std::string> > &copt);
+  static void AddOnelabNumberChoice(std::string name, double val);
+  static void AddOnelabStringChoice(std::string name, std::string kind,std::string value);
   static int Synchronize_Down(onelab::remoteNetworkClient *loader);
   static int Synchronize_Up(onelab::remoteNetworkClient *loader);
   static void FinalizeOnelab();

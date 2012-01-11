@@ -18,11 +18,6 @@ int main(int argc, char *argv[]){
   int modelNumber=0;
   int verbosity=0;
 
-  // bool analyzeOnly=false;
-  // bool interactivity=false;
-  // globalParam->setInteractivity(1);
-  // globalParam->setVerbosity(0);
-
   int i = 1;
   while(i < argc) {
     if(argv[i][0] == '-') {
