@@ -49,8 +49,10 @@ public:
   void setVerbosity(const int ival);
   void setNumber(const std::string paramName, const double val, const std::string &help="");
   double getNumber(const std::string paramName);
+  bool existNumber(const std::string paramName);
   void setString(const std::string paramName, const std::string &val, const std::string &help="");
   std::string getString(const std::string paramName);
+  bool existString(const std::string paramName);
   std::vector<std::string> getChoices(const std::string paramName);
   std::string stateToChar();  
   std::string showParamSpace();
@@ -108,6 +110,16 @@ public:
     setCommandLine("getdp");
   }
   ~InterfacedGetdp(){}
+};
+
+class InterfacedElast : public InterfacedClient {
+public:
+  InterfacedElast(const std::string &name) : InterfacedClient(name) {
+    setName(name);
+    setExtension("");
+    setCommandLine("$GMSH_DIR/utils/api_demos/build/mainElasticity");
+  }
+  ~InterfacedElast(){}
 };
 
 class EncapsulatedTest : public onelab::localNetworkClient {

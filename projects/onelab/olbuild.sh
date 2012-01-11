@@ -21,12 +21,16 @@ fi
 if [ -z  "`which ElmerSolver`" ]; then
  echo "The command 'ElmerSolver' is not defined systemwide"
 fi
+if [ -z  "`which $GMSH_DIR/utils/api_demos/build/mainElasticity`" ]; then
+ echo "The command '$GMSH_DIR/utils/api_demos/build/mainElasticity' is not defined."
+fi
+
 
 export COMMON_DIR=$GMSH_DIR/Common
 export ONELAB_DIR=$GMSH_DIR/projects/onelab
 
 echo ""
-echo "ONELAB: compile onelag generic solvers"
+echo "ONELAB: compile onelab generic solvers"
 
 cd SOLVERS
 ./olmake.sh

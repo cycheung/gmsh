@@ -4,11 +4,11 @@ Installation de ONELAB
 >> olbuild.sh
 
 Le répertoire SOLVERS contient les interfaces vers les solveurs
-getdp, elmer...
+getdp, elmer, elast...
 
 Ces interfaces sont indépendantes de tout (méta)modèle.
 Elles s'attendent à recevoir lors de l'"analyze" des fichiers de données
-(getdp: name.pro, elmer:name.sif_onelab)
+(getdp: name.pro, elmer:name.sif_onelab, elast: name.dat_onelab)
 les informations nécessaires à l'exécutaion de la simulation:
 
 Gmsh/MshFileName
@@ -19,7 +19,7 @@ Solver/9Output files
 Solver/MshFileName  (qui est en général différent de Gmsh/MshFileName pour elmer)
 
 L'utilisation des clients solveurs génériques (getdp, elmer)
-est limité à la chaîne de résolution standard:
+est limitée à la chaîne de résolution standard:
 "maillage/préprocessing/calcul/postprocessing"
 
 L'objectif du projet onelab est aussi de permettre l'élaboration de modèles

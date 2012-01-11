@@ -275,6 +275,11 @@ double PromptUser::getNumber(const std::string paramName){
   else
     Msg::Fatal("Unknown parameter %s",paramName.c_str());
 }
+bool PromptUser::existNumber(const std::string paramName){
+  std::vector<onelab::number> numbers;
+  get(numbers,paramName);
+  return numbers.size();
+}
 void PromptUser::setString(const std::string paramName, const std::string &val, const std::string &help){
   onelab::string string;
   string.setName(paramName);
@@ -289,6 +294,11 @@ std::string PromptUser::getString(const std::string paramName){
     return strings[0].getValue();
   else
     Msg::Fatal("Unknown parameter %s",paramName.c_str());
+}
+bool PromptUser::existString(const std::string paramName){
+  std::vector<onelab::string> strings;
+  get(strings,paramName);
+  return strings.size();
 }
 std::vector<std::string> PromptUser::getChoices(const std::string paramName){
   std::vector<onelab::string> strings;
@@ -441,6 +451,23 @@ int enclosed(const std::string &in, std::string &out){
     out.assign(sanitize(in.substr(cursor,pos-cursor)));
   //std::cout << "enclosed=<" << out << ">"<< std::endl;
 }
+int enclosed2(const std::string &in, std::string &first, std::string &second){
+  int pos, cursor;
+  cursor=0;
+  if ( (pos=in.find("("),cursor) == std::string::npos )
+     Msg::Fatal("Onelab syntax error: %s",in.c_str());
+  cursor = pos+1;
+  if ( (pos=in.find(","),cursor) == std::string::npos )
+     Msg::Fatal("Onelab syntax error: %s",in.c_str());
+  else
+    first.assign(sanitize(in.substr(cursor,pos-cursor)));
+  cursor = pos+1;
+  if ( (pos=in.find(")"),cursor) == std::string::npos )
+     Msg::Fatal("Onelab syntax error: %s",in.c_str());
+  else
+    second.assign(sanitize(in.substr(cursor,pos-cursor)));
+  //std::cout << "enclosed2=<" << first << "> <"<< second << ">" << std::endl;
+}
 
 bool InterfacedClient::analyze_oneline(std::string line, std::ifstream &infile) { 
   std::vector<onelab::number> numbers;
@@ -448,7 +475,7 @@ bool InterfacedClient::analyze_oneline(std::string line, std::ifstream &infile) 
   int pos0,pos,cursor;
   char sep=';';
   std::string buff;
-  std::string onelab("onelab"), number("onelab.number"), string("onelab.string"), include("onelab.include"), iftrue("onelab.iftrue");
+  std::string onelab("onelab"), number("onelab.number"), string("onelab.string"), include("onelab.include"), iftrue("onelab.iftrue"), ifequal("onelab.ifequal");
 
   if ( (pos=line.find(number)) != std::string::npos) {// onelab.number
     cursor = pos+number.length();
@@ -456,21 +483,22 @@ bool InterfacedClient::analyze_oneline(std::string line, std::ifstream &infile) 
       //std::cout << line.substr(cursor,pos-cursor) << std::endl;
       std::string name, action, value;
       extract(line.substr(cursor,pos-cursor),name,action,value);
+      double val=atof(value.c_str());
       std::vector<onelab::number> ps;
       get(ps, name);
 
       if(!ps.size()){ // param does not exist
-	if(!action.compare("Create") || !action.compare("Default")){ 
+	if(!action.compare("Create") || !action.compare("Value") || !action.compare("Default")){ 
 	  ps.resize(1);
 	  ps[0].setName(name);
-	  ps[0].setValue(atof(value.c_str()));
+	  ps[0].setValue(val);
 	}
 	else if(!action.compare("Add")){
 	  ps.resize(1);
 	  ps[0].setName(name);
-	  ps[0].setValue(atof(value.c_str()));
+	  ps[0].setValue(val);
 	  std::vector<double> choices;
-	  choices.push_back(atof(value.c_str()));
+	  choices.push_back(val);
 	  ps[0].setChoices(choices);
 	}
 	else{
@@ -487,8 +515,15 @@ bool InterfacedClient::analyze_oneline(std::string line, std::ifstream &infile) 
 	else if(!action.compare("Add")) {
 	  std::vector<double> choices;
 	  choices = ps[0].getChoices();
-	  choices.push_back(atof(value.c_str()));
+	  bool exist=false;
+	  for(unsigned int i = 0; i < choices.size(); i++)
+	    if (choices[i]==val) exist=true;
+	  if (!exist) choices.push_back(val);
 	  ps[0].setChoices(choices);
+	}
+	else if(!action.compare("Value")) { //forced setting
+	  ps[0].setName(name);
+	  ps[0].setValue(val);
 	}
 	else if(!action.compare("Create") || !action.compare("Default")) {}
 	else
@@ -509,7 +544,7 @@ bool InterfacedClient::analyze_oneline(std::string line, std::ifstream &infile) 
       get(ps, name);
 
       if(!ps.size()){ // param does not exist
-	if(!action.compare("Create") || !action.compare("Default")){ 
+	if(!action.compare("Create") || !action.compare("Default") || !action.compare("Value")){ 
 	  ps.resize(1);
 	  ps[0].setName(name);
 	  ps[0].setValue(value.c_str());
@@ -532,8 +567,15 @@ bool InterfacedClient::analyze_oneline(std::string line, std::ifstream &infile) 
 	else if(!action.compare("Add")) {
 	  std::vector<std::string> choices;
 	  choices = ps[0].getChoices();
-	  choices.push_back(value.c_str());
+	  bool exist=false;
+	  for(unsigned int i = 0; i < choices.size(); i++)
+	    if (choices[i]==value.c_str()) exist=true;
+	  if (!exist) choices.push_back(value.c_str());
 	  ps[0].setChoices(choices);
+	}
+	else if(!action.compare("Value")) { //forced setting
+	  ps[0].setName(name);
+	  ps[0].setValue(value.c_str());
 	}
 	else if(!action.compare("Create") || !action.compare("Default")) {}
 	else
@@ -550,15 +592,24 @@ bool InterfacedClient::analyze_oneline(std::string line, std::ifstream &infile) 
     std::string boolParam;
     enclosed(line.substr(cursor,pos-cursor),boolParam);
     //std::cout << "iftrue " << boolParam << std::endl;
-    
+    bool condition = false; 
     get(numbers,boolParam);
-    if (numbers.size()){
-      bool condition = (bool) numbers[0].getValue();
-      if (!analyze_ifstatement(infile,condition))
-	Msg::Fatal("ONELAB misformed onelab.iftrue statement: %s",boolParam.c_str());
-    }
-    else
-      Msg::Fatal("ONELAB unknown boolean parameter: <%s>",boolParam.c_str());
+    if (numbers.size())
+      condition = (bool) numbers[0].getValue();
+    if (!analyze_ifstatement(infile,condition))
+      Msg::Fatal("ONELAB misformed onelab.iftrue statement: %s",boolParam.c_str());     
+  }
+  else if ( (pos=line.find(ifequal)) != std::string::npos) {// onelab.ifequal
+    cursor = pos+ifequal.length();
+    std::string first,second;
+    pos=line.find_first_of(')',cursor)+1;
+    enclosed2(line.substr(cursor,pos-cursor),first,second);
+    bool condition= false;
+    get(strings,first);
+    if (strings.size())
+      condition= !strings[0].getValue().compare(second);
+    if (!analyze_ifstatement(infile,condition))
+      Msg::Fatal("ONELAB misformed onelab.ifequal statement: (%s,%s)",first.c_str(),second.c_str());
   }
   else if ( (pos=line.find(include)) != std::string::npos) {// onelab.include
     cursor = pos+include.length();
@@ -632,7 +683,7 @@ bool InterfacedClient::convert_oneline(std::string line, std::ifstream &infile, 
   char sep=';';
   std::string buff;
   std::string onelab("onelab"), number("onelab.number"), string("onelab.string"), include("onelab.include"), getValue("onelab.getValue");
-  std::string iftrue("onelab.iftrue");
+  std::string iftrue("onelab.iftrue"), ifequal("onelab.ifequal");
 
   if ( (pos=line.find(onelab)) == std::string::npos) // not a onelab line
     outfile << line << std::endl; 
@@ -655,16 +706,27 @@ bool InterfacedClient::convert_oneline(std::string line, std::ifstream &infile, 
       pos=line.find_first_of(')',cursor)+1;
       std::string boolParam;
       enclosed(line.substr(cursor,pos-cursor),boolParam);
+      //std::cout << "iftrue " << boolParam << std::endl;
+      bool condition = false; 
       get(numbers,boolParam);
-      if (numbers.size()){
-	bool condition = (bool) numbers[0].getValue();
-	if (!convert_ifstatement(infile,outfile,condition))
-	  Msg::Fatal("ONELAB misformed onelab.iftrue statement: %s",boolParam.c_str());
-      }
-      else
-	Msg::Fatal("ONELAB unknown boolean parameter: %s",boolParam.c_str());
+      if (numbers.size())
+	condition = (bool) numbers[0].getValue();
+      if (!convert_ifstatement(infile,outfile,condition))
+	Msg::Fatal("ONELAB misformed onelab.iftrue statement: %s",boolParam.c_str());     
     }
-    else if ( (pos=line.find(getValue)) != std::string::npos) {
+    else if ( (pos=line.find(ifequal)) != std::string::npos) {// onelab.ifequal
+      cursor = pos+ifequal.length();
+      std::string first,second;
+      pos=line.find_first_of(')',cursor)+1;
+      enclosed2(line.substr(cursor,pos-cursor),first,second);
+      bool condition= false;
+      get(strings,first);
+      if (strings.size())
+	condition =  !strings[0].getValue().compare(second);
+      if (!convert_ifstatement(infile,outfile,condition))
+	Msg::Fatal("ONELAB misformed onelab.ifequal statement: (%s,%s)",first.c_str(),second.c_str());
+    }
+    else if ( (pos=line.find(getValue)) != std::string::npos) {// onelab.getValue
       // onelab.getValue, possibly several times in the line
       cursor=0;
       while ( (pos=line.find(getValue,cursor)) != std::string::npos){
