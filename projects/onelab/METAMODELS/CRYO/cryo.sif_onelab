@@ -1,31 +1,43 @@
+onelab.string ModelName.Create(cryo);
+onelab.string elmer/MshDirName.Create(meshdir);
+onelab.string elmer/SolverName.Create(Heat Equation);
+onelab.string elmer/OutputFiles.Add(solution.pos); 
+onelab.number Parameter/Tcold.Create(78); Parameter/Tcold.Min(50); Parameter/Tcold.Max(100);
 
-onelab.number Tcold.Create(77); Tcold.Min(50); Tcold.Max(100);
-onelab.number Tcold.Help(Applied cold temperature);
-onelab.number NumStep.Create(50); 
-onelab.number NumStep.Help(Number of time steps); 
-onelab.number TimeStep.Create(0.1); TimeStep.Help(Time step in seconds); 
+onelab.number postpro/Xloc.Create(0.0015); postpro/Xloc.Help(x coord of the postpro examination point); 
+onelab.number postpro/Yloc.Create(0.003); postpro/Yloc.Help(y coord of the postpro examination point);
 
-onelab.include(ProbePoints.sif)
+onelab.number elmer/TRANSIENT.Add(0); elmer/TRANSIENT.Add(1);
+onelab.iftrue(elmer/TRANSIENT)
+	onelab.number elmer/NumStep.Create(20);
+	onelab.number elmer/TimeStep.Create(0.1);
+onelab.endif
+
+
 
 Header
   CHECK KEYWORDS Warn
-  Mesh DB "." "cryo"
+  Mesh DB "." "onelab.getValue(elmer/MshDirName)"
   Include Path ""
   Results Directory ""
 End
 
 Simulation
   Coordinate System =  Axi Symmetric
+onelab.iftrue(elmer/TRANSIENT)
   Simulation Type = Transient 
-  Timestep sizes = 0.025
-  Timestep Intervals = 200 !nb of times that the time step is repeted
+  !Timestep sizes = 0.025
+  !Timestep Intervals = 200 !nb of times that the time step is repeted
   Timestep sizes = onelab.getValue(TimeStep)
   Timestep Intervals = onelab.getValue(NumStep)
   Timestepping Method = BDF
   BDF Order = 1
+onelab.else
+  Simulation Type = Steady State 
+  Steady State Max Iterations = 1
+onelab.endif
   Output Intervals = 1
-  Solver Input File = "cryo.sif"
-  !Max Output Level = 0
+  Solver Input File = "onelab.getValue(ModelName).sif"
 End
 
 Constants
@@ -98,7 +110,11 @@ Solver 1
 End
 
 Solver 2
+onelab.iftrue(elmer/TRANSIENT)
    Exec solver = "After timestep"
+onelab.else
+   Exec solver = "Always"
+onelab.endif
    Equation = String "ResultOutput"
    Procedure = File "ResultOutputSolve" "ResultOutputSolver"
    Output File Name = String "solution.pos"
@@ -108,13 +124,17 @@ Solver 2
 End
 
 Solver 3 !ElmerModelsManuel page 187
-   Exec Solver = "After Timestep"
+onelab.iftrue(elmer/TRANSIENT)
+   Exec solver = "After timestep"
+onelab.else
+   Exec solver = "After All"
+onelab.endif
    Equation = SaveScalars
    Variable 1 = Temperature
    Variable 2 = Time
    Procedure = "SaveData" "SaveScalars"
    Save Coordinates(1,2) = 0.0015 0.003
-   Save Coordinates(1,2) = onelab.getValue(Xloc) onelab.getValue(Yloc)
+   Save Coordinates(1,2) = onelab.getValue(postpro/Xloc) onelab.getValue(postpro/Yloc)
    Filename = "tempevol.txt"
 End
 
@@ -203,15 +223,15 @@ Boundary Condition 1
   Heat Flux BC = Logical True
   Heat Transfer Coefficient = Real 5000. !Initial heat flux
   External Temperature = Real 77. !Initial temperature
-  External Temperature = Real onelab.getValue(Tcold)
 End
 
 Boundary Condition 2
   Name = "zeroflux"
   Target Boundaries(5) = 11 12 13 14 16 
   Heat Flux BC = Logical true
-  Heat Flux Real  = Real 0.0
+  Heat Flux Real = Real 0.0
 End
+
 
 
 

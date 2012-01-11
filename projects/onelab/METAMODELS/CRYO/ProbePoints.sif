@@ -1,3 +1,0 @@
-
-onelab.number Xloc.Default(0.0015); Xloc.Help(x coord of the postpro examination point); 
-onelab.number Yloc.Default(0.003); Yloc.Help(y coord of the postpro examination point);

@@ -5,7 +5,7 @@
 onelab::server *onelab::server::_server = 0;
 onelab::remoteNetworkClient *loader = 0;
 
-std::string modelName="cryo";
+std::string modelName="";
 PromptUser *OL = new PromptUser("onelab");
 EncapsulatedGmsh *myMesher = new EncapsulatedGmsh("gmsh");
 InterfacedElmer *mySolver = new InterfacedElmer("elmer");
@@ -17,9 +17,11 @@ int main(int argc, char *argv[]){
   int modelNumber=0;
   std::string sockName = "";
 
-  getOptions(argc, argv, modelNumber, analyzeOnly, sockName);
+  getOptions(argc, argv, modelNumber, analyzeOnly, modelName, sockName);
+  modelName="cryo";
 
-  loader = new onelab::remoteNetworkClient("loader", sockName);
+  if (sockName.size())
+    loader = new onelab::remoteNetworkClient("loader", sockName);
   Msg::InitializeOnelab("metamodel",""); // _onelabClient = new onelab::localClient("metamodel");
 
   if (loader)
@@ -62,7 +64,9 @@ int main(int argc, char *argv[]){
 
 
 int analyze(){
+  checkIfPresent(modelName+".geo");
   myMesher->analyze("",modelName);
+  checkIfPresent(modelName+".sif_onelab");
   mySolver->analyze("",modelName);
   std::cout << OL->showParamSpace() << std::endl;
   return 1;
@@ -71,18 +75,17 @@ int analyze(){
 int compute(){
 
   newStep();
+  analyze();
 
-  checkIfPresent(modelName+".geo");
   myMesher->run("-2", modelName);
   checkIfModified(modelName+".msh");
   OL->setString("Gmsh/MshFileName", modelName+".msh");
 
-  std::string cmd="ElmerGrid 14 2 " + modelName + ".msh -o " + modelName;
+  std::string cmd="ElmerGrid 14 2 " + modelName + ".msh -out " + OL->getString("elmer/MshDirName");
   systemCall(cmd); // no server access needed
+  checkIfModified(OL->getString("elmer/MshDirName")+"/mesh.header");
 
-  checkIfPresent(modelName+".sif_onelab");
-  checkIfPresent("ProbePoints.sif");
-  mySolver->analyze("", modelName);  //std::cout << OL->showParamSpace();
+  mySolver->convert(modelName);
   mySolver->run("",modelName);
   checkIfModified(modelName+".sif");
   checkIfModified("solution.pos");
@@ -90,9 +93,9 @@ int compute(){
 
   std::cout << "Simulation completed successfully" << std::endl;
 
-  if(loader){
-    loader->sendMergeFileRequest("solution.pos");
-  }
+  GmshDisplay(loader,modelName,"solution.pos");
+  
+  // Post-processing
   cmd="gmsh - solution.pos script.pos.opt"; // compute objective function 
   systemCall(cmd); 
 
@@ -106,15 +109,22 @@ int compute(){
     temp = v1[i]+v2[i];
     if (temp<min){ imin=i; min=temp;}
   }
-  OL->setNumber("tmin",time[imin]);
-  std::cout << std::endl << "Simulation result: tmin=" << time[imin] << std::endl;
+  OL->setNumber("fmin",min,"Value of the objective function");
 
-  double teval=2.; // evaluation at time=2s
-  array data = read_array("tempevol.txt",' '); // temperature over time at probe point
-  double T2s = find_in_array((int)(teval/OL->getNumber("TimeStep")),2,data); // temperature after 2s
+  if (OL->getNumber("elmer/TRANSIENT")){
+    OL->setNumber("tmin",time[imin],"Time at which the objective function is minimum");
+    std::cout << std::endl << "Simulation result: tmin=" << time[imin] << std::endl;
+
+    double teval=2.; // evaluation at time=2s
+    array data = read_array("tempevol.txt",' '); // temperature over time at probe point
+    double T2s = find_in_array((int)(teval/OL->getNumber("elmer/TimeStep")),2,data); // temperature after 2s
   
-  OL->setNumber("T2s",T2s,"temperature at (Xloc, Yloc) after 2 sec");
-  std::cout << "Simulation result: T2s="  << T2s << std::endl;
+    OL->setNumber("T2s",T2s,"temperature at (Xloc, Yloc) after 2 sec");
+    std::cout << "Simulation result: T2s="  << T2s << std::endl;
+  }
+
+
+  std::cout << OL->showParamSpace() << std::endl;
 
   return 1;
 }
