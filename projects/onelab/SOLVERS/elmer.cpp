@@ -2,70 +2,38 @@
 #include <string>
 #include "OnelabClients.h"
 
-onelab::server *onelab::server::_server = 0;
-onelab::remoteNetworkClient *loader = 0;
-
-std::string modelName="";
 PromptUser *OL = new PromptUser("onelab");
-EncapsulatedGmsh *myMesher = new EncapsulatedGmsh("gmsh");
-InterfacedElmer *mySolver = new InterfacedElmer("elmer");
+EncapsulatedClient *myMesher = new EncapsulatedClient("gmsh","gmsh",".geo");
+InterfacedClient *mySolver = new InterfacedClient("elmer","ElmerSolver",".sif");
 
-int main(int argc, char *argv[]){
-  bool analyzeOnly=false;
-  std::string sockName = "";
-  int modelNumber=0;
-
-  getOptions(argc, argv, modelNumber, analyzeOnly, modelName, sockName);
-
-  if (sockName.size())
-    loader = new onelab::remoteNetworkClient("loader", sockName);
-  Msg::InitializeOnelab("elmer",""); // as a localnetworkclient
-
-  if (loader)
-    std::cout << "ONELAB: " << Msg::Synchronize_Down(loader) << " parameters downloaded" << std::endl;
-
-  if (analyzeOnly)
-    analyze();
-  else
-    compute();
-
-  if (loader){
-    std::cout << "ONELAB: " << Msg::Synchronize_Up(loader) << " parameters uploaded" << std::endl;
-    delete loader;
-  }
-
-  Msg::FinalizeOnelab();
+void MetaModel::registerClients(){
+  registerClient(myMesher);
+  registerClient(mySolver);
+  myMesher->setFileName(genericNameFromArgs); // setFileName("cryo"); 
+  mySolver->setFileName(genericNameFromArgs); 
 }
 
-
-int analyze(){
-  checkIfPresent(modelName+".geo");
-  myMesher->analyze("",modelName);
-  checkIfPresent(modelName+".sif_onelab");
-  mySolver->analyze("",modelName);
+void MetaModel::analyze(){
+  Msg::Info("Metamodel::analyze <%s>",getName().c_str());
+  myMesher->analyze(); 
+  mySolver->analyze(); 
   std::cout << OL->showParamSpace() << std::endl;
-  return 1;
 }
 
-int compute(){
+void MetaModel::compute(){
+  Msg::Info("Metamodel::compute <%s>",getName().c_str());
   newStep();   
-  analyze();
+ 
+  myMesher->compute();
 
-  myMesher->run("-2", modelName);
-  checkIfModified(modelName+".msh");
-  OL->setString("Gmsh/MshFileName", modelName+".msh");
+  mySolver->setLineOptions("");
 
-  std::string cmd="ElmerGrid 14 2 " + modelName + ".msh -out " + OL->getString("elmer/MshDirName");
-  systemCall(cmd); // no server access needed
-  checkIfModified(OL->getString("elmer/MshDirName")+"/mesh.header");
+  mySolver->convert();
 
-  mySolver->convert(modelName);
-  checkIfModified(modelName+".sif");
-  mySolver->run("",modelName);
+  mySolver->compute();
+
+  //GmshDisplay(Msg::loader,genericNameFromArgs,Msg::GetValue("elmer/9OutputFiles"));
+  GmshDisplay(Msg::loader,genericNameFromArgs,Msg::GetOnelabChoices("elmer/9OutputFiles"));
 
   std::cout << "Simulation completed successfully" << std::endl;
-
-  GmshDisplay(loader,modelName,OL->getChoices("elmer/OutputFiles"));
-
-  return 1;
 }
