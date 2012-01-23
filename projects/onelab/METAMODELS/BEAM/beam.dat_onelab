@@ -1,19 +1,18 @@
 
-onelab.string Material/1Name.Default(STONE);
-onelab.string Material/1Name.Add(STEEL); Material/1Name.Add(STONE); Material/1Name.Add(WOOD);
+onelab.parameter matName.string(STONE,Material/1, Material Name);
+onelab.parameter matName.AddChoices(STEEL,STONE,WOOD); 
+onelab.parameter E.number(0,Material/2,Young Modulus); Nu.number(0,Material/2,Poisson ratio);
+onelab.parameter OutputFiles.AddChoices(disp.pos); OutputFiles.AddChoices(vonMises.pos);
 
-onelab.ifequal(Material/1Name,STEEL)
-onelab.number Material/2E.Value(100.e9); Material/3Nu.Value(0.3); 
+onelab.ifequal(matName,STEEL)
+onelab.parameter E.SetValue(100.e9); Nu.SetValue(0.3);
 onelab.endif
-onelab.ifequal(Material/1Name,STONE)
-onelab.number Material/2E.Value(200.e9); Material/3Nu.Value(0.25); 
+onelab.ifequal(matName,STONE)
+onelab.parameter E.SetValue(200.e9); Nu.SetValue(0.25);
 onelab.endif
-onelab.ifequal(Material/1Name,WOOD)
-onelab.number Material/2E.Value(80.e9); Material/3Nu.Value(0.4); 
+onelab.ifequal(matName,WOOD)
+onelab.parameter E.SetValue(80.e9); Nu.SetValue(0.4);
 onelab.endif
-onelab.number Material/2E.Help(Young Modulus); Material/3Nu.Help(Poission ratio);
-
-onelab.string elast/9OutputFiles.Add(disp.pos); elast/9OutputFiles.Add(vonMises.pos);
 
 ElasticDomain 7  onelab.getValue(Material/2E) onelab.getValue(Material/3Nu)
 EdgeDisplacement 8 0 0
