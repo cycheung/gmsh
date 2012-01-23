@@ -1,30 +1,33 @@
-onelab.string ModelName.Create(cryo);
-onelab.string elmer/MshDirName.Create(meshdir);
-onelab.string elmer/SolverName.Create(Heat Equation);
-onelab.string elmer/OutputFiles.Add(solution.pos); 
-onelab.number Parameter/Tcold.Create(78); Parameter/Tcold.Min(50); Parameter/Tcold.Max(100);
 
-onelab.number postpro/Xloc.Create(0.0015); postpro/Xloc.Help(x coord of the postpro examination point); 
-onelab.number postpro/Yloc.Create(0.003); postpro/Yloc.Help(y coord of the postpro examination point);
+onelab.parameter MshDirName.string(meshdir,elmer/,Mesh directory);
+onelab.parameter SolverName.string(Heat Equation,elmer/,Elmer solver name);
+onelab.parameter ModelName.string(cryo,elmer/,Model name);
 
-onelab.number elmer/TRANSIENT.Add(0); elmer/TRANSIENT.Add(1);
-onelab.iftrue(elmer/TRANSIENT)
-	onelab.number elmer/NumStep.Create(20);
-	onelab.number elmer/TimeStep.Create(0.1);
+onelab.parameter Tcold.number(78,parameter/,"Applied temperature")
+onelab.parameter Xloc.number(0.0015,postpro/,x coord of the postpro examination point); 
+onelab.parameter Yloc.number(0.0030,postpro/,y coord of the postpro examination point); 
+
+onelab.parameter OutputFiles.AddChoices(solution.pos); 
+
+onelab.parameter TRANSIENT.number(0,elmer/,Transient simulation); TRANSIENT.AddChoices(0,1);
+onelab.iftrue(TRANSIENT)
+	onelab.parameter NumStep.number(20,elmer/,Number of time steps);
+	onelab.parameter TimeStep.number(0.1,elmer/,Time step);
+	onelab.parameter OutputFiles.AddChoices(tempevol.txt); 	 
 onelab.endif
 
 
 
 Header
   CHECK KEYWORDS Warn
-  Mesh DB "." "onelab.getValue(elmer/MshDirName)"
+  Mesh DB "." "onelab.getValue(MshDirName)"
   Include Path ""
   Results Directory ""
 End
 
 Simulation
   Coordinate System =  Axi Symmetric
-onelab.iftrue(elmer/TRANSIENT)
+onelab.iftrue(TRANSIENT)
   Simulation Type = Transient 
   !Timestep sizes = 0.025
   !Timestep Intervals = 200 !nb of times that the time step is repeted
@@ -110,7 +113,7 @@ Solver 1
 End
 
 Solver 2
-onelab.iftrue(elmer/TRANSIENT)
+onelab.iftrue(TRANSIENT)
    Exec solver = "After timestep"
 onelab.else
    Exec solver = "Always"
@@ -124,7 +127,7 @@ onelab.endif
 End
 
 Solver 3 !ElmerModelsManuel page 187
-onelab.iftrue(elmer/TRANSIENT)
+onelab.iftrue(TRANSIENT)
    Exec solver = "After timestep"
 onelab.else
    Exec solver = "After All"
@@ -134,7 +137,7 @@ onelab.endif
    Variable 2 = Time
    Procedure = "SaveData" "SaveScalars"
    Save Coordinates(1,2) = 0.0015 0.003
-   Save Coordinates(1,2) = onelab.getValue(postpro/Xloc) onelab.getValue(postpro/Yloc)
+   Save Coordinates(1,2) = onelab.getValue(Xloc) onelab.getValue(Yloc)
    Filename = "tempevol.txt"
 End
 
