@@ -34,7 +34,7 @@ void MetaModel::compute(){
 
   mySolver->compute();
 
-  GmshDisplay(Msg::loader,genericNameFromArgs,Msg::GetOnelabChoices("elast/9OutputFiles"));
+  GmshDisplay(Msg::loader,genericNameFromArgs,Msg::GetOnelabChoices(mySolver->getName() + "/9OutputFiles"));
 
   std::cout << "Simulation completed successfully" << std::endl;
 }

@@ -32,7 +32,6 @@ void MetaModel::compute(){
 
   mySolver->compute();
 
-  //GmshDisplay(Msg::loader,genericNameFromArgs,Msg::GetValue("elmer/9OutputFiles"));
   GmshDisplay(Msg::loader,genericNameFromArgs,Msg::GetOnelabChoices("elmer/9OutputFiles"));
 
   std::cout << "Simulation completed successfully" << std::endl;
