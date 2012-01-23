@@ -1,8 +1,7 @@
-// #include <stdlib.h>
-// #include <string>
 #include "OnelabClients.h"
 
 onelab::server *onelab::server::_server = 0;
+onelab::remoteNetworkClient *Msg::loader = 0;
 
 void PrintUsage(const char *name){
   printf("\nUsage:       %s [-v int -m int] metamodel\n", name);
@@ -12,9 +11,10 @@ void PrintUsage(const char *name){
 }
 
 int main(int argc, char *argv[]){
-  std::string sockname;
-  std::string modelName="";
+  //std::string sockName, clientName;
   PromptUser *globalParam = new PromptUser("glob");
+
+  std::string commandLine="",fileName="";
   int modelNumber=0;
   int verbosity=0;
 
@@ -32,24 +32,21 @@ int main(int argc, char *argv[]){
 	modelNumber = (atoi(argv[i]));
         i++;        
       }
-      else if(!strcmp(argv[i] + 1, "onelab")) {
-	i++;
-	sockname = argv[i];
-        i++;        
-      }
       else 
 	PrintUsage(argv[0]);
     }
     else {
-      modelName = argv[i];
+      if (commandLine.empty())
+	commandLine.assign(argv[i]);
+      else
+	fileName.assign(argv[i]);
       i++;
     }
   }
 
-  if(!modelName.size()) PrintUsage(argv[0]);
-  std::string options="";
-  if(verbosity) appendOption(options,"-v",verbosity);
-  if(modelNumber) appendOption(options,"-m",modelNumber);
-  globalParam->menu(options,modelName);
+  std::cout << "command==" << commandLine << std::endl;
+  std::cout << "fileName==" << fileName << std::endl;
+
+  globalParam->menu(commandLine, fileName, modelNumber); 
 }
 

@@ -11,7 +11,6 @@
 #include "GmshSocket.h"
 #include "OS.h"
 
-
 #define ALWAYS_TRUE 1
 
 int Msg::_commRank = 0;
@@ -93,6 +92,9 @@ void Msg::Fatal(const char *fmt, ...)
     fflush(stderr);
   }
 
+  FinalizeClient();
+  FinalizeOnelab();
+  delete loader;
   // only exit if a callback is not provided
   if(!_callback) Exit(1);
 }
@@ -320,10 +322,6 @@ void Msg::PrintErrorCounter(const char *title)
 
 double Msg::GetValue(const char *text, double defaultval)
 {
-  // if a callback is given let's assume we don't want to be bothered
-  // with interactive stuff
-  //if(CTX::instance()->noPopup || _callback) return defaultval;
-
   printf("%s (default=%.16g): ", text, defaultval);
   char str[256];
   char *ret = fgets(str, sizeof(str), stdin);
@@ -335,10 +333,6 @@ double Msg::GetValue(const char *text, double defaultval)
 
 std::string Msg::GetString(const char *text, std::string defaultval)
 {
-  // if a callback is given let's assume we don't want to be bothered
-  // with interactive stuff
-  //if(CTX::instance()->noPopup || _callback) return defaultval;
-
   printf("%s (default=%s): ", text, defaultval.c_str());
   char str[256];
   char *ret = fgets(str, sizeof(str), stdin);
@@ -351,10 +345,6 @@ std::string Msg::GetString(const char *text, std::string defaultval)
 int Msg::GetAnswer(const char *question, int defaultval, const char *zero,
                    const char *one, const char *two)
 {
-  // if a callback is given let's assume we don't want to be bothered
-  // with interactive stuff
-  //if(CTX::instance()->noPopup || _callback) return defaultval;
-
   if(two)
     printf("%s\n\n0=[%s] 1=[%s] 2=[%s] (default=%d): ", question,
            zero, one, two, defaultval);
@@ -396,10 +386,9 @@ void Msg::Barrier()
 {
 }
 
-int Msg::GetNumThreads(){ return 1; }
-int Msg::GetMaxThreads(){ return 1; }
-int Msg::GetThreadNum(){ return 0; }
-
+// int Msg::GetNumThreads(){ return 1; }
+// int Msg::GetMaxThreads(){ return 1; }
+// int Msg::GetThreadNum(){ return 0; }
 
 void Msg::InitializeOnelab(const std::string &name, const std::string &sockname)
 {
@@ -414,6 +403,16 @@ void Msg::InitializeOnelab(const std::string &name, const std::string &sockname)
   }
 }
 
+double Msg::GetOnelabNumber(std::string name)
+{
+  if(_onelabClient){
+    std::vector<onelab::number> ps;
+    _onelabClient->get(ps, name);
+    if(ps.size())
+      return ps[0].getValue();
+  }
+  return 0;
+}
 
 void Msg::GetOnelabNumber(std::string name, double *val)
 {
@@ -443,28 +442,28 @@ void Msg::SetOnelabNumber(onelab::number s)
   }
 }
 
-// std::string Msg::GetOnelabString(std::string name)
-// {
-//   std::string str="";
-//   if(_onelabClient){
-//     std::vector<onelab::string> ps;
-//     _onelabClient->get(ps, name);
-//     if(ps.size() && ps[0].getValue().size())
-//       str = ps[0].getValue();
-//   }
-//   return str;
-// }
-// std::vector<std::string> Msg::GetOnelabChoices(std::string name)
-// {
-//   if(_onelabClient){
-//     std::vector<onelab::string> ps;
-//     _onelabClient->get(ps, name);
-//     if(ps.size() && ps[0].getValue().size()){
-//       return ps[0].getChoices();
-//     }
-//   }
-// }
+std::string Msg::GetOnelabString(std::string name)
+{
+  std::string str="";
+  if(_onelabClient){
+    std::vector<onelab::string> ps;
+    _onelabClient->get(ps, name);
+    if(ps.size() && ps[0].getValue().size())
+      str = ps[0].getValue();
+  }
+  return str;
+}
 
+std::vector<std::string> Msg::GetOnelabChoices(std::string name)
+{
+  if(_onelabClient){
+    std::vector<onelab::string> ps;
+    _onelabClient->get(ps, name);
+    if(ps.size() && ps[0].getValue().size()){
+      return ps[0].getChoices();
+    }
+  }
+}
 
 void Msg::SetOnelabString(std::string name, std::string val)
 {
@@ -570,9 +569,7 @@ void Msg::AddOnelabStringChoice(std::string name, std::string kind,
   }
 }
 
-
-int Msg::Synchronize_Down(onelab::remoteNetworkClient *loader){
-
+int Msg::Synchronize_Down(){
   std::vector<onelab::number> numbers;
   onelab::number o;
   loader->get(numbers,"");
@@ -596,7 +593,7 @@ int Msg::Synchronize_Down(onelab::remoteNetworkClient *loader){
   return(numbers.size()+strings.size());
 }
 
-int Msg::Synchronize_Up(onelab::remoteNetworkClient *loader){
+int Msg::Synchronize_Up(){
   std::vector<onelab::number> numbers;
   onelab::number number;
   _onelabClient->get(numbers,"");
