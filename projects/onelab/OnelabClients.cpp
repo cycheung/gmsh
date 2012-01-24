@@ -1,5 +1,6 @@
 #include "OnelabMessage.h"
 #include "OnelabClients.h"
+#include <algorithm>
 
 class onelabServer : public GmshServer{
  private:
@@ -48,8 +49,11 @@ bool onelab::localNetworkClient::run()
 
   onelabServer *server = new onelabServer(this);
  
-  //std::string socketName = ":";
+  #if defined WIN32
+  std::string socketName = ":";
+  #else
   std::string socketName = getUserHomedir() + ".gmshsock";
+  #endif
   std::string sockname;
   std::ostringstream tmp;
   if(!strstr(socketName.c_str(), ":")){
@@ -1118,6 +1122,7 @@ int getStep(){
 
 #include <unistd.h>
 #include <sys/types.h>
+#if not defined WIN32
 #include <pwd.h>
 std::string getUserHomedir(){
   struct passwd *pw = getpwuid(getuid());
@@ -1125,6 +1130,7 @@ std::string getUserHomedir(){
   str.append("/");
   return str;
 }
+#endif
 
 #include <sys/param.h>
 std::string getCurrentWorkdir(){

@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <algorithm>
 #include "OnelabMessage.h"
 #include "GmshSocket.h"
 #include "OS.h"
