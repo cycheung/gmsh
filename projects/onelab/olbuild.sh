@@ -36,6 +36,10 @@ cd SOLVERS
 ./olmake.sh
 cd ..
 
+./olmake.sh
+
+exit
+
 cd METAMODELS
 echo ""
 echo "ONELAB: compile the metamodels"
@@ -49,5 +53,5 @@ cd CRYO
 cd ..
 
 cd ..
-./olmake.sh
+
 

@@ -70,6 +70,8 @@ public:
   void setString(const std::string paramName, const std::string &val, const std::string &help="");
   std::string getString(const std::string paramName);
   bool existString(const std::string paramName);
+  void AddNumberChoice(std::string name, double val);
+  void AddStringChoice(std::string name, std::string str);
   //std::vector<std::string> getChoices(const std::string paramName);
   std::string stateToChar();  
   std::string showParamSpace();
@@ -109,6 +111,7 @@ private:
   bool convert_oneline(std::string line, std::ifstream &infile, std::ofstream &outfile);
   bool convert_ifstatement(std::ifstream &infile, std::ofstream &outfile, bool condition) ;
   bool convert_onefile(std::string ifileName, std::ofstream &outfile);
+  std::string longName(const std::string name);
 public:
  InterfacedClient(const std::string &name, const std::string &commandLine, const std::string &extension) 
    : onelab::localClient(name), _commandLine(commandLine), _extension(extension) {}
@@ -117,6 +120,7 @@ public:
   //std::string getFileName();
   void setFileName(const std::string &nam);
   void setLineOptions(const std::string &opt) { _options.assign(opt); }
+  std::string evaluateGetVal(std::string line);
 
   void initialize(); 
   void analyze();
