@@ -4,9 +4,9 @@ Mesh.Algorithm = 8;
 unit = 1.0e-02 ;
 
 DefineConstant[ H = {4.5 * unit, Min 1 *unit, Max 8.5 *unit, Step 1*unit, Path "Parameters/Geometry",
-                     ShortHelp "Beam Height"} ] ;
-DefineConstant[ L = {20 * unit, Min 10 *unit, Max 200 *unit, Step 1*unit, Path "Parameters/Geometry",
                      ShortHelp "Beam Width"} ] ;
+DefineConstant[ L = {20 * unit, Min 10 *unit, Max 200 *unit, Step 1*unit, Path "Parameters/Geometry",
+                     ShortHelp "Beam Heigth"} ] ;
 DefineConstant[ lc = {1 * unit, Min .1 *unit, Max 10 *unit, Step .1*unit, Path "Parameters/Geometry",
                      ShortHelp "Mesh Size"} ] ;
 
