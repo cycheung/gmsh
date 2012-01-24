@@ -37,4 +37,4 @@ $(OBJDIR)/%.o : %.cpp
 clean :
 	$(RM) $(TARGETS) -r $(OBJDIR)
 
-.PRECIOUS: $(OBJDIR)%.o
+.PRECIOUS: $(OBJDIR)/%.o
