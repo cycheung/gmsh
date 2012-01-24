@@ -1,22 +1,22 @@
 
-onelab.parameter MshDirName.string(meshdir,elmer/,Mesh directory);
-onelab.parameter SolverName.string(Heat Equation,elmer/,Elmer solver name);
-onelab.parameter ModelName.string(cryo,elmer/,Model name);
+onelab.parameter ModelName.string(cryo,Elmer/,Model name);
+onelab.parameter MshDirName.string(meshdir,Elmer/,Mesh directory);
+onelab.parameter SolverName.string(Heat Equation,Elmer/,Elmer solver name);
 
-onelab.parameter Tcold.number(78,parameter/,"Applied temperature")
-onelab.parameter Xloc.number(0.0015,postpro/,x coord of the postpro examination point); 
-onelab.parameter Yloc.number(0.0030,postpro/,y coord of the postpro examination point); 
+onelab.parameter Tcold.number(78,Parameters/2Elmer/,"Applied temperature"); Tcold.MinMax(50,100,5);
+
+onelab.parameter Xloc.number(0.0015,Parameters/3Postpro/,x coord of the postpro examination point); 
+onelab.parameter Yloc.number(0.0030,Parameters/3Postpro/,y coord of the postpro examination point); 
+
+!! .parameter Xloc.SetValue(onelab.getValue(Parameters/1Geometry/Xloc) );
 
 onelab.parameter OutputFiles.AddChoices(solution.pos); 
 
-onelab.parameter TRANSIENT.number(0,elmer/,Transient simulation); TRANSIENT.AddChoices(0,1);
+onelab.parameter TRANSIENT.number(0,Elmer/2,Transient simulation); TRANSIENT.AddChoices(0,1);
 onelab.iftrue(TRANSIENT)
-	onelab.parameter NumStep.number(20,elmer/,Number of time steps);
-	onelab.parameter TimeStep.number(0.1,elmer/,Time step);
-	onelab.parameter OutputFiles.AddChoices(tempevol.txt); 	 
+	onelab.parameter NumStep.number(20,Elmer/2,Number of time steps);
+	onelab.parameter TimeStep.number(0.1,Elmer/2,Time step);
 onelab.endif
-
-
 
 Header
   CHECK KEYWORDS Warn
@@ -225,7 +225,8 @@ Boundary Condition 1
   !Temperature = Real 320
   Heat Flux BC = Logical True
   Heat Transfer Coefficient = Real 5000. !Initial heat flux
-  External Temperature = Real 77. !Initial temperature
+  External Temperature = Real 77. !Initial temperature??
+  External Temperature = Real onelab.getValue(Tcold) !Initial temperature??
 End
 
 Boundary Condition 2
