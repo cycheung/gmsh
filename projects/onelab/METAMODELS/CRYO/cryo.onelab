@@ -1,0 +1,15 @@
+onelab.client Mesher.encapsulated(gmsh);
+onelab.client Mesher/InputFiles.Set(onelab.getValue(Arguments/FileName).geo);
+
+onelab.client ElmerGrid.interfaced(ElmerGrid 14 2);
+onelab.client ElmerGrid/InputFiles.Set(onelab.getValue(Arguments/FileName).msh);
+onelab.client ElmerGrid/LineOptions.Set(-out meshdir);
+
+onelab.client Elmer.interfaced(ElmerSolver);
+onelab.client Elmer/InputFiles.Set(onelab.getValue(Arguments/FileName).sif.olab);
+
+onelab.client Post.interfaced(gmsh);
+onelab.client Post/InputFiles.Set(solution.pos,script.opt);
+onelab.client Post/LineOptions.Set("-");
+
+onelab.client Display/InputFiles.Set(solution.pos);
