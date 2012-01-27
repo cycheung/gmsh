@@ -1,12 +1,16 @@
 #include "OnelabMessage.h"
 #include "OnelabClients.h"
+#include "StringUtils.h"
 #include <algorithm>
+
+// reserved keywords for onelab
+
 
 class onelabServer : public GmshServer{
  private:
-  onelab::localNetworkClient *_client;
+  localNetworkSolverClient *_client;
  public:
-  onelabServer(onelab::localNetworkClient *client) : GmshServer(), _client(client) {}
+  onelabServer(localNetworkSolverClient *client) : GmshServer(), _client(client) {}
   ~onelabServer() {}
   int SystemCall(const char *str)
   { 
@@ -41,7 +45,7 @@ class onelabServer : public GmshServer{
   }
 };
 
-bool onelab::localNetworkClient::run()
+bool localNetworkSolverClient::run()
 {
  new_connection:
   _pid = 0;
@@ -49,17 +53,17 @@ bool onelab::localNetworkClient::run()
 
   onelabServer *server = new onelabServer(this);
  
-  #if defined WIN32
+#if defined WIN32
   std::string socketName = ":";
-  #else
+#else
   std::string socketName = getUserHomedir() + ".gmshsock";
-  #endif
+#endif
   std::string sockname;
   std::ostringstream tmp;
   if(!strstr(socketName.c_str(), ":")){
     // Unix socket
     tmp << socketName << getId();
-    //sockname = FixWindowsPath(tmp.str());
+    sockname = FixWindowsPath(tmp.str());
   }
   else{
     // TCP/IP socket
@@ -70,30 +74,24 @@ bool onelab::localNetworkClient::run()
   }
   sockname = tmp.str();
 
-  std::string command = _commandLine;
+  std::string command = FixWindowsPath(getCommandLine());
   if(command.size()){
     std::vector<onelab::string> ps;
     get(ps, getName() + "/Action");
     std::string action = (ps.empty() ? "" : ps[0].getValue());
-    get(ps, getName() + "/1ModelName");
-    std::string modelName = (ps.empty() ? "" : ps[0].getValue());
-    get(ps, getName() + "/9LineOptions");
-    std::string options = (ps.empty() ? "" : ps[0].getValue());
-    get(ps, getName() + "/9InitializeCommand");
-    std::string initializeCommand = (ps.empty() ? "" : ps[0].getValue());
     get(ps, getName() + "/9CheckCommand");
     std::string checkCommand = (ps.empty() ? "" : ps[0].getValue());
     get(ps, getName() + "/9ComputeCommand");
     std::string computeCommand = (ps.empty() ? "" : ps[0].getValue());
 
     if(action == "initialize")
-      command += " " + initializeCommand;
+      command += " ";
     else if(action == "check")
-      command += " " + modelName + " " + options + " " + checkCommand;
+      command += " " + buildArguments() + " " + checkCommand;
     else if(action == "compute")
-      command += " " + modelName + " " + options + " " + computeCommand;
+      command += " " + buildArguments() + " " + computeCommand;
     else
-      Msg::Fatal("localNetworkClient::run: Unknown: Unknown Action <%s>", action.c_str());
+      Msg::Fatal("localNetworkSolverClient::run: Unknown: Unknown Action <%s>", action.c_str());
 
     // append "-onelab" command line argument
     command += " " + _socketSwitch + " \"" + getName() + "\"";
@@ -258,7 +256,7 @@ bool onelab::localNetworkClient::run()
   return true;
 }
 
-bool onelab::localNetworkClient::kill()
+bool localNetworkSolverClient::kill()
 {
   if(_pid > 0) {
     if(KillProcess(_pid)){
@@ -271,41 +269,7 @@ bool onelab::localNetworkClient::kill()
   return false;
 }
 
-void MetaModel::registerClient(onelab::client *pName)
-{ 
-  _clients.push_back(pName);
-  Msg::Info("Register client <%s>", pName->getName().c_str());
-}
-
-void MetaModel::initialize()
-{
-  Msg::Info("Metamodel::initialize <%s>",getName().c_str());
-  Msg::SetOnelabString(clientName + "/9CheckCommand","-a");
-  Msg::SetOnelabNumber(clientName + "/Initialized",1);
-  Msg::SetOnelabNumber(clientName + "/UseCommandLine",1);
-}
-
-void MetaModel::initializeClients()
-{
-  Msg::Info("Metamodel::initializeClients <%s>",getName().c_str());
-  for(unsigned int i = 0; i < _clients.size(); i++){
-    Msg::SetOnelabString(_clients[i]->getName()+"/Action","initialize");
-    std::cout << "MetaModel::initialize " << _clients[i]->getName() << std::endl;
-    _clients[i]->run();
-  }
-}
-// void MetaModel::automaticCheck()
-// {
-//   initializeClients();
-//   for(unsigned int i = 0; i < _clients.size(); i++){
-//    Msg::SetOnelabString(_clients[i]->getName()+"/Action","check");
-//    std::cout << "MetaModel::check " << _clients[i]->getName() << std::endl;
-//    _clients[i]->run();
-//   }
-// }
-
-// MetaModel::analyze() et MetaModel::compute()
-// sont définies par l'utilisateur dans un fichier à part
+// PROMPTUSER
 
 int PromptUser::getVerbosity(){
   std::vector<onelab::number> numbers;
@@ -431,12 +395,12 @@ bool PromptUser::menu(std::string commandLine, std::string fileName, int modelNu
   std::vector<onelab::number> numbers;
   std::vector<onelab::string> strings;
 
-  EncapsulatedClient *loadedSolver = new  EncapsulatedClient("MetaModel",commandLine,"");
+  EncapsulatedClient *loadedSolver = new  EncapsulatedClient("MetaModel",commandLine);
   setString("Arguments/FileName",fileName);
 
   do {
     std::cout << "\nONELAB: menu" << std::endl ;
-    std::cout << " 1- View parameter space\n 2- Set a value\n 3- List modified files\n 4- Initialize\n 5- Analyze\n 6- Compute\n 7- Quit metamodel" << std::endl;
+    std::cout << " 1- View parameter space\n 2- Set a value\n 3- List modified files\n 4- Analyze\n 5- Compute\n 6- Quit metamodel" << std::endl;
 
     choice=0;
     std::string mystr;
@@ -492,95 +456,210 @@ bool PromptUser::menu(std::string commandLine, std::string fileName, int modelNu
       choice=0;
     }
     else if (choice==4){
-      loadedSolver->initialize();
-      choice=0;
-    }
-    else if (choice==5){
       loadedSolver->analyze();
       choice=0;
     }
-    else if (choice==6){
+    else if (choice==5){
       loadedSolver->compute();
       choice=0;
     }
-    else if (choice==7)
+    else if (choice==6)
       exit(1);
     else
       choice=0;
   } while(!choice && ++counter2<20);
 }
 
-std::string sanitize(const std::string &in)
+// LOCALSOLVERCLIENT
+
+const std::string localSolverClient::getLineOptions(){
+  std::vector<onelab::string> strings;
+  std::string paramName(getName()+"/LineOptions");
+  get(strings,paramName);
+  if(strings.size())
+    return strings[0].getValue();
+  else
+    return "";
+}
+
+const std::vector<std::string> localSolverClient::getInputFiles(){
+  std::vector<onelab::string> strings, choices;
+  std::string fileName;
+  std::string paramName(getName()+"/InputFiles");
+  get(strings,paramName);
+  if(strings.size())
+    return strings[0].getChoices();
+  else
+    Msg::Fatal("ONELAB: parameter <%s> undefined",paramName.c_str());
+}
+
+const std::string localSolverClient::buildArguments(){
+  int pos;
+  std::vector<onelab::string> strings;
+  std::string args,filename;
+
+
+  std::vector<std::string> choices = getInputFiles();
+  for(unsigned int i = 0; i < choices.size(); i++)
+      args.append(choices[i].substr(0,choices[i].find(olkey::extension))+" ");
+  args.append(getLineOptions());
+  return args;
+}
+
+// METAMODEL
+
+void MetaModel::initialize()
 {
-  std::string out, forbidden(" ();");
-  for(unsigned int i = 0; i < in.size(); i++)
-    if ( forbidden.find(in[i]) == std::string::npos)
-      out.push_back(in[i]);
-  return out;
+  Msg::Info("Metamodel::initialize <%s>",getName().c_str());
+  Msg::SetOnelabString(clientName + "/9CheckCommand","-a",false);
+  Msg::SetOnelabNumber(clientName + "/UseCommandLine",1,false);
 }
-int enclosed(const std::string &in, std::vector<std::string> &arguments){
-  int pos, cursor;
-  arguments.resize(0);
-  cursor=0;
-  if ( (pos=in.find("(",cursor)) == std::string::npos )
-     Msg::Fatal("Onelab syntax error: <%s>",in.c_str());
 
-  unsigned int count=1;
-  pos++; // skips '('
-  cursor = pos; 
-  do{
-    if(in[pos]=='(') count++;
-    if(in[pos]==')') count--;
-    if(in[pos]==',') {
-      arguments.push_back(in.substr(cursor,pos-cursor));
-      if(count!=1)
-	Msg::Fatal("Onelab syntax error: <%s>",in.c_str());
-      cursor=pos+1; // skips ','
+std::string MetaModel::resolveGetVal(std::string line) {
+  //std::vector<onelab::number> numbers;
+  std::vector<onelab::string> strings;
+  std::vector<std::string> arguments;
+  std::string buff;
+  int pos,pos0,cursor;
+
+  cursor=0;
+  while ( (pos=line.find(olkey::getValue,cursor)) != std::string::npos){
+    pos0=pos; // for further use
+    cursor = pos+olkey::getValue.length();
+    pos=line.find_first_of(')',cursor)+1;
+    if(enclosed(line.substr(cursor,pos+1-cursor),arguments)<1)
+      Msg::Fatal("ONELAB misformed <%s> statement: (%s)",olkey::getValue.c_str(),line.c_str());
+    get(strings,arguments[0]);
+    if (strings.size())
+      buff.assign(strings[0].getValue());
+    else
+      Msg::Fatal("ONELAB unknown variable: %s",arguments[0].c_str());
+    line.replace(pos0,pos-pos0,buff); 
+    cursor=pos0+buff.length();
+  }
+  return line;
+}
+
+void MetaModel::registerClient(const std::string name, const std::string type, 
+			       const std::string path) {
+  localSolverClient *c;
+
+  Msg::Info("ONELAB: initialize client <%s>", name.c_str());
+  if(!type.compare("encapsulated"))  // Name.encapsulated(path,extension)
+    c = new EncapsulatedClient(name,path);
+  else if(!type.compare("interfaced"))
+    c = new InterfacedClient(name,path);
+  else
+    Msg::Fatal("ONELAB: unknown client type <%s>",type.c_str());
+
+  Msg::SetOnelabString(name + "/Action","initialize",false);
+  c->run();
+  _clients.push_back(c); 
+}
+
+
+void MetaModel::analyze_oneline(std::string line, std::ifstream &infile) { 
+  int pos,cursor;
+  std::string name,action, path;
+  std::vector<std::string> arguments;
+  std::vector<onelab::string> strings;
+  char sep=';';
+
+  if( (pos=line.find(olkey::client)) != std::string::npos) {// onelab.client
+    cursor = pos+olkey::client.length();
+    while ( (pos=line.find(sep,cursor)) != std::string::npos){
+      extract(line.substr(cursor,pos-cursor),name,action,arguments);
+      //Msg::Info("ONELAB: define client <%s>", name.c_str());
+      if(!action.compare("encapsulated") || !action.compare("interfaced") ){
+	if(findClientByName(name))
+	  Msg::Info("ONELAB: ignores second definition of client <%s>", name.c_str());
+	else{
+	  if(arguments.size() != 1)
+	    Msg::Fatal("ONELAB: wrong client definition <%s>",name.c_str());
+	  if(arguments[0].empty()){
+	    std::cout << "\nONELAB:Enter the path on your system to the executable file of <" << name << ">" << std::endl;
+	    std::getline (std::cin,arguments[0]);
+	  }
+	  registerClient(name,action,arguments[0]);
+	}
+      }
+      else if(!action.compare("Set")){
+	if(arguments[0].size()){
+	  strings.resize(1);
+	  strings[0].setName(name);
+	  strings[0].setValue(resolveGetVal(arguments[0]));
+	  strings[0].setVisible(false);
+	  std::vector<std::string> choices;
+	  for(unsigned int i = 0; i < arguments.size(); i++)
+	    if(std::find(choices.begin(),choices.end(),arguments[i])==choices.end())
+	      choices.push_back(resolveGetVal(arguments[i]));
+	  strings[0].setChoices(choices);
+	  set(strings[0]);
+	}
+      }
+      else
+	Msg::Fatal("ONELAB:unknown keyword <%s>",action.c_str());
+      cursor=pos+1;
     }
-    pos++;
-  } while( count && (pos!=std::string::npos) ); // find closing brace
-  if(count)
-     Msg::Fatal("Onelab syntax error: <%s>",in.c_str());
-  else
-    arguments.push_back(in.substr(cursor,pos-1-cursor));
-
-  // while( (pos=in.find(",",cursor)) != std::string::npos ){
-  //   arguments.push_back(in.substr(cursor,pos-cursor));
-  //   cursor = pos+1;
-  // }
-  // if ( (pos=in.find(")",cursor)) == std::string::npos )
-  //    Msg::Fatal("Onelab syntax error: <%s>",in.c_str());
-  // else
-  //   arguments.push_back(in.substr(cursor,pos-cursor));
-  return arguments.size();
+  }
 }
-int extract(const std::string &in, std::string &paramName, std::string &action, std::vector<std::string> &arguments){
-  // syntax: paramName.action( arg1, arg2, ... )
-  int pos, cursor,NumArg=0;
-  cursor=0;
-  if ( (pos=in.find(".",cursor)) == std::string::npos )
-     Msg::Fatal("Onelab syntax error: <%s>",in.c_str());
+
+void MetaModel::analyze_onefile(std::string fileName) { 
+  std::string line;
+  std::string fileNameSave = fileName+".save";
+
+  std::ifstream infile(fileNameSave.c_str()); // read saved client pathes (if file present)
+  if (infile.is_open()){
+    while ( infile.good() ) {
+      getline (infile,line);
+      analyze_oneline(line,infile);
+    }
+    infile.close();
+  }
+  infile.open(fileName.c_str()); // read client description
+  if (infile.is_open()){
+    while ( infile.good() ) {
+      getline (infile,line);
+      analyze_oneline(line,infile);
+    }
+    infile.close();
+  }
   else
-    paramName.assign(sanitize(in.substr(cursor,pos-cursor)));
-  cursor = pos+1; // skips '.'
-  if ( (pos=in.find("(",cursor)) == std::string::npos )
-     Msg::Fatal("Onelab syntax error: <%s>",in.c_str());
+    Msg::Fatal("The file %s cannot be opened",fileName.c_str());
+
+  std::ofstream outfile(fileNameSave.c_str()); // save client pathes
+  if (outfile.is_open())
+    for(citer it = _clients.begin(); it != _clients.end(); it++)
+      outfile << (*it)->toChar();
   else
-    action.assign(sanitize(in.substr(cursor,pos-cursor)));
-  cursor = pos;
-  unsigned int count=0;
-  do{
-    if(in[pos]=='(') count++;
-    if(in[pos]==')') count--;
-    pos++;
-  } while(count && (pos!=std::string::npos) ); // find closing brace
-  if(count)
-     Msg::Fatal("Onelab syntax error: %s",in.c_str());
-  else
-    NumArg = enclosed(in.substr(cursor,pos-cursor),arguments);
-  std::cout << "paramName=<" << paramName << ">" << std::endl;
-  std::cout << "arguments=<" << in.substr(cursor,pos+1-cursor) << ">" << std::endl;
-  return NumArg;
+    Msg::Fatal("The file <%s> cannot be opened",fileNameSave.c_str());
+  outfile.close();
+} 
+
+void MetaModel::simpleCheck()
+{
+  for(citer it = _clients.begin(); it != _clients.end(); it++){
+    Msg::SetOnelabString((*it)->getName() + "/Action","check",false);
+    (*it)->analyze();
+  }
+}
+
+void MetaModel::simpleCompute()
+{
+  for(citer it = _clients.begin(); it != _clients.end(); it++){
+    Msg::SetOnelabString((*it)->getName() + "/Action","compute",false);
+    (*it)->compute();
+  }
+}
+
+// INTERFACED client
+
+std::string  InterfacedClient::toChar() {
+  std::ostringstream sstream;
+  sstream << olkey::client << " " 
+	  << getName() << "." << "interfaced("
+          << getCommandLine() << ");\n";
+  return sstream.str();
 }
 
 std::string InterfacedClient::longName(const std::string name){
@@ -591,15 +670,6 @@ std::string InterfacedClient::longName(const std::string name){
     return name;
 }
 
-
-// reserved keywords for onelab 
-std::string onelabLabel("onelab"), param(onelabLabel+".parameter");
-std::string number(onelabLabel+".number"), string(onelabLabel+".string"), include(onelabLabel+".include"); 
-std::string iftrue(onelabLabel+".iftrue"), olelse(onelabLabel+".else"), olendif(onelabLabel+".endif"); 
-std::string ifequal(onelabLabel+".ifequal");
-std::string getValue(onelabLabel+".getValue");
-
-
 std::string InterfacedClient::evaluateGetVal(std::string line) {
   std::vector<onelab::number> numbers;
   std::vector<onelab::string> strings;
@@ -607,13 +677,13 @@ std::string InterfacedClient::evaluateGetVal(std::string line) {
   std::string buff;
   int pos,cursor;
 
-  if((pos=line.find(getValue,0)) == std::string::npos)
+  if((pos=line.find(olkey::getValue,0)) == std::string::npos)
     return line;
-  cursor = pos+getValue.length();
+  cursor = pos + olkey::getValue.length();
   pos=line.find(')',cursor);
-  std::cout << "ici:<" << line.substr(cursor,pos+1-cursor) << ">" << pos << std::endl;
+  //std::cout << "ici:<" << line.substr(cursor,pos+1-cursor) << ">" << pos << std::endl;
   if(enclosed(line.substr(cursor,pos+1-cursor),arguments)<1)
-    Msg::Fatal("ONELAB misformed <%s> statement: (%s)",getValue.c_str(),line.c_str());
+    Msg::Fatal("ONELAB misformed <%s> statement: (%s)",olkey::getValue.c_str(),line.c_str());
   std::string paramName;
   paramName.assign(longName(arguments[0])); 
   get(numbers,paramName);
@@ -632,7 +702,7 @@ std::string InterfacedClient::evaluateGetVal(std::string line) {
   return buff;
 }
 
-bool InterfacedClient::analyze_oneline(std::string line, std::ifstream &infile) { 
+void InterfacedClient::analyze_oneline(std::string line, std::ifstream &infile) { 
   std::vector<onelab::number> numbers;
   std::vector<onelab::string> strings;
   std::vector<std::string> arguments;
@@ -641,8 +711,8 @@ bool InterfacedClient::analyze_oneline(std::string line, std::ifstream &infile) 
   std::string buff;
   std::set<std::string>::iterator it;
 
-  if ( (pos=line.find(param)) != std::string::npos) {// onelab.param
-    cursor = pos+param.length();
+  if ( (pos=line.find(olkey::param)) != std::string::npos) {// onelab.param
+    cursor = pos+olkey::param.length();
     while ( (pos=line.find(sep,cursor)) != std::string::npos){
       std::string name, action;
       extract(line.substr(cursor,pos-cursor),name,action,arguments);
@@ -716,9 +786,7 @@ bool InterfacedClient::analyze_oneline(std::string line, std::ifstream &infile) 
       }
       else if(!action.compare("MinMax")){
 	if(arguments.size()){
-	  if((it = _parameters.find(name)) == _parameters.end()) // find complete name inclusive path
-	    Msg::Fatal("ONELAB MinMax: unknown variable: %s",name.c_str());
-	  name.assign(*it);
+	  name.assign(longName(name));
 	  get(numbers,name);
 	  if(numbers.size()){
 	    numbers[0].setMin(atof(arguments[0].c_str()));
@@ -733,9 +801,6 @@ bool InterfacedClient::analyze_oneline(std::string line, std::ifstream &infile) 
       else if(!action.compare("SetValue")){
 	if(arguments.empty())
 	  Msg::Fatal("ONELAB: missing argument SetValue <%s>",name.c_str());
-	// if((it = _parameters.find(name)) == _parameters.end()) // find complete name inclusive path
-	//   Msg::Fatal("ONELAB SetValue: unknown variable: %s",name.c_str());
-	// name.assign(*it);
 	get(numbers,longName(name)); 
 	if(numbers.size()){ 
 	  numbers[0].setValue(atof(evaluateGetVal(arguments[0]).c_str()));
@@ -758,52 +823,43 @@ bool InterfacedClient::analyze_oneline(std::string line, std::ifstream &infile) 
     }
     // fin de la boucle while
   }
-  else if ( (pos=line.find(iftrue)) != std::string::npos) {// onelab.iftrue
-    cursor = pos+iftrue.length();
+  else if ( (pos=line.find(olkey::iftrue)) != std::string::npos) {// onelab.iftrue
+    cursor = pos+olkey::iftrue.length();
     pos=line.find_first_of(')',cursor)+1;
     if(enclosed(line.substr(cursor,pos-cursor),arguments)<1)
-      Msg::Fatal("ONELAB misformed <%s> statement: (%s)",iftrue.c_str(),line.c_str());
+      Msg::Fatal("ONELAB misformed <%s> statement: (%s)",olkey::iftrue.c_str(),line.c_str());
     bool condition = false;
-    if((it = _parameters.find(arguments[0])) == _parameters.end()) // find complete name inclusive path
-      Msg::Fatal("ONELAB %s: unknown variable: <%s>",iftrue.c_str(),arguments[0].c_str());
-    get(numbers,*it);
+    get(numbers,longName(arguments[0]));
     if (numbers.size())
       condition = (bool) numbers[0].getValue();
     if (!analyze_ifstatement(infile,condition))
-      Msg::Fatal("ONELAB misformed <%s> statement: <%s>",iftrue.c_str(),arguments[0].c_str());     
+      Msg::Fatal("ONELAB misformed <%s> statement: <%s>",olkey::iftrue.c_str(),arguments[0].c_str());     
   }
-  else if ( (pos=line.find(ifequal)) != std::string::npos) {// onelab.ifequal
-    cursor = pos+ifequal.length();
+  else if ( (pos=line.find(olkey::ifequal)) != std::string::npos) {// onelab.ifequal
+    cursor = pos+olkey::ifequal.length();
     pos=line.find_first_of(')',cursor)+1;
     if (enclosed(line.substr(cursor,pos-cursor),arguments) <2)
-      Msg::Fatal("ONELAB misformed %s statement: <%s>",ifequal.c_str(),line.c_str());
+      Msg::Fatal("ONELAB misformed %s statement: <%s>",olkey::ifequal.c_str(),line.c_str());
     bool condition= false;
-    if((it = _parameters.find(arguments[0])) == _parameters.end()) // find complete name inclusive path
-      Msg::Fatal("ONELAB %s: unknown variable: <%s>",ifequal.c_str(),arguments[0].c_str());
-    get(strings,*it);
+    get(strings,longName(arguments[0]));
     if (strings.size())
       condition= !strings[0].getValue().compare(arguments[1]);
     if (!analyze_ifstatement(infile,condition))
-      Msg::Fatal("ONELAB misformed <%s> statement: (%s,%s)",ifequal.c_str(),arguments[0].c_str(),arguments[1].c_str());
+      Msg::Fatal("ONELAB misformed <%s> statement: (%s,%s)",olkey::ifequal.c_str(),arguments[0].c_str(),arguments[1].c_str());
   }
-  else if ( (pos=line.find(include)) != std::string::npos) {// onelab.include
-    cursor = pos+include.length();
+  else if ( (pos=line.find(olkey::include)) != std::string::npos) {// onelab.include
+    cursor = pos+olkey::include.length();
     pos=line.find_first_of(')',cursor)+1;
     if(enclosed(line.substr(cursor,pos-cursor),arguments)<1)
-      Msg::Fatal("ONELAB misformed <%s> statement: (%s)",include.c_str(),line.c_str());
+      Msg::Fatal("ONELAB misformed <%s> statement: (%s)",olkey::include.c_str(),line.c_str());
     analyze_onefile(arguments[0]);
   }
 }
 
-bool InterfacedClient::analyze_onefile(std::string ifilename) { 
-  std::vector<onelab::number> numbers;
-  std::vector<onelab::string> strings;
-  int pos0,pos,cursor;
-  char sep=';';
-  std::string line,buff;
+void InterfacedClient::analyze_onefile(std::string ifilename) { 
+  std::string line;
   std::ifstream infile(ifilename.c_str());
 
-  analyze_oneline("onelab.parameter OutputFiles.string(-- See list --,"+getName()+"/9,Output files);",infile);
   if (infile.is_open()){
     while ( infile.good() ) {
       getline (infile,line);
@@ -822,9 +878,9 @@ bool InterfacedClient::analyze_ifstatement(std::ifstream &infile, bool condition
   bool trueclause=true, statementend=false;
   while ( infile.good() && !statementend) {
     getline (infile,line);
-    if ( (pos=line.find(olelse)) != std::string::npos) 
+    if ( (pos=line.find(olkey::olelse)) != std::string::npos) 
       trueclause=false;
-    else if ( (pos=line.find(olendif)) != std::string::npos) 
+    else if ( (pos=line.find(olkey::olendif)) != std::string::npos) 
       statementend=true;
     else if ( !(trueclause ^ condition) ) // xor bitwise operator
       analyze_oneline(line,infile);
@@ -839,9 +895,9 @@ bool InterfacedClient::convert_ifstatement(std::ifstream &infile, std::ofstream 
   bool trueclause=true, statementend=false;
   while ( infile.good() && !statementend) {
     getline (infile,line);
-    if ( (pos=line.find(olelse)) != std::string::npos) 
+    if ( (pos=line.find(olkey::olelse)) != std::string::npos) 
       trueclause=false;
-    else if ( (pos=line.find(olendif)) != std::string::npos) 
+    else if ( (pos=line.find(olkey::olendif)) != std::string::npos) 
       statementend=true;
     else if ( !(trueclause ^ condition) ) // xor bitwise operator
       convert_oneline(line,infile,outfile);
@@ -849,70 +905,62 @@ bool InterfacedClient::convert_ifstatement(std::ifstream &infile, std::ofstream 
   return statementend;
 } 
 
-bool InterfacedClient::convert_oneline(std::string line, std::ifstream &infile, std::ofstream &outfile) { 
+void InterfacedClient::convert_oneline(std::string line, std::ifstream &infile, std::ofstream &outfile) { 
   std::vector<onelab::number> numbers;
   std::vector<onelab::string> strings;
   std::vector<std::string> arguments;
   int pos0,pos,cursor;
-  char sep=';';
   std::string buff;
   std::set<std::string>::iterator it;
 
-  if ( (pos=line.find(onelabLabel)) == std::string::npos) // not a onelab line
+  if ( (pos=line.find(olkey::label)) == std::string::npos) // not a onelab line
     outfile << line << std::endl; 
   else{ 
-    if ( (pos=line.find(param)) != std::string::npos) {// onelab.param
+    if ( (pos=line.find(olkey::param)) != std::string::npos) {// onelab.param
       //skip the line
     }
-    else if ( (pos=line.find(include)) != std::string::npos) {// onelab.include
-      cursor = pos+include.length();
+    else if ( (pos=line.find(olkey::include)) != std::string::npos) {// onelab.include
+      cursor = pos+olkey::include.length();
       pos=line.find_first_of(')',cursor)+1;
       if(enclosed(line.substr(cursor,pos-cursor),arguments)<1)
-	Msg::Fatal("ONELAB misformed <%s> statement: (%s)",include.c_str(),line.c_str());
+	Msg::Fatal("ONELAB misformed <%s> statement: (%s)",olkey::include.c_str(),line.c_str());
       convert_onefile(arguments[0],outfile);
     }
-    else if ( (pos=line.find(iftrue)) != std::string::npos) {// onelab.iftrue
-      cursor = pos+iftrue.length();
+    else if ( (pos=line.find(olkey::iftrue)) != std::string::npos) {// onelab.iftrue
+      cursor = pos+olkey::iftrue.length();
       pos=line.find_first_of(')',cursor)+1;
       if(enclosed(line.substr(cursor,pos-cursor),arguments)<1)
-	Msg::Fatal("ONELAB misformed <%s> statement: (%s)",iftrue.c_str(),line.c_str());
+	Msg::Fatal("ONELAB misformed <%s> statement: (%s)",olkey::iftrue.c_str(),line.c_str());
       bool condition = false; 
-     if((it = _parameters.find(arguments[0])) == _parameters.end()) // find complete name inclusive path
-       Msg::Fatal("ONELAB %s: unknown variable: %s",iftrue.c_str(),arguments[0].c_str());
-      get(numbers,*it);
+      get(numbers,longName(arguments[0]));
       if (numbers.size())
 	condition = (bool) numbers[0].getValue();
       if (!convert_ifstatement(infile,outfile,condition))
-	Msg::Fatal("ONELAB misformed <%s> statement: %s",iftrue.c_str(),arguments[0].c_str());     
+	Msg::Fatal("ONELAB misformed <%s> statement: %s",olkey::iftrue.c_str(),arguments[0].c_str());     
     }
-    else if ( (pos=line.find(ifequal)) != std::string::npos) {// onelab.ifequal
-      cursor = pos+ifequal.length();
+    else if ( (pos=line.find(olkey::ifequal)) != std::string::npos) {// onelab.ifequal
+      cursor = pos+olkey::ifequal.length();
       pos=line.find_first_of(')',cursor)+1;
       if(enclosed(line.substr(cursor,pos-cursor),arguments)<2)
-	Msg::Fatal("ONELAB misformed <%s> statement: (%s)",iftrue.c_str(),line.c_str());;
+	Msg::Fatal("ONELAB misformed <%s> statement: (%s)",olkey::ifequal.c_str(),line.c_str());;
       bool condition= false;
-      if((it = _parameters.find(arguments[0])) == _parameters.end()) // find complete name inclusive path
-	Msg::Fatal("ONELAB %s: unknown variable: %s",ifequal.c_str(),arguments[0].c_str());
-      get(strings,*it);
+      get(strings,longName(arguments[0]));
       if (strings.size())
 	condition =  !strings[0].getValue().compare(arguments[1]);
       if (!convert_ifstatement(infile,outfile,condition))
-	Msg::Fatal("ONELAB misformed <%s> statement: (%s)",ifequal.c_str(),line.c_str());
+	Msg::Fatal("ONELAB misformed <%s> statement: (%s)",olkey::ifequal.c_str(),line.c_str());
     }
-    else if ( (pos=line.find(getValue)) != std::string::npos) {// onelab.getValue
+    else if ( (pos=line.find(olkey::getValue)) != std::string::npos) {// onelab.getValue
       // onelab.getValue, possibly several times in the line
       cursor=0;
-      while ( (pos=line.find(getValue,cursor)) != std::string::npos){
+      while ( (pos=line.find(olkey::getValue,cursor)) != std::string::npos){
 	pos0=pos; // for further use
-	cursor = pos+getValue.length();
+	cursor = pos+olkey::getValue.length();
 	pos=line.find_first_of(')',cursor)+1;
 	if(enclosed(line.substr(cursor,pos-cursor),arguments)<1)
-	  Msg::Fatal("ONELAB misformed <%s> statement: (%s)",getValue.c_str(),line.c_str());
-	
-	if((it = _parameters.find(arguments[0])) == _parameters.end()) // find complete name inclusive path
-	  Msg::Fatal("ONELAB %s: unknown variable: %s",getValue.c_str(),arguments[0].c_str());
+	  Msg::Fatal("ONELAB misformed <%s> statement: (%s)",olkey::getValue.c_str(),line.c_str());
 	std::string paramName;
-	paramName.assign(*it); 
+	paramName.assign(longName(arguments[0])); 
 	//std::cout << "getValue:<" << arguments[0] << "> => <" << paramName << ">" << std::endl;
 	get(numbers,paramName);
 	if (numbers.size()){
@@ -937,14 +985,10 @@ bool InterfacedClient::convert_oneline(std::string line, std::ifstream &infile, 
   }
 }
 
-bool InterfacedClient::convert_onefile(std::string ifilename, std::ofstream &outfile) { 
-  std::vector<onelab::number> numbers;
-  std::vector<onelab::string> strings;
-  int pos0,pos,cursor;
-  char sep=';';
-  std::string line,buff;
+void InterfacedClient::convert_onefile(std::string ifilename, std::ofstream &outfile) { 
+  std::string line;
   std::ifstream infile(ifilename.c_str());
-
+  //fileName.assign(name.substr(0,name.find_last_of(".")));  // remove extension
   if (infile.is_open()){
     while ( infile.good() ) {
       getline (infile,line);
@@ -956,45 +1000,53 @@ bool InterfacedClient::convert_onefile(std::string ifilename, std::ofstream &out
     Msg::Fatal("The file %s cannot be opened",ifilename.c_str());
 }
 
-void InterfacedClient::setFileName(const std::string &fileName) { 
-  if(fileName.empty())
-    Msg::Fatal("No valid input file given for client <%s>.",getName().c_str());
-  else{
-    _fileName.assign(fileName+_extension); 
-    //checkIfPresent(_fileName); not yet we shoild look for .ext_onelab
+void InterfacedClient::analyze() { 
+  std::vector<onelab::string> strings;
+  Msg::SetOnelabString(getName() + "/Action","check",false);// a titre indicatif
+
+  get(strings,getName()+"/InputFiles");
+  if(strings.size()){
+    std::vector<std::string> choices=strings[0].getChoices();
+    for(unsigned int i = 0; i < choices.size(); i++){
+      std::string ifilename = choices[i];
+      if(ifilename.find(olkey::extension)!=std::string::npos){
+	checkIfPresent(ifilename);
+	analyze_onefile(ifilename); // recursive
+      }
+    }
   }
 }
 
-void InterfacedClient::initialize() {
-  Msg::SetOnelabString(getName() + "/Action","initialize"); // a titre indicatif
-}
+void InterfacedClient::convert() {
+  int pos;
+  std::vector<onelab::string> strings;
 
-void InterfacedClient::analyze() { 
-  Msg::SetOnelabString(getName() + "/Action","check"); // a titre indicatif
-  std::string ifilename = _fileName + "_onelab";
-  checkIfPresent(ifilename);
-  analyze_onefile(ifilename); // recursive
-}
-
-void InterfacedClient::convert() { 
-  std::string ifilename = _fileName + "_onelab";
-  checkIfPresent(ifilename);
-  std::string ofilename = _fileName ;
-  std::ofstream outfile(ofilename.c_str());
-
-  if (outfile.is_open())
-    convert_onefile(ifilename,outfile);
-  else
-    Msg::Fatal("The file <%s> cannot be opened",ofilename.c_str());
-  outfile.close();
-  checkIfModified(ofilename);
+  get(strings,getName()+"/InputFiles");
+  if(strings.size()){
+    std::vector<std::string> choices=strings[0].getChoices();
+    for(unsigned int i = 0; i < choices.size(); i++){
+      std::string ifilename = choices[i];
+      checkIfPresent(ifilename);
+      if((pos=ifilename.find(olkey::extension))!=std::string::npos){
+	std::string ofilename = ifilename.substr(0,pos);  // remove extension
+	std::ofstream outfile(ofilename.c_str());
+	if (outfile.is_open())
+	  convert_onefile(ifilename,outfile);
+	else
+	  Msg::Fatal("The file <%s> cannot be opened",ofilename.c_str());
+	outfile.close();
+	checkIfModified(ofilename);
+      }
+    }
+  }
 }
 
 void InterfacedClient::compute() { 
   convert();
-  Msg::SetOnelabString(getName() + "/Action","compute"); // a titre indicatif
-  std::string commandLine = _commandLine + " " + _fileName ;
-  commandLine.append(" " + _options);
+  Msg::SetOnelabString(getName() + "/Action","compute",false); // a titre indicatif
+
+  std::string commandLine = getCommandLine() + " " ;
+  commandLine.append(buildArguments());
   //commandLine.append(" &> " + _name + ".log");
   Msg::Info("Client %s launched",_name.c_str());
   std::cout << "Commandline:" << commandLine.c_str() << std::endl;
@@ -1006,54 +1058,41 @@ void InterfacedClient::compute() {
 
 // ENCAPSULATED Client
 
-void EncapsulatedClient::initialize() {
-  set(onelab::string(getName()+"/Action", "initialize"));
-  onelab::server::citer it= onelab::server::instance()->findClient(getName());
-  onelab::client *c = it->second;
-  c->run();
+std::string EncapsulatedClient::toChar(){
+  std::ostringstream sstream;
+  sstream << olkey::client << " " 
+	  << getName() << "." << "encapsulated(" 
+	  << getCommandLine() << ");\n";
+  return sstream.str();
 }
+
+// void EncapsulatedClient::initialize() {
+//   set(onelab::string(getName()+"/Action", "initialize"));
+//   onelab::server::citer it= onelab::server::instance()->findClient(getName());
+//   onelab::client *c = it->second;
+//   c->run();
+//   run();
+// }
 
 void EncapsulatedClient::analyze() {
   set(onelab::string(getName()+"/Action", "check"));
-  onelab::server::citer it= onelab::server::instance()->findClient(getName());
-  onelab::client *c = it->second;
-  c->run();
+  run();
 }
 
 void EncapsulatedClient::compute() {
   set(onelab::string(getName()+"/Action", "compute"));
-  onelab::server::citer it= onelab::server::instance()->findClient(getName());
-  onelab::client *c = it->second;
-  c->run();
-}
-
-void EncapsulatedClient::setFileName(const std::string &fileName) {
-  if(fileName.empty())
-    Msg::Fatal("No valid input file given for client <%s>.",getName().c_str());
-  else{
-    set(onelab::string(getName()+"/1ModelName", fileName + getExtension()));
-    checkIfPresent(getFileName());
-  }
-}
-void EncapsulatedClient::setLineOptions(const std::string &options) {
-  if(options.size())
-    set(onelab::string(getName()+"/9LineOptions", options));
-}
-std::string EncapsulatedClient::getFileName() {
-  return Msg::GetOnelabString( getName() + "/1ModelName");
+  run();
 }
 
 
-/*
-ONELAB additional tools (no access to server in tools
- */
+// ONELAB additional TOOLS (no access to server in tools)
 
 // utilisé pour le main() des métamodèles
-
 int getOptions(int argc, char *argv[], std::string &action, std::string &commandLine, std::string &fileName, std::string &clientName, std::string &sockName, int &modelNumber){
 
   commandLine=argv[0];
   action="compute";
+  fileName="untitled";
   int i= 1;
   while(i < argc) {
     if(argv[i][0] == '-') {
@@ -1069,15 +1108,6 @@ int getOptions(int argc, char *argv[], std::string &action, std::string &command
 	sockName = argv[i];
         i++;
       }
-      else if(!strcmp(argv[i] + 1, "c")) {
-	i++;
-	std::cout << argv[0] << " has " << onelab::server::instance()->getNumClients() << " clients\n" ;
-	for(onelab::server::citer it = onelab::server::instance()->firstClient();
-	    it != onelab::server::instance()->lastClient(); it++){
-	  std::cout << it->second->getId() << ':' << it->second->getName() << "/" << std::endl;
-	}
-	exit(1);
-      }
       else if(!strcmp(argv[i] + 1, "a")) {
 	i++;
 	action="check";
@@ -1086,9 +1116,7 @@ int getOptions(int argc, char *argv[], std::string &action, std::string &command
 	i++;
 	printf("Usage: %s [-m num -a -c]\n", argv[0]);
 	printf("Options are:\nm      model number\n");
-	printf("h      displays this help\n");
 	printf("a      analyze only\n");
-	printf("c      list of clients\n");
 	//exit(1);
       }
     }
@@ -1099,6 +1127,15 @@ int getOptions(int argc, char *argv[], std::string &action, std::string &command
   }
 }
 
+static std::string getNextToken(const std::string &msg,
+				std::string::size_type &first){
+  if(first == std::string::npos) return "";
+  std::string::size_type last = msg.find_first_of(charSep(), first);
+  std::string next = msg.substr(first, last - first);
+  first = (last == std::string::npos) ? last : last + 1;
+  return next;
+}
+ 
 std::string itoa(const int i){
   std::ostringstream tmp;
   tmp << i ;
@@ -1117,6 +1154,71 @@ int newStep(){
 }
 int getStep(){
   return onelab_step;
+}
+
+
+std::string sanitize(const std::string &in)
+{
+  std::string out, forbidden(" ();");
+  for(unsigned int i = 0; i < in.size(); i++)
+    if ( forbidden.find(in[i]) == std::string::npos)
+      out.push_back(in[i]);
+  return out;
+}
+int enclosed(const std::string &in, std::vector<std::string> &arguments){
+  int pos, cursor;
+  arguments.resize(0);
+  cursor=0;
+  if ( (pos=in.find("(",cursor)) == std::string::npos )
+     Msg::Fatal("Onelab syntax error: <%s>",in.c_str());
+
+  unsigned int count=1;
+  pos++; // skips '('
+  cursor = pos; 
+  do{
+    if(in[pos]=='(') count++;
+    if(in[pos]==')') count--;
+    if(in[pos]==',') {
+      arguments.push_back(in.substr(cursor,pos-cursor));
+      if(count!=1)
+	Msg::Fatal("Onelab syntax error: <%s>",in.c_str());
+      cursor=pos+1; // skips ','
+    }
+    pos++;
+  } while( count && (pos!=std::string::npos) ); // find closing brace
+  if(count)
+     Msg::Fatal("Onelab syntax error: <%s>",in.c_str());
+  else
+    arguments.push_back(in.substr(cursor,pos-1-cursor));
+  return arguments.size();
+}
+int extract(const std::string &in, std::string &paramName, std::string &action, std::vector<std::string> &arguments){
+  // syntax: paramName.action( arg1, arg2, ... )
+  int pos, cursor,NumArg=0;
+  cursor=0;
+  if ( (pos=in.find(".",cursor)) == std::string::npos )
+     Msg::Fatal("Onelab syntax error: <%s>",in.c_str());
+  else
+    paramName.assign(sanitize(in.substr(cursor,pos-cursor)));
+  cursor = pos+1; // skips '.'
+  if ( (pos=in.find("(",cursor)) == std::string::npos )
+     Msg::Fatal("Onelab syntax error: <%s>",in.c_str());
+  else
+    action.assign(sanitize(in.substr(cursor,pos-cursor)));
+  cursor = pos;
+  unsigned int count=0;
+  do{
+    if(in[pos]=='(') count++;
+    if(in[pos]==')') count--;
+    pos++;
+  } while(count && (pos!=std::string::npos) ); // find closing brace
+  if(count)
+     Msg::Fatal("Onelab syntax error: %s",in.c_str());
+  else
+    NumArg = enclosed(in.substr(cursor,pos-cursor),arguments);
+  // std::cout << "paramName=<" << paramName << ">" << std::endl;
+  // std::cout << "arguments=<" << in.substr(cursor,pos+1-cursor) << ">" << std::endl;
+  return NumArg;
 }
 
 

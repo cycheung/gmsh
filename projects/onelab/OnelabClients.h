@@ -15,6 +15,20 @@
 #include "onelab.h"
 #include "OnelabMessage.h"
 
+namespace olkey{ // reserved keywords for onelab
+  static std::string label("onelab");
+  static std::string client(label+".client");
+  static std::string param(label+".parameter");
+  static std::string number(label+".number"), string(label+".string");
+  static std::string include(label+".include"); 
+  static std::string iftrue(label+".iftrue"), olelse(label+".else"), olendif(label+".endif"); 
+  static std::string ifequal(label+".ifequal");
+  static std::string getValue(label+".getValue");
+  static std::string extension(".olab");
+}
+
+static char charSep() { return '\0'; }
+
 int getOptions(int argc, char *argv[], std::string &action, std::string &commandLine, std::string &fileName, std::string &clientName, std::string &sockName, int &modelNumber);
 std::string itoa(const int i);
 bool checkIfPresent(std::string filename);
@@ -27,6 +41,11 @@ void GmshDisplay(onelab::remoteNetworkClient *loader, std::string fileName, std:
 void GmshDisplay(onelab::remoteNetworkClient *loader, std::string modelName, std::string fileName);
 std::string getCurrentWorkdir();
 std::string getUserHomedir();
+static std::string getNextToken(const std::string &msg,std::string::size_type &first);
+std::string sanitize(const std::string &in);
+int enclosed(const std::string &in, std::vector<std::string> &arguments);
+int extract(const std::string &in, std::string &paramName, std::string &action, std::vector<std::string> &arguments);
+
 
 int systemCall(std::string cmd);
 
@@ -35,32 +54,9 @@ array read_array(std::string filename, char sep);
 double find_in_array(const int i, const int j, const std::vector <std::vector <double> > &data);
 std::vector<double> extract_column(const int j, array data);
 
-class MetaModel : public onelab::localClient {
-private:
-  std::vector<onelab::client *> _clients;
-  void registerClients();
- public:
- MetaModel(const std::string &commandLine, const std::string &cname, const std::string &fname, const int number) 
-   : localClient(commandLine) {
-    clientName = cname;
-    genericNameFromArgs = fname;
-    modelNumberFromArgs = number;
-    registerClients();
-  }
-  ~MetaModel(){}
-
-  std::string genericNameFromArgs, clientName;
-  int modelNumberFromArgs;
-  void registerClient(onelab::client *pName); 
-  void initialize();
-  void initializeClients();
-  void analyze(); // the following 2 functions are defined by the user in a separate file
-  void compute();
-};
-
 class PromptUser : public onelab::localClient {
 public:
-  PromptUser(const std::string &name) : onelab::localClient(name) {}
+ PromptUser(const std::string &name) : onelab::localClient(name) {}
   ~PromptUser(){}
   int  getVerbosity();
   void setVerbosity(const int ival);
@@ -76,6 +72,70 @@ public:
   std::string stateToChar();  
   std::string showParamSpace();
   bool menu(std::string commandLine, std::string fileName, int modelNumber);
+};
+
+/*
+localSolverClient est la classe de base pour tous les clients de type "solveur"
+avec les méthodes (virtuelles) analyze() et compute() 
+(que la classe 'localClient' n'a pas)
+qui sont les deux modes d'exécution du métamodèle.
+Seule _commandLine est stockée dans la classe
+Les autres infos sont définies sur le serveur
+*/
+class localSolverClient : public onelab::localClient{
+ private:
+  std::string _commandLine;
+ public:
+ localSolverClient(const std::string &name, const std::string &commandLine) 
+   : onelab::localClient(name), _commandLine(commandLine) {
+  }
+  virtual ~localSolverClient(){}
+ 
+  const std::string &getCommandLine(){ return _commandLine; }
+  const std::string getLineOptions();
+  const std::vector<std::string> getInputFiles();
+  const std::string buildArguments();
+  virtual std::string toChar() =0;
+  virtual void analyze() =0;
+  virtual void compute() =0;
+};
+
+/* void InterfacedClient::setFileName(const std::string &fileName) {  */
+/*   if(fileName.empty()) */
+/*     Msg::Fatal("No valid input file given for client <%s>.",getName().c_str()); */
+/*   else{ */
+/*     _fileName.assign(fileName + getExtension() );  */
+/*     //checkIfPresent(_fileName); not yet we shoild look for .ext_onelab */
+/*   } */
+/* } */
+
+class localNetworkSolverClient : public localSolverClient{
+ private:
+  // command line option to specify socket
+  std::string _socketSwitch;
+  // pid of the remote network client
+  int _pid;
+  // underlying GmshServer
+  GmshServer *_gmshServer;
+ public:
+ localNetworkSolverClient(const std::string &name, const std::string &commandLine)
+   : localSolverClient(name,commandLine), _socketSwitch("-onelab"),
+    _pid(-1), _gmshServer(0) {}
+  virtual ~localNetworkSolverClient(){}
+  virtual bool isNetworkClient(){ return true; }
+  const std::string &getSocketSwitch(){ return _socketSwitch; }
+  void setSocketSwitch(const std::string &s){ _socketSwitch = s; }
+  int getPid(){ return _pid; }
+  void setPid(int pid){ _pid = pid; }
+  GmshServer *getGmshServer(){ return _gmshServer; }
+  void setGmshServer(GmshServer *server){ _gmshServer = server; }
+
+  virtual bool run();
+  virtual bool kill();
+
+  //virtual void initialize() =0;
+  virtual void analyze() =0;
+  virtual void compute() =0;
 };
 
 static std::string getShortName(const std::string &name) {
@@ -98,96 +158,83 @@ class ShortNameLessThan{
   }
 };
 
-class InterfacedClient : public onelab::localClient { 
-  // n'utilise pas localNetworkClient::run
-  // n'a donc pas pas besoin de _initializeCommand, _analyzeCommand, _computeCommand
-  // les options sont transférées à compute() sans passer par le serveur
+class MetaModel : public onelab::localClient {
 private:
-  std::string _commandLine, _fileName, _extension, _options;
-  std::set<std::string, ShortNameLessThan> _parameters;
-  bool analyze_oneline(std::string line, std::ifstream &infile) ;
-  bool analyze_ifstatement(std::ifstream &infile, bool condition) ;
-  bool analyze_onefile(std::string ifilename);
-  bool convert_oneline(std::string line, std::ifstream &infile, std::ofstream &outfile);
-  bool convert_ifstatement(std::ifstream &infile, std::ofstream &outfile, bool condition) ;
-  bool convert_onefile(std::string ifileName, std::ofstream &outfile);
-  std::string longName(const std::string name);
-public:
- InterfacedClient(const std::string &name, const std::string &commandLine, const std::string &extension) 
-   : onelab::localClient(name), _commandLine(commandLine), _extension(extension) {}
-  ~InterfacedClient(){}
-  void setCommandLine(const std::string &cmd){ _commandLine.assign(cmd); }
-  //std::string getFileName();
-  void setFileName(const std::string &nam);
-  void setLineOptions(const std::string &opt) { _options.assign(opt); }
-  std::string evaluateGetVal(std::string line);
+  std::vector<localSolverClient *> _clients;
+ public:
+ MetaModel(const std::string &commandLine, const std::string &cname, const std::string &fname, const int number) 
+   : onelab::localClient(commandLine){
+    clientName = cname;
+    modelNumberFromArgs = number;
+    if(fname.size()){
+      genericNameFromArgs = fname;
+      analyze_onefile(genericNameFromArgs+".onelab");
+    }
+    else 
+      analyze_onefile(commandLine+".onelab");
+  }
+  ~MetaModel(){}
+  typedef std::vector<localSolverClient*>::iterator citer;
+  citer firstClient(){ return _clients.begin(); }
+  citer lastClient(){ return _clients.end(); }
+  int getNumClients() { return _clients.size(); };
+  void registerClient(const std::string name, const std::string type, const std::string path);
+  localSolverClient *findClientByName(std::string name){
+    for(unsigned int i=0; i<_clients.size(); i++)
+      if(_clients[i]->getName() == name) return _clients[i];
+    return 0;
+  }
 
-  void initialize(); 
+  std::string genericNameFromArgs, clientName;
+  int modelNumberFromArgs;
+  void analyze_oneline(std::string line, std::ifstream &infile);
+  void analyze_onefile(std::string ifilename);
+  std::string resolveGetVal(std::string line);
+
+  void initialize();
+  void simpleCheck();
+  void simpleCompute();
   void analyze();
-  void convert();
   void compute();
 };
 
-class EncapsulatedClient : public onelab::localNetworkClient { 
-  // utilise localNetworkClient::run
+class InterfacedClient : public localSolverClient { 
+  // n'utilise pas localNetworkSolverClient::run mais client::run()
 private:
-  std::string _extension;
+  std::set<std::string, ShortNameLessThan> _parameters;
+  void analyze_oneline(std::string line, std::ifstream &infile) ;
+  bool analyze_ifstatement(std::ifstream &infile, bool condition) ;
+  void convert_oneline(std::string line, std::ifstream &infile, std::ofstream &outfile);
+  bool convert_ifstatement(std::ifstream &infile, std::ofstream &outfile, bool condition) ;
+  std::string longName(const std::string name);
 public:
- EncapsulatedClient(const std::string &name, const std::string &commandLine,  const std::string &extension) 
-   : onelab::localNetworkClient(name,commandLine), _extension(extension) {}
-  ~EncapsulatedClient(){}
-  void setExtension(const std::string ext) { _extension.assign(ext); }
-  std::string getExtension() { return _extension; }
-  void setFileName(const std::string &nam); 
-  std::string getFileName();
-  void setLineOptions(const std::string &opt);
+ InterfacedClient(const std::string &name, const std::string &commandLine)
+   : localSolverClient(name, commandLine) {}
+  ~InterfacedClient(){}
+  std::string evaluateGetVal(std::string line);
+  std::string toChar();
 
-  void initialize(); 
+  void convert();
+  void analyze_onefile(std::string ifilename);
+  void convert_onefile(std::string ifileName, std::ofstream &outfile);
+
+  void analyze();
+  void compute();
+};
+
+class EncapsulatedClient : public localNetworkSolverClient { 
+  // utilise localNetworkClient::run
+public:
+ EncapsulatedClient(const std::string &name, const std::string &commandLine) 
+   : localNetworkSolverClient(name,commandLine) {}
+  ~EncapsulatedClient(){}
+  std::string toChar();
+
   void analyze();
   void compute() ;
 };
 
+
 #endif
 
 
-
-/* class InterfacedElmer : public InterfacedClient { */
-/* public: */
-/*   InterfacedElmer(const std::string &name) : InterfacedClient(name) { */
-/*     setExtension(".sif"); */
-/*     setCommandLine("ElmerSolver"); */
-/*   } */
-/*   ~InterfacedElmer(){} */
-/* }; */
-
-/* class LoadedMetaModel : public EncapsulatedClient { */
-/* public: */
-/*  LoadedMetaModel(const std::string &commandLine, const std::string fileName, const int modelNumber) */
-/*    : EncapsulatedClient("metamodel",commandLine) { */
-/*     setExtension(""); */
-/*     setInitializeCommand("-h"); */
-/*     setCheckCommand("-a"); */
-/*     setComputeCommand(""); */
-/*   } */
-/*   ~LoadedMetaModel(){} */
-/* }; */
-
-/* class InterfacedElast : public InterfacedClient { */
-/* public: */
-/*   InterfacedElast(const std::string &name) : InterfacedClient(name) { */
-/*     setExtension(".dat"); */
-/*     setCommandLine("$GMSH_DIR/utils/api_demos/build/mainElasticity"); */
-/*   } */
-/*   ~InterfacedElast(){} */
-/* }; */
-
-/* class EncapsulatedGmsh : public EncapsulatedClient { */
-/* public: */
-/*   EncapsulatedGmsh(const std::string &name) : EncapsulatedClient(name,"gmsh") { */
-/*     setExtension(".geo"); */
-/*     // setInitializeCommand(""); */
-/*     // setCheckCommand("-"); */
-/*     // setComputeCommand("-3"); */
-/*   } */
-/*   ~EncapsulatedGmsh(){} */
-/* }; */

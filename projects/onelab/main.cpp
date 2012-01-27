@@ -21,46 +21,33 @@ int main(int argc, char *argv[]){
   if (sockName.size())
     Msg::loader = new onelab::remoteNetworkClient(clientName, sockName);
 
-  if(Msg::loader){
+  if(Msg::loader)
     std::cout << "ONELAB: " << Msg::Synchronize_Down() << " parameters downloaded" << std::endl;
 
-    if(!Msg::GetOnelabNumber(clientName + "/Initialized"))
-      action.assign("initialize");
-  }
-  
-  if(fileName.empty()){ // guess fileName from Gmsh
+  if(!fileName.compare("untitled")){ 
+    // no filename was given in calling the metamodel => initialize only
+    action.assign("initialize");
+    // guess fileName from Gmsh
     std::string name= Msg::GetOnelabString("Gmsh/MshFileName");
     if(name.size()){
       fileName.assign(name.substr(0,name.find_last_of(".")));  // remove extension
       Msg::Info("Guessed filename <%s> from OL variable <Gmsh/MshFileName>",fileName.c_str());
     }
+    else
+      Msg::Info("No valid input filename found");
   }
-
-// guess fileName from loader args
-
-  if(fileName.empty()){ // probabbly because called from a loader
-    std::string name = Msg::GetOnelabString("Arguments/FileName");
-    if(name.size()){
-      fileName.assign(name.substr(0,name.find_last_of(".")));  // remove extension
-      Msg::Info("Guessed fileName <%s> from loader argument <%s>",fileName.c_str(),name.c_str());
-    }
-  }
+  Msg::SetOnelabString("Arguments/FileName",fileName);
 
   MetaModel *myModel = new MetaModel(commandLine, clientName, fileName, modelNumber);
 
-  std::cout << "action===" << action << std::endl;
-  std::cout << "client===" << clientName << std::endl;
-  std::cout << "generic===" << myModel->genericNameFromArgs << std::endl;
-  std::cout << "fileName===" << fileName << std::endl;
-
-  if(!action.compare("initialize"))
-    myModel->initialize();
+  newStep();
+  if(!action.compare("initialize")){
+    if(Msg::loader) myModel->initialize();
+  }
   else if(!action.compare("check")){
-    myModel->initializeClients();
     myModel->analyze();
   }
   else if(!action.compare("compute")){
-    myModel->initializeClients();
     myModel->analyze();
     myModel->compute();
   }

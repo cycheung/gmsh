@@ -428,10 +428,11 @@ void Msg::GetOnelabNumber(std::string name, double *val)
   *val = 0;
 }
 
-void Msg::SetOnelabNumber(std::string name, double val)
+void Msg::SetOnelabNumber(std::string name, double val, bool visible)
 {
   if(_onelabClient){
     onelab::number o(name, val);
+    o.setVisible(visible);
     _onelabClient->set(o);
   }
 }
@@ -466,10 +467,11 @@ std::vector<std::string> Msg::GetOnelabChoices(std::string name)
   }
 }
 
-void Msg::SetOnelabString(std::string name, std::string val)
+void Msg::SetOnelabString(std::string name, std::string val, bool visible)
 {
   if(_onelabClient){
     onelab::string o(name, val);
+    o.setVisible(visible);
     _onelabClient->set(o);
   }
 }

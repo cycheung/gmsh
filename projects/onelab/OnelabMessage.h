@@ -84,11 +84,11 @@ class Msg {
   static GmshClient *GetClient(){ return _client; }
   static void FinalizeClient();
   static void InitializeOnelab(const std::string &name, const std::string &sockname);
-  static void SetOnelabNumber(std::string name, double val);
+  static void SetOnelabNumber(std::string name, double val, bool visible=true);
   static void SetOnelabNumber(onelab::number s);
   static void GetOnelabNumber(std::string name, double *val);
   static double GetOnelabNumber(std::string name);
-  static void SetOnelabString(std::string name, std::string val);
+  static void SetOnelabString(std::string name, std::string val, bool visible=true);
   static void SetOnelabString(onelab::string s);
   static std::string GetOnelabString(std::string name); 
   static std::vector<std::string> GetOnelabChoices(std::string name);
