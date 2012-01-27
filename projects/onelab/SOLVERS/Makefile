@@ -1,5 +1,5 @@
-SOLVERS=elmer getdp elast
-SOURCES=OS OnelabClients OnelabMessage main
+SOLVERS=onelab
+SOURCES=OS StringUtils OnelabClients OnelabMessage main
 
 COMMON_DIR=$(GMSH_DIR)/Common
 ONELAB_DIR=$(GMSH_DIR)/projects/onelab
