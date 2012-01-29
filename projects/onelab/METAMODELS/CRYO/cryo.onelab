@@ -1,11 +1,11 @@
-onelab.client Mesher.Register(encapsulated,gmsh);
+onelab.client Mesher.Register(encapsulated, gmsh);
 onelab.client Mesher/InputFiles.Set(onelab.getValue(Arguments/FileName).geo);
 
 onelab.client ElmerGrid.Register(interfaced,ElmerGrid 14 2);
 onelab.client ElmerGrid/InputFiles.Set(onelab.getValue(Arguments/FileName).msh);
 onelab.client ElmerGrid/LineOptions.Set(-out meshdir);
 
-onelab.client Elmer.Register(interfaced,ElmerSolver);
+onelab.client Elmer.Register(interfaced);
 onelab.client Elmer/InputFiles.Set(onelab.getValue(Arguments/FileName).sif.olab);
 
 onelab.client Post.Register(interfaced,gmsh);
@@ -14,5 +14,5 @@ onelab.client Post/LineOptions.Set("-");
 
 onelab.client GmshMerge/InputFiles.Set(solution.pos,cryo.msh);
 
-onelab.client Gnuplot.Register(interfaced,gnuplot);
+onelab.client Gnuplot.Register(interfaced);
 onelab.client Gnuplot/InputFiles.Set(f.plt);
