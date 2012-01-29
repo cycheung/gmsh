@@ -5,9 +5,7 @@
 onelab::server *onelab::server::_server = 0;
 onelab::remoteNetworkClient *Msg::loader = 0;
 
-// main() commun à tous les métamodèles: elmer file, cryosurgery, etc...
-// la classe localClientMetaModel fait l'interface entre les loaders (gmsh, console)
-// et les clients solvers
+// main() commun à tous les métamodèles
 
 int main(int argc, char *argv[]){
   std::string action="", commandLine="",  fileName="", clientName="", sockName = "";
@@ -17,9 +15,13 @@ int main(int argc, char *argv[]){
   
   // Msg::_onelabclient is a onelab:LocalClient independent of MetaModel
 
-  Msg::InitializeOnelab("metamodel",""); 
-  if (sockName.size())
+  Msg::InitializeOnelab("metamodel","");
+
+  if (sockName.size()){
     Msg::loader = new onelab::remoteNetworkClient(clientName, sockName);
+    //Msg::hasGmsh = loader->getName().compare("MetaModel");
+    Msg::hasGmsh = clientName.compare("MetaModel");
+  }
 
   if(Msg::loader)
     std::cout << "ONELAB: " << Msg::Synchronize_Down() << " parameters downloaded" << std::endl;
@@ -39,17 +41,24 @@ int main(int argc, char *argv[]){
   Msg::SetOnelabString("Arguments/FileName",fileName);
 
   MetaModel *myModel = new MetaModel(commandLine, clientName, fileName, modelNumber);
+  if(!myModel->checkPathes())
+    action.assign("exit");
+
+  std::cout << "action:" << action << std::endl;
+  // std::cout << "hasGmsh:" << Msg::hasGmsh << std::endl;
 
   newStep();
-  if(!action.compare("initialize")){
+  if(!action.compare("exit")){ // exit metamodel
+  } 
+  else if(!action.compare("initialize")){
     if(Msg::loader) myModel->initialize();
   }
   else if(!action.compare("check")){
-    myModel->analyze();
+      myModel->analyze();
   }
   else if(!action.compare("compute")){
-    myModel->analyze();
-    myModel->compute();
+      myModel->analyze();
+      myModel->compute();
   }
   else
     Msg::Fatal("Main: Unknown Action <%s>", action.c_str());

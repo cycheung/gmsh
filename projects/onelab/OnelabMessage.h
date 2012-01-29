@@ -101,6 +101,7 @@ class Msg {
 
   // communication with loader
   static onelab::remoteNetworkClient *loader;
+  static bool hasGmsh;
   static int Synchronize_Down();
   static int Synchronize_Up();
   static void FinalizeOnelab();

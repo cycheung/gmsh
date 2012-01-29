@@ -3,9 +3,6 @@
 #include "StringUtils.h"
 #include <algorithm>
 
-// reserved keywords for onelab
-
-
 class onelabServer : public GmshServer{
  private:
   localNetworkSolverClient *_client;
@@ -472,6 +469,27 @@ bool PromptUser::menu(std::string commandLine, std::string fileName, int modelNu
 
 // LOCALSOLVERCLIENT
 
+bool localSolverClient::controlPath(){
+  std::string commandLine = Msg::GetOnelabString(getName()+"/Path");
+  if(commandLine.size())
+    setCommandLine(commandLine);
+  if(getCommandLine().empty()){
+    if(Msg::hasGmsh) {// exits metamodel and restores control to the onelab window
+      Msg::Error("The path to client <%s> is undefined.", getName().c_str());
+      std::cout << "\n\nEnter the path to <" << getName() << "> in the ONELAB window.\n\n" << std::endl;
+      return false;
+    }
+    else{ // asks the user in console mode
+      std::cout << "\nONELAB:Enter the path on your system to the executable file of <" << getName() << ">" << std::endl;
+      std::string path;
+      std::getline (std::cin,path);
+      setCommandLine(path);
+      return true;
+    }
+  }
+  return true;
+}
+
 const std::string localSolverClient::getLineOptions(){
   std::vector<onelab::string> strings;
   std::string paramName(getName()+"/LineOptions");
@@ -507,6 +525,26 @@ const std::string localSolverClient::buildArguments(){
 }
 
 // METAMODEL
+
+void MetaModel::savePathes(const std::string fileName){ // save client pathes
+  std::string fileNameSave = fileName + ".onelab.save";
+  std::ofstream outfile(fileNameSave.c_str()); 
+  if (outfile.is_open())
+    for(citer it = _clients.begin(); it != _clients.end(); it++)
+      outfile << (*it)->toChar();
+  else
+    Msg::Fatal("The file <%s> cannot be opened",fileNameSave.c_str());
+  outfile.close();
+}
+
+bool MetaModel::checkPathes(){
+  bool allDefined=true;
+  for(citer it = _clients.begin(); it != _clients.end(); it++){
+    allDefined = allDefined && (*it)->controlPath();
+  }
+  savePathes(genericNameFromArgs);
+  return allDefined;
+}
 
 void MetaModel::initialize()
 {
@@ -545,7 +583,7 @@ void MetaModel::registerClient(const std::string name, const std::string type,
   localSolverClient *c;
 
   Msg::Info("ONELAB: initialize client <%s>", name.c_str());
-  if(!type.compare("encapsulated"))  // Name.encapsulated(path,extension)
+  if(!type.compare("encapsulated"))  
     c = new EncapsulatedClient(name,path);
   else if(!type.compare("interfaced"))
     c = new InterfacedClient(name,path);
@@ -566,29 +604,62 @@ void MetaModel::analyze_oneline(std::string line, std::ifstream &infile) {
   char sep=';';
 
   if( (pos=line.find(olkey::client)) != std::string::npos) {// onelab.client
-    cursor = pos+olkey::client.length();
+    cursor = pos + olkey::client.length();
     while ( (pos=line.find(sep,cursor)) != std::string::npos){
       extract(line.substr(cursor,pos-cursor),name,action,arguments);
       //Msg::Info("ONELAB: define client <%s>", name.c_str());
-      if(!action.compare("encapsulated") || !action.compare("interfaced") ){
-	if(findClientByName(name))
-	  Msg::Info("ONELAB: ignores second definition of client <%s>", name.c_str());
-	else{
-	  if(arguments.size() != 1)
-	    Msg::Fatal("ONELAB: wrong client definition <%s>",name.c_str());
-	  if(arguments[0].empty()){
-	    std::cout << "\nONELAB:Enter the path on your system to the executable file of <" << name << ">" << std::endl;
-	    std::getline (std::cin,arguments[0]);
+      if(!action.compare("Register")){
+	if(!findClientByName(name)){
+	  if(arguments.size()==1)
+	    path="";
+	  else if(arguments.size()==2)
+	    path=arguments[1];
+	  else
+	    Msg::Error("ONELAB: wrong client definition <%s>", name.c_str());
+
+	  if(path.empty()){ //check if one has a path on the server
+	    get(strings,name + "/Path");
+	    if(strings.size())
+	      path=strings[0].getValue();
 	  }
-	  registerClient(name,action,arguments[0]);
+	  std::cout << "Reg: path=<" << path << ">" << path.empty() << std::endl;
+	  onelab::string o(name + "/Path",path);
+	  o.setKind("file");
+	  o.setVisible(path.empty());
+	  set(o);
+	  registerClient(name,arguments[0],path);
 	}
+	else 
+	  Msg::Error("ONELAB: redefinition of client <%s>", name.c_str());
+      }
+      else if(!action.compare("Path")){
+	if(localSolverClient *c=findClientByName(name)){
+	  if(arguments.size()) {
+	    if(arguments[0].size()){
+	      std::cout << "Path: path=<" << arguments[0] << ">" << arguments[0].empty() << std::endl;
+	      onelab::string o(name + "/Path",arguments[0]);
+	      o.setKind("file");
+	      o.setVisible(false);
+	      set(o);
+	    }
+	    else
+	      Msg::Error("ONELAB: no path given for client <%s>", name.c_str());
+	  }
+	}
+	else
+	  Msg::Error("ONELAB: unknown client <%s>", name.c_str());
       }
       else if(!action.compare("Set")){
 	if(arguments[0].size()){
 	  strings.resize(1);
 	  strings[0].setName(name);
 	  strings[0].setValue(resolveGetVal(arguments[0]));
-	  strings[0].setVisible(false);
+	  if( (arguments[0].find(".geo") != std::string::npos) || 
+              (arguments[0].find(".sif") != std::string::npos) ||
+	      (arguments[0].find(".pro") != std::string::npos)) {
+	    strings[0].setKind("file");
+	  }
+	  //strings[0].setVisible(false);
 	  std::vector<std::string> choices;
 	  for(unsigned int i = 0; i < arguments.size(); i++)
 	    if(std::find(choices.begin(),choices.end(),arguments[i])==choices.end())
@@ -608,15 +679,7 @@ void MetaModel::analyze_onefile(std::string fileName) {
   std::string line;
   std::string fileNameSave = fileName+".save";
 
-  std::ifstream infile(fileNameSave.c_str()); // read saved client pathes (if file present)
-  if (infile.is_open()){
-    while ( infile.good() ) {
-      getline (infile,line);
-      analyze_oneline(line,infile);
-    }
-    infile.close();
-  }
-  infile.open(fileName.c_str()); // read client description
+  std::ifstream infile(fileName.c_str()); // read client description
   if (infile.is_open()){
     while ( infile.good() ) {
       getline (infile,line);
@@ -626,14 +689,14 @@ void MetaModel::analyze_onefile(std::string fileName) {
   }
   else
     Msg::Fatal("The file %s cannot be opened",fileName.c_str());
-
-  std::ofstream outfile(fileNameSave.c_str()); // save client pathes
-  if (outfile.is_open())
-    for(citer it = _clients.begin(); it != _clients.end(); it++)
-      outfile << (*it)->toChar();
-  else
-    Msg::Fatal("The file <%s> cannot be opened",fileNameSave.c_str());
-  outfile.close();
+  infile.open(fileNameSave.c_str()); // read saved client pathes (if file present)
+  if (infile.is_open()){
+    while (infile.good() ) {
+      getline (infile,line);
+      analyze_oneline(line,infile);
+    }
+    infile.close();
+  }
 } 
 
 void MetaModel::simpleCheck()
@@ -656,9 +719,11 @@ void MetaModel::simpleCompute()
 
 std::string  InterfacedClient::toChar() {
   std::ostringstream sstream;
-  sstream << olkey::client << " " 
-	  << getName() << "." << "interfaced("
-          << getCommandLine() << ");\n";
+  if(getCommandLine().size()){
+    sstream << olkey::client << " " 
+	    << getName() << "." << "Path("
+	    << getCommandLine() << ");\n";
+  }
   return sstream.str();
 }
 
@@ -1060,9 +1125,11 @@ void InterfacedClient::compute() {
 
 std::string EncapsulatedClient::toChar(){
   std::ostringstream sstream;
-  sstream << olkey::client << " " 
-	  << getName() << "." << "encapsulated(" 
-	  << getCommandLine() << ");\n";
+  if(getCommandLine().size()){
+    sstream << olkey::client << " " 
+	    << getName() << "." << "Path(" 
+	    << getCommandLine() << ");\n";
+  }
   return sstream.str();
 }
 
@@ -1284,19 +1351,18 @@ int systemCall(std::string cmd){
 void GmshDisplay(onelab::remoteNetworkClient *loader, std::string fileName, std::vector<std::string> choices){
   bool hasGmsh=false;
   if(choices.empty()) return;
-  if(loader)
-    hasGmsh=loader->getName().compare("MetaModel");
-  std::string cmd="gmsh " + fileName + ".geo ";
+  // if(loader)
+  //   hasGmsh=loader->getName().compare("MetaModel");
+  std::string cmd = "gmsh " + fileName + ".geo ";
   for(unsigned int i = 0; i < choices.size(); i++){
     cmd.append(choices[i]+" ");
     checkIfModified(choices[i]);
-    if(hasGmsh){
+    if(Msg::hasGmsh){
       loader->sendMergeFileRequest(choices[i]);
       Msg::Info("Send merge request <%s>",choices[i].c_str());
     }
   }
-  //std::cout << "cmd=<" << cmd << ">" << std::endl;
-  if(!hasGmsh) systemCall(cmd);
+  if(!Msg::hasGmsh) systemCall(cmd);
 }
 void GmshDisplay(onelab::remoteNetworkClient *loader, std::string modelName, std::string fileName){
   checkIfModified(fileName);
@@ -1307,7 +1373,6 @@ void GmshDisplay(onelab::remoteNetworkClient *loader, std::string modelName, std
     systemCall(cmd);
   }
 }
-
 
 void appendOption(std::string &str, const std::string &what, const int val){
   if(val){ // assumes val=0 is the default

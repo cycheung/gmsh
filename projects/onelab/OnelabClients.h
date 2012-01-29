@@ -92,9 +92,11 @@ class localSolverClient : public onelab::localClient{
   virtual ~localSolverClient(){}
  
   const std::string &getCommandLine(){ return _commandLine; }
+  virtual void setCommandLine(const std::string &s){ _commandLine = s; }
   const std::string getLineOptions();
   const std::vector<std::string> getInputFiles();
   const std::string buildArguments();
+  bool controlPath();
   virtual std::string toChar() =0;
   virtual void analyze() =0;
   virtual void compute() =0;
@@ -133,7 +135,6 @@ class localNetworkSolverClient : public localSolverClient{
   virtual bool run();
   virtual bool kill();
 
-  //virtual void initialize() =0;
   virtual void analyze() =0;
   virtual void compute() =0;
 };
@@ -166,12 +167,8 @@ private:
    : onelab::localClient(commandLine){
     clientName = cname;
     modelNumberFromArgs = number;
-    if(fname.size()){
-      genericNameFromArgs = fname;
-      analyze_onefile(genericNameFromArgs+".onelab");
-    }
-    else 
-      analyze_onefile(commandLine+".onelab");
+    genericNameFromArgs = fname.size() ? fname : commandLine;
+    analyze_onefile(genericNameFromArgs + ".onelab");
   }
   ~MetaModel(){}
   typedef std::vector<localSolverClient*>::iterator citer;
@@ -179,6 +176,8 @@ private:
   citer lastClient(){ return _clients.end(); }
   int getNumClients() { return _clients.size(); };
   void registerClient(const std::string name, const std::string type, const std::string path);
+  bool checkPathes();
+  void savePathes(const std::string fileName);
   localSolverClient *findClientByName(std::string name){
     for(unsigned int i=0; i<_clients.size(); i++)
       if(_clients[i]->getName() == name) return _clients[i];

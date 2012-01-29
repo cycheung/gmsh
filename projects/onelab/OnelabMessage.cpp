@@ -27,6 +27,7 @@ std::string Msg::_commandLine;
 std::string Msg::_launchDate;
 GmshClient *Msg::_client = 0;
 onelab::client *Msg::_onelabClient = 0;
+bool Msg::hasGmsh=false;
 
 #if defined(HAVE_NO_VSNPRINTF)
 static int vsnprintf(char *str, size_t size, const char *fmt, va_list ap)
