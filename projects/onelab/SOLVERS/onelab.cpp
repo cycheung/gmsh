@@ -14,7 +14,7 @@ void MetaModel::compute(){
   simpleCompute();
   //std::cout << OL->showParamSpace() << std::endl;
   
-  GmshDisplay(Msg::loader,Msg::GetOnelabString("Arguments/Filename"),Msg::GetOnelabChoices("Display/InputFiles"));
+  GmshDisplay(Msg::loader,Msg::GetOnelabString("Arguments/FileName"),Msg::GetOnelabChoices("GmshMerge/InputFiles"));
 
 
   std::cout << "Simulation completed successfully" << std::endl;
