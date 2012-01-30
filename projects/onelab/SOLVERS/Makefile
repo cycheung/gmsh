@@ -35,6 +35,6 @@ $(OBJDIR)/%.o : %.cpp
 	$(CXX) $< $(OBJECTS) $(LDFLAGS) -o $@
 
 clean :
-	$(RM) $(TARGETS) -r $(OBJDIR)
+	$(RM) $(TARGETS) $(OBJDIR)/*.o
 
 .PRECIOUS: $(OBJDIR)/%.o
