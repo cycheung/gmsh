@@ -2,7 +2,7 @@ onelab.parameter Tcold.number(78,Parameters/2Elmer/,"Applied temperature"); Tcol
 
 onelab.parameter TRANSIENT.number(1,Elmer/2,Transient simulation); TRANSIENT.AddChoices(0,1);
 onelab.iftrue(TRANSIENT)
-	onelab.parameter NumStep.number(200,Elmer/3,Number of time steps);
+	onelab.parameter NumStep.number(100,Elmer/3,Number of time steps);
 	onelab.parameter TimeStep.number(0.05,Elmer/3,Time step);
 onelab.endif
 
