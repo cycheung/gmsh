@@ -12,7 +12,7 @@ onelab.client Post.Register(interfaced,gmsh);
 onelab.client Post/InputFiles.Set(solution.pos,script.opt);
 onelab.client Post/LineOptions.Set("-");
 
-onelab.client GmshMerge/InputFiles.Set(solution.pos,cryo.msh);
+onelab.client GmshMerge/InputFiles.Set(solution.pos);
 
 onelab.client Gnuplot.Register(interfaced);
 onelab.client Gnuplot/InputFiles.Set(f.plt);

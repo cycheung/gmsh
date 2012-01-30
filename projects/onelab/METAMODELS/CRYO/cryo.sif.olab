@@ -2,22 +2,19 @@ onelab.parameter Tcold.number(78,Parameters/2Elmer/,"Applied temperature"); Tcol
 
 onelab.parameter TRANSIENT.number(1,Elmer/2,Transient simulation); TRANSIENT.AddChoices(0,1);
 onelab.iftrue(TRANSIENT)
-	onelab.parameter NumStep.number(20,Elmer/3,Number of time steps);
-	onelab.parameter TimeStep.number(0.1,Elmer/3,Time step);
+	onelab.parameter NumStep.number(200,Elmer/3,Number of time steps);
+	onelab.parameter TimeStep.number(0.05,Elmer/3,Time step);
 onelab.endif
 
 Header
-  CHECK KEYWORDS Warn
   Mesh DB "." "meshdir"
-  Include Path ""
-  Results Directory ""
 End
 
 Simulation
   Coordinate System =  Axi Symmetric
 onelab.iftrue(TRANSIENT)
   Simulation Type = Transient 
-  !Timestep sizes = 0.025
+  !Timestep sizes = 0.05
   !Timestep Intervals = 200 !nb of times that the time step is repeted
   Timestep sizes = onelab.getValue(TimeStep)
   Timestep Intervals = onelab.getValue(NumStep)
@@ -211,7 +208,6 @@ End
 Boundary Condition 1
   Name = "wartbc"
   Target Boundaries(1) = 15
-  !Temperature = Real 320
   Heat Flux BC = Logical True
   Heat Transfer Coefficient = Real 5000. !Initial heat flux
   External Temperature = Real 77. !Initial temperature??

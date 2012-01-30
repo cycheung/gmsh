@@ -6,7 +6,7 @@ Plugin(MathEval).OtherView=-1;
 Plugin(MathEval).ForceInterpolation=0;
 Plugin(MathEval).PhysicalRegion=1;
 Plugin(MathEval).Run;
-Plugin(MathEval).Expression0= "Step(230-v0)*(230-v0)+Step(v0-233)*(v0-233)";
+Plugin(MathEval).Expression0= "(Step(230-v0)*(230-v0)+Step(v0-233)*(v0-233))";
 Plugin(MathEval).TimeStep=-1;
 Plugin(MathEval).View=0;
 Plugin(MathEval).OtherTimeStep=-1;

@@ -1,15 +1,14 @@
 mm = 1.e-3;
 
-DefineConstant[ H = {2*mm, Path "Parameters/1Geometry",ShortHelp "Skin thickness"} ];
-DefineConstant[ L = {4*mm, Path "Parameters/1Geometry",ShortHelp "Model length"} ];
+DefineConstant[ H = {2*mm, Min 1*mm, Max 4*mm, Step 0.5*mm, Path "Parameters/1Geometry",ShortHelp "Skin thickness"} ];
+DefineConstant[ L = {4*mm, Min 2*mm, Max 6*mm, Step 0.5*mm, Path "Parameters/1Geometry",ShortHelp "Model length"} ];
 DefineConstant[ R = {2*mm, Min 1*mm, Max L-1*mm, Step 0.5*mm, Path "Parameters/1Geometry",ShortHelp "Radius"} ];
 
 DefineConstant[ lambda = {0.9, Min 0.7, Max 1, Step 0.05, Path "Parameters/1Geometry",ShortHelp "lambda"} ];
 DefineConstant[ Xloc = {lambda*R*Cos(Pi/4), Path "Parameters/1Geometry",ShortHelp "x coord of probepoint"} ];
 DefineConstant[ Yloc = {lambda*R*Sin(Pi/4)+H, Path "Parameters/1Geometry",ShortHelp "y coord of probepoint"} ];
 
-DefineConstant[ lc = {0.1*H, Path "Parameters/1Geometry",ShortHelp "Mesh Size"} ];
-
+DefineConstant[ lc = {0.05*H, Path "Parameters/1Geometry",ShortHelp "Mesh Size"} ];
 
 Point(1) = {0, 0, 0, lc};
 Point(2) = {L, 0., 0, lc};
