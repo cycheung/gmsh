@@ -18,4 +18,4 @@ onelab.client GmshMerge/InputFiles.Set(solution.pos);
 onelab.client Gnuplot.Register(interfaced);
 onelab.client Gnuplot/InputFiles.Set(f.plt);
 
-onelab.client PostArray.Set(f.txt,1,8,tmin);
+onelab.client PostArray.List(fmax.txt,1,2,tmin,fmax.txt,1,8,fmin);
