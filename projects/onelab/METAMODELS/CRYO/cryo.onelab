@@ -1,5 +1,6 @@
 onelab.client Mesher.Register(encapsulated, gmsh);
 onelab.client Mesher/InputFiles.Set(onelab.getValue(Arguments/FileName).geo);
+onelab.client Mesher/LineOptions.Set(-v 0);
 
 onelab.client ElmerGrid.Register(interfaced,ElmerGrid 14 2);
 onelab.client ElmerGrid/InputFiles.Set(onelab.getValue(Arguments/FileName).msh);
@@ -16,3 +17,5 @@ onelab.client GmshMerge/InputFiles.Set(solution.pos);
 
 onelab.client Gnuplot.Register(interfaced);
 onelab.client Gnuplot/InputFiles.Set(f.plt);
+
+onelab.client PostArray.Set(f.txt,1,8,tmin);
