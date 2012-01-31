@@ -66,18 +66,19 @@ public:
   void setString(const std::string paramName, const std::string &val, const std::string &help="");
   std::string getString(const std::string paramName);
   bool existString(const std::string paramName);
-  void AddNumberChoice(std::string name, double val);
-  void AddStringChoice(std::string name, std::string str);
+  void addNumberChoice(std::string name, double val);
+  void addStringChoice(std::string name, std::string str);
   //std::vector<std::string> getChoices(const std::string paramName);
   std::string stateToChar();  
   std::string showParamSpace();
+  std::string showClientStatus();
+  void statusClients();
   bool menu(std::string commandLine, std::string fileName, int modelNumber);
 };
 
 /*
 localSolverClient est la classe de base pour tous les clients de type "solveur"
-avec les méthodes (virtuelles) analyze() et compute() 
-(que la classe 'localClient' n'a pas)
+avec les méthodes (virtuelles) analyze() et compute()  (que la classe 'localClient' n'a pas)
 qui sont les deux modes d'exécution du métamodèle.
 Seule _commandLine est stockée dans la classe
 Les autres infos sont définies sur le serveur
@@ -101,15 +102,6 @@ class localSolverClient : public onelab::localClient{
   virtual void analyze() =0;
   virtual void compute() =0;
 };
-
-/* void InterfacedClient::setFileName(const std::string &fileName) {  */
-/*   if(fileName.empty()) */
-/*     Msg::Fatal("No valid input file given for client <%s>.",getName().c_str()); */
-/*   else{ */
-/*     _fileName.assign(fileName + getExtension() );  */
-/*     //checkIfPresent(_fileName); not yet we shoild look for .ext_onelab */
-/*   } */
-/* } */
 
 class localNetworkSolverClient : public localSolverClient{
  private:
@@ -159,12 +151,12 @@ class ShortNameLessThan{
   }
 };
 
-class MetaModel : public onelab::localClient {
+class MetaModel : public localSolverClient {
 private:
   std::vector<localSolverClient *> _clients;
  public:
  MetaModel(const std::string &commandLine, const std::string &cname, const std::string &fname, const int number) 
-   : onelab::localClient(commandLine){
+   : localSolverClient(cname,commandLine){
     clientName = cname;
     modelNumberFromArgs = number;
     genericNameFromArgs = fname.size() ? fname : commandLine;
@@ -189,7 +181,7 @@ private:
   void analyze_oneline(std::string line, std::ifstream &infile);
   void analyze_onefile(std::string ifilename);
   std::string resolveGetVal(std::string line);
-
+  std::string toChar(){}
   void initialize();
   void simpleCheck();
   void simpleCompute();

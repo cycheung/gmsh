@@ -291,7 +291,7 @@ void PromptUser::setNumber(const std::string paramName, const double val, const 
   set(number);
 }
 
-void PromptUser::AddNumberChoice(std::string name, double val){
+void PromptUser::addNumberChoice(std::string name, double val){
   std::vector<double> choices;
   std::vector<onelab::number> numbers;
   get(numbers, name);
@@ -307,7 +307,7 @@ void PromptUser::AddNumberChoice(std::string name, double val){
   set(numbers[0]);
 }
 
-void PromptUser::AddStringChoice(std::string name, std::string str){
+void PromptUser::addStringChoice(std::string name, std::string str){
   std::vector<std::string> choices;
   std::vector<onelab::string> strings;
   get(strings, name);
@@ -356,14 +356,6 @@ bool PromptUser::existString(const std::string paramName){
   get(strings,paramName);
   return strings.size();
 }
-// std::vector<std::string> PromptUser::getChoices(const std::string paramName){
-//   std::vector<onelab::string> strings;
-//   get(strings,paramName);
-//   if (strings.size())
-//     return strings[0].getChoices();
-//   else
-//     Msg::Fatal("Unknown parameter %s",paramName.c_str());
-// }
 
 std::string PromptUser::stateToChar(){
   std::vector<onelab::number> numbers;
@@ -383,6 +375,17 @@ std::string PromptUser::showParamSpace(){
   return db.c_str();
 }
 
+std::string PromptUser::showClientStatus(){
+  std::ostringstream sstream;
+  std::cout << "\nONELAB: Present state of the onelab clients" << std::endl;
+  for(onelab::server::citer it = onelab::server::instance()->firstClient();
+      it != onelab::server::instance()->lastClient(); it++){
+    std::string name= it->second->getName();
+    sstream << "<" << onelab::server::instance()->getChanged(name) << "> " << name << std::endl;
+  }
+  return sstream.str();
+}
+
 bool PromptUser::menu(std::string commandLine, std::string fileName, int modelNumber) { 
   int choice, counter1=0, counter2=0;
   std::string answ;
@@ -392,16 +395,17 @@ bool PromptUser::menu(std::string commandLine, std::string fileName, int modelNu
   std::vector<onelab::number> numbers;
   std::vector<onelab::string> strings;
 
-  EncapsulatedClient *loadedSolver = new  EncapsulatedClient("MetaModel",commandLine);
-  setString("Arguments/FileName",fileName);
+  std::string clientName="loadedMetaModel";
+  EncapsulatedClient *loadedSolver = new  EncapsulatedClient(clientName,commandLine);
+  //setString("Arguments/FileName",fileName);
+  addStringChoice(clientName + "/InputFiles",fileName);
 
   do {
     std::cout << "\nONELAB: menu" << std::endl ;
-    std::cout << " 1- View parameter space\n 2- Set a value\n 3- List modified files\n 4- Analyze\n 5- Compute\n 6- Quit metamodel" << std::endl;
-
+    std::cout << " 1- View parameter space\n 2- Set a value\n 3- Analyze\n 4- Compute\n 5- List modified files\n 6- Client status\n 7- Quit metamodel" << std::endl;
     choice=0;
     std::string mystr;
-    while( (choice<1 || choice>6) && ++counter1<10 ) {
+    while( (choice<1 || choice>7) && ++counter1<10 ) {
       std::cout << "\nONELAB: your choice? "; 
       std::getline (std::cin, mystr);
       std::stringstream myStream(mystr);
@@ -411,11 +415,12 @@ bool PromptUser::menu(std::string commandLine, std::string fileName, int modelNu
     std::cout << "Your choice is <" << choice << ">" << std::endl;
 
     if (choice==1){
-      std::cout << "\nONELAB: Present state of the parameter space\n" << std::endl;
-      std::string db = onelab::server::instance()->toChar();
-      for(unsigned int i = 0; i < db.size(); i++)
-	if(db[i] == onelab::parameter::charSep()) db[i] = '|';
-      std::cout << db.c_str();
+      // std::cout << "\nONELAB: Present state of the parameter space\n" << std::endl;
+      // std::string db = onelab::server::instance()->toChar();
+      // for(unsigned int i = 0; i < db.size(); i++)
+      // 	if(db[i] == onelab::parameter::charSep()) db[i] = '|';
+      // std::cout << db.c_str();
+      std::cout << showParamSpace();
       choice=0;
     }
     else if (choice==2){
@@ -442,6 +447,14 @@ bool PromptUser::menu(std::string commandLine, std::string fileName, int modelNu
       choice=0;
     }
     else if (choice==3){
+      loadedSolver->analyze();
+      choice=0;
+    }
+    else if (choice==4){
+      loadedSolver->compute();
+      choice=0;
+    }
+    else if (choice==5){
       std::ifstream infile("onelab.modified");
       std::string buff;
       if (infile.is_open()){
@@ -452,15 +465,16 @@ bool PromptUser::menu(std::string commandLine, std::string fileName, int modelNu
       }
       choice=0;
     }
-    else if (choice==4){
-      loadedSolver->analyze();
+    else if (choice==6){
+      std::cout << "\nONELAB: Present state of the onelab clients\n" << std::endl;
+      for(onelab::server::citer it = onelab::server::instance()->firstClient();
+	  it != onelab::server::instance()->lastClient(); it++){
+	std::string name= it->second->getName();
+	std::cout << name << "<" << onelab::server::instance()->getChanged(name) << ">" << std::endl;
+      }
       choice=0;
     }
-    else if (choice==5){
-      loadedSolver->compute();
-      choice=0;
-    }
-    else if (choice==6)
+    else if (choice==7)
       exit(1);
     else
       choice=0;
@@ -516,7 +530,6 @@ const std::string localSolverClient::buildArguments(){
   std::vector<onelab::string> strings;
   std::string args,filename;
 
-
   std::vector<std::string> choices = getInputFiles();
   for(unsigned int i = 0; i < choices.size(); i++)
       args.append(choices[i].substr(0,choices[i].find(olkey::extension))+" ");
@@ -551,6 +564,7 @@ void MetaModel::initialize()
   Msg::Info("Metamodel::initialize <%s>",getName().c_str());
   Msg::SetOnelabString(clientName + "/9CheckCommand","-a",false);
   Msg::SetOnelabNumber(clientName + "/UseCommandLine",1,false);
+  Msg::SetOnelabNumber(clientName + "/Initialized",1,false);
 }
 
 std::string MetaModel::resolveGetVal(std::string line) {
@@ -595,7 +609,6 @@ void MetaModel::registerClient(const std::string name, const std::string type,
   _clients.push_back(c); 
 }
 
-
 void MetaModel::analyze_oneline(std::string line, std::ifstream &infile) { 
   int pos,cursor;
   std::string name,action, path;
@@ -622,7 +635,6 @@ void MetaModel::analyze_oneline(std::string line, std::ifstream &infile) {
 	    if(strings.size())
 	      path=strings[0].getValue();
 	  }
-	  std::cout << "Reg: path=<" << path << ">" << path.empty() << std::endl;
 	  onelab::string o(name + "/Path",path);
 	  o.setKind("file");
 	  o.setVisible(path.empty());
@@ -636,7 +648,6 @@ void MetaModel::analyze_oneline(std::string line, std::ifstream &infile) {
 	if(localSolverClient *c=findClientByName(name)){
 	  if(arguments.size()) {
 	    if(arguments[0].size()){
-	      std::cout << "Path: path=<" << arguments[0] << ">" << arguments[0].empty() << std::endl;
 	      onelab::string o(name + "/Path",arguments[0]);
 	      o.setKind("file");
 	      o.setVisible(false);
@@ -654,12 +665,13 @@ void MetaModel::analyze_oneline(std::string line, std::ifstream &infile) {
 	  strings.resize(1);
 	  strings[0].setName(name);
 	  strings[0].setValue(resolveGetVal(arguments[0]));
+	  strings[0].setVisible(false);
 	  if( (arguments[0].find(".geo") != std::string::npos) || 
               (arguments[0].find(".sif") != std::string::npos) ||
 	      (arguments[0].find(".pro") != std::string::npos)) {
 	    strings[0].setKind("file");
+	    strings[0].setVisible(true);
 	  }
-	  //strings[0].setVisible(false);
 	  std::vector<std::string> choices;
 	  for(unsigned int i = 0; i < arguments.size(); i++)
 	    if(std::find(choices.begin(),choices.end(),arguments[i])==choices.end())
@@ -1112,7 +1124,7 @@ void InterfacedClient::compute() {
 
   std::string commandLine = getCommandLine() + " " ;
   commandLine.append(buildArguments());
-  //commandLine.append(" &> " + _name + ".log");
+  commandLine.append(" &> " + _name + ".log");
   Msg::Info("Client %s launched",_name.c_str());
   std::cout << "Commandline:" << commandLine.c_str() << std::endl;
   if ( int error = system(commandLine.c_str())) { 
@@ -1132,14 +1144,6 @@ std::string EncapsulatedClient::toChar(){
   }
   return sstream.str();
 }
-
-// void EncapsulatedClient::initialize() {
-//   set(onelab::string(getName()+"/Action", "initialize"));
-//   onelab::server::citer it= onelab::server::instance()->findClient(getName());
-//   onelab::client *c = it->second;
-//   c->run();
-//   run();
-// }
 
 void EncapsulatedClient::analyze() {
   set(onelab::string(getName()+"/Action", "check"));
@@ -1179,12 +1183,22 @@ int getOptions(int argc, char *argv[], std::string &action, std::string &command
 	i++;
 	action="check";
       }
+      else if(!strcmp(argv[i] + 1, "c")) {
+	i++;
+	std::cout << "\nONELAB: Present state of the onelab clients\n" << std::endl;
+	for(onelab::server::citer it = onelab::server::instance()->firstClient();
+	    it != onelab::server::instance()->lastClient(); it++){
+	  std::string name= it->second->getName();
+	  std::cout << "<" << onelab::server::instance()->getChanged(name) << "> " << name << std::endl;
+	}
+	action="check";
+      }
       else {
 	i++;
 	printf("Usage: %s [-m num -a -c]\n", argv[0]);
 	printf("Options are:\nm      model number\n");
 	printf("a      analyze only\n");
-	//exit(1);
+	exit(1);
       }
     }
     else{

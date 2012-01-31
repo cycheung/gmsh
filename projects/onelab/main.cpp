@@ -14,38 +14,50 @@ int main(int argc, char *argv[]){
   getOptions(argc, argv, action, commandLine, fileName, clientName, sockName, modelNumber);
   
   // Msg::_onelabclient is a onelab:LocalClient independent of MetaModel
-
   Msg::InitializeOnelab("metamodel","");
 
   if (sockName.size()){
     Msg::loader = new onelab::remoteNetworkClient(clientName, sockName);
-    //Msg::hasGmsh = loader->getName().compare("MetaModel");
-    Msg::hasGmsh = clientName.compare("MetaModel");
+    //Msg::hasGmsh = loader->getName().compare("loadedMetaModel");
+    Msg::hasGmsh = clientName.compare("loadedMetaModel");
   }
 
   if(Msg::loader)
     std::cout << "ONELAB: " << Msg::Synchronize_Down() << " parameters downloaded" << std::endl;
 
   if(!fileName.compare("untitled")){ 
-    // no filename was given in calling the metamodel => initialize only
-    action.assign("initialize");
-    // guess fileName from Gmsh
+    // no filename was given in calling the metamodel 
+    // try to guess 'Arguments/FileName' from arguments of the loader
     std::string name= Msg::GetOnelabString("Gmsh/MshFileName");
     if(name.size()){
       fileName.assign(name.substr(0,name.find_last_of(".")));  // remove extension
       Msg::Info("Guessed filename <%s> from OL variable <Gmsh/MshFileName>",fileName.c_str());
     }
-    else
-      Msg::Info("No valid input filename found");
+    else{
+      name= Msg::GetOnelabString("loadedMetaModel/InputFiles");
+      if(name.size()){
+	fileName.assign(name.substr(0,name.find_last_of(".")));  // remove extension
+	Msg::Info("Guessed filename <%s> from OL variable <loadedMetaModel/InputFiles>",fileName.c_str());
+      }
+      else{
+	Msg::Info("No valid input filename found, action set to <initialize>");
+      }
+    }
   }
-  Msg::SetOnelabString("Arguments/FileName",fileName);
+  Msg::SetOnelabString("Arguments/FileName",fileName,false);
+
+  std::cout << "fileName:" << fileName << std::endl;
 
   MetaModel *myModel = new MetaModel(commandLine, clientName, fileName, modelNumber);
+  if(Msg::loader && !Msg::GetOnelabNumber(clientName + "/Initialized"))
+    action.assign("initialize");
   if(!myModel->checkPathes())
     action.assign("exit");
 
-  std::cout << "action:" << action << std::endl;
-  // std::cout << "hasGmsh:" << Msg::hasGmsh << std::endl;
+  std::cout << "   checkcmd:" << Msg::GetOnelabString(clientName+"/9CheckCommand") << std::endl;
+  std::cout << "     action:" << action << std::endl;
+  std::cout << "initialized:" << Msg::GetOnelabNumber(clientName + "/Initialized") << std::endl;
+  std::cout << "    hasGmsh:" << Msg::hasGmsh << std::endl;
 
   newStep();
   if(!action.compare("exit")){ // exit metamodel
