@@ -13,7 +13,8 @@ void MetaModel::analyze(){
 void MetaModel::compute(){
   Msg::Info("Metamodel::compute <%s>",getName().c_str());
   simpleCompute();
+  Msg::Info("Simulation completed successfully...");
   GmshDisplay(Msg::loader,Msg::GetOnelabString("Arguments/FileName"),Msg::GetOnelabChoices("GmshMerge/InputFiles"));
-  std::cout << "Simulation completed successfully..." << std::endl;
   PostArray(Msg::GetOnelabChoices("PostArray"));
+  Msg::Info("Post-processing completed successfully...");
 }
