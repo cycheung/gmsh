@@ -680,6 +680,19 @@ void MetaModel::analyze_oneline(std::string line, std::ifstream &infile) {
 	  set(strings[0]);
 	}
       }
+      else if(!action.compare("List")){//no check whether choices[i] already inserted
+	if(arguments[0].size()){
+	  strings.resize(1);
+	  strings[0].setName(name);
+	  strings[0].setValue(resolveGetVal(arguments[0]));
+	  strings[0].setVisible(false);
+	  std::vector<std::string> choices;
+	  for(unsigned int i = 0; i < arguments.size(); i++)
+	    choices.push_back(resolveGetVal(arguments[i]));
+	  strings[0].setChoices(choices);
+	  set(strings[0]);
+	}
+      }
       else
 	Msg::Fatal("ONELAB:unknown keyword <%s>",action.c_str());
       cursor=pos+1;
@@ -724,6 +737,22 @@ void MetaModel::simpleCompute()
   for(citer it = _clients.begin(); it != _clients.end(); it++){
     Msg::SetOnelabString((*it)->getName() + "/Action","compute",false);
     (*it)->compute();
+  }
+}
+
+void MetaModel::PostArray(std::vector<std::string> choices)
+{
+  int nb=0;
+  onelab::number o;
+  while( 4*(nb+1) <= choices.size()){
+    std::cout << "Nb Choices" << choices.size() << std::endl;
+    Msg::Info("PostArray <%s>",choices[4*nb+3].c_str());
+    int lin= atof(choices[4*nb+1].c_str());
+    int col= atof(choices[4*nb+2].c_str());
+    o.setName(choices[4*nb+3]);
+    o.setValue(find_in_array(lin,col,read_array(choices[4*nb],' ')));
+    set(o);
+    nb++;
   }
 }
 
@@ -1124,7 +1153,7 @@ void InterfacedClient::compute() {
 
   std::string commandLine = getCommandLine() + " " ;
   commandLine.append(buildArguments());
-  commandLine.append(" &> " + _name + ".log");
+  //commandLine.append(" &> " + _name + ".log");
   Msg::Info("Client %s launched",_name.c_str());
   std::cout << "Commandline:" << commandLine.c_str() << std::endl;
   if ( int error = system(commandLine.c_str())) { 
@@ -1363,10 +1392,7 @@ int systemCall(std::string cmd){
 }
 
 void GmshDisplay(onelab::remoteNetworkClient *loader, std::string fileName, std::vector<std::string> choices){
-  bool hasGmsh=false;
   if(choices.empty()) return;
-  // if(loader)
-  //   hasGmsh=loader->getName().compare("MetaModel");
   std::string cmd = "gmsh " + fileName + ".geo ";
   for(unsigned int i = 0; i < choices.size(); i++){
     cmd.append(choices[i]+" ");

@@ -182,6 +182,7 @@ private:
   void analyze_onefile(std::string ifilename);
   std::string resolveGetVal(std::string line);
   std::string toChar(){}
+  void PostArray(std::vector<std::string> choices);
   void initialize();
   void simpleCheck();
   void simpleCompute();
