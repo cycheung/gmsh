@@ -683,7 +683,7 @@ void InterfacedClient::convert() {
 	std::string ofilename = ifilename.substr(0,pos);  // remove extension
 	std::ofstream outfile(ofilename.c_str());
 	if (outfile.is_open())
-	  convertt_onefile(ifilename,outfile);
+	  convert_onefile(ifilename,outfile);
 	else
 	  Msg::Fatal("The file <%s> cannot be opened",ofilename.c_str());
 	outfile.close();

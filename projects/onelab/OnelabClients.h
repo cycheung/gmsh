@@ -16,15 +16,6 @@
 #include "OnelabMessage.h"
 
 namespace olkey{ // reserved keywords for onelab
-  /* static std::string label("ol"); */
-  /* static std::string client(label+".client"); */
-  /* static std::string param(label+".parameter"); */
-  /* static std::string number(label+".number"), string(label+".string"); */
-  /* static std::string include(label+".include");  */
-  /* static std::string iftrue(label+".iftrue"), olelse(label+".else"), olendif(label+".endif");  */
-  /* static std::string ifequal(label+".ifequal"); */
-  /* static std::string getValue(label+".getValue"); */
-  /* static std::string extension(".ol"); */
   static std::string label("OL.");
   static std::string client(label+"client");
   static std::string param(label+"parameter");
@@ -129,9 +120,9 @@ class localSolverClient : public onelab::localClient{
   virtual void parse_clientline(std::string line, std::ifstream &infile) {}
   void parse_oneline(std::string line, std::ifstream &infile) ;
   bool parse_ifstatement(std::ifstream &infile, bool condition) ;
-  void convertt_onefile(std::string ifilename, std::ofstream &outfile);
-  void convertt_oneline(std::string line, std::ifstream &infile, std::ofstream &outfile);
-  bool convertt_ifstatement(std::ifstream &infile, std::ofstream &outfile, bool condition) ;
+  void convert_onefile(std::string ifilename, std::ofstream &outfile);
+  void convert_oneline(std::string line, std::ifstream &infile, std::ofstream &outfile);
+  bool convert_ifstatement(std::ifstream &infile, std::ofstream &outfile, bool condition) ;
   const std::string &getCommandLine(){ return _commandLine; }
   virtual void setCommandLine(const std::string &s){ _commandLine = s; }
   const std::string getLineOptions();
