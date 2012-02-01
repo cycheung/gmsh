@@ -27,7 +27,7 @@ CPPFLAGS+=-I$(COMMON_DIR) -I$(ONELAB_DIR) -g
 VPATH=$(ONELAB_DIR):$(COMMON_DIR):$(ONELAB_DIR)/SOLVERS
 
 OBJECTS=$(foreach OBJ, $(SOURCES), $(OBJDIR)/$(OBJ).o)
-$(OBJDIR)/%.o : %.cpp
+$(OBJDIR)/%.o : %.cpp ../*.h
 	mkdir -p $(OBJDIR) 
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
