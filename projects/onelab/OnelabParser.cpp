@@ -1,4 +1,5 @@
 #include "OnelabClients.h"
+#include <algorithm>
 
 std::string localSolverClient::longName(const std::string name){
   std::set<std::string>::iterator it;
@@ -266,7 +267,7 @@ bool localSolverClient::parse_ifstatement(std::ifstream &infile, bool condition)
   return statementend;
 } 
 
-bool localSolverClient::convertt_ifstatement(std::ifstream &infile, std::ofstream &outfile, bool condition) { 
+bool localSolverClient::convert_ifstatement(std::ifstream &infile, std::ofstream &outfile, bool condition) { 
   int pos;
   std::string line;
 
@@ -278,12 +279,12 @@ bool localSolverClient::convertt_ifstatement(std::ifstream &infile, std::ofstrea
     else if ( (pos=line.find(olkey::olendif)) != std::string::npos) 
       statementend=true;
     else if ( !(trueclause ^ condition) ) // xor bitwise operator
-      convertt_oneline(line,infile,outfile);
+      convert_oneline(line,infile,outfile);
   }
   return statementend;
 } 
 
-void localSolverClient::convertt_oneline(std::string line, std::ifstream &infile, std::ofstream &outfile) { 
+void localSolverClient::convert_oneline(std::string line, std::ifstream &infile, std::ofstream &outfile) { 
   std::vector<onelab::number> numbers;
   std::vector<onelab::string> strings;
   std::vector<std::string> arguments;
@@ -302,7 +303,7 @@ void localSolverClient::convertt_oneline(std::string line, std::ifstream &infile
       pos=line.find_first_of(')',cursor)+1;
       if(enclosed(line.substr(cursor,pos-cursor),arguments)<1)
 	Msg::Fatal("ONELAB misformed <%s> statement: (%s)",olkey::include.c_str(),line.c_str());
-      convertt_onefile(arguments[0],outfile);
+      convert_onefile(arguments[0],outfile);
     }
     else if ( (pos=line.find(olkey::iftrue)) != std::string::npos) {// onelab.iftrue
       cursor = pos+olkey::iftrue.length();
@@ -313,7 +314,7 @@ void localSolverClient::convertt_oneline(std::string line, std::ifstream &infile
       get(numbers,longName(arguments[0]));
       if (numbers.size())
 	condition = (bool) numbers[0].getValue();
-      if (!convertt_ifstatement(infile,outfile,condition))
+      if (!convert_ifstatement(infile,outfile,condition))
 	Msg::Fatal("ONELAB misformed <%s> statement: %s",olkey::iftrue.c_str(),arguments[0].c_str());     
     }
     else if ( (pos=line.find(olkey::ifequal)) != std::string::npos) {// onelab.ifequal
@@ -325,7 +326,7 @@ void localSolverClient::convertt_oneline(std::string line, std::ifstream &infile
       get(strings,longName(arguments[0]));
       if (strings.size())
 	condition =  !strings[0].getValue().compare(arguments[1]);
-      if (!convertt_ifstatement(infile,outfile,condition))
+      if (!convert_ifstatement(infile,outfile,condition))
 	Msg::Fatal("ONELAB misformed <%s> statement: (%s)",olkey::ifequal.c_str(),line.c_str());
     }
     else if ( (pos=line.find(olkey::getValue)) != std::string::npos) {// onelab.getValue
@@ -365,14 +366,14 @@ void localSolverClient::convertt_oneline(std::string line, std::ifstream &infile
   }
 }
 
-void localSolverClient::convertt_onefile(std::string ifilename, std::ofstream &outfile) { 
+void localSolverClient::convert_onefile(std::string ifilename, std::ofstream &outfile) { 
   std::string line;
   std::ifstream infile(ifilename.c_str());
   //fileName.assign(name.substr(0,name.find_last_of(".")));  // remove extension
   if (infile.is_open()){
     while ( infile.good() ) {
       getline (infile,line);
-      convertt_oneline(line,infile,outfile);
+      convert_oneline(line,infile,outfile);
     }
     infile.close();
   }
