@@ -9,7 +9,8 @@ lambda=0.9;
 DefineConstant[ Xloc = {lambda*R*Cos(Pi/4), Path "Parameters/1Geometry",ShortHelp "x coord of probepoint"} ];
 DefineConstant[ Yloc = {lambda*R*Sin(Pi/4)+H, Path "Parameters/1Geometry",ShortHelp "y coord of probepoint"} ];
 
-DefineConstant[ Refine = {1, Min 0.01, Max 10, Path "Parameters/1Geometry",ShortHelp "Mesh Size"} ];
+//DefineConstant[ Refine = {1, Min 0.01, Max 10, Path "Parameters/1Geometry",ShortHelp "Mesh Size"} ];
+DefineConstant[ Refine = {1, Path "Parameters/1Geometry",ShortHelp "Mesh Size"} ];
 
 lc=0.1*H*Refine;
 

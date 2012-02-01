@@ -16,15 +16,24 @@
 #include "OnelabMessage.h"
 
 namespace olkey{ // reserved keywords for onelab
-  static std::string label("onelab");
-  static std::string client(label+".client");
-  static std::string param(label+".parameter");
-  static std::string number(label+".number"), string(label+".string");
-  static std::string include(label+".include"); 
-  static std::string iftrue(label+".iftrue"), olelse(label+".else"), olendif(label+".endif"); 
-  static std::string ifequal(label+".ifequal");
-  static std::string getValue(label+".getValue");
-  static std::string extension(".olab");
+  /* static std::string label("ol"); */
+  /* static std::string client(label+".client"); */
+  /* static std::string param(label+".parameter"); */
+  /* static std::string number(label+".number"), string(label+".string"); */
+  /* static std::string include(label+".include");  */
+  /* static std::string iftrue(label+".iftrue"), olelse(label+".else"), olendif(label+".endif");  */
+  /* static std::string ifequal(label+".ifequal"); */
+  /* static std::string getValue(label+".getValue"); */
+  /* static std::string extension(".ol"); */
+  static std::string label("OL.");
+  static std::string client(label+"client");
+  static std::string param(label+"parameter");
+  static std::string number(label+"number"), string(label+"string");
+  static std::string include(label+"include"); 
+  static std::string iftrue(label+"iftrue"), olelse(label+"else"), olendif(label+"endif"); 
+  static std::string ifequal(label+"ifequal");
+  static std::string getValue(label+"getValue");
+  static std::string extension(".ol");
 }
 
 static char charSep() { return '\0'; }
@@ -76,8 +85,28 @@ public:
   bool menu(std::string commandLine, std::string fileName, int modelNumber);
 };
 
+static std::string getShortName(const std::string &name) {
+  std::string s = name;
+  // remove path
+  std::string::size_type last = name.find_last_of('/');
+  if(last != std::string::npos)
+    s = name.substr(last + 1);
+  // remove starting numbers
+  while(s.size() && s[0] >= '0' && s[0] <= '9')
+    s = s.substr(1);
+  return s;
+}
+
+class ShortNameLessThan{
+ public:
+  bool operator()(const std::string p1, const std::string p2) const
+  {
+    return getShortName(p1) < getShortName(p2);
+  }
+};
+
 /*
-localSolverClient est la classe de base pour tous les clients de type "solveur"
+localSolverClient est la classe de base pour tous les clients
 avec les méthodes (virtuelles) analyze() et compute()  (que la classe 'localClient' n'a pas)
 qui sont les deux modes d'exécution du métamodèle.
 Seule _commandLine est stockée dans la classe
@@ -86,12 +115,23 @@ Les autres infos sont définies sur le serveur
 class localSolverClient : public onelab::localClient{
  private:
   std::string _commandLine;
+  std::set<std::string, ShortNameLessThan> _parameters;
+  std::string longName(const std::string name);
+  std::string resolveGetVal(std::string line);
+  std::string evaluateGetVal(std::string line);
  public:
  localSolverClient(const std::string &name, const std::string &commandLine) 
    : onelab::localClient(name), _commandLine(commandLine) {
   }
   virtual ~localSolverClient(){}
- 
+
+  void parse_onefile(std::string ifilename);
+  virtual void parse_clientline(std::string line, std::ifstream &infile) {}
+  void parse_oneline(std::string line, std::ifstream &infile) ;
+  bool parse_ifstatement(std::ifstream &infile, bool condition) ;
+  void convertt_onefile(std::string ifilename, std::ofstream &outfile);
+  void convertt_oneline(std::string line, std::ifstream &infile, std::ofstream &outfile);
+  bool convertt_ifstatement(std::ifstream &infile, std::ofstream &outfile, bool condition) ;
   const std::string &getCommandLine(){ return _commandLine; }
   virtual void setCommandLine(const std::string &s){ _commandLine = s; }
   const std::string getLineOptions();
@@ -131,26 +171,6 @@ class localNetworkSolverClient : public localSolverClient{
   virtual void compute() =0;
 };
 
-static std::string getShortName(const std::string &name) {
-  std::string s = name;
-  // remove path
-  std::string::size_type last = name.find_last_of('/');
-  if(last != std::string::npos)
-    s = name.substr(last + 1);
-  // remove starting numbers
-  while(s.size() && s[0] >= '0' && s[0] <= '9')
-    s = s.substr(1);
-  return s;
-}
-
-class ShortNameLessThan{
- public:
-  bool operator()(const std::string p1, const std::string p2) const
-  {
-    return getShortName(p1) < getShortName(p2);
-  }
-};
-
 class MetaModel : public localSolverClient {
 private:
   std::vector<localSolverClient *> _clients;
@@ -160,7 +180,7 @@ private:
     clientName = cname;
     modelNumberFromArgs = number;
     genericNameFromArgs = fname.size() ? fname : commandLine;
-    analyze_onefile(genericNameFromArgs + ".onelab");
+    parse_onefile(genericNameFromArgs + olkey::extension);
   }
   ~MetaModel(){}
   typedef std::vector<localSolverClient*>::iterator citer;
@@ -175,11 +195,9 @@ private:
       if(_clients[i]->getName() == name) return _clients[i];
     return 0;
   }
-
   std::string genericNameFromArgs, clientName;
   int modelNumberFromArgs;
-  void analyze_oneline(std::string line, std::ifstream &infile);
-  void analyze_onefile(std::string ifilename);
+  void parse_clientline(std::string line, std::ifstream &infile);
   std::string resolveGetVal(std::string line);
   std::string toChar(){}
   void PostArray(std::vector<std::string> choices);
@@ -192,25 +210,16 @@ private:
 
 class InterfacedClient : public localSolverClient { 
   // n'utilise pas localNetworkSolverClient::run mais client::run()
-private:
+ private:
   std::set<std::string, ShortNameLessThan> _parameters;
-  void analyze_oneline(std::string line, std::ifstream &infile) ;
-  bool analyze_ifstatement(std::ifstream &infile, bool condition) ;
-  void convert_oneline(std::string line, std::ifstream &infile, std::ofstream &outfile);
-  bool convert_ifstatement(std::ifstream &infile, std::ofstream &outfile, bool condition) ;
-  std::string longName(const std::string name);
-public:
+ public:
  InterfacedClient(const std::string &name, const std::string &commandLine)
    : localSolverClient(name, commandLine) {}
   ~InterfacedClient(){}
-  std::string evaluateGetVal(std::string line);
   std::string toChar();
 
-  void convert();
-  void analyze_onefile(std::string ifilename);
-  void convert_onefile(std::string ifileName, std::ofstream &outfile);
-
   void analyze();
+  void convert();
   void compute();
 };
 

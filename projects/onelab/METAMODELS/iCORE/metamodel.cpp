@@ -23,21 +23,13 @@ int metamodel(int modelNumber){
 }
 
 int simulation(){ 
-
   mesher->analyze(modelName);
-  mesher->run("-2 -v 0", modelName);
-
-  if (OL->getInteractivity())
-    OL->menu("After meshing",modelName,mesher->getName());
+  OL->menu("After meshing",modelName,mesher->getName());
+  mesher->run("-2", modelName);
 
   solver->analyze(modelName); // populate parameterspace
-
-  if (OL->getInteractivity())
-    OL->menu("About to solve with GETDP",modelName,solver->getName());
-
+  OL->menu("About to solve with GETDP",modelName,solver->getName());
   solver->run("-sol MagSta -pos MagSta", modelName);
 
-  if (OL->getInteractivity())
-    OL->menu("After solving with GETDP",modelName,solver->getName());
-
+  OL->menu("After solving with GETDP",modelName,solver->getName());
 }

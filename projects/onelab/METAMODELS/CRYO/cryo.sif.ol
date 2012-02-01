@@ -1,10 +1,8 @@
-onelab.parameter Tcold.number(78,Parameters/2Elmer/,"Applied temperature"); Tcold.MinMax(50,100,5);
-
-onelab.parameter TRANSIENT.number(1,Elmer/2,Transient simulation); TRANSIENT.AddChoices(0,1);
-onelab.iftrue(TRANSIENT)
-	onelab.parameter NumStep.number(100,Elmer/3,Number of time steps);
-	onelab.parameter TimeStep.number(0.02,Elmer/3,Time step);
-onelab.endif
+OL.parameter Tcold.number(78,Parameters/2Elmer/,"Applied temperature"); Tcold.MinMax(50,100,5);
+OL.iftrue(TRANSIENT)
+	OL.parameter NumStep.number(100,Elmer/3,Number of time steps);
+	OL.parameter TimeStep.number(0.02,Elmer/3,Time step);
+OL.endif
 
 Header
   Mesh DB "." "meshdir"
@@ -12,20 +10,20 @@ End
 
 Simulation
   Coordinate System =  Axi Symmetric
-onelab.iftrue(TRANSIENT)
+OL.iftrue(TRANSIENT)
   Simulation Type = Transient 
   !Timestep sizes = 0.05
   !Timestep Intervals = 200 !nb of times that the time step is repeted
-  Timestep sizes = onelab.getValue(TimeStep)
-  Timestep Intervals = onelab.getValue(NumStep)
+  Timestep sizes = OL.getValue(TimeStep)
+  Timestep Intervals = OL.getValue(NumStep)
   Timestepping Method = BDF
   BDF Order = 1
-onelab.else
+OL.else
   Simulation Type = Steady State 
   Steady State Max Iterations = 1
-onelab.endif
+OL.endif
   Output Intervals = 1
-  Solver Input File = "onelab.getValue(Arguments/FileName).sif"
+  Solver Input File = "OL.getValue(Arguments/FileName).sif"
 End
 
 Constants
@@ -98,11 +96,11 @@ Solver 1
 End
 
 Solver 2
-onelab.iftrue(TRANSIENT)
+OL.iftrue(TRANSIENT)
    Exec solver = "After timestep"
-onelab.else
+OL.else
    Exec solver = "Always"
-onelab.endif
+OL.endif
    Equation = String "ResultOutput"
    Procedure = File "ResultOutputSolve" "ResultOutputSolver"
    Output File Name = String "solution.pos"
@@ -112,18 +110,18 @@ onelab.endif
 End
 
 Solver 3 !ElmerModelsManuel page 187
-onelab.iftrue(TRANSIENT)
+OL.iftrue(TRANSIENT)
    Exec solver = "After timestep"
-onelab.else
+OL.else
    Exec solver = "After All"
-onelab.endif
+OL.endif
    Equation = SaveScalars
    Variable 1 = Temperature
    Variable 2 = Time
    Procedure = "SaveData" "SaveScalars"
    Save Coordinates(1,2) = 0.0015 0.003
 !These parameters were defined in the cryo.geo file
-   Save Coordinates(1,2) = onelab.getValue(Parameters/1Geometry/Xloc) onelab.getValue(Parameters/1Geometry/Yloc)
+   Save Coordinates(1,2) = OL.getValue(Parameters/1Geometry/Xloc) OL.getValue(Parameters/1Geometry/Yloc)
    Filename = "tempevol.txt"
 End
 
@@ -210,8 +208,8 @@ Boundary Condition 1
   Target Boundaries(1) = 15
   Heat Flux BC = Logical True
   Heat Transfer Coefficient = Real 5000. !Initial heat flux
-  External Temperature = Real 77. !Initial temperature??
-  External Temperature = Real onelab.getValue(Tcold) !Initial temperature??
+  External Temperature = Real 77.
+  External Temperature = Real OL.getValue(Tcold)
 End
 
 Boundary Condition 2
