@@ -1,5 +1,5 @@
 SOLVERS=onelab
-SOURCES=OS StringUtils OnelabClients OnelabMessage main
+SOURCES=OS StringUtils OnelabClients OnelabMessage OnelabParser main
 
 COMMON_DIR=$(GMSH_DIR)/Common
 ONELAB_DIR=$(GMSH_DIR)/projects/onelab
@@ -27,7 +27,7 @@ CPPFLAGS+=-I$(COMMON_DIR) -I$(ONELAB_DIR) -g
 VPATH=$(ONELAB_DIR):$(COMMON_DIR):$(ONELAB_DIR)/SOLVERS
 
 OBJECTS=$(foreach OBJ, $(SOURCES), $(OBJDIR)/$(OBJ).o)
-$(OBJDIR)/%.o : %.cpp ../*.h
+$(OBJDIR)/%.o : %.cpp $(ONELAB_DIR)/*.h
 	mkdir -p $(OBJDIR) 
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
