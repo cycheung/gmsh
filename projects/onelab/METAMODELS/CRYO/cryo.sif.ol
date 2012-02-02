@@ -13,7 +13,7 @@ Simulation
 OL.iftrue(TRANSIENT)
   Simulation Type = Transient 
   !Timestep sizes = 0.05
-  !Timestep Intervals = 200 !nb of times that the time step is repeted
+  !Timestep Intervals = 200
   Timestep sizes = OL.getValue(TimeStep)
   Timestep Intervals = OL.getValue(NumStep)
   Timestepping Method = BDF
