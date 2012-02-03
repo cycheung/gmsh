@@ -5,8 +5,8 @@ OL.client Mesher/LineOptions.Set(-v 0);
 OL.client ElmerGrid.Register(interfaced);
 OL.client ElmerGrid/PreLineOptions.Set(14 2);
 OL.client ElmerGrid/InputFiles.Set(OL.getValue(Arguments/FileName).msh);
-OL.client ElmerGrid/LineOptions.Set(-out meshdir);
-OL.client ElmerGrid/OutputFiles.Set(meshdir/mesh.header);
+OL.client ElmerGrid/LineOptions.Set(-out mesh);
+OL.client ElmerGrid/OutputFiles.Set(mesh/mesh.header);
 
 OL.client Elmer.Register(interfaced);
 OL.client Elmer/InputFiles.Set(OL.getValue(Arguments/FileName).sif.ol);

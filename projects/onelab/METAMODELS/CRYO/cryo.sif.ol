@@ -1,24 +1,22 @@
 
-OL.parameter Tcold.number(78,Parameters/Elmer/2,"Applied temperature"); Tcold.MinMax(50,100,10);
+OL.parameter Tcold.number(77,Parameters/Elmer/2,"Applied temperature"); Tcold.MinMax(50,100,10);
 OL.iftrue(TRANSIENT)
-	OL.parameter NumStep.number(100,Elmer/3,Number of time steps);
-	OL.parameter TimeStep.number(0.02,Elmer/3,Time step);
+	OL.parameter NumStep.number(50,Elmer/3,Number of time steps);
+	OL.parameter TimeStep.number(0.1,Elmer/3,Time step);
 OL.endif
 
 Header
-  Mesh DB "." "meshdir"
+  Mesh DB "." "mesh"
 End
 
 Simulation
   Coordinate System =  Axi Symmetric
 OL.iftrue(TRANSIENT)
   Simulation Type = Transient 
-  !Timestep sizes = 0.05
-  !Timestep Intervals = 200
   Timestep sizes = OL.getValue(TimeStep)
   Timestep Intervals = OL.getValue(NumStep)
   Timestepping Method = BDF
-  BDF Order = 1
+  BDF Order = 2
 OL.else
   Simulation Type = Steady State 
   Steady State Max Iterations = 1
@@ -28,18 +26,12 @@ OL.endif
   Solver Input File = "OL.getValue(Arguments/FileName).sif"
 End
 
-Constants
-  Gravity(4) = 0 -1 0 9.82
-  Stefan Boltzmann = 5.67e-08
-End
-
 
 !*******************************
 !*********** Bodies ************
 !*******************************
 
 Body 1
-  Name = "Skin"
   Equation = 1
   Material = 1
   !Body Force = 1
@@ -47,16 +39,9 @@ Body 1
 End
 
 Body 2
-  Name = "Wart"
   Equation = 1
   Material = 2
-  !Body Force = 1
   Initial Condition = 1
-End
-
-Body Force 1
-  Name = "BodyForce1"
-  Heat Source = real 0 !real 1
 End
 
 !*******************************
@@ -113,7 +98,7 @@ End
 
 Solver 3 !ElmerModelsManuel page 187
 OL.iftrue(TRANSIENT)
-   Exec solver = "After timestep"
+   Exec solver = "After saving"
 OL.else
    Exec solver = "After All"
 OL.endif
@@ -132,7 +117,6 @@ End
 !*******************************
 
 Material 1
-  Name = "Skin"
   Density = 1000
   Heat Conductivity = Variable Temperature
   Real
@@ -163,7 +147,6 @@ Material 1
 End
 
 Material 2
-  Name = "Wart"
   Density = 1500
   Heat Conductivity = Variable Temperature
   Real
@@ -206,16 +189,13 @@ End
 !*******************************
 
 Boundary Condition 1
-  Name = "wartbc"
   Target Boundaries(1) = 15
   Heat Flux BC = Logical True
   Heat Transfer Coefficient = Real 5000. !Initial heat flux
-  //External Temperature = Real 77.
   External Temperature = Real OL.getValue(Tcold)
 End
 
 Boundary Condition 2
-  Name = "zeroflux"
   Target Boundaries(5) = 11 12 13 14 16 
   Heat Flux BC = Logical true
   Heat Flux Real = Real 0.0
