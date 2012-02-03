@@ -33,6 +33,7 @@ int getOptions(int argc, char *argv[], std::string &action, std::string &command
 std::string itoa(const int i);
 bool checkIfPresent(std::string filename);
 bool checkIfModified(std::string filename);
+bool checkIfModified(std::vector<std::string> filenames);
 bool fileExist(std::string filename);
 int newStep();
 void appendOption(std::string &str, const std::string &what, const int val);
@@ -106,15 +107,27 @@ Les autres infos sont définies sur le serveur
 class localSolverClient : public onelab::localClient{
  private:
   std::string _commandLine;
+  bool _enabled;
   std::set<std::string, ShortNameLessThan> _parameters;
   std::string longName(const std::string name);
   std::string resolveGetVal(std::string line);
   std::string evaluateGetVal(std::string line);
  public:
  localSolverClient(const std::string &name, const std::string &commandLine) 
-   : onelab::localClient(name), _commandLine(commandLine) {
+   : onelab::localClient(name), _commandLine(commandLine), _enabled(true) {
   }
   virtual ~localSolverClient(){}
+  //std::string commentSymbol();
+  const std::string &getCommandLine(){ return _commandLine; }
+  virtual void setCommandLine(const std::string &s){ _commandLine = s; }
+  const std::string getLineOptions();
+  const std::string getPreLineOptions();
+  const std::vector<std::string> getInputFiles();
+  const bool getActive() { return _enabled; }
+  const void setActive(int val) { _enabled=(bool)val; }
+  const std::string buildArguments();
+  bool controlPath();
+  virtual std::string toChar() =0;
 
   void parse_onefile(std::string ifilename);
   virtual void parse_clientline(std::string line, std::ifstream &infile) {}
@@ -123,13 +136,7 @@ class localSolverClient : public onelab::localClient{
   void convert_onefile(std::string ifilename, std::ofstream &outfile);
   void convert_oneline(std::string line, std::ifstream &infile, std::ofstream &outfile);
   bool convert_ifstatement(std::ifstream &infile, std::ofstream &outfile, bool condition) ;
-  const std::string &getCommandLine(){ return _commandLine; }
-  virtual void setCommandLine(const std::string &s){ _commandLine = s; }
-  const std::string getLineOptions();
-  const std::vector<std::string> getInputFiles();
-  const std::string buildArguments();
-  bool controlPath();
-  virtual std::string toChar() =0;
+
   virtual void analyze() =0;
   virtual void compute() =0;
 };
@@ -201,11 +208,9 @@ private:
 
 class InterfacedClient : public localSolverClient { 
   // n'utilise pas localNetworkSolverClient::run mais client::run()
- private:
-  std::set<std::string, ShortNameLessThan> _parameters;
  public:
  InterfacedClient(const std::string &name, const std::string &commandLine)
-   : localSolverClient(name, commandLine) {}
+   : localSolverClient(name,commandLine) {}
   ~InterfacedClient(){}
   std::string toChar();
 
@@ -225,7 +230,6 @@ public:
   void analyze();
   void compute() ;
 };
-
 
 #endif
 

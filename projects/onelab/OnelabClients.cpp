@@ -491,6 +491,7 @@ bool localSolverClient::controlPath(){
     if(Msg::hasGmsh) {// exits metamodel and restores control to the onelab window
       Msg::Error("The path to client <%s> is undefined.", getName().c_str());
       std::cout << "\n\nEnter the path to <" << getName() << "> in the ONELAB window.\n\n" << std::endl;
+      //Msg::SetOnelabAttributeString(getName()+"/Path","Highlight","true");
       return false;
     }
     else{ // asks the user in console mode
@@ -501,12 +502,25 @@ bool localSolverClient::controlPath(){
       return true;
     }
   }
+  else{ //initialize
+    Msg::SetOnelabString(getName() + "/Action","initialize",false);
+    run();
+  }
   return true;
 }
 
 const std::string localSolverClient::getLineOptions(){
   std::vector<onelab::string> strings;
   std::string paramName(getName()+"/LineOptions");
+  get(strings,paramName);
+  if(strings.size())
+    return strings[0].getValue();
+  else
+    return "";
+}
+const std::string localSolverClient::getPreLineOptions(){
+  std::vector<onelab::string> strings;
+  std::string paramName(getName()+"/PreLineOptions");
   get(strings,paramName);
   if(strings.size())
     return strings[0].getValue();
@@ -531,9 +545,11 @@ const std::string localSolverClient::buildArguments(){
   std::string args,filename;
 
   std::vector<std::string> choices = getInputFiles();
+  args.assign(getPreLineOptions()+" ");
   for(unsigned int i = 0; i < choices.size(); i++)
       args.append(choices[i].substr(0,choices[i].find(olkey::extension))+" ");
   args.append(getLineOptions());
+  //std::cout << "args=<" << args << ">" << std::endl;
   return args;
 }
 
@@ -602,25 +618,31 @@ void MetaModel::registerClient(const std::string name, const std::string type,
     c = new InterfacedClient(name,path);
   else
     Msg::Fatal("ONELAB: unknown client type <%s>",type.c_str());
-
-  Msg::SetOnelabString(name + "/Action","initialize",false);
-  c->run();
   _clients.push_back(c); 
+  if(path.size()){
+    //cannot initialize a client without a path
+    Msg::SetOnelabString(name + "/Action","initialize",false);
+    c->run();
+  }
 }
 
 void MetaModel::simpleCheck()
 {
   for(citer it = _clients.begin(); it != _clients.end(); it++){
-    Msg::SetOnelabString((*it)->getName() + "/Action","check",false);
-    (*it)->analyze();
+    if((*it)->getActive()){
+	Msg::SetOnelabString((*it)->getName() + "/Action","check",false);
+	(*it)->analyze();
+      }
   }
 }
 
 void MetaModel::simpleCompute()
 {
   for(citer it = _clients.begin(); it != _clients.end(); it++){
-    Msg::SetOnelabString((*it)->getName() + "/Action","compute",false);
-    (*it)->compute();
+    if((*it)->getActive()){
+	Msg::SetOnelabString((*it)->getName() + "/Action","compute",false);
+	(*it)->compute();
+      }
   }
 }
 
@@ -629,13 +651,15 @@ void MetaModel::PostArray(std::vector<std::string> choices)
   int nb=0;
   onelab::number o;
   while( 4*(nb+1) <= choices.size()){
-    std::cout << "Nb Choices" << choices.size() << std::endl;
-    Msg::Info("PostArray <%s>",choices[4*nb+3].c_str());
+    //std::cout << "Nb Choices" << choices.size() << std::endl;
     int lin= atof(choices[4*nb+1].c_str());
     int col= atof(choices[4*nb+2].c_str());
-    o.setName(choices[4*nb+3]);
-    o.setValue(find_in_array(lin,col,read_array(choices[4*nb],' ')));
-    set(o);
+    double val=find_in_array(lin,col,read_array(choices[4*nb],' '));
+    // o.setName(choices[4*nb+3]);
+    // o.setValue(val);
+    // set(o);
+    Msg::AddOnelabNumberChoice(choices[4*nb+3],val);
+    Msg::Info("PostArray <%s>=%e",choices[4*nb+3].c_str(),val);
     nb++;
   }
 }
@@ -671,11 +695,8 @@ void InterfacedClient::analyze() {
 
 void InterfacedClient::convert() {
   int pos;
-  std::vector<onelab::string> strings;
-
-  get(strings,getName()+"/InputFiles");
-  if(strings.size()){
-    std::vector<std::string> choices=strings[0].getChoices();
+  std::vector<std::string> choices;
+  if(Msg::GetOnelabChoices(getName()+"/InputFiles",choices)){
     for(unsigned int i = 0; i < choices.size(); i++){
       std::string ifilename = choices[i];
       checkIfPresent(ifilename);
@@ -687,7 +708,7 @@ void InterfacedClient::convert() {
 	else
 	  Msg::Fatal("The file <%s> cannot be opened",ofilename.c_str());
 	outfile.close();
-	checkIfModified(ofilename);
+	//checkIfModified(ofilename); not really useful if opening => touching
       }
     }
   }
@@ -701,10 +722,11 @@ void InterfacedClient::compute() {
   commandLine.append(buildArguments());
   //commandLine.append(" &> " + _name + ".log");
   Msg::Info("Client %s launched",_name.c_str());
-  std::cout << "Commandline:" << commandLine.c_str() << std::endl;
-  if ( int error = system(commandLine.c_str())) { 
+  if ( int error = systemCall(commandLine.c_str()))
     Msg::Error("Client %s returned error %d",_name.c_str(),error);
-  }
+  std::vector<std::string> choices;
+  if(Msg::GetOnelabChoices(getName()+"/OutputFiles",choices))
+    checkIfModified(choices);
   Msg::Info("Client %s completed",_name.c_str());
 }
 
@@ -812,7 +834,6 @@ int getStep(){
   return onelab_step;
 }
 
-
 std::string sanitize(const std::string &in)
 {
   std::string out, forbidden(" ();");
@@ -826,7 +847,7 @@ int enclosed(const std::string &in, std::vector<std::string> &arguments){
   arguments.resize(0);
   cursor=0;
   if ( (pos=in.find("(",cursor)) == std::string::npos )
-     Msg::Fatal("Onelab syntax error: <%s>",in.c_str());
+     Msg::Fatal("ONELAB: syntax error: <%s>",in.c_str());
 
   unsigned int count=1;
   pos++; // skips '('
@@ -837,13 +858,13 @@ int enclosed(const std::string &in, std::vector<std::string> &arguments){
     if(in[pos]==',') {
       arguments.push_back(in.substr(cursor,pos-cursor));
       if(count!=1)
-	Msg::Fatal("Onelab syntax error: <%s>",in.c_str());
+	Msg::Fatal("ONELAB: syntax error: <%s>",in.c_str());
       cursor=pos+1; // skips ','
     }
     pos++;
   } while( count && (pos!=std::string::npos) ); // find closing brace
   if(count)
-     Msg::Fatal("Onelab syntax error: <%s>",in.c_str());
+     Msg::Fatal("ONELAB: syntax error: <%s>",in.c_str());
   else
     arguments.push_back(in.substr(cursor,pos-1-cursor));
   return arguments.size();
@@ -853,12 +874,12 @@ int extract(const std::string &in, std::string &paramName, std::string &action, 
   int pos, cursor,NumArg=0;
   cursor=0;
   if ( (pos=in.find(".",cursor)) == std::string::npos )
-     Msg::Fatal("Onelab syntax error: <%s>",in.c_str());
+     Msg::Fatal("ONELAB: syntax error: <%s>",in.c_str());
   else
     paramName.assign(sanitize(in.substr(cursor,pos-cursor)));
   cursor = pos+1; // skips '.'
   if ( (pos=in.find("(",cursor)) == std::string::npos )
-     Msg::Fatal("Onelab syntax error: <%s>",in.c_str());
+     Msg::Fatal("ONELAB: syntax error: <%s>",in.c_str());
   else
     action.assign(sanitize(in.substr(cursor,pos-cursor)));
   cursor = pos;
@@ -869,7 +890,7 @@ int extract(const std::string &in, std::string &paramName, std::string &action, 
     pos++;
   } while(count && (pos!=std::string::npos) ); // find closing brace
   if(count)
-     Msg::Fatal("Onelab syntax error: %s",in.c_str());
+     Msg::Fatal("ONELAB: syntax error: %s",in.c_str());
   else
     NumArg = enclosed(in.substr(cursor,pos-cursor),arguments);
   // std::cout << "paramName=<" << paramName << ">" << std::endl;
@@ -921,6 +942,12 @@ bool checkIfPresent(std::string filename){
     return false;
   }
 }
+
+bool checkIfModified(std::vector<std::string> filenames){
+  for(unsigned i=0; i<filenames.size(); i++)
+    checkIfModified(filenames[i]);
+  return true;
+}
 bool checkIfModified(std::string filename){
   struct stat buf1,buf2;
   if (stat("onelab.start", &buf1))
@@ -933,8 +960,10 @@ bool checkIfModified(std::string filename){
 }
 
 int systemCall(std::string cmd){
-  printf("ONELAB System call(%s)\n", cmd.c_str());
-  return system(cmd.c_str()); 
+  printf("ONELAB: System call <%s>\n", cmd.c_str());
+  int err=system(cmd.c_str());
+  printf("ONELAB: System call <%s> returns <%d>\n", cmd.c_str(),err);
+  return err;
 }
 
 void GmshDisplay(onelab::remoteNetworkClient *loader, std::string fileName, std::vector<std::string> choices){
@@ -989,7 +1018,7 @@ double find_in_array(const int lin, const int col, const std::vector <std::vecto
 }
 
 array read_array(std::string filename, char sep){
-  std::ifstream infile(filename.c_str());
+  std::ifstream infile(sanitize(filename).c_str());
   std::vector <std::vector <double> > array;
 
   while (infile){
@@ -1008,7 +1037,7 @@ array read_array(std::string filename, char sep){
     array.push_back( record );
   }
   if (!infile.eof()){
-    std::cerr << "Fooey!\n";
+    std::cerr << "Error reading array\n";
   }
   return array;
 }

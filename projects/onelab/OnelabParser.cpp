@@ -23,7 +23,7 @@ std::string localSolverClient::resolveGetVal(std::string line) {
     pos=line.find_first_of(')',cursor)+1;
     if(enclosed(line.substr(cursor,pos+1-cursor),arguments)<1)
       Msg::Fatal("ONELAB misformed <%s> statement: (%s)",olkey::getValue.c_str(),line.c_str());
-    get(strings,arguments[0]);
+    get(strings,longName(arguments[0]));
     if (strings.size())
       buff.assign(strings[0].getValue());
     else
@@ -202,7 +202,7 @@ void localSolverClient::parse_oneline(std::string line, std::ifstream &infile) {
     if (numbers.size())
       condition = (bool) numbers[0].getValue();
     if (!parse_ifstatement(infile,condition))
-      Msg::Fatal("ONELAB misformed <%s> statement: <%s>",olkey::iftrue.c_str(),arguments[0].c_str());     
+      Msg::Fatal("ONELAB misformed <%s> statement: <%s>",olkey::iftrue.c_str(),arguments[0].c_str());
   }
   else if ( (pos=line.find(olkey::ifequal)) != std::string::npos) {// onelab.ifequal
     cursor = pos+olkey::ifequal.length();
@@ -383,7 +383,7 @@ void localSolverClient::convert_onefile(std::string ifilename, std::ofstream &ou
 
 void MetaModel::parse_clientline(std::string line, std::ifstream &infile) { 
   int pos,cursor;
-  std::string name,action,path;
+  std::string name,action,path="";
   std::vector<std::string> arguments;
   std::vector<onelab::string> strings;
   char sep=';';
@@ -392,6 +392,7 @@ void MetaModel::parse_clientline(std::string line, std::ifstream &infile) {
     cursor = pos + olkey::client.length();
     while ( (pos=line.find(sep,cursor)) != std::string::npos){
       extract(line.substr(cursor,pos-cursor),name,action,arguments);
+      // 1: type, 2: path (optional)
       if(!action.compare("Register")){
 	if(!findClientByName(name)){
 	  Msg::Info("ONELAB: define client <%s>", name.c_str());
@@ -410,7 +411,9 @@ void MetaModel::parse_clientline(std::string line, std::ifstream &infile) {
 	  onelab::string o(name + "/Path",path);
 	  o.setKind("file");
 	  o.setVisible(path.empty());
+	  o.setAttribute("Highlight","true");
 	  set(o);
+	  //client can be registered with path empty, but won't be run.
 	  registerClient(name,arguments[0],path);
 	}
 	else
@@ -431,6 +434,19 @@ void MetaModel::parse_clientline(std::string line, std::ifstream &infile) {
 	}
 	else
 	  Msg::Error("ONELAB: unknown client <%s>", name.c_str());
+      }
+      else if(!action.compare("Active")){
+	localSolverClient *c;
+	if(c=findClientByName(name)){
+	  if(arguments.size()) {
+	    if(arguments[0].size())
+	      c->setActive(atof(arguments[0].c_str()));
+	    else
+	      Msg::Error("ONELAB: no path given for client <%s>", name.c_str());
+	  }
+	}
+	else
+	  Msg::Fatal("ONELAB: unknown client <%s>", name.c_str());
       }
       else if(!action.compare("Set")){
 	if(arguments[0].size()){

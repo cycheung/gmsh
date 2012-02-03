@@ -1,4 +1,5 @@
-OL.parameter Tcold.number(78,Parameters/2Elmer/,"Applied temperature"); Tcold.MinMax(50,100,5);
+
+OL.parameter Tcold.number(78,Parameters/Elmer/2,"Applied temperature"); Tcold.MinMax(50,100,10);
 OL.iftrue(TRANSIENT)
 	OL.parameter NumStep.number(100,Elmer/3,Number of time steps);
 	OL.parameter TimeStep.number(0.02,Elmer/3,Time step);
@@ -23,6 +24,7 @@ OL.else
   Steady State Max Iterations = 1
 OL.endif
   Output Intervals = 1
+  !Solver Input File = "cryo.sif"
   Solver Input File = "OL.getValue(Arguments/FileName).sif"
 End
 
@@ -208,7 +210,7 @@ Boundary Condition 1
   Target Boundaries(1) = 15
   Heat Flux BC = Logical True
   Heat Transfer Coefficient = Real 5000. !Initial heat flux
-  External Temperature = Real 77.
+  //External Temperature = Real 77.
   External Temperature = Real OL.getValue(Tcold)
 End
 

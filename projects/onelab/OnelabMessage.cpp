@@ -457,15 +457,16 @@ std::string Msg::GetOnelabString(std::string name)
   return str;
 }
 
-std::vector<std::string> Msg::GetOnelabChoices(std::string name)
-{
+bool Msg::GetOnelabChoices(std::string name, std::vector<std::string> &choices){
   if(_onelabClient){
     std::vector<onelab::string> ps;
     _onelabClient->get(ps, name);
     if(ps.size() && ps[0].getValue().size()){
-      return ps[0].getChoices();
+      choices=ps[0].getChoices();
+      return true;
     }
   }
+  return false;
 }
 
 void Msg::SetOnelabString(std::string name, std::string val, bool visible)
@@ -476,11 +477,41 @@ void Msg::SetOnelabString(std::string name, std::string val, bool visible)
     _onelabClient->set(o);
   }
 }
-void Msg::SetOnelabString(onelab::string s)
-{
+
+void Msg::SetOnelabString(onelab::string s){
   if(_onelabClient){
     _onelabClient->set(s);
   }
+}
+
+void Msg::SetOnelabAttributeString(std::string name,std::string attrib,std::string val){
+  if(_onelabClient){
+    std::vector<onelab::string> ps;
+    _onelabClient->get(ps, name);
+    if(ps.size()){
+      ps[0].setAttribute(attrib,val);
+    }
+  }
+}
+std::string Msg::GetOnelabAttributeString(std::string name,std::string attrib){
+  std::string str="";
+  if(_onelabClient){
+    std::vector<onelab::string> ps;
+    _onelabClient->get(ps, name);
+    if(ps.size())
+      str = ps[0].getAttribute(attrib);
+  }
+  return str;
+}
+std::string Msg::GetOnelabAttributeNumber(std::string name,std::string attrib){
+  std::string str="";
+  if(_onelabClient){
+    std::vector<onelab::number> ps;
+    _onelabClient->get(ps, name);
+    if(ps.size())
+      str = ps[0].getAttribute(attrib);
+  }
+  return str;
 }
 
 void Msg::ExchangeOnelabParameter(const std::string &key,
@@ -575,23 +606,27 @@ void Msg::AddOnelabStringChoice(std::string name, std::string kind,
 
 int Msg::Synchronize_Down(){
   std::vector<onelab::number> numbers;
-  onelab::number o;
+  onelab::number *pn;
   loader->get(numbers,"");
   if(numbers.size()){
     for(std::vector<onelab::number>::const_iterator it = numbers.begin();
 	it != numbers.end(); it++){
-      o.fromChar((*it).toChar());
-      Msg::SetOnelabNumber(o);
+      pn=new onelab::number;
+      pn->fromChar((*it).toChar());
+      Msg::SetOnelabNumber(*pn);
+      delete pn;
     }
   }
   std::vector<onelab::string> strings;
-  onelab::string s;
+  onelab::string *ps;
   loader->get(strings,"");
   if(strings.size()){
     for(std::vector<onelab::string>::const_iterator it = strings.begin();
   	it != strings.end(); it++){
-      s.fromChar((*it).toChar());
-      Msg::SetOnelabString(s);
+      ps=new onelab::string;
+      ps->fromChar((*it).toChar());
+      Msg::SetOnelabString(*ps);
+      delete ps;
     }
   }
   return(numbers.size()+strings.size());
@@ -599,23 +634,27 @@ int Msg::Synchronize_Down(){
 
 int Msg::Synchronize_Up(){
   std::vector<onelab::number> numbers;
-  onelab::number number;
+  onelab::number *pn;
   _onelabClient->get(numbers,"");
   if(numbers.size()){
     for(std::vector<onelab::number>::const_iterator it = numbers.begin();
-	it != numbers.end(); it++){
-      number.fromChar((*it).toChar());
-      loader->set(number);
+  	it != numbers.end(); it++){
+      pn = new(onelab::number);
+      pn->fromChar((*it).toChar());
+      loader->set(*pn);
+      delete pn;
     }
   }
   std::vector<onelab::string> strings;
-  onelab::string string;
+  onelab::string *ps;
   _onelabClient->get(strings,"");
   if(strings.size()){
     for(std::vector<onelab::string>::const_iterator it = strings.begin();
 	it != strings.end(); it++){
-      string.fromChar((*it).toChar());
-      loader->set(string);
+      ps=new onelab::string;
+      ps->fromChar((*it).toChar());
+      loader->set(*ps);
+      delete ps;
     }
   }
   return(numbers.size()+strings.size());

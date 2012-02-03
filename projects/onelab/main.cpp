@@ -4,6 +4,7 @@
 
 onelab::server *onelab::server::_server = 0;
 onelab::remoteNetworkClient *Msg::loader = 0;
+//std::set<std::string, ShortNameLessThan> localSolverClient::_parameters;
 
 // main() commun à tous les métamodèles
 
@@ -51,7 +52,7 @@ int main(int argc, char *argv[]){
   MetaModel *myModel = new MetaModel(commandLine, clientName, fileName, modelNumber);
   if(Msg::loader && !Msg::GetOnelabNumber(clientName + "/Initialized"))
     action.assign("initialize");
-  if(!myModel->checkPathes())
+  if(!myModel->checkPathes()) // and initializes clients
     action.assign("exit");
 
   std::cout << "   checkcmd:" << Msg::GetOnelabString(clientName+"/9CheckCommand") << std::endl;
@@ -63,7 +64,7 @@ int main(int argc, char *argv[]){
   if(!action.compare("exit")){ // exit metamodel
   } 
   else if(!action.compare("initialize")){
-    if(Msg::loader) myModel->initialize();
+    if(Msg::loader) myModel->initialize(); // initializes MetaModel 
   }
   else if(!action.compare("check")){
       myModel->analyze();
