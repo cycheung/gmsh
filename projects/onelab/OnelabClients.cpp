@@ -3,44 +3,92 @@
 #include "StringUtils.h"
 #include <algorithm>
 
-class onelabServer : public GmshServer{
+
+class onelabMetaModelServer : public GmshServer{
  private:
   localNetworkSolverClient *_client;
  public:
-  onelabServer(localNetworkSolverClient *client) : GmshServer(), _client(client) {}
-  ~onelabServer() {}
-  int SystemCall(const char *str)
-  { 
-    printf("ONELAB System call(%s)\n", str);
-    return system(str); 
-  }
+  onelabMetaModelServer(localNetworkSolverClient *client)
+    : GmshServer(), _client(client) {}
+  ~onelabMetaModelServer(){}
+  int NonBlockingSystemCall(const char *str){ return SystemCall(str); }
   int NonBlockingWait(int socket, double waitint, double timeout)
-  { 
+  {
     double start = GetTimeInSeconds();
     while(1){
       if(timeout > 0 && GetTimeInSeconds() - start > timeout)
-        return 2; // timeout
-      if(_client->getPid() < 0)
-        return 1; // process has been killed
-
+        return 2; // timout
+      // if(_client->getPid() < 0 || (_client->getCommandLine().empty() &&
+      //                              !CTX::instance()->solver.listen))
+      if(_client->getPid() < 0 || (_client->getCommandLine().empty()))
+        return 1; // process has been killed or we stopped listening
       // check if there is data (call select with a zero timeout to
       // return immediately, i.e., do polling)
       int ret = Select(0, 0, socket);
-      if(ret == 0){ 
-        // nothing available: wait at most waitint seconds
+      if(ret == 0){ // nothing available
+        // if asked, refresh the onelab GUI
+        std::vector<onelab::string> ps;
+        onelab::server::instance()->get(ps, "Gmsh/Action");
+        if(ps.size() && ps[0].getValue() == "refresh"){
+          ps[0].setVisible(false);
+          ps[0].setValue("");
+          onelab::server::instance()->set(ps[0]);
+          //onelab_cb(0, (void*)"refresh");
+        }
+        // wait at most waitint seconds and respond to FLTK events
+        //FlGui::instance()->wait(waitint);
       }
-      else if(ret > 0){ 
+      else if(ret > 0){
         return 0; // data is there!
       }
-      else{ 
+      else{
         // an error happened
         _client->setPid(-1);
-	_client->setGmshServer(0);
+        _client->setGmshServer(0);
         return 1;
       }
     }
   }
 };
+
+// class onelabServer : public GmshServer{
+//  private:
+//   localNetworkSolverClient *_client;
+//  public:
+//   onelabServer(localNetworkSolverClient *client) : GmshServer(), _client(client) {}
+//   ~onelabServer() {}
+//   int SystemCall(const char *str)
+//   { 
+//     printf("ONELAB System call(%s)\n", str);
+//     return system(str); 
+//   }
+//   int NonBlockingWait(int socket, double waitint, double timeout)
+//   { 
+//     double start = GetTimeInSeconds();
+//     while(1){
+//       if(timeout > 0 && GetTimeInSeconds() - start > timeout)
+//         return 2; // timeout
+//       if(_client->getPid() < 0)
+//         return 1; // process has been killed
+
+//       // check if there is data (call select with a zero timeout to
+//       // return immediately, i.e., do polling)
+//       int ret = Select(0, 0, socket);
+//       if(ret == 0){ 
+//         // nothing available: wait at most waitint seconds
+//       }
+//       else if(ret > 0){ 
+//         return 0; // data is there!
+//       }
+//       else{ 
+//         // an error happened
+//         _client->setPid(-1);
+// 	_client->setGmshServer(0);
+//         return 1;
+//       }
+//     }
+//   }
+// };
 
 bool localNetworkSolverClient::run()
 {
@@ -48,7 +96,7 @@ bool localNetworkSolverClient::run()
   _pid = 0;
   _gmshServer = 0;
 
-  onelabServer *server = new onelabServer(this);
+  onelabMetaModelServer *server = new onelabMetaModelServer(this);
  
 #if defined WIN32
   std::string socketName = ":";
