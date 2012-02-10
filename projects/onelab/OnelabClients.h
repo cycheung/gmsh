@@ -25,30 +25,30 @@ namespace olkey{ // reserved keywords for onelab
   static std::string ifequal(label+"ifequal");
   static std::string getValue(label+"getValue");
   static std::string extension(".ol");
+  static std::string voidPath("");
+  static std::string comment("%");
 }
 
 static char charSep() { return '\0'; }
 
 int getOptions(int argc, char *argv[], std::string &action, std::string &commandLine, std::string &fileName, std::string &clientName, std::string &sockName, int &modelNumber);
 std::string itoa(const int i);
-bool checkIfPresent(std::string filename);
-bool checkIfModified(std::string filename);
-bool checkIfModified(std::vector<std::string> filenames);
-bool fileExist(std::string filename);
+//bool fileExist(std::string filename);
 int newStep();
 void appendOption(std::string &str, const std::string &what, const int val);
 void appendOption(std::string &str, const std::string &what);
 void GmshDisplay(onelab::remoteNetworkClient *loader, std::string fileName, std::vector<std::string> choices);
-void GmshDisplay(onelab::remoteNetworkClient *loader, std::string modelName, std::string fileName);
+//void GmshDisplay(onelab::remoteNetworkClient *loader, std::string modelName, std::string fileName);
 std::string getCurrentWorkdir();
 std::string getUserHomedir();
 static std::string getNextToken(const std::string &msg,std::string::size_type &first);
 std::string sanitize(const std::string &in);
 int enclosed(const std::string &in, std::vector<std::string> &arguments);
 int extract(const std::string &in, std::string &paramName, std::string &action, std::vector<std::string> &arguments);
+bool extractRange(const std::string &in, std::vector<double> &arguments);
 
-
-int systemCall(std::string cmd);
+bool checkIfModified(std::string filename);
+bool checkIfModified(std::vector<std::string> filenames);
 
 typedef std::vector <std::vector <double> > array;
 array read_array(std::string filename, char sep);
@@ -110,7 +110,7 @@ class localSolverClient : public onelab::localClient{
   bool _enabled;
   std::set<std::string, ShortNameLessThan> _parameters;
   std::string longName(const std::string name);
-  std::string resolveGetVal(std::string line);
+
   std::string evaluateGetVal(std::string line);
  public:
  localSolverClient(const std::string &name, const std::string &commandLine) 
@@ -122,13 +122,15 @@ class localSolverClient : public onelab::localClient{
   virtual void setCommandLine(const std::string &s){ _commandLine = s; }
   const std::string getLineOptions();
   const std::string getPreLineOptions();
-  const std::vector<std::string> getInputFiles();
+  const bool getInputFiles(std::vector<std::string> &choices);
   const bool getActive() { return _enabled; }
   const void setActive(int val) { _enabled=(bool)val; }
   const std::string buildArguments();
-  bool controlPath();
+  virtual bool controlPath();
   virtual std::string toChar() =0;
+  virtual bool checkIfPresent(std::string filename);
 
+  std::string resolveGetVal(std::string line);
   void parse_onefile(std::string ifilename);
   virtual void parse_clientline(std::string line, std::ifstream &infile) {}
   void parse_oneline(std::string line, std::ifstream &infile) ;
@@ -172,6 +174,9 @@ class localNetworkSolverClient : public localSolverClient{
 class MetaModel : public localSolverClient {
 private:
   std::vector<localSolverClient *> _clients;
+  void registerInterfacedClient(const std::string name, const std::string path);
+  void registerDistantClient(const std::string name, const std::string path, const std::string host, const std::string dir);
+  void registerEncapsulatedClient(const std::string name, const std::string path);
  public:
  MetaModel(const std::string &commandLine, const std::string &cname, const std::string &fname, const int number) 
    : localSolverClient(cname,commandLine){
@@ -196,7 +201,7 @@ private:
   std::string genericNameFromArgs, clientName;
   int modelNumberFromArgs;
   void parse_clientline(std::string line, std::ifstream &infile);
-  std::string resolveGetVal(std::string line);
+  //std::string resolveGetVal(std::string line);
   std::string toChar(){}
   void PostArray(std::vector<std::string> choices);
   void initialize();
@@ -213,10 +218,26 @@ class InterfacedClient : public localSolverClient {
    : localSolverClient(name,commandLine) {}
   ~InterfacedClient(){}
   std::string toChar();
-
+  virtual int systemCall(std::string cmd);
   void analyze();
   void convert();
   void compute();
+};
+
+class DistantClient : public InterfacedClient { 
+  std::string _remoteHost, _remoteDir;
+public:
+ DistantClient(const std::string &name, const std::string &commandLine, const std::string &host, const std::string &dir) 
+   : InterfacedClient(name,commandLine), _remoteHost(host), _remoteDir(dir) {}
+  ~DistantClient(){}
+
+  bool checkIfPresent(std::string filename);
+  bool controlPath();
+  int systemCall(std::string cmd);
+
+  /* void analyze(); */
+  /* void convert(); */
+  /* void compute() ; */
 };
 
 class EncapsulatedClient : public localNetworkSolverClient { 
@@ -230,6 +251,7 @@ public:
   void analyze();
   void compute() ;
 };
+
 
 #endif
 

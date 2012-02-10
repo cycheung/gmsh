@@ -17,7 +17,7 @@ OL.client Post/LineOptions.Set("-");
 
 OL.client GmshMerge/InputFiles.Set(solution.pos);
 
-OL.parameter TRANSIENT.number(0,Transient simulation); TRANSIENT.AddChoices(0,1);
+OL.parameter TRANSIENT.number(0,,Transient simulation); TRANSIENT.AddChoices(0,1);
 
 OL.client Gnuplot.Register(interfaced);
 OL.client Gnuplot/InputFiles.Set(f.plt);

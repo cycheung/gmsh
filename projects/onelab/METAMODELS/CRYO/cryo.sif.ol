@@ -1,5 +1,5 @@
 
-OL.parameter Tcold.number(77,Parameters/Elmer/2,"Applied temperature"); Tcold.MinMax(50,100,10);
+OL.parameter Tcold.number(77,Parameters/Elmer/2,"Applied temperature",50:100:10);
 OL.iftrue(TRANSIENT)
 	OL.parameter NumStep.number(50,Elmer/3,Number of time steps);
 	OL.parameter TimeStep.number(0.1,Elmer/3,Time step);

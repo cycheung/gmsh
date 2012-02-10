@@ -10,7 +10,7 @@ std::string localSolverClient::longName(const std::string name){
 }
 
 std::string localSolverClient::resolveGetVal(std::string line) {
-  //std::vector<onelab::number> numbers;
+  std::vector<onelab::number> numbers;
   std::vector<onelab::string> strings;
   std::vector<std::string> arguments;
   std::string buff;
@@ -23,11 +23,20 @@ std::string localSolverClient::resolveGetVal(std::string line) {
     pos=line.find_first_of(')',cursor)+1;
     if(enclosed(line.substr(cursor,pos+1-cursor),arguments)<1)
       Msg::Fatal("ONELAB misformed <%s> statement: (%s)",olkey::getValue.c_str(),line.c_str());
-    get(strings,longName(arguments[0]));
-    if (strings.size())
-      buff.assign(strings[0].getValue());
-    else
-      Msg::Fatal("ONELAB unknown variable: %s",arguments[0].c_str());
+    std::string paramName=longName(arguments[0]);
+    get(numbers,paramName);
+    if (numbers.size()){
+      std::stringstream Num;
+      Num << numbers[0].getValue();
+      buff.assign(Num.str());
+    }
+    else{
+      get(strings,longName(paramName));
+      if (strings.size())
+	buff.assign(strings[0].getValue());
+      else
+	Msg::Fatal("ONELAB: resolveGetVal: unknown variable: %s",arguments[0].c_str());
+    }
     line.replace(pos0,pos-pos0,buff); 
     cursor=pos0+buff.length();
   }
@@ -61,7 +70,7 @@ std::string localSolverClient::evaluateGetVal(std::string line) {
     if (strings.size())
       buff.assign(strings[0].getValue());
     else
-      Msg::Fatal("ONELAB unknown variable: %s",paramName.c_str());
+      Msg::Fatal("ONELAB: evaluetaGetVal: unknown variable: %s",paramName.c_str());
   }
   return buff;
 }
@@ -86,22 +95,62 @@ void localSolverClient::parse_oneline(std::string line, std::ifstream &infile) {
       std::string name, action;
       extract(line.substr(cursor,pos-cursor),name,action,arguments);
 
-      if(!action.compare("number")) { // paramName.number(val,path,help,...)
+      if(!action.compare("number")) { 
+	// syntax: paramName.number(val,path,help,range(optional))
 	if(arguments.empty())
 	  Msg::Fatal("ONELAB: No value given for param <%s>",name.c_str());
 	double val=atof(arguments[0].c_str());
-	if(arguments.size()>1){
+	if(arguments.size()>=2){
 	  name.assign(arguments[1] + name);
 	}
 	_parameters.insert(name);
 	get(numbers,name);
-	if(numbers.empty()){ // creates parameter or skip if it exists
+	if(numbers.empty()) { //if already exists, skip 
 	  numbers.resize(1);
 	  numbers[0].setName(name);
 	  numbers[0].setValue(val);
-	  if(arguments.size()>2)
+	  if(arguments.size()>=3)
 	    numbers[0].setHelp(arguments[2]);
+	  if(arguments.size()>=4){
+	    std::vector<double> bounds;
+	    if (extractRange(arguments[3],bounds)){
+	      numbers[0].setMin(bounds[0]);
+	      numbers[0].setMax(bounds[1]);
+	      numbers[0].setStep(bounds[2]);
+	    }
+	  }
 	  set(numbers[0]);
+	}
+      }
+      else if(!action.compare("MinMax")){ // add a range to an existing prameter
+	if(arguments.empty())
+	  Msg::Fatal("ONELAB: No argument given for MinMax <%s>",name.c_str());
+	name.assign(longName(name));
+	get(numbers,name);
+	bool noRange = true;
+	if(numbers.size()){ //parameter must exist
+	  // check whether a range already exists
+	  if(numbers[0].getMin() != -onelab::parameter::maxNumber() ||
+	     numbers[0].getMax() != onelab::parameter::maxNumber() ||
+	     numbers[0].getStep() != 0.) noRange = false;
+	  if(noRange){ //if a range is already defined, skip
+	    if(arguments.size()==1){
+	      std::vector<double> bounds;
+	      if (extractRange(arguments[1],bounds)){
+		numbers[0].setMin(bounds[0]);
+		numbers[0].setMax(bounds[1]);
+		numbers[0].setStep(bounds[2]);
+	      }
+	    }
+	    else if(arguments.size()==3){
+	      numbers[0].setMin(atof(arguments[0].c_str()));
+	      numbers[0].setMax(atof(arguments[1].c_str()));
+	      numbers[0].setStep(atof(arguments[2].c_str()));
+	    }
+	    else
+	      Msg::Fatal("ONELAB: Wrong argument number for MinMax <%s>",name.c_str());
+	    set(numbers[0]);
+	  }
 	}
       }
       else if(!action.compare("string")) { // paramName.string(val,path,help)
@@ -150,20 +199,6 @@ void localSolverClient::parse_oneline(std::string line, std::ifstream &infile) {
 	    else{
 	      Msg::Fatal("ONELAB: the parameter <%s> does not exist",name.c_str());
 	    }
-	  }
-	}
-      }
-      else if(!action.compare("MinMax")){
-	if(arguments.size()){
-	  name.assign(longName(name));
-	  get(numbers,name);
-	  if(numbers.size()){
-	    numbers[0].setMin(atof(arguments[0].c_str()));
-	    if(arguments.size()>1)
-	      numbers[0].setMax(atof(arguments[1].c_str()));
-	    if(arguments.size()>2)
-	      numbers[0].setStep(atof(arguments[2].c_str()));
-	    set(numbers[0]);
 	  }
 	}
       }
@@ -233,7 +268,9 @@ void localSolverClient::parse_onefile(std::string fileName) {
   if (infile.is_open()){
     while ( infile.good() ) {
       getline (infile,line);
-      parse_oneline(line,infile);
+      if(int pos=line.find_first_not_of(" ") != std::string::npos)
+	if(line.compare(pos,olkey::comment.size(),olkey::comment))
+	  parse_oneline(line,infile);
     }
     infile.close();
   }
@@ -352,7 +389,7 @@ void localSolverClient::convert_oneline(std::string line, std::ifstream &infile,
 	  if (strings.size())
 	    buff.assign(strings[0].getValue());
 	  else
-	    Msg::Fatal("ONELAB unknown variable: %s",paramName.c_str());
+	    Msg::Fatal("ONELAB:### unknown variable: %s",paramName.c_str());
 	}
 	line.replace(pos0,pos-pos0,buff); 
 	cursor=pos0+buff.length();
@@ -373,7 +410,9 @@ void localSolverClient::convert_onefile(std::string ifilename, std::ofstream &ou
   if (infile.is_open()){
     while ( infile.good() ) {
       getline (infile,line);
-      convert_oneline(line,infile,outfile);
+     if(int pos=line.find_first_not_of(" ") != std::string::npos)
+	if(line.compare(pos,olkey::comment.size(),olkey::comment))
+	  convert_oneline(line,infile,outfile);
     }
     infile.close();
   }
@@ -389,32 +428,46 @@ void MetaModel::parse_clientline(std::string line, std::ifstream &infile) {
   char sep=';';
 
   if( (pos=line.find(olkey::client)) != std::string::npos) {// onelab.client
+    // syntax name.Register(interfaced)
+    //        name.Register(distant,remoteHost,remoteDir,path)
+    //        name.Register(encapsulated)
     cursor = pos + olkey::client.length();
     while ( (pos=line.find(sep,cursor)) != std::string::npos){
       extract(line.substr(cursor,pos-cursor),name,action,arguments);
-      // 1: type, 2: path (optional)
       if(!action.compare("Register")){
 	if(!findClientByName(name)){
 	  Msg::Info("ONELAB: define client <%s>", name.c_str());
-	  if(arguments.size()==1)
-	    path="";
-	  else if(arguments.size()==2)
-	    path=arguments[1];
-	  else
-	    Msg::Error("ONELAB: wrong client definition <%s>", name.c_str());
 
-	  if(path.empty()){ //check if one has a path on the server
-	    get(strings,name + "/Path");
-	    if(strings.size())
-	      path=strings[0].getValue();
+	  //check if one has a path on the server
+	  get(strings,name + "/Path");
+	  if(strings.size())
+	    path=strings[0].getValue();
+	  else{
+	    path="";
+	    onelab::string o(name + "/Path",path);
+	    o.setKind("file");
+	    o.setValue(olkey::voidPath);
+	    o.setVisible(path.empty());
+	    o.setAttribute("Highlight","true");
+	    set(o);
 	  }
-	  onelab::string o(name + "/Path",path);
-	  o.setKind("file");
-	  o.setVisible(path.empty());
-	  o.setAttribute("Highlight","true");
-	  set(o);
-	  //client can be registered with path empty, but won't be run.
-	  registerClient(name,arguments[0],path);
+
+	  if(arguments.empty())
+	    Msg::Fatal("ONELAB: wrong client definition <%s>", name.c_str());
+	  
+	  if(!arguments[0].compare("interfaced")){
+	    registerInterfacedClient(name,path);
+	  }
+	  else if(!arguments[0].compare("distant")){
+	    if(arguments.size()<4)
+	      Msg::Fatal("ONELAB: wrong distant client definition <%s>", name.c_str());
+	    registerDistantClient(name,arguments[3],arguments[1],arguments[2]);
+	  }
+	  else if(!arguments[0].compare("encapsulated")){
+	    registerEncapsulatedClient(name,path);
+	  }
+	  else
+	    Msg::Error("ONELAB: unknown client type <%s>", arguments[0].c_str());
 	}
 	else
 	  Msg::Error("ONELAB: redefinition of client <%s>", name.c_str());

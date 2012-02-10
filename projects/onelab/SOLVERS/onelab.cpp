@@ -8,8 +8,6 @@ void MetaModel::analyze(){
   simpleCheck();
   //std::cout << OL->showParamSpace() << std::endl;
   //std::cout << OL->showClientStatus() << std::endl;
-
-  std::cout << "#######TRANSIENT=" << Msg::GetOnelabNumber("TRANSIENT") << std::endl;
 }
 
 void MetaModel::compute(){
