@@ -17,14 +17,13 @@ OL.client Post/LineOptions.Set("-");
 
 OL.client GmshMerge/InputFiles.Set(solution.pos);
 
-OL.parameter TRANSIENT.number(0,Transient simulation); TRANSIENT.AddChoices(0,1);
-
 OL.client Gnuplot.Register(interfaced);
-OL.client Gnuplot/InputFiles.Set(f.plt);
-OL.iftrue(TRANSIENT)
-	OL.client PostArray.List(fmax.txt,1,2,Solution/tmin, fmax.txt,1,8,Solution/fmin);
-OL.else
-	OL.client Gnuplot.Active(0); // no gnuplot
-	OL.client PostArray.List(fmax.txt,1,8,Solution/fobj);
-OL.endif
+OL.client Gnuplot/InputFiles.Set(plot.gnu);
+OL.client PostArray.List(fmax.txt,1,2,Solution/tmin, fmax.txt,1,8,Solution/fmin);
+OL.client Gnuplot.Active(1); // no gnuplot
 
+OL.client Matlab.Register(interfaced);
+OL.client Matlab/InputFiles.Set(plotMatlab.m);
+OL.client Matlab/LineOptions.Set(-nosplash -r plotMatlab);
+OL.client PostArray.List(fmax.txt,1,2,Solution/tmin, fmax.txt,1,8,Solution/fmin);
+OL.client Gnuplot.Active(1); // no gnuplot
