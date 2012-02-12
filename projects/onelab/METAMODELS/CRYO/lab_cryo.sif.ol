@@ -4,6 +4,9 @@ OL.parameter h.number(5000,Parameters/Elmer/2,"Heat transfer coefficient"); h.Mi
 OL.parameter NumStep.number(50,Elmer/3,Number of time steps);
 OL.parameter TimeStep.number(0.05,Elmer/3,Time step);
 
+OL.parameter BIOHEAT.number(0,Parameters/Elmer/2,Bioheat Source Term); BIOHEAT.AddChoices(0,1);
+
+
 Header
   Mesh DB "." "mesh"
 End
@@ -26,7 +29,9 @@ End
 Body 1
   Equation = 1
   Material = 1
-  !Body Force = 1
+OL.iftrue(BIOHEAT)
+  Body Force = 1
+OL.endif
   Initial Condition = 1
 End
 
