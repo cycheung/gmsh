@@ -6,6 +6,9 @@ OL.parameter TimeStep.number(0.05,Elmer/3,Time step);
 
 OL.parameter BIOHEAT.number(0,Parameters/Elmer/2,Bioheat Source Term); BIOHEAT.AddChoices(0,1);
 
+$rhob=1100 
+$cpb=3300 
+$omb=0.0004
 
 Header
   Mesh DB "." "mesh"
