@@ -47,20 +47,20 @@ int main(int argc, char *argv[]){
   }
   Msg::SetOnelabString("Arguments/FileName",fileName,false);
 
-  std::cout << "fileName:" << fileName << std::endl;
+  //std::cout << "fileName:" << fileName << std::endl;
 
   MetaModel *myModel = new MetaModel(commandLine, clientName, fileName, modelNumber);
+  if(!myModel->checkPathes()) //true if all clients have path and are initialized
+    action.assign("exit");
   if(Msg::loader && !Msg::GetOnelabNumber(clientName + "/Initialized"))
     action.assign("initialize");
-  if(!myModel->checkPathes()) // and initializes clients
-    action.assign("exit");
 
   std::cout << "   checkcmd:" << Msg::GetOnelabString(clientName+"/9CheckCommand") << std::endl;
   std::cout << "     action:" << action << std::endl;
   std::cout << "initialized:" << Msg::GetOnelabNumber(clientName + "/Initialized") << std::endl;
   std::cout << "    hasGmsh:" << Msg::hasGmsh << std::endl;
 
-  newStep();
+  //newStep();
   if(!action.compare("exit")){ // exit metamodel
   } 
   else if(!action.compare("initialize")){

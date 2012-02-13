@@ -122,10 +122,11 @@ class localSolverClient : public onelab::localClient{
   virtual void setCommandLine(const std::string &s){ _commandLine = s; }
   const std::string getLineOptions();
   const std::string getPreLineOptions();
-  const bool getInputFiles(std::vector<std::string> &choices);
+  const bool getFileList(std::vector<std::string> &choices, const std::string type);
   const bool getActive() { return _enabled; }
   const void setActive(int val) { _enabled=(bool)val; }
-  const std::string buildArguments();
+  const std::string buildArgumentsRun();
+  const std::string buildArgumentsRm();
   virtual bool controlPath();
   virtual std::string toChar() =0;
   virtual bool checkIfPresent(std::string filename);
@@ -190,7 +191,11 @@ private:
   citer firstClient(){ return _clients.begin(); }
   citer lastClient(){ return _clients.end(); }
   int getNumClients() { return _clients.size(); };
+
   void registerClient(const std::string name, const std::string type, const std::string path);
+  void registerClient(const std::string name, const std::string type, const std::string path, 
+		      const std::string host, const std::string dir);
+
   bool checkPathes();
   void savePathes(const std::string fileName);
   localSolverClient *findClientByName(std::string name){
@@ -201,7 +206,6 @@ private:
   std::string genericNameFromArgs, clientName;
   int modelNumberFromArgs;
   void parse_clientline(std::string line, std::ifstream &infile);
-  //std::string resolveGetVal(std::string line);
   std::string toChar(){}
   void PostArray(std::vector<std::string> choices);
   void initialize();
@@ -218,26 +222,26 @@ class InterfacedClient : public localSolverClient {
    : localSolverClient(name,commandLine) {}
   ~InterfacedClient(){}
   std::string toChar();
-  virtual int systemCall(std::string cmd);
+  //virtual int systemCall(std::string cmd);
   void analyze();
   void convert();
-  void compute();
+  virtual void compute();
 };
 
-class DistantClient : public InterfacedClient { 
+class RemoteInterfacedClient : public InterfacedClient {
+ private:
   std::string _remoteHost, _remoteDir;
 public:
- DistantClient(const std::string &name, const std::string &commandLine, const std::string &host, const std::string &dir) 
+ RemoteInterfacedClient(const std::string &name, const std::string &commandLine, const std::string &host, const std::string &dir) 
    : InterfacedClient(name,commandLine), _remoteHost(host), _remoteDir(dir) {}
-  ~DistantClient(){}
+  ~RemoteInterfacedClient(){}
 
   bool checkIfPresent(std::string filename);
   bool controlPath();
-  int systemCall(std::string cmd);
 
   /* void analyze(); */
   /* void convert(); */
-  /* void compute() ; */
+  void compute() ;
 };
 
 class EncapsulatedClient : public localNetworkSolverClient { 

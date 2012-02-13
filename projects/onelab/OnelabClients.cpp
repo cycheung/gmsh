@@ -93,9 +93,9 @@ bool localNetworkSolverClient::run()
     if(action == "initialize")
       command += " ";
     else if(action == "check")
-      command += " " + buildArguments() + " " + checkCommand;
+      command += " " + buildArgumentsRun() + " " + checkCommand;
     else if(action == "compute")
-      command += " " + buildArguments() + " " + computeCommand;
+      command += " " + buildArgumentsRun() + " " + computeCommand;
     else
       Msg::Fatal("localNetworkSolverClient::run: Unknown: Unknown Action <%s>", action.c_str());
 
@@ -538,11 +538,9 @@ const std::string localSolverClient::getPreLineOptions(){
     return "";
 }
 
-const bool localSolverClient::getInputFiles(std::vector<std::string> &choices){
+const bool localSolverClient::getFileList(std::vector<std::string> &choices, const std::string type){
   std::vector<onelab::string> strings;
-  //std::string fileName;
-  std::string paramName(getName()+"/InputFiles");
-  get(strings,paramName);
+  get(strings,getName()+"/"+type);
   if(strings.size()){
     choices= strings[0].getChoices();
     return true;
@@ -551,19 +549,31 @@ const bool localSolverClient::getInputFiles(std::vector<std::string> &choices){
     return false;
 }
 
-const std::string localSolverClient::buildArguments(){
-  int pos;
-  std::vector<onelab::string> strings;
+const std::string localSolverClient::buildArgumentsRun(){
   std::vector<std::string> choices;
   std::string args,filename;
 
   args.assign(getPreLineOptions()+" ");
-  if(getInputFiles(choices)){
+  if(getFileList(choices,"InputFiles")){
     for(unsigned int i = 0; i < choices.size(); i++)
+      //checkIfPresent here
       args.append(choices[i].substr(0,choices[i].find(olkey::extension))+" ");
   }
   args.append(getLineOptions());
-  //std::cout << "args=<" << args << ">" << std::endl;
+  std::cout << "argsRun=<" << args << ">" << std::endl;
+  return args;
+}
+
+const std::string localSolverClient::buildArgumentsRm(){
+  std::vector<std::string> choices;
+  std::string args,filename;
+
+  args.assign("-f ");
+  if(getFileList(choices,"OutputFiles")){
+    for(unsigned int i = 0; i < choices.size(); i++)
+      args.append(choices[i].substr(0,choices[i].find(olkey::extension))+" ");
+  }
+  std::cout << "argsRm=<" << args << ">" << std::endl;
   return args;
 }
 
@@ -574,7 +584,7 @@ bool localSolverClient::checkIfPresent(std::string filename){
   if (!stat(filename.c_str(), &buf))
     return true;
   else{
-    Msg::Fatal("The file %s is not present",filename.c_str());
+    Msg::Info("The file %s is not present",filename.c_str());
     return false;
   }
 }
@@ -610,36 +620,26 @@ void MetaModel::initialize()
   Msg::SetOnelabNumber(clientName + "/Initialized",1,false);
 }
 
-void MetaModel::registerInterfacedClient(const std::string name, const std::string path) {
-  localSolverClient *c= new InterfacedClient(name,path);
+void MetaModel::registerClient(const std::string name, const std::string type, const std::string path) {
+  localSolverClient *c;
+  if(!type.compare(0,6,"interf"))
+    c= new InterfacedClient(name,path);
+  else if(!type.compare(0,6,"encaps"))
+    c= new EncapsulatedClient(name,path);
+  else 
+    Msg::Fatal("ONELAB: unknown client type", type.c_str());
   _clients.push_back(c); 
 }
-void MetaModel::registerDistantClient(const std::string name, const std::string path, const std::string host, const std::string dir) {
-  localSolverClient *c= new DistantClient(name,path,host,dir);
+void MetaModel::registerClient(const std::string name, const std::string type, const std::string path, const std::string host, const std::string dir) {
+  localSolverClient *c;
+  if(!type.compare(0,6,"interf"))
+    c= new RemoteInterfacedClient(name,path,host,dir);
+  //else if(!type.compare(0,6,"encaps"))
+    //c= new RemoteEncapsulatedClient(name,path,host,dir);
+  else 
+    Msg::Fatal("ONELAB: unknown remote client type", type.c_str());
   _clients.push_back(c); 
 }
-void MetaModel::registerEncapsulatedClient(const std::string name, const std::string path) {
-  localSolverClient *c= new EncapsulatedClient(name,path);
-  _clients.push_back(c); 
-}
-
-// void MetaModel::registerClient(const std::string name, const std::string type, 
-// 			       const std::string path) {
-//   localSolverClient *c;
-//   Msg::Info("ONELAB: initialize client <%s>", name.c_str());
-//   if(!type.compare("encapsulated"))  
-//     c = new EncapsulatedClient(name,path);
-//   else if(!type.compare("interfaced"))
-//     c = new InterfacedClient(name,path);
-//   else
-//     Msg::Fatal("ONELAB: unknown client type <%s>",type.c_str());
-//   _clients.push_back(c); 
-//   if(path.size()){
-//     //cannot initialize a client without a path
-//     Msg::SetOnelabString(name + "/Action","initialize",false);
-//     c->run();
-//   }
-// }
 
 void MetaModel::simpleCheck()
 {
@@ -702,7 +702,7 @@ void InterfacedClient::analyze() {
       std::string ifilename = choices[i];
       if(ifilename.find(olkey::extension)!=std::string::npos){
 	checkIfPresent(ifilename);
-	parse_onefile(ifilename); // recursive
+	parse_onefile(ifilename); // recursive(?)
       }
     }
   }
@@ -723,33 +723,22 @@ void InterfacedClient::convert() {
 	else
 	  Msg::Fatal("The file <%s> cannot be opened",ofilename.c_str());
 	outfile.close();
-	//checkIfModified(ofilename); not really useful if opening => touching
       }
     }
   }
 }
 
 
-int InterfacedClient::systemCall(std::string cmd){
-  printf("ONELAB: System call <%s>\n", cmd.c_str());
-  int err=system(cmd.c_str());
-  printf("ONELAB: System call <%s> returns <%d>\n", cmd.c_str(),err);
-  return err;
-}
-
-void InterfacedClient::compute() { 
+void InterfacedClient::compute(){
   convert();
   Msg::SetOnelabString(getName() + "/Action","compute",false); // a titre indicatif
 
-  std::string commandLine = getCommandLine() + " " ;
-  commandLine.append(buildArguments());
+  std::string cmd = getCommandLine() + " " ;
+  cmd.append(buildArgumentsRun());
   //commandLine.append(" &> " + _name + ".log");
-  Msg::Info("Client %s launched",_name.c_str());
-  if ( int error = systemCall(commandLine.c_str()))
-    Msg::Error("Client %s returned error %d",_name.c_str(),error);
-  std::vector<std::string> choices;
-  if(Msg::GetOnelabChoices(getName()+"/OutputFiles",choices))
-    checkIfModified(choices);
+
+  printf("ONELAB: System call <%s>\n", cmd.c_str());
+  system(cmd.c_str());
   Msg::Info("Client %s completed",_name.c_str());
 }
 
@@ -783,45 +772,50 @@ int mySystem(std::string commandLine){
   return 1;
 }
 
-bool DistantClient::checkIfPresent(std::string filename){
+bool RemoteInterfacedClient::checkIfPresent(std::string filename){
   struct stat buf;
+  std::string cmd;
   char cbuf [1024];
-
   FILE *fp;
-  fp = popen("ls 2>&1", "r");
-  while(fgets(cbuf, 1024, fp) != NULL){
-    puts(cbuf);
-  }
-  pclose(fp);
+  //1st: if present in local, update remote (from local) 2d: check if present in remote
 
-  if (!stat(filename.c_str(), &buf))
+  if (!stat(filename.c_str(), &buf)){
+    cmd.assign("rsync -e ssh -auv "+filename+" "+_remoteHost+":"+_remoteDir);
+    mySystem(cmd);
+  }
+
+  cmd.assign("ssh "+_remoteHost+" 'cd "+_remoteDir+"; ls "+filename+"'");
+  fp = popen(cmd.c_str(), "r");
+  if(fgets(cbuf, 1024, fp) == NULL){
+    std::cout << "le fichier " << filename << " n'existe pas" << std::endl;
     return true;
+  }
   else{
-    Msg::Fatal("The file %s is not present",filename.c_str());
+    std::cout << "le fichier " << filename << " existe" << std::endl;
     return false;
   }
+  pclose(fp);
 }
 
-int DistantClient::systemCall(std::string commandLine){
-  int err=0;
+void RemoteInterfacedClient::compute(){
   std::string cmd;
-  printf("ONELAB: System call <%s>\n", commandLine.c_str());
 
-  std::vector<std::string> choices;
-  if(getInputFiles(choices)){
-    for(unsigned int i = 0; i < choices.size(); i++){
-      cmd= "ssh "+_remoteHost+" 'rm -f "+_remoteDir+"/"+choices[i]+"'";
-      mySystem(cmd);
-    }
-  }
-  err=mySystem(commandLine.c_str());
-  printf("ONELAB: System call <%s> returns <%d>\n", commandLine.c_str(),err);
-  return err;
+  convert();
+  Msg::SetOnelabString(getName() + "/Action","compute",false); // a titre indicatif
+
+  cmd.assign("ssh "+_remoteHost+"'cd "+_remoteDir+"; rm "+buildArgumentsRm()+"'");
+  mySystem(cmd);
+
+  cmd.assign(getCommandLine()+" "+buildArgumentsRun());
+  //commandLine.append(" &> " + _name + ".log");
+
+  cmd= "ssh "+_remoteHost+"'cd "+_remoteDir+"; "+cmd+"'";
+  printf("ONELAB: System call <%s>\n", cmd.c_str());
+  mySystem(cmd);
 }
 
-bool DistantClient::controlPath(){
-  std::string cmd= "ssh "+_remoteHost+" 'mkdir -p "+_remoteDir+"'";
-  mySystem(cmd);
+bool RemoteInterfacedClient::controlPath(){
+  mySystem("ssh "+_remoteHost+" 'mkdir -p "+_remoteDir+"'");
   return true;
 }
 
@@ -894,19 +888,19 @@ std::string itoa(const int i){
   return tmp.str();
 }
 
-int onelab_step;
-int newStep(){
-  if (onelab_step==0){
-    system("echo 'start' > onelab.log");
-    system("touch onelab.start; touch onelab.progress");
-  }
-  system("find . -newer onelab.progress > onelab.modified");
-  system("touch onelab.progress");
-  onelab_step++;
-}
-int getStep(){
-  return onelab_step;
-}
+// int onelab_step;
+// int newStep(){
+//   if (onelab_step==0){
+//     system("echo 'start' > onelab.log");
+//     system("touch onelab.start; touch onelab.progress");
+//   }
+//   system("find . -newer onelab.progress > onelab.modified");
+//   system("touch onelab.progress");
+//   onelab_step++;
+// }
+// int getStep(){
+//   return onelab_step;
+// }
 
 
 #include <unistd.h>
@@ -1014,7 +1008,6 @@ int extract(const std::string &in, std::string &paramName, std::string &action, 
 bool extractRange(const std::string &in, std::vector<double> &arguments){
   // syntax: a:b:c or a:b#n
   int pos, cursor;
-  std::cout << "Range=<" << in << ">" << std::endl;
   arguments.resize(0);
   cursor=0;
   if ( (pos=in.find(":",cursor)) == std::string::npos )
@@ -1034,8 +1027,6 @@ bool extractRange(const std::string &in, std::vector<double> &arguments){
   }
   else
      Msg::Fatal("ONELAB: syntax error in range <%s>",in.c_str());
-
-  std::cout << "Range=<" << arguments[0] << ":" << arguments[1] << ":" << arguments[2] << ">" << std::endl;
   return (arguments.size()==3);
 }
 

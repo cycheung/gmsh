@@ -86,7 +86,14 @@ void localSolverClient::parse_oneline(std::string line, std::ifstream &infile) {
   std::string buff;
   std::set<std::string>::iterator it;
 
-  if( (pos=line.find(olkey::client)) != std::string::npos) {// onelab.client
+
+  if ( (pos=line.find(olkey::label)) == std::string::npos) // not a onelab line
+    return;
+
+  if(!line.compare(line.find_first_not_of(" "),olkey::comment.size(),olkey::comment)){
+    // commented out, skip the line
+  }
+  else if( (pos=line.find(olkey::client)) != std::string::npos) {// onelab.client
     parse_clientline(line,infile);
   }
   else if ( (pos=line.find(olkey::param)) != std::string::npos) {// onelab.param
@@ -268,9 +275,7 @@ void localSolverClient::parse_onefile(std::string fileName) {
   if (infile.is_open()){
     while ( infile.good() ) {
       getline (infile,line);
-      if(int pos=line.find_first_not_of(" ") != std::string::npos)
-	if(line.compare(pos,olkey::comment.size(),olkey::comment))
-	  parse_oneline(line,infile);
+      parse_oneline(line,infile);
     }
     infile.close();
   }
@@ -332,7 +337,10 @@ void localSolverClient::convert_oneline(std::string line, std::ifstream &infile,
   if ( (pos=line.find(olkey::label)) == std::string::npos) // not a onelab line
     outfile << line << std::endl; 
   else{ 
-    if ( (pos=line.find(olkey::param)) != std::string::npos) {// onelab.param
+    if(!line.compare(line.find_first_not_of(" "),olkey::comment.size(),olkey::comment)){
+      // commented out, skip the line
+    }
+    else if ( (pos=line.find(olkey::param)) != std::string::npos) {// onelab.param
       //skip the line
     }
     else if ( (pos=line.find(olkey::include)) != std::string::npos) {// onelab.include
@@ -410,9 +418,7 @@ void localSolverClient::convert_onefile(std::string ifilename, std::ofstream &ou
   if (infile.is_open()){
     while ( infile.good() ) {
       getline (infile,line);
-     if(int pos=line.find_first_not_of(" ") != std::string::npos)
-	if(line.compare(pos,olkey::comment.size(),olkey::comment))
-	  convert_oneline(line,infile,outfile);
+      convert_oneline(line,infile,outfile);
     }
     infile.close();
   }
@@ -429,8 +435,9 @@ void MetaModel::parse_clientline(std::string line, std::ifstream &infile) {
 
   if( (pos=line.find(olkey::client)) != std::string::npos) {// onelab.client
     // syntax name.Register(interfaced)
-    //        name.Register(distant,remoteHost,remoteDir,path)
+    //        name.Register(interfaced,remoteHost,remoteDir,path)
     //        name.Register(encapsulated)
+    //        name.Register(encapsulated,remoteHost,remoteDir,path)
     cursor = pos + olkey::client.length();
     while ( (pos=line.find(sep,cursor)) != std::string::npos){
       extract(line.substr(cursor,pos-cursor),name,action,arguments);
@@ -452,22 +459,12 @@ void MetaModel::parse_clientline(std::string line, std::ifstream &infile) {
 	    set(o);
 	  }
 
-	  if(arguments.empty())
-	    Msg::Fatal("ONELAB: wrong client definition <%s>", name.c_str());
-	  
-	  if(!arguments[0].compare("interfaced")){
-	    registerInterfacedClient(name,path);
-	  }
-	  else if(!arguments[0].compare("distant")){
-	    if(arguments.size()<4)
-	      Msg::Fatal("ONELAB: wrong distant client definition <%s>", name.c_str());
-	    registerDistantClient(name,arguments[3],arguments[1],arguments[2]);
-	  }
-	  else if(!arguments[0].compare("encapsulated")){
-	    registerEncapsulatedClient(name,path);
-	  }
+	  if(arguments.size()==1) //local clients
+	    registerClient(name,arguments[0],path);
+	  else if(arguments.size()==4) //remote clients
+	    registerClient(name,arguments[0],arguments[3],arguments[1],arguments[2]);
 	  else
-	    Msg::Error("ONELAB: unknown client type <%s>", arguments[0].c_str());
+	    Msg::Fatal("ONELAB: wrong number or arguments in client definition <%s>", name.c_str());
 	}
 	else
 	  Msg::Error("ONELAB: redefinition of client <%s>", name.c_str());
