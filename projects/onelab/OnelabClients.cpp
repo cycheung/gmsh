@@ -733,7 +733,7 @@ void InterfacedClient::compute(){
   convert();
   Msg::SetOnelabString(getName() + "/Action","compute",false); // a titre indicatif
 
-  std::string cmd = getCommandLine() + " " ;
+  std::string cmd = FixWindowsPath(getCommandLine() + " ") ;
   cmd.append(buildArgumentsRun());
   //commandLine.append(" &> " + _name + ".log");
 
@@ -765,7 +765,7 @@ void EncapsulatedClient::compute() {
 }
 
 
-// DISTANT Client
+// REMOTE INTERFACED Client
 int mySystem(std::string commandLine){
   //return system(commandLine.c_str());
   std::cout << "system(" << commandLine << ")" << std::endl;
