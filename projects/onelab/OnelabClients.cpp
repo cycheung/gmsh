@@ -738,7 +738,8 @@ void InterfacedClient::compute(){
   //commandLine.append(" &> " + _name + ".log");
 
   printf("ONELAB: System call <%s>\n", cmd.c_str());
-  SystemCall(cmd.c_str(),true);
+  //SystemCall(cmd.c_str(),true);
+  system(cmd.c_str());
   Msg::Info("Client %s completed",_name.c_str());
 }
 
