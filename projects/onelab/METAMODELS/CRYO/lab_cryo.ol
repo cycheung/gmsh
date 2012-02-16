@@ -26,7 +26,6 @@ OL.client Post/LineOptions.Set("-");
 OL.client Gnuplot.Register(interfaced);
 OL.client Gnuplot/InputFiles.Set(plot.gnu);
 
-
 %7)Client Postpro pour extraire la min et la max de la courbe
 OL.client PostArray.List(fmax.txt,1,2,Solution/tmin, fmax.txt,1,8,Solution/fmin);
 
