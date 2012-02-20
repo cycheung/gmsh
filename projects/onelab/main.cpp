@@ -50,7 +50,7 @@ int main(int argc, char *argv[]){
   //std::cout << "fileName:" << fileName << std::endl;
 
   MetaModel *myModel = new MetaModel(commandLine, clientName, fileName, modelNumber);
-  if(!myModel->checkPathes()) //true if all clients have path and are initialized
+  if(!myModel->checkCommandLines()) //true if all clients have valid command lines and are initialized
     action.assign("exit");
   if(Msg::loader && !Msg::GetOnelabNumber(clientName + "/Initialized"))
     action.assign("initialize");
@@ -60,7 +60,6 @@ int main(int argc, char *argv[]){
   std::cout << "initialized:" << Msg::GetOnelabNumber(clientName + "/Initialized") << std::endl;
   std::cout << "    hasGmsh:" << Msg::hasGmsh << std::endl;
 
-  //newStep();
   if(!action.compare("exit")){ // exit metamodel
   } 
   else if(!action.compare("initialize")){

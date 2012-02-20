@@ -269,10 +269,11 @@ void localSolverClient::parse_oneline(std::string line, std::ifstream &infile) {
 
 void localSolverClient::parse_onefile(std::string fileName) { 
   std::string line;
-  std::string fileNameSave = fileName+".save";
+  // std::string fileNameSave = fileName+".save";
 
   std::ifstream infile(fileName.c_str()); // read client description
   if (infile.is_open()){
+    Msg::Info("Read file <%s>",fileName.c_str());
     while ( infile.good() ) {
       getline (infile,line);
       parse_oneline(line,infile);
@@ -281,16 +282,17 @@ void localSolverClient::parse_onefile(std::string fileName) {
   }
   else
     Msg::Fatal("The file %s cannot be opened",fileName.c_str());
-  infile.open(fileNameSave.c_str()); // read saved client pathes (if file present)
-  if (infile.is_open()){
-    while (infile.good() ) {
-      getline (infile,line);
-      parse_oneline(line,infile);
-    }
-    infile.close();
-  }
-} 
 
+  // infile.open(fileNameSave.c_str()); // read saved client command lines (if file present)
+  // if (infile.is_open()){    
+  //   Msg::Info("Read file <%s>",fileNameSave.c_str());
+  //   while (infile.good() ) {
+  //     getline (infile,line);
+  //     parse_oneline(line,infile);
+  //   }
+  //   infile.close();
+  // }
+} 
 
 bool localSolverClient::parse_ifstatement(std::ifstream &infile, bool condition) { 
   int pos;
@@ -428,16 +430,16 @@ void localSolverClient::convert_onefile(std::string ifilename, std::ofstream &ou
 
 void MetaModel::parse_clientline(std::string line, std::ifstream &infile) { 
   int pos,cursor;
-  std::string name,action,path="";
+  std::string name,action,cmdl;
   std::vector<std::string> arguments;
   std::vector<onelab::string> strings;
   char sep=';';
 
   if( (pos=line.find(olkey::client)) != std::string::npos) {// onelab.client
     // syntax name.Register(interfaced)
-    //        name.Register(interfaced,remoteHost,remoteDir,path)
+    //        name.Register(interfaced,remoteHost,remoteDir,cmdl)
     //        name.Register(encapsulated)
-    //        name.Register(encapsulated,remoteHost,remoteDir,path)
+    //        name.Register(encapsulated,remoteHost,remoteDir,cmdl)
     cursor = pos + olkey::client.length();
     while ( (pos=line.find(sep,cursor)) != std::string::npos){
       extract(line.substr(cursor,pos-cursor),name,action,arguments);
@@ -445,41 +447,44 @@ void MetaModel::parse_clientline(std::string line, std::ifstream &infile) {
 	if(!findClientByName(name)){
 	  Msg::Info("ONELAB: define client <%s>", name.c_str());
 
-	  //check if one has a path on the server
-	  get(strings,name + "/Path");
-	  if(strings.size())
-	    path=strings[0].getValue();
-	  else{
-	    path="";
-	    onelab::string o(name + "/Path",path);
-	    o.setKind("file");
-	    o.setValue(olkey::voidPath);
-	    o.setVisible(path.empty());
-	    o.setAttribute("Highlight","true");
-	    set(o);
+	  if(arguments.size()==1){ //local clients
+	    //check if one has a saved command line on the server (prealably read from file .ol.save)
+	    get(strings,name + "/CommandLine");
+	    if(strings.size())
+	      cmdl.assign(strings[0].getValue());
+	    else 
+	      cmdl.assign("");
+	    registerClient(name,arguments[0],cmdl); // possibly with an empty cmdl
 	  }
-
-	  if(arguments.size()==1) //local clients
-	    registerClient(name,arguments[0],path);
-	  else if(arguments.size()==4) //remote clients
-	    registerClient(name,arguments[0],arguments[3],arguments[1],arguments[2]);
+	  else if(arguments.size()==4){ //remote clients, disregard saved commandLine
+	    cmdl.assign(arguments[3]);
+	    registerClient(name,arguments[0],cmdl,arguments[1],arguments[2]);
+	  }
 	  else
 	    Msg::Fatal("ONELAB: wrong number or arguments in client definition <%s>", name.c_str());
+
+	  //set actual commandLine on server (for consistency)
+	  onelab::string o(name + "/CommandLine","");
+	  o.setValue(cmdl);
+	  o.setKind("file");
+	  o.setVisible(cmdl.empty());
+	  o.setAttribute("Highlight","true");
+	  set(o);
 	}
 	else
 	  Msg::Error("ONELAB: redefinition of client <%s>", name.c_str());
       }
-      else if(!action.compare("Path")){
+      else if(!action.compare("CommandLine")){
 	if(findClientByName(name)){
 	  if(arguments.size()) {
 	    if(arguments[0].size()){
-	      onelab::string o(name + "/Path",arguments[0]);
+	      onelab::string o(name + "/CommandLine",arguments[0]);
 	      o.setKind("file");
 	      o.setVisible(false);
 	      set(o);
 	    }
 	    else
-	      Msg::Error("ONELAB: no path given for client <%s>", name.c_str());
+	      Msg::Error("ONELAB: no command line given for client <%s>", name.c_str());
 	  }
 	}
 	else
@@ -492,11 +497,49 @@ void MetaModel::parse_clientline(std::string line, std::ifstream &infile) {
 	    if(arguments[0].size())
 	      c->setActive(atof(arguments[0].c_str()));
 	    else
-	      Msg::Error("ONELAB: no path given for client <%s>", name.c_str());
+	      Msg::Error("ONELAB: no argument for <%s.Active> statement", name.c_str());
 	  }
 	}
 	else
 	  Msg::Fatal("ONELAB: unknown client <%s>", name.c_str());
+      }
+      else if(!action.compare("Args")){
+	if(arguments[0].size()){
+	  strings.resize(1);
+	  strings[0].setName(name+"/Arguments");
+	  strings[0].setValue(resolveGetVal(arguments[0]));
+	  set(strings[0]);
+	}
+      }
+      else if(!action.compare("In")){
+	if(arguments[0].size()){
+	  strings.resize(1);
+	  strings[0].setName(name+"/InputFiles");
+	  strings[0].setValue(resolveGetVal(arguments[0]));
+	  strings[0].setKind("file");
+	  strings[0].setVisible(true);
+	  std::vector<std::string> choices;
+	  for(unsigned int i = 0; i < arguments.size(); i++)
+	    //if(std::find(choices.begin(),choices.end(),arguments[i])==choices.end())
+	    choices.push_back(resolveGetVal(arguments[i]));
+	  strings[0].setChoices(choices);
+	  set(strings[0]);
+	}
+      }
+      else if(!action.compare("Out")){
+	if(arguments[0].size()){
+	  strings.resize(1);
+	  strings[0].setName(name+"/OutputFiles");
+	  strings[0].setValue(resolveGetVal(arguments[0]));
+	  strings[0].setKind("file");
+	  strings[0].setVisible(true);
+	  std::vector<std::string> choices;
+	  for(unsigned int i = 0; i < arguments.size(); i++)
+	    //if(std::find(choices.begin(),choices.end(),arguments[i])==choices.end())
+	    choices.push_back(resolveGetVal(arguments[i]));
+	  strings[0].setChoices(choices);
+	  set(strings[0]);
+	}
       }
       else if(!action.compare("Set")){
 	if(arguments[0].size()){

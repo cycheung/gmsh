@@ -98,7 +98,8 @@ void Msg::Fatal(const char *fmt, ...)
   FinalizeOnelab();
   delete loader;
   // only exit if a callback is not provided
-  if(!_callback) Exit(1);
+  //if(!_callback) Exit(1);
+  Exit(1);
 }
 
 void Msg::Error(const char *fmt, ...)
