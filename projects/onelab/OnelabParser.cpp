@@ -281,17 +281,7 @@ void localSolverClient::parse_onefile(std::string fileName) {
     infile.close();
   }
   else
-    Msg::Fatal("The file %s cannot be opened",fileName.c_str());
-
-  // infile.open(fileNameSave.c_str()); // read saved client command lines (if file present)
-  // if (infile.is_open()){    
-  //   Msg::Info("Read file <%s>",fileNameSave.c_str());
-  //   while (infile.good() ) {
-  //     getline (infile,line);
-  //     parse_oneline(line,infile);
-  //   }
-  //   infile.close();
-  // }
+    Msg::Info("The file %s does not exist",fileName.c_str());
 } 
 
 bool localSolverClient::parse_ifstatement(std::ifstream &infile, bool condition) { 
@@ -437,6 +427,7 @@ void MetaModel::parse_clientline(std::string line, std::ifstream &infile) {
 
   if( (pos=line.find(olkey::client)) != std::string::npos) {// onelab.client
     // syntax name.Register(interfaced)
+    //        name.Register(interfaced,cmdl)
     //        name.Register(interfaced,remoteHost,remoteDir,cmdl)
     //        name.Register(encapsulated)
     //        name.Register(encapsulated,remoteHost,remoteDir,cmdl)
@@ -454,11 +445,15 @@ void MetaModel::parse_clientline(std::string line, std::ifstream &infile) {
 	      cmdl.assign(strings[0].getValue());
 	    else 
 	      cmdl.assign("");
-	    registerClient(name,arguments[0],cmdl); // possibly with an empty cmdl
+	    registerClient(name,resolveGetVal(arguments[0]),cmdl); // possibly with an empty cmdl
+	  }
+	  else if(arguments.size()==2){ //local clients
+	    registerClient(name,resolveGetVal(arguments[0]),resolveGetVal(arguments[1])); 
 	  }
 	  else if(arguments.size()==4){ //remote clients, disregard saved commandLine
-	    cmdl.assign(arguments[3]);
-	    registerClient(name,arguments[0],cmdl,arguments[1],arguments[2]);
+	    cmdl.assign(resolveGetVal(arguments[3]));
+	    registerClient(name,resolveGetVal(arguments[0]),cmdl,
+			   resolveGetVal(arguments[1]),resolveGetVal(arguments[2]));
 	  }
 	  else
 	    Msg::Fatal("ONELAB: wrong number or arguments in client definition <%s>", name.c_str());
@@ -508,6 +503,7 @@ void MetaModel::parse_clientline(std::string line, std::ifstream &infile) {
 	  strings.resize(1);
 	  strings[0].setName(name+"/Arguments");
 	  strings[0].setValue(resolveGetVal(arguments[0]));
+	  strings[0].setVisible(false);
 	  set(strings[0]);
 	}
       }
@@ -517,7 +513,7 @@ void MetaModel::parse_clientline(std::string line, std::ifstream &infile) {
 	  strings[0].setName(name+"/InputFiles");
 	  strings[0].setValue(resolveGetVal(arguments[0]));
 	  strings[0].setKind("file");
-	  strings[0].setVisible(true);
+	  strings[0].setVisible(false);
 	  std::vector<std::string> choices;
 	  for(unsigned int i = 0; i < arguments.size(); i++)
 	    //if(std::find(choices.begin(),choices.end(),arguments[i])==choices.end())
@@ -532,7 +528,7 @@ void MetaModel::parse_clientline(std::string line, std::ifstream &infile) {
 	  strings[0].setName(name+"/OutputFiles");
 	  strings[0].setValue(resolveGetVal(arguments[0]));
 	  strings[0].setKind("file");
-	  strings[0].setVisible(true);
+	  strings[0].setVisible(false);
 	  std::vector<std::string> choices;
 	  for(unsigned int i = 0; i < arguments.size(); i++)
 	    //if(std::find(choices.begin(),choices.end(),arguments[i])==choices.end())
