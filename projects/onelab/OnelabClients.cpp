@@ -11,7 +11,7 @@ class onelabMetaModelServer : public GmshServer{
   onelabMetaModelServer(localNetworkSolverClient *client)
     : GmshServer(), _client(client) {}
   ~onelabMetaModelServer(){}
-  int NonBlockingSystemCall(const char *str){ return SystemCall(str); }
+  int NonBlockingSystemCall(const char *str){ return SystemCall(str); }// non blocking 
   int NonBlockingWait(int socket, double waitint, double timeout)
   {
     double start = GetTimeInSeconds();
@@ -51,35 +51,7 @@ class onelabMetaModelServer : public GmshServer{
   }
 };
 
-bool localNetworkSolverClient::run()
-{
- new_connection:
-  _pid = 0;
-  _gmshServer = 0;
-
-  onelabMetaModelServer *server = new onelabMetaModelServer(this);
- 
-#if defined(WIN32)
-  std::string socketName = ":";
-#else
-  std::string socketName = getUserHomedir() + ".gmshsock";
-#endif
-  std::string sockname;
-  std::ostringstream tmp;
-  if(!strstr(socketName.c_str(), ":")){
-    // Unix socket
-    tmp << socketName << getId();
-    sockname = FixWindowsPath(tmp.str());
-  }
-  else{
-    // TCP/IP socket
-    if(socketName.size() && socketName[0] == ':')
-      tmp << GetHostName(); // prepend hostname if only the port number is given
-    //tmp << socketName << getId();
-    tmp << socketName ;
-  }
-  sockname = tmp.str();
-
+std::string localNetworkSolverClient::buildCommandLine(){
   std::string command = FixWindowsPath(getCommandLine());
   if(command.size()){
     std::vector<onelab::string> ps;
@@ -100,14 +72,68 @@ bool localNetworkSolverClient::run()
       Msg::Fatal("localNetworkSolverClient::run: Unknown: Unknown Action <%s>", action.c_str());
 
     // append "-onelab" command line argument
-    command += " " + _socketSwitch + " \"" + getName() + "\"";
+    command += " " + getSocketSwitch() + " \"" + getName() + "\"";
+  }
+  return command;
+}
+
+bool localNetworkSolverClient::run()
+{
+ new_connection:
+  _pid = 0;
+  _gmshServer = 0;
+
+  onelabMetaModelServer *server = new onelabMetaModelServer(this);
+ 
+#if defined(WIN32)
+  std::string socketName = ":";
+#else
+  std::string socketName = getUserHomedir() + ".gmshsock";
+#endif
+  socketName = ":";
+
+  std::string sockname;
+  std::ostringstream tmp;
+  if(!strstr(socketName.c_str(), ":")){
+    // Unix socket
+    tmp << socketName << getId();
+    sockname = FixWindowsPath(tmp.str());
   }
   else{
-    Msg::Info("Listening on socket '%s'", sockname.c_str());
+    // TCP/IP socket
+    if(socketName.size() && socketName[0] == ':')
+      tmp << GetHostName(); // prepend hostname if only the port number is given
+    tmp << socketName ;
+    sockname = tmp.str();
   }
 
-  // std::cout << "FHF sockname=" << sockname.c_str() << std::endl;
-  // std::cout << "FHF command=" << command.c_str() << std::endl;
+  // std::string command = FixWindowsPath(getCommandLine());
+  // if(command.size()){
+  //   std::vector<onelab::string> ps;
+  //   get(ps, getName() + "/Action");
+  //   std::string action = (ps.empty() ? "" : ps[0].getValue());
+  //   get(ps, getName() + "/9CheckCommand");
+  //   std::string checkCommand = (ps.empty() ? "" : ps[0].getValue());
+  //   get(ps, getName() + "/9ComputeCommand");
+  //   std::string computeCommand = (ps.empty() ? "" : ps[0].getValue());
+
+  //   if(action == "initialize")
+  //     command += " ";
+  //   else if(action == "check")
+  //     command += " " + getString("Arguments") + " " + checkCommand;
+  //   else if(action == "compute")
+  //     command += " " + getString("Arguments") + " " + computeCommand;
+  //   else
+  //     Msg::Fatal("localNetworkSolverClient::run: Unknown: Unknown Action <%s>", action.c_str());
+
+  //   // append "-onelab" command line argument
+  //   command += " " + _socketSwitch + " \"" + getName() + "\"";
+  // }
+  // else{
+  //   Msg::Info("Listening on socket '%s'", sockname.c_str());
+  // }
+
+  std::string command = buildCommandLine();
 
   int sock;
   try{
@@ -616,8 +642,8 @@ void MetaModel::registerClient(const std::string &name, const std::string &type,
   localSolverClient *c;
   if(!type.compare(0,6,"interf"))
     c= new RemoteInterfacedClient(name,cmdl,host,dir);
-  //else if(!type.compare(0,6,"encaps"))
-    //c= new RemoteEncapsulatedClient(name,cmdl,host,dir);
+  else if(!type.compare(0,6,"encaps"))
+    c= new RemoteEncapsulatedClient(name,cmdl,host,dir);
   else 
     Msg::Fatal("ONELAB: unknown remote client type", type.c_str());
   _clients.push_back(c); 
@@ -817,7 +843,6 @@ bool remoteClient::syncOutputFile(const std::string &fileName){
 
 // REMOTE INTERFACED Client
 
-
 bool RemoteInterfacedClient::checkCommandLine(){
   struct stat buf;
   std::string cmd;
@@ -856,8 +881,85 @@ void RemoteInterfacedClient::compute(){
   cmd.assign("ssh "+getRemoteHost()+" 'cd "+getRemoteDir()+"; "+buildRmCommand()+"'");
   mySystem(cmd);
 
-  cmd.assign("ssh "+getRemoteHost()+" 'cd "+getRemoteDir()+"; "+getCommandLine()+" "+getString("Arguments")+"'");
+  cmd.assign("ssh "+getRemoteHost()+" 'cd "+getRemoteDir()+"; "
+	     +getCommandLine()+" "+getString("Arguments")+"'");
   mySystem(cmd);
+
+  if(getList("OutputFiles",choices)){
+    for(unsigned int i = 0; i < choices.size(); i++)
+      syncOutputFile(choices[i]);
+  }
+}
+
+// REMOTE ENCAPSULATED Client
+
+std::string RemoteEncapsulatedClient::buildCommandLine(){
+
+  std::vector<onelab::string> ps;
+  get(ps, getName() + "/Action");
+  std::string action = (ps.empty() ? "" : ps[0].getValue());
+  get(ps, getName() + "/9CheckCommand");
+  std::string checkCommand = (ps.empty() ? "" : ps[0].getValue());
+  get(ps, getName() + "/9ComputeCommand");
+  std::string computeCommand = (ps.empty() ? "" : ps[0].getValue());
+
+  std::string cmd;
+  cmd.assign("incomp_ssh "+getRemoteHost()+" 'cd "+getRemoteDir()+"; "
+	     +FixWindowsPath(getCommandLine())+" ");
+
+  if(action == "initialize")
+    cmd.append(" ");
+  else if(action == "check")
+    cmd.append(" " + getString("Arguments") + " " + checkCommand + " ");
+  else if(action == "compute")
+    cmd.append(" " + getString("Arguments") + " " + computeCommand + " ");
+  else
+    Msg::Fatal("remoteEncapsulatedClient::run: Unknown: Unknown Action <%s>", action.c_str());
+
+   // append "-onelab" command line argument
+  cmd.append(getSocketSwitch() + " \"" + getName() + "\"");
+
+  return cmd;
+}
+
+bool RemoteEncapsulatedClient::checkCommandLine(){
+  struct stat buf;
+  std::string cmd;
+  char cbuf [1024];
+  FILE *fp;
+
+  cmd.assign("ssh "+getRemoteHost()+" 'mkdir -p "+getRemoteDir()+"'");
+  mySystem(cmd);
+
+  cmd.assign("ssh "+getRemoteHost()+" 'which "+getCommandLine()+"'");
+  fp = popen(cmd.c_str(), "r");
+  if(fgets(cbuf, 1024, fp) == NULL){
+    std::cout << "l'executable " << getCommandLine() << " n'existe pas" << std::endl;
+    pclose(fp);
+    return false;
+  }
+  std::cout << "l'executable " << getCommandLine() << " existe" << std::endl;
+  pclose(fp);
+
+  return true;
+}
+
+
+void RemoteEncapsulatedClient::compute(){
+  std::string cmd;
+  std::vector<std::string> choices;
+
+  Msg::SetOnelabString(getName() + "/Action","compute",false); // a titre indicatif
+
+  if(getList("InputFiles",choices)){
+    for(unsigned int i = 0; i < choices.size(); i++)
+      syncInputFile(choices[i]);
+  }
+
+  cmd.assign("ssh "+getRemoteHost()+" 'cd "+getRemoteDir()+"; "+buildRmCommand()+"'");
+  mySystem(cmd);
+
+  run();
 
   if(getList("OutputFiles",choices)){
     for(unsigned int i = 0; i < choices.size(); i++)
@@ -932,21 +1034,6 @@ std::string itoa(const int i){
   return tmp.str();
 }
 
-// int onelab_step;
-// int newStep(){
-//   if (onelab_step==0){
-//     system("echo 'start' > onelab.log");
-//     system("touch onelab.start; touch onelab.progress");
-//   }
-//   system("find . -newer onelab.progress > onelab.modified");
-//   system("touch onelab.progress");
-//   onelab_step++;
-// }
-// int getStep(){
-//   return onelab_step;
-// }
-
-
 #include <sys/stat.h>		
 #include <ctime>
 bool checkIfPresent(std::string fileName){
@@ -978,23 +1065,6 @@ std::string getCurrentWorkdir(){
   std::string str = path;
   return str;
 }
-
-
-// bool checkIfModified(std::vector<std::string> filenames){
-//   for(unsigned i=0; i<filenames.size(); i++)
-//     checkIfModified(filenames[i]);
-//   return true;
-// }
-// bool checkIfModified(std::string filename){
-//   struct stat buf1,buf2;
-//   if (stat("onelab.start", &buf1))
-//     Msg::Fatal("The file %s does not exist.","onelab.start");
-//   if (stat(filename.c_str(), &buf2))
-//     Msg::Fatal("The file %s does not exist.",filename.c_str());
-//   if (difftime(buf1.st_mtime, buf2.st_mtime) > 0)
-//     Msg::Fatal("The file %s has not been modified.",filename.c_str());
-//   return true;
-// }
 
 std::string sanitize(const std::string &in)
 {
@@ -1099,9 +1169,9 @@ void GmshDisplay(onelab::remoteNetworkClient *loader, std::string fileName, std:
   if(choices.empty()) return;
 
 #if defined(WIN32)
-  std::string cmd = "gmsh ";
-#else
   std::string cmd = "gmsh.exe ";
+#else
+  std::string cmd = "gmsh ";
 #endif
   cmd.append( fileName + ".geo ");
   for(unsigned int i = 0; i < choices.size(); i++){

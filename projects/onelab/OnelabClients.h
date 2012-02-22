@@ -173,6 +173,7 @@ class localNetworkSolverClient : public localSolverClient{
   GmshServer *getGmshServer(){ return _gmshServer; }
   void setGmshServer(GmshServer *server){ _gmshServer = server; }
 
+  virtual std::string buildCommandLine();
   virtual bool run();
   virtual bool kill();
 
@@ -274,6 +275,17 @@ public:
   bool checkCommandLine();
   /* void analyze(); */
   /* void convert(); */
+  void compute() ;
+};
+
+class RemoteEncapsulatedClient : public EncapsulatedClient, public remoteClient {
+public:
+ RemoteEncapsulatedClient(const std::string &name, const std::string &commandLine, const std::string &host, const std::string &dir) 
+   : EncapsulatedClient(name,commandLine), remoteClient(host,dir) {}
+  ~RemoteEncapsulatedClient(){}
+
+  std::string buildCommandLine();
+  bool checkCommandLine();
   void compute() ;
 };
 
