@@ -6,6 +6,17 @@ ONELAB_DIR=$(GMSH_DIR)/projects/onelab
 
 OBJDIR=objects
 
+ifeq ($(STATICLINUX), 32)
+	LDFLAGS+=-static-libgcc -static-libstdc++ -static -m32
+	CPPFLAGS+= -m32
+	OBJDIR=objects-static-linux32
+	EXESUFFIX=32
+endif
+ifeq ($(STATICLINUX), 64)
+	LDFLAGS+=-static-libgcc -static-libstdc++ -static
+	OBJDIR=objects-static-linux64
+	EXESUFFIX=64
+endif
 ifeq ($(MINGW), 32)
 	CXX=i686-w64-mingw32-g++
 	LDFLAGS+=-static-libgcc -static-libstdc++ -static -lws2_32
@@ -28,7 +39,7 @@ VPATH=$(ONELAB_DIR):$(COMMON_DIR):$(ONELAB_DIR)/SOLVERS
 
 OBJECTS=$(foreach OBJ, $(SOURCES), $(OBJDIR)/$(OBJ).o)
 $(OBJDIR)/%.o : %.cpp $(ONELAB_DIR)/*.h
-	mkdir -p $(OBJDIR) 
+	@mkdir -p $(OBJDIR) 
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
 %_client$(EXESUFFIX) : $(OBJDIR)/%.o $(OBJECTS)
