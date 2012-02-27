@@ -18,10 +18,10 @@ class onelabMetaModelServer : public GmshServer{
     PROCESS_INFORMATION prInfo;
     memset(&suInfo, 0, sizeof(suInfo));
     suInfo.cb = sizeof(suInfo);
-    Msg::Info("Calling <%s>", command.c_str());
+    Msg::Info("Calling <%s>", command);
     // DETACHED_PROCESS removes the console (useful if the program to launch is
     // a console-mode exe)
-    CreateProcess(NULL, (char*)command.c_str(), NULL, NULL, FALSE,
+    CreateProcess(NULL,command, NULL, NULL, FALSE,
 		  NORMAL_PRIORITY_CLASS|DETACHED_PROCESS, NULL, NULL,
 		  &suInfo, &prInfo);
     return 0;
