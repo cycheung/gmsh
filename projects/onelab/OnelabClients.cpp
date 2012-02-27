@@ -11,7 +11,39 @@ class onelabMetaModelServer : public GmshServer{
   onelabMetaModelServer(localNetworkSolverClient *client)
     : GmshServer(), _client(client) {}
   ~onelabMetaModelServer(){}
-  int NonBlockingSystemCall(const char *str){ return SystemCall(str); }// non blocking 
+  int NonBlockingSystemCall(const char *command)
+  {
+#if defined(WIN32)
+    STARTUPINFO suInfo;
+    PROCESS_INFORMATION prInfo;
+    memset(&suInfo, 0, sizeof(suInfo));
+    suInfo.cb = sizeof(suInfo);
+    Msg::Info("Calling <%s>", command.c_str());
+    // DETACHED_PROCESS removes the console (useful if the program to launch is
+    // a console-mode exe)
+    CreateProcess(NULL, (char*)command.c_str(), NULL, NULL, FALSE,
+		  NORMAL_PRIORITY_CLASS|DETACHED_PROCESS, NULL, NULL,
+		  &suInfo, &prInfo);
+    return 0;
+#else
+    if(!system(NULL)) {
+      Msg::Error("Could not find /bin/sh: aborting system call");
+      return 1;
+    }
+    std::string cmd(command);
+    int pos;
+    if((pos=cmd.find("incomp_ssh ")) != std::string::npos){
+      cmd.assign(cmd.substr(pos+7));
+      //cmd.append(" &>/dev/null & '");
+      cmd.append(" &>onelab.log & '");
+    }
+    else
+      cmd.append(" &");
+
+    Msg::Info("Calling <%s>", cmd.c_str());
+    return system(cmd.c_str());
+#endif
+  }// non blocking 
   int NonBlockingWait(int socket, double waitint, double timeout)
   {
     double start = GetTimeInSeconds();
@@ -72,7 +104,8 @@ std::string localNetworkSolverClient::buildCommandLine(){
       Msg::Fatal("localNetworkSolverClient::run: Unknown: Unknown Action <%s>", action.c_str());
 
     // append "-onelab" command line argument
-    command += " " + getSocketSwitch() + " \"" + getName() + "\"";
+    //command += " " + getSocketSwitch() + " \"" + getName() + "\"";
+    command += " " + getSocketSwitch() + " " + getName() + " ";
   }
   return command;
 }
@@ -107,33 +140,10 @@ bool localNetworkSolverClient::run()
     sockname = tmp.str();
   }
 
-  // std::string command = FixWindowsPath(getCommandLine());
-  // if(command.size()){
-  //   std::vector<onelab::string> ps;
-  //   get(ps, getName() + "/Action");
-  //   std::string action = (ps.empty() ? "" : ps[0].getValue());
-  //   get(ps, getName() + "/9CheckCommand");
-  //   std::string checkCommand = (ps.empty() ? "" : ps[0].getValue());
-  //   get(ps, getName() + "/9ComputeCommand");
-  //   std::string computeCommand = (ps.empty() ? "" : ps[0].getValue());
-
-  //   if(action == "initialize")
-  //     command += " ";
-  //   else if(action == "check")
-  //     command += " " + getString("Arguments") + " " + checkCommand;
-  //   else if(action == "compute")
-  //     command += " " + getString("Arguments") + " " + computeCommand;
-  //   else
-  //     Msg::Fatal("localNetworkSolverClient::run: Unknown: Unknown Action <%s>", action.c_str());
-
-  //   // append "-onelab" command line argument
-  //   command += " " + _socketSwitch + " \"" + getName() + "\"";
-  // }
-  // else{
-  //   Msg::Info("Listening on socket '%s'", sockname.c_str());
-  // }
-
   std::string command = buildCommandLine();
+
+  std::cout << "sockname=<" << sockname << ">" << std::endl;
+  // std::cout << "command=<" << command << ">" << std::endl;
 
   int sock;
   try{
@@ -150,7 +160,7 @@ bool localNetworkSolverClient::run()
     return false;
   }
 
-  Msg::StatusBar(2, true, "ONELAB: Now running client '%s'...", _name.c_str());
+  Msg::StatusBar(2, true, "Now running client '%s'...", _name.c_str());
   while(1) {
     if(_pid < 0) break;
     
@@ -286,7 +296,7 @@ bool localNetworkSolverClient::run()
 
   server->Shutdown();
   delete server;
-  Msg::StatusBar(2, true, "ONELAB: Done running '%s'", _name.c_str());
+  Msg::StatusBar(2, true, "Done running '%s'", _name.c_str());
   return true;
 }
 
@@ -570,38 +580,31 @@ const bool localSolverClient::getList(const std::string type, std::vector<std::s
     return false;
 }
 
-const std::string localSolverClient::buildRmCommand(){
+bool localSolverClient::buildRmCommand(std::string &cmd){
   std::vector<std::string> choices;
-  std::string args,filename;
 
-#if defined(WIN32)
-  args.assign("del ");
-#else
-  args.assign("rm -rf ");
-#endif
   if(getList("OutputFiles",choices)){
+#if defined(WIN32)
+    cmd.assign("del ");
+#else
+    cmd.assign("rm -rf ");
+#endif
     for(unsigned int i = 0; i < choices.size(); i++)
-      //args.append(choices[i].substr(0,choices[i].find(olkey::extension))+" ");
-      args.append(choices[i]+" ");
+      cmd.append(choices[i]+" ");
+    return true;
   }
-  return args;
-}
-
-std::string localSolverClient::toChar(){
-  std::ostringstream sstream;
-  if(getCommandLine().size()){
-    sstream << olkey::client << " " 
-	    << getName() << "." << "CommandLine(" 
-	    << getCommandLine() << ");\n";
-  }
-  return sstream.str();
+  else
+    return false;
 }
 
 // METAMODEL
 
+//Metamodel::analyze and Metamodel::compute are user defined (file: onelab.cpp)
+
 void MetaModel::saveCommandLines(const std::string fileName){ //save client command lines
-  std::string fileNameSave = fileName + olkey::extension + ".save";
+  std::string fileNameSave = fileName + onelabExtension + ".save";
   std::ofstream outfile(fileNameSave.c_str()); 
+
   if (outfile.is_open())
     for(citer it = _clients.begin(); it != _clients.end(); it++)
       outfile << (*it)->toChar();
@@ -621,7 +624,7 @@ bool MetaModel::checkCommandLines(){
 
 void MetaModel::initialize()
 {
-  Msg::Info("Metamodel::initialize <%s>",getName().c_str());
+  Msg::Info("Initialize Metamodel by the loader");
   Msg::SetOnelabString(clientName + "/9CheckCommand","-a",false);
   Msg::SetOnelabNumber(clientName + "/UseCommandLine",1,false);
   Msg::SetOnelabNumber(clientName + "/Initialized",1,false);
@@ -634,7 +637,7 @@ void MetaModel::registerClient(const std::string &name, const std::string &type,
   else if(!type.compare(0,6,"encaps"))
     c= new EncapsulatedClient(name,cmdl);
   else 
-    Msg::Fatal("ONELAB: unknown client type", type.c_str());
+    Msg::Fatal("Unknown client type", type.c_str());
   _clients.push_back(c); 
 }
 
@@ -645,7 +648,7 @@ void MetaModel::registerClient(const std::string &name, const std::string &type,
   else if(!type.compare(0,6,"encaps"))
     c= new RemoteEncapsulatedClient(name,cmdl,host,dir);
   else 
-    Msg::Fatal("ONELAB: unknown remote client type", type.c_str());
+    Msg::Fatal("Unknown remote client type", type.c_str());
   _clients.push_back(c); 
 }
 
@@ -693,7 +696,7 @@ void InterfacedClient::analyze() {
   getList("InputFiles", choices);
   for(unsigned int i = 0; i < choices.size(); i++){
     std::string ifilename = choices[i];
-    if((pos=ifilename.find(olkey::extension)) != std::string::npos){
+    if((pos=ifilename.find(onelabExtension)) != std::string::npos){
       checkIfPresent(ifilename);
       parse_onefile(ifilename); // recursive(?)
     }
@@ -707,7 +710,7 @@ void InterfacedClient::convert() {
   for(unsigned int i = 0; i < choices.size(); i++){
     std::string ifilename = choices[i];
     checkIfPresent(ifilename);
-    if((pos=ifilename.find(olkey::extension)) != std::string::npos){
+    if((pos=ifilename.find(onelabExtension)) != std::string::npos){
       std::string ofilename = ifilename.substr(0,pos);  // remove .ol extension
       std::ofstream outfile(ofilename.c_str());
       if (outfile.is_open())
@@ -720,19 +723,21 @@ void InterfacedClient::convert() {
 }
 
 void InterfacedClient::compute(){
-  int pos;
+  std::string cmd;
   std::vector<std::string> choices;
+
   convert();
   Msg::SetOnelabString(getName() + "/Action","compute",false); // a titre indicatif
 
   if(getList("InputFiles",choices)){
     for(unsigned int i = 0; i < choices.size(); i++)
-      checkIfPresent(choices[i].substr(0,choices[i].find(olkey::extension))); // remove .ol extension if any
+      checkIfPresent(choices[i].substr(0,choices[i].find(onelabExtension))); // remove .ol extension if any
   }
 
-  SystemCall(buildRmCommand(),true);
+  if(buildRmCommand(cmd))
+    SystemCall(cmd,true);
 
-  std::string cmd = FixWindowsPath(getCommandLine() + " ") ;
+  cmd = FixWindowsPath(getCommandLine() + " ") ;
   cmd.append(getString("Arguments"));
   //commandLine.append(" &> " + _name + ".log");
 
@@ -756,15 +761,17 @@ void EncapsulatedClient::analyze() {
 }
 
 void EncapsulatedClient::compute() {
+  std::string cmd;
   set(onelab::string(getName()+"/Action", "compute"));
-  SystemCall(buildRmCommand(),true);
+  if(buildRmCommand(cmd))
+    SystemCall(cmd,true);
   run();
 }
 
 // REMOTE CLIENT
 
 int mySystem(std::string commandLine){
-  std::cout << "mySystem<" << commandLine << ">" << std::endl;
+  //std::cout << "mySystem<" << commandLine << ">" << std::endl;
   return SystemCall(commandLine.c_str(), true);
 }
 
@@ -790,7 +797,7 @@ bool remoteClient::checkIfPresentRemote(const std::string &fileName){
 bool remoteClient::syncInputFile(const std::string &fileName){
   int pos;
   std::string ofilename, cmd;
-  if((pos=fileName.find(olkey::extension)) != std::string::npos){ // .ol file
+  if((pos=fileName.find(onelabExtension)) != std::string::npos){ // .ol file
     ofilename = fileName.substr(fileName.find_first_not_of(" "),pos);  // remove extension
     std::cout << "ofilename=<" << ofilename << ">" << std::endl;
     if(checkIfPresent(ofilename)){
@@ -867,7 +874,7 @@ bool RemoteInterfacedClient::checkCommandLine(){
 
 
 void RemoteInterfacedClient::compute(){
-  std::string cmd;
+  std::string cmd,rmcmd;
   std::vector<std::string> choices;
 
   convert();
@@ -878,8 +885,10 @@ void RemoteInterfacedClient::compute(){
       syncInputFile(choices[i]);
   }
 
-  cmd.assign("ssh "+getRemoteHost()+" 'cd "+getRemoteDir()+"; "+buildRmCommand()+"'");
-  mySystem(cmd);
+  if(buildRmCommand(rmcmd)){
+    cmd.assign("ssh "+getRemoteHost()+" 'cd "+getRemoteDir()+"; "+rmcmd+"'");
+    mySystem(cmd);
+  }
 
   cmd.assign("ssh "+getRemoteHost()+" 'cd "+getRemoteDir()+"; "
 	     +getCommandLine()+" "+getString("Arguments")+"'");
@@ -894,7 +903,6 @@ void RemoteInterfacedClient::compute(){
 // REMOTE ENCAPSULATED Client
 
 std::string RemoteEncapsulatedClient::buildCommandLine(){
-
   std::vector<onelab::string> ps;
   get(ps, getName() + "/Action");
   std::string action = (ps.empty() ? "" : ps[0].getValue());
@@ -904,7 +912,7 @@ std::string RemoteEncapsulatedClient::buildCommandLine(){
   std::string computeCommand = (ps.empty() ? "" : ps[0].getValue());
 
   std::string cmd;
-  cmd.assign("incomp_ssh "+getRemoteHost()+" 'cd "+getRemoteDir()+"; "
+  cmd.assign("incomp_ssh "+getRemoteHost()+" 'cd "+getRemoteDir()+"; nohup "
 	     +FixWindowsPath(getCommandLine())+" ");
 
   if(action == "initialize")
@@ -917,7 +925,8 @@ std::string RemoteEncapsulatedClient::buildCommandLine(){
     Msg::Fatal("remoteEncapsulatedClient::run: Unknown: Unknown Action <%s>", action.c_str());
 
    // append "-onelab" command line argument
-  cmd.append(getSocketSwitch() + " \"" + getName() + "\"");
+  //cmd.append(getSocketSwitch() + " \"" + getName() + "\"");
+  cmd.append(getSocketSwitch() + " " + getName() + " ");
 
   return cmd;
 }
@@ -941,12 +950,15 @@ bool RemoteEncapsulatedClient::checkCommandLine(){
   std::cout << "l'executable " << getCommandLine() << " existe" << std::endl;
   pclose(fp);
 
+  Msg::SetOnelabString(getName() + "/Action","initialize",false);
+  run();
+
   return true;
 }
 
 
 void RemoteEncapsulatedClient::compute(){
-  std::string cmd;
+  std::string cmd,rmcmd;
   std::vector<std::string> choices;
 
   Msg::SetOnelabString(getName() + "/Action","compute",false); // a titre indicatif
@@ -956,8 +968,10 @@ void RemoteEncapsulatedClient::compute(){
       syncInputFile(choices[i]);
   }
 
-  cmd.assign("ssh "+getRemoteHost()+" 'cd "+getRemoteDir()+"; "+buildRmCommand()+"'");
-  mySystem(cmd);
+  if(buildRmCommand(rmcmd)){
+    cmd.assign("ssh "+getRemoteHost()+" 'cd "+getRemoteDir()+"; "+rmcmd+"'");
+    mySystem(cmd);
+  }
 
   run();
 
@@ -1088,7 +1102,7 @@ int enclosed(const std::string &in, std::vector<std::string> &arguments){
   arguments.resize(0);
   cursor=0;
   if ( (pos=in.find("(",cursor)) == std::string::npos )
-     Msg::Fatal("ONELAB: syntax error: <%s>",in.c_str());
+     Msg::Fatal("Syntax error: <%s>",in.c_str());
 
   unsigned int count=1;
   pos++; // skips '('
@@ -1099,13 +1113,13 @@ int enclosed(const std::string &in, std::vector<std::string> &arguments){
     if(in[pos]==',') {
       arguments.push_back(removeBlanks(in.substr(cursor,pos-cursor)));
       if(count!=1)
-	Msg::Fatal("ONELAB: syntax error: <%s>",in.c_str());
+	Msg::Fatal("Syntax error: <%s>",in.c_str());
       cursor=pos+1; // skips ','
     }
     pos++;
   } while( count && (pos!=std::string::npos) ); // find closing brace
   if(count)
-     Msg::Fatal("ONELAB: syntax error: <%s>",in.c_str());
+     Msg::Fatal("Syntax error: <%s>",in.c_str());
   else
     arguments.push_back(removeBlanks(in.substr(cursor,pos-1-cursor)));
   return arguments.size();
@@ -1115,12 +1129,12 @@ int extract(const std::string &in, std::string &paramName, std::string &action, 
   int pos, cursor,NumArg=0;
   cursor=0;
   if ( (pos=in.find(".",cursor)) == std::string::npos )
-     Msg::Fatal("ONELAB: syntax error: <%s>",in.c_str());
+     Msg::Fatal("Syntax error: <%s>",in.c_str());
   else
     paramName.assign(sanitize(in.substr(cursor,pos-cursor)));
   cursor = pos+1; // skips '.'
   if ( (pos=in.find("(",cursor)) == std::string::npos )
-     Msg::Fatal("ONELAB: syntax error: <%s>",in.c_str());
+     Msg::Fatal("Syntax error: <%s>",in.c_str());
   else
     action.assign(sanitize(in.substr(cursor,pos-cursor)));
   cursor = pos;
@@ -1131,7 +1145,7 @@ int extract(const std::string &in, std::string &paramName, std::string &action, 
     pos++;
   } while(count && (pos!=std::string::npos) ); // find closing brace
   if(count)
-     Msg::Fatal("ONELAB: syntax error: %s",in.c_str());
+     Msg::Fatal("Syntax error: %s",in.c_str());
   else
     NumArg = enclosed(in.substr(cursor,pos-cursor),arguments);
   // std::cout << "paramName=<" << paramName << ">" << std::endl;
@@ -1145,7 +1159,7 @@ bool extractRange(const std::string &in, std::vector<double> &arguments){
   arguments.resize(0);
   cursor=0;
   if ( (pos=in.find(":",cursor)) == std::string::npos )
-     Msg::Fatal("ONELAB: syntax error in range <%s>",in.c_str());
+     Msg::Fatal("Syntax error in range <%s>",in.c_str());
   else{
     arguments.push_back(atof(in.substr(cursor,pos-cursor).c_str()));
   }
@@ -1160,7 +1174,7 @@ bool extractRange(const std::string &in, std::vector<double> &arguments){
     arguments.push_back((arguments[1]-arguments[0])/((NumStep==0)?1:NumStep));
   }
   else
-     Msg::Fatal("ONELAB: syntax error in range <%s>",in.c_str());
+     Msg::Fatal("Syntax error in range <%s>",in.c_str());
   return (arguments.size()==3);
 }
 

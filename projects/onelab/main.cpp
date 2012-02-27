@@ -47,8 +47,6 @@ int main(int argc, char *argv[]){
   }
   Msg::SetOnelabString("Arguments/FileName",fileName,false);
 
-  //std::cout << "fileName:" << fileName << std::endl;
-
   MetaModel *myModel = new MetaModel(commandLine, clientName, fileName, modelNumber);
   if(!myModel->checkCommandLines()) //true if all clients have valid command lines and are initialized
     action.assign("exit");
@@ -82,6 +80,6 @@ int main(int argc, char *argv[]){
   Msg::FinalizeOnelab();
   delete myModel;
 
-  std::cout << "ONELAB: leave metamodel." << std::endl;
+  Msg::Info("Leave metamodel");
 }
 

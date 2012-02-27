@@ -15,19 +15,9 @@
 #include "onelab.h"
 #include "OnelabMessage.h"
 
-namespace olkey{ // reserved keywords for onelab
-  static std::string label("OL.");
-  static std::string client(label+"client");
-  static std::string param(label+"parameter");
-  static std::string number(label+"number"), string(label+"string");
-  static std::string include(label+"include"); 
-  static std::string iftrue(label+"iftrue"), olelse(label+"else"), olendif(label+"endif"); 
-  static std::string ifequal(label+"ifequal");
-  static std::string getValue(label+"getValue");
-  static std::string extension(".ol");
-  static std::string comment("%");
-  static std::string arguments("Args"), inFiles("In"), outFiles("Out");
-}
+
+// Onelab file extension
+static std::string onelabExtension(".ol");
 
 static char charSep() { return '\0'; }
 #if defined(WIN32)
@@ -134,7 +124,7 @@ class localSolverClient : public onelab::localClient{
   const bool getList(const std::string type, std::vector<std::string> &choices);
   const bool getActive() { return _enabled; }
   const void setActive(int val) { _enabled=(bool)val; }
-  const std::string buildRmCommand();
+  bool buildRmCommand(std::string &cmd);
 
   virtual bool checkCommandLine();
   virtual std::string toChar();
@@ -211,8 +201,8 @@ private:
     clientName = cname;
     modelNumberFromArgs = number;
     genericNameFromArgs = fname.size() ? fname : commandLine;
-    parse_onefile(genericNameFromArgs + olkey::extension);
-    parse_onefile(genericNameFromArgs + olkey::extension + ".save");
+    parse_onefile(genericNameFromArgs + onelabExtension);
+    parse_onefile(genericNameFromArgs + onelabExtension + ".save");
   }
   ~MetaModel(){}
   typedef std::vector<localSolverClient*>::iterator citer;

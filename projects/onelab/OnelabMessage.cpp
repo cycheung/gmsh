@@ -91,7 +91,7 @@ void Msg::Fatal(const char *fmt, ...)
       fprintf(stderr, "Fatal   : [On processor %d] %s\n", _commRank, str);
     else
       fprintf(stderr, "Fatal   : %s\n", str);
-    fflush(stderr);
+   fflush(stderr);
   }
 
   FinalizeClient();
@@ -400,7 +400,6 @@ void Msg::InitializeOnelab(const std::string &name, const std::string &sockname)
     _onelabClient = new onelab::localClient(name);
   else{
     onelab::remoteNetworkClient *c = new onelab::remoteNetworkClient(name, sockname);
-    std::cout << "ONELAB: cree remote client" << name.c_str() << std::endl;
     _onelabClient = c;
     _client = c->getGmshClient();
   }

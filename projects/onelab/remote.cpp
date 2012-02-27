@@ -14,14 +14,32 @@ int main(int argc, char **argv)
 {
   onelab::remoteNetworkClient *client = 0;
 
+  std::cout << "Running <remote>\n";
+
   for(int i = 0; i < argc; i++){
-    if(std::string(argv[i]) == "-onelab" && i < argc - 1)
-      client = new onelab::remoteNetworkClient("My solver", argv[i + 1]);
+    if(std::string(argv[i]) == "-onelab" && i < argc - 2)
+      client = new onelab::remoteNetworkClient(argv[i+1],argv[i+2]);
   }
 
   if(!client){
-    printf("usage: %s -onelab socket\n", argv[0]);
+    printf("usage: %s -onelab clientname socket\n", argv[0]);
     exit(1);
+  }
+  std::cout << "Remote: I have a client\n";
+
+  std::vector<onelab::string> strings;
+  client->get(strings,client->getName()+"/9CheckCommand"); // am I initialized
+  if(strings.size()){
+    std::cout << "I am initialized: CheckCommand=<" << strings[0].getValue() << ">" << std::endl;
+  }
+  else{ // initialize
+    // send a value to the server
+    onelab::string s(client->getName()+"/9CheckCommand","-check");
+    client->set(s);
+    onelab::number o(client->getName()+"/Initialized",1);
+    client->set(o);
+    delete client;
+    return 0;
   }
 
   onelab::number o("alpha",123456);
@@ -29,18 +47,6 @@ int main(int argc, char **argv)
   onelab::number oo("beta",654321);
   client->set(oo);
 
-
-  std::vector<onelab::string> strings;
- // try to get the string variable "My solver/My string" from the server
-  client->get(strings, "My solver/My string");
-  if(strings.size()){
-    std::cout << "Got string from server: '" << strings[0].getValue() << "'\n";
-  }
-  else{
-    // send a value to the server
-    onelab::string s("My solver/My string", "Hello!");
-    client->set(s);
-  }
   delete client;
   return 0;
 }
