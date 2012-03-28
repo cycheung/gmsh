@@ -1,7 +1,7 @@
 % global variables 
 
 OL.parameter TRANSIENT.number(0,,Flag transient simulation); TRANSIENT.AddChoices(0,1);
-OL.parameter DISTANT.number(2,,Flag remote host); DISTANT.AddChoices(0,1);
+OL.parameter DISTANT.number(0,,Flag remote host); DISTANT.AddChoices(0,1);
 
 % DISTANT=1 : haddock.mema.ucl.ac.be  130.104.237.29
 %DISTANT=2: localhost
@@ -60,7 +60,9 @@ OL.client Post.Args(solution.pos script_cryo.opt -);
 OL.client Post.Out( ./f.txt , ./fmax.txt);
 
 %5)Client Postpro pour charger la solution calcul avec Elmer 
-%OL.client GmshMerge.In(solution.pos);
+OL.ifntrue(DISTANT)
+    OL.client GmshMerge.In(solution.pos);
+OL.endif
 
 %6)Client Postpro pour extraire la min et la max de la courbe
 OL.client Gnuplot.Register(interfaced,gnuplot);

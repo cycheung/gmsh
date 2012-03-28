@@ -10,10 +10,12 @@ namespace olkey{
   static std::string param(label+"parameter");
   static std::string number(label+"number"), string(label+"string");
   static std::string include(label+"include");
-  static std::string iftrue(label+"iftrue"), olelse(label+"else"), olendif(label+"endif");
-  static std::string ifequal(label+"ifequal"), ifntrue(label+"ifntrue");
+  static std::string iftrue(label+"iftrue"), ifntrue(label+"ifntrue");
+  static std::string olelse(label+"else"), olendif(label+"endif");
+  static std::string ifequal(label+"ifequal");
   static std::string getValue(label+"getValue");
-  static std::string arguments("Args"), inFiles("In"), outFiles("Out");
+  static std::string arguments("Args"), inFiles("In"), outFiles("Out"), redirect("Redirect");
+  static std::string checkCmd("Check"), computeCmd("Compute");
 }
 
 std::string localSolverClient::toChar(){
@@ -60,7 +62,7 @@ std::string localSolverClient::resolveGetVal(std::string line) {
       if (strings.size())
 	buff.assign(strings[0].getValue());
       else
-	Msg::Fatal("resolveGetVal: unknown variable: %s",arguments[0].c_str());
+	Msg::Fatal("resolveGetVal: unknown variable: %s",paramName.c_str());
     }
     line.replace(pos0,pos-pos0,buff); 
     cursor=pos0+buff.length();
@@ -111,7 +113,7 @@ void localSolverClient::parse_oneline(std::string line, std::ifstream &infile) {
   std::string buff;
   std::set<std::string>::iterator it;
 
-  if((pos=line.find_first_not_of(" "))==std::string::npos)
+  if((pos=line.find_first_not_of(" \t"))==std::string::npos)
     return; // empty line
   else if(!line.compare(pos,olkey::comment.size(),olkey::comment))
     return; // commented out, skip the line
@@ -120,25 +122,25 @@ void localSolverClient::parse_oneline(std::string line, std::ifstream &infile) {
     cursor = pos+olkey::deflabel.length();
     pos=line.find_first_of(')',cursor)+1;
     int NumArg=enclosed(line.substr(cursor,pos-cursor),arguments);
-    if (NumArg==0)
-      Msg::Fatal("No tag given, using default tags <%s,%s,%s>",
-		 olkey::label.c_str(),olkey::comment.c_str()),olkey::separator.c_str();
-    else if(NumArg>=1){
+    if (NumArg == 0)
+      Msg::Error("No onelab tags given");
+    if(NumArg >= 1){
       olkey::label.assign(arguments[0]);
       olkey::client.assign(olkey::label+"client");
       olkey::param.assign(olkey::label+"parameter");
       olkey::number.assign(olkey::label+"number"), olkey::string.assign(olkey::label+"string");
       olkey::include.assign(olkey::label+"include"); 
-      olkey::iftrue.assign(olkey::label+"iftrue"), olkey::olelse.assign(olkey::label+"else");
-      olkey::olendif.assign(olkey::label+"endif"); 
+      olkey::iftrue.assign(olkey::label+"iftrue"), olkey::ifntrue.assign(olkey::label+"ifntrue"); 
+      olkey::olelse.assign(olkey::label+"else"), olkey::olendif.assign(olkey::label+"endif"), 
       olkey::ifequal.assign(olkey::label+"ifequal");
       olkey::getValue.assign(olkey::label+"getValue");
-      std::cout << "Tags modified:" << olkey::client << std::endl;
     }
-    else if(NumArg>=2)
+    if(NumArg >= 2)
       olkey::comment.assign(arguments[1]);
-    else if(NumArg>=3)
+    if(NumArg >= 3)
       olkey::separator.assign(arguments[2]);
+    Msg::Info("Using now onelab tags <%s,%s,%s> %d",
+	      olkey::label.c_str(),olkey::comment.c_str(),olkey::separator.c_str(),NumArg);
   }
   else if ( (pos=line.find(olkey::label)) == std::string::npos) // not a onelab line
     return;
@@ -166,7 +168,7 @@ void localSolverClient::parse_oneline(std::string line, std::ifstream &infile) {
 	  numbers[0].setName(name);
 	  numbers[0].setValue(val);
 	  if(arguments.size()>=3)
-	    numbers[0].setHelp(arguments[2]);
+	    numbers[0].setShortHelp(arguments[2]);
 	  if(arguments.size()>=4){
 	    std::vector<double> bounds;
 	    if (extractRange(arguments[3],bounds)){
@@ -222,7 +224,7 @@ void localSolverClient::parse_oneline(std::string line, std::ifstream &infile) {
 	  strings[0].setName(name);
 	  strings[0].setValue(value);
 	  if(arguments.size()>2)
-	    strings[0].setHelp(arguments[2]);
+	    strings[0].setShortHelp(arguments[2]);
 	  set(strings[0]);
 	}
       }
@@ -291,11 +293,14 @@ void localSolverClient::parse_oneline(std::string line, std::ifstream &infile) {
     bool condition = false;
     get(strings,longName(arguments[0]));
     if (strings.size())
-      condition= !strings[0].getValue().compare(arguments[1]);
+      condition= true;
     else{
       get(numbers,longName(arguments[0]));
       if (numbers.size())
 	condition = (bool) numbers[0].getValue();
+      else
+	Msg::Fatal("Unknown parameter <%s> in <%s> statement",
+		   arguments[0].c_str(),olkey::iftrue.c_str());
       if (!parse_ifstatement(infile,condition))
 	Msg::Fatal("Misformed <%s> statement: <%s>",olkey::iftrue.c_str(),arguments[0].c_str());
     }
@@ -308,13 +313,16 @@ void localSolverClient::parse_oneline(std::string line, std::ifstream &infile) {
     bool condition = false;
     get(strings,longName(arguments[0]));
     if (strings.size())
-      condition= !strings[0].getValue().compare(arguments[1]);
+      condition= true;
     else{
       get(numbers,longName(arguments[0]));
       if (numbers.size())
 	condition = (bool) numbers[0].getValue();
+      else
+	Msg::Fatal("Unknown parameter <%s> in <%s> statement",
+		   arguments[0].c_str(),olkey::ifntrue.c_str());
       if (!parse_ifstatement(infile,!condition))
-	Msg::Fatal("Misformed <%s> statement: <%s>",olkey::iftrue.c_str(),arguments[0].c_str());
+	Msg::Fatal("Misformed <%s> statement: <%s>",olkey::ifntrue.c_str(),arguments[0].c_str());
     }
   }
   else if ( (pos=line.find(olkey::ifequal)) != std::string::npos) {// onelab.ifequal
@@ -344,6 +352,10 @@ void localSolverClient::parse_oneline(std::string line, std::ifstream &infile) {
       Msg::Fatal("Misformed <%s> statement: (%s)",olkey::include.c_str(),line.c_str());
     parse_onefile(arguments[0]);
   }
+  else if ( (pos=line.find(olkey::getValue)) != std::string::npos) {// onelab.getValue
+  }
+  else
+    Msg::Fatal("Unknown ONELAB keyword in <%s>",line.c_str());
 }
 
 void localSolverClient::parse_onefile(std::string fileName) { 
@@ -405,12 +417,36 @@ void localSolverClient::convert_oneline(std::string line, std::ifstream &infile,
   std::string buff;
   std::set<std::string>::iterator it;
 
-  if((pos=line.find_first_not_of(" "))==std::string::npos)
+  if((pos=line.find_first_not_of(" \t"))==std::string::npos)
     outfile << line << std::endl;  // empty line
   else if(!line.compare(pos,olkey::comment.size(),olkey::comment))
     return;  // commented out, skip the line
-  else if ( (pos=line.find(olkey::deflabel)) != std::string::npos)
+  else if ( (pos=line.find(olkey::deflabel)) != std::string::npos){
+    // onelab.tags(label,comment,separator)
+    cursor = pos+olkey::deflabel.length();
+    pos=line.find_first_of(')',cursor)+1;
+    int NumArg=enclosed(line.substr(cursor,pos-cursor),arguments);
+    if (NumArg == 0)
+      Msg::Error("No onelab tags given");
+    if(NumArg >= 1){
+      olkey::label.assign(arguments[0]);
+      olkey::client.assign(olkey::label+"client");
+      olkey::param.assign(olkey::label+"parameter");
+      olkey::number.assign(olkey::label+"number"), olkey::string.assign(olkey::label+"string");
+      olkey::include.assign(olkey::label+"include"); 
+      olkey::iftrue.assign(olkey::label+"iftrue"), olkey::ifntrue.assign(olkey::label+"ifntrue"); 
+      olkey::olelse.assign(olkey::label+"else"), olkey::olendif.assign(olkey::label+"endif"); 
+      olkey::ifequal.assign(olkey::label+"ifequal");
+      olkey::getValue.assign(olkey::label+"getValue");
+    }
+    if(NumArg >= 2)
+      olkey::comment.assign(arguments[1]);
+    if(NumArg >= 3)
+      olkey::separator.assign(arguments[2]);
+    Msg::Info("Using now onelab tags <%s,%s,%s>",
+	      olkey::label.c_str(),olkey::comment.c_str(),olkey::separator.c_str());
     return;
+  }
   else if ( (pos=line.find(olkey::label)) == std::string::npos) 
     outfile << line << std::endl; // not a onelab line
   else{ 
@@ -438,6 +474,18 @@ void localSolverClient::convert_oneline(std::string line, std::ifstream &infile,
 	condition = (bool) numbers[0].getValue();
       if (!convert_ifstatement(infile,outfile,condition))
 	Msg::Fatal("Misformed <%s> statement: %s",olkey::iftrue.c_str(),arguments[0].c_str());     
+    }
+    else if ( (pos=line.find(olkey::ifntrue)) != std::string::npos) {// onelab.ifntrue
+      cursor = pos+olkey::ifntrue.length();
+      pos=line.find_first_of(')',cursor)+1;
+      if(enclosed(line.substr(cursor,pos-cursor),arguments)<1)
+	Msg::Fatal("Misformed <%s> statement: (%s)",olkey::ifntrue.c_str(),line.c_str());
+      bool condition = false;
+      get(numbers,longName(arguments[0]));
+      if (numbers.size())
+	condition = (bool) numbers[0].getValue();
+      if (!convert_ifstatement(infile,outfile,!condition))
+	Msg::Fatal("Misformed <%s> statement: %s",olkey::ifntrue.c_str(),arguments[0].c_str());  
     }
     else if ( (pos=line.find(olkey::ifequal)) != std::string::npos) {// onelab.ifequal
       cursor = pos+olkey::ifequal.length();
@@ -484,6 +532,8 @@ void localSolverClient::convert_oneline(std::string line, std::ifstream &infile,
     else{
       outfile << line << std::endl; 
       Msg::Warning("Ambiguous sentence: %s",line.c_str());
+      Msg::Info("Using now onelab tags <%s,%s,%s>",
+	      olkey::label.c_str(),olkey::comment.c_str(),olkey::separator.c_str());
     }
   }
 }
@@ -583,7 +633,7 @@ void MetaModel::parse_clientline(std::string line, std::ifstream &infile) {
 	else
 	  Msg::Fatal("Unknown client <%s>", name.c_str());
       }
-      else if(!action.compare("Args")){
+      else if(!action.compare(olkey::arguments)){
 	if(arguments[0].size()){
 	  strings.resize(1);
 	  strings[0].setName(name+"/Arguments");
@@ -592,7 +642,7 @@ void MetaModel::parse_clientline(std::string line, std::ifstream &infile) {
 	  set(strings[0]);
 	}
       }
-      else if(!action.compare("In")){
+      else if(!action.compare(olkey::inFiles)){
 	if(arguments[0].size()){
 	  strings.resize(1);
 	  strings[0].setName(name+"/InputFiles");
@@ -607,7 +657,7 @@ void MetaModel::parse_clientline(std::string line, std::ifstream &infile) {
 	  set(strings[0]);
 	}
       }
-      else if(!action.compare("Out")){
+      else if(!action.compare(olkey::outFiles)){
 	if(arguments[0].size()){
 	  strings.resize(1);
 	  strings[0].setName(name+"/OutputFiles");
@@ -619,6 +669,34 @@ void MetaModel::parse_clientline(std::string line, std::ifstream &infile) {
 	    //if(std::find(choices.begin(),choices.end(),arguments[i])==choices.end())
 	    choices.push_back(resolveGetVal(arguments[i]));
 	  strings[0].setChoices(choices);
+	  set(strings[0]);
+	}
+      }
+      else if(!action.compare(olkey::redirect)){
+	if(arguments[0].size()){
+	  strings.resize(1);
+	  strings[0].setName(name+"/Redirect");
+	  strings[0].setValue(resolveGetVal(arguments[0]));
+	  strings[0].setKind("file");
+	  strings[0].setVisible(false);
+	  set(strings[0]);
+	}
+      }
+      else if(!action.compare(olkey::checkCmd)){
+	if(arguments[0].size()){
+	  strings.resize(1);
+	  strings[0].setName(name+"/9CheckCommand");
+	  strings[0].setValue(resolveGetVal(arguments[0]));
+	  strings[0].setVisible(false);
+	  set(strings[0]);
+	}
+      }
+      else if(!action.compare(olkey::computeCmd)){
+	if(arguments[0].size()){
+	  strings.resize(1);
+	  strings[0].setName(name+"/9ComputeCommand");
+	  strings[0].setValue(resolveGetVal(arguments[0]));
+	  strings[0].setVisible(false);
 	  set(strings[0]);
 	}
       }

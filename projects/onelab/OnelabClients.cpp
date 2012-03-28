@@ -36,10 +36,11 @@ class onelabMetaModelServer : public GmshServer{
     if((pos=cmd.find("incomp_ssh ")) != std::string::npos){
       cmd.assign(cmd.substr(pos+7));
       //cmd.append(" &>/dev/null & '");
-      cmd.append(" &>onelab.log & '");
+      //cmd.append(" &>onelab.log & '");
+      cmd.append(" & '");
     }
-    else
-      cmd.append(" &");
+    else 
+      cmd.append(" & ");
 
     Msg::Info("Calling <%s>", cmd.c_str());
     return system(cmd.c_str());
@@ -95,18 +96,23 @@ std::string localNetworkSolverClient::buildCommandLine(){
     get(ps, getName() + "/9ComputeCommand");
     std::string computeCommand = (ps.empty() ? "" : ps[0].getValue());
 
-    if(action == "initialize")
-      command += " ";
-    else if(action == "check")
-      command += " " + getString("Arguments") + " " + checkCommand;
-    else if(action == "compute")
-      command += " " + getString("Arguments") + " " + computeCommand;
+    if(action == "initialize"){
+      command.append(" " + getSocketSwitch() + " " + getName() + " %s"); // -onelab option
+    }
+    else if(action == "check") {
+      command.append(" " + getString("Arguments") + " " + checkCommand) ;
+      command.append(" " + getSocketSwitch() + " " + getName() + " %s"); // -onelab option
+    }
+    else if(action == "compute"){
+      command.append(" " + getString("Arguments") + " " + computeCommand);
+      //command.append(" >> " + getName() + ".log 2>&1 "); // redirect
+      command.append(" " + getSocketSwitch() + " " + getName() + " %s"); // -onelab option
+    }
     else
       Msg::Fatal("localNetworkSolverClient::run: Unknown: Unknown Action <%s>", action.c_str());
 
     // append "-onelab" command line argument
     //command += " " + getSocketSwitch() + " \"" + getName() + "\"";
-    command += " " + getSocketSwitch() + " " + getName() + " ";
   }
   return command;
 }
@@ -143,6 +149,7 @@ bool localNetworkSolverClient::run()
 
   std::string command = buildCommandLine();
 
+
   std::cout << "sockname=<" << sockname << ">" << std::endl;
   // std::cout << "command=<" << command << ">" << std::endl;
 
@@ -162,6 +169,7 @@ bool localNetworkSolverClient::run()
   }
 
   Msg::StatusBar(2, true, "Now running client '%s'...", _name.c_str());
+
   while(1) {
     if(_pid < 0) break;
     
@@ -285,8 +293,8 @@ bool localNetworkSolverClient::run()
       Msg::Fatal("%-8.8s: %s", _name.c_str(), message.c_str());
       break;
     case GmshSocket::GMSH_MERGE_FILE:
-      Msg::Info("####Merge Post-Processing File %s",message.c_str());
-      SystemCall("gmsh "+ message+" &");
+      Msg::Info("Merge Post-Processing File %s",message.c_str());
+      SystemCall("gmsh "+ message);
       //implémentation pour le cas du loader en mode console.
       break;
     default:
@@ -667,9 +675,10 @@ void MetaModel::simpleCompute()
 {
   for(citer it = _clients.begin(); it != _clients.end(); it++){
     if((*it)->getActive()){
-	Msg::SetOnelabString((*it)->getName() + "/Action","compute",false);
-	(*it)->compute();
-      }
+      Msg::SetOnelabString((*it)->getName() + "/Action","compute",false);
+      freopen((*it)->getName().append(".log").c_str(),"w",stdout);
+      (*it)->compute();
+    }
   }
 }
 
@@ -1056,7 +1065,7 @@ bool checkIfPresent(std::string fileName){
   if (!stat(fileName.c_str(), &buf))
     return true;
   else{
-    Msg::Info("The file %s is not present",fileName.c_str());
+    Msg::Fatal("The file <%s> is not present",fileName.c_str());
     return false;
   }
 }
