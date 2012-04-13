@@ -1259,15 +1259,16 @@ array read_array(std::string filename, char sep){
   //   array.push_back( record );
   // }
 
-  int deb,end=0;
+  int deb,end;
   double temp;
   while (infile){
     std::string s;
     if (!getline( infile, s )) break;
-    //std::istringstream ss( s );
+    std::cout << "line=<" << s << ">" << std::endl;
     std::vector <double> record;
-    while ( (deb=s.find_first_not_of(" \t", end)) != std::string::npos ) {
-      if ( (end=s.find_first_of(" \t",deb)) != std::string::npos ){
+    end=0;
+    while ( (deb=s.find_first_not_of(" \t\n", end)) != std::string::npos ) {
+      if ( (end=s.find_first_of(" \t\n",deb)) != std::string::npos ){
 	temp=atof( s.substr(deb,end).c_str() );
 	record.push_back( temp );
 	std::cout << "Read=<" << temp << ">" << std::endl;

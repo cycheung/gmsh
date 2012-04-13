@@ -71,5 +71,5 @@ OL.iftrue(TRANSIENT)
         OL.client PostArray.List(fmax.txt,-1,2,Solution/tmin, fmax.txt,-1,8,Solution/fmin);
 OL.else
         OL.client Gnuplot.Active(0); // no gnuplot
-        OL.client PostArray.List(fmax.txt,-1,8,Solution/fobj);
+        OL.client PostArray.List(aaa,-1,8,Solution/fobj);
 OL.endif
