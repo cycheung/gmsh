@@ -376,37 +376,51 @@ void localSolverClient::parse_onefile(std::string fileName) {
 } 
 
 bool localSolverClient::parse_ifstatement(std::ifstream &infile, bool condition) { 
-  int pos;
+  int level, pos;
   std::string line;
 
-  bool trueclause=true, statementend=false;
-  while ( infile.good() && !statementend) {
+  bool trueclause=true; 
+  level=1;
+  while ( infile.good() && level) {
     getline (infile,line);
-    if ( (pos=line.find(olkey::olelse)) != std::string::npos) 
+    if ( ((pos=line.find(olkey::olelse)) != std::string::npos) && (level==1) ) 
       trueclause=false;
     else if ( (pos=line.find(olkey::olendif)) != std::string::npos) 
-      statementend=true;
+      level--;
     else if ( !(trueclause ^ condition) ) // xor bitwise operator
       parse_oneline(line,infile);
+    else {
+      if ( (pos=line.find(olkey::iftrue)) != std::string::npos) 
+	level++; // check for opening iftrue statement
+      else if ( (pos=line.find(olkey::ifntrue)) != std::string::npos) 
+	level++; // check for opening ifntrue statement
+    }
   }
-  return statementend;
+  return level?false:true ;
 } 
 
 bool localSolverClient::convert_ifstatement(std::ifstream &infile, std::ofstream &outfile, bool condition) { 
-  int pos;
+  int level, pos;
   std::string line;
 
-  bool trueclause=true, statementend=false;
-  while ( infile.good() && !statementend) {
+  bool trueclause=true; 
+  level=1;
+  while ( infile.good() && level) {
     getline (infile,line);
-    if ( (pos=line.find(olkey::olelse)) != std::string::npos) 
+    if ( ((pos=line.find(olkey::olelse)) != std::string::npos) && (level==1) ) 
       trueclause=false;
     else if ( (pos=line.find(olkey::olendif)) != std::string::npos) 
-      statementend=true;
+     level--;
     else if ( !(trueclause ^ condition) ) // xor bitwise operator
       convert_oneline(line,infile,outfile);
+    else {
+      if ( (pos=line.find(olkey::iftrue)) != std::string::npos) 
+	level++; // check for opening iftrue statement
+      else if ( (pos=line.find(olkey::ifntrue)) != std::string::npos) 
+	level++; // check for opening ifntrue statement
+    }
   }
-  return statementend;
+  return level?false:true ;
 } 
 
 void localSolverClient::convert_oneline(std::string line, std::ifstream &infile, std::ofstream &outfile) { 

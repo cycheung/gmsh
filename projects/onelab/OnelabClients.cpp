@@ -1230,10 +1230,12 @@ std::vector <double> extract_column(const int col, array data){
   return column;
 }
 
-double find_in_array(const int lin, const int col, const std::vector <std::vector <double> > &data){
-  if ( lin>=1 && lin<=data.size())
+double find_in_array(int lin, int col, const std::vector <std::vector <double> > &data){
+  if (lin==-1) lin=data.size();
+  if ( lin>=1 && lin<=data.size()){
     if (  col>=1 && col<=data[lin-1].size())
       return data[lin-1][col-1];
+  }
   Msg::Fatal("The value has not been calculated: (%d,%d) out of range",lin,col);
 }
 

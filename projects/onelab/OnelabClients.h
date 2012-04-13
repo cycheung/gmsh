@@ -50,7 +50,7 @@ bool checkIfPresent(std::string filename);
 
 typedef std::vector <std::vector <double> > array;
 array read_array(std::string filename, char sep);
-double find_in_array(const int i, const int j, const std::vector <std::vector <double> > &data);
+double find_in_array(int i, int j, const std::vector <std::vector <double> > &data);
 std::vector<double> extract_column(const int j, array data);
 
 class PromptUser : public onelab::localClient {

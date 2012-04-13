@@ -68,8 +68,8 @@ OL.endif
 OL.client Gnuplot.Register(interfaced,gnuplot);
 OL.client Gnuplot.In(f.plt);
 OL.iftrue(TRANSIENT)
-        OL.client PostArray.List(fmax.txt,1,2,Solution/tmin, fmax.txt,1,8,Solution/fmin);
+        OL.client PostArray.List(fmax.txt,-1,2,Solution/tmin, fmax.txt,-1,8,Solution/fmin);
 OL.else
         OL.client Gnuplot.Active(0); // no gnuplot
-        OL.client PostArray.List(fmax.txt,1,8,Solution/fobj);
+        OL.client PostArray.List(fmax.txt,-1,8,Solution/fobj);
 OL.endif
