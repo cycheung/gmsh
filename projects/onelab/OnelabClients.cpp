@@ -1231,9 +1231,9 @@ std::vector <double> extract_column(const int col, array data){
 }
 
 double find_in_array(int lin, int col, const std::vector <std::vector <double> > &data){
-  if (lin==-1) lin=data.size();
+  if ( lin<0 ) lin=data.size();
   if ( lin>=1 && lin<=data.size()){
-    if (  col>=1 && col<=data[lin-1].size())
+    if ( col>=1 && col<=data[lin-1].size() )
       return data[lin-1][col-1];
   }
   Msg::Fatal("The value has not been calculated: (%d,%d) out of range",lin,col);
@@ -1243,17 +1243,34 @@ array read_array(std::string filename, char sep){
   std::ifstream infile(sanitize(filename).c_str());
   std::vector <std::vector <double> > array;
 
+  // while (infile){
+  //   std::string s;
+  //   if (!getline( infile, s )) break;
+  //   std::istringstream ss( s );
+  //   std::vector <double> record;
+  //   while (ss){
+  //     std::string s;
+  //     if (!getline( ss, s, sep )) break;
+  //     if ( s.size() ){
+  // 	//std::cout << "Read=<" << s << ">" << std::endl;
+  // 	record.push_back( atof( s.c_str() ));
+  //     }
+  //   }
+  //   array.push_back( record );
+  // }
+
+  int deb,end=0;
+  double temp;
   while (infile){
     std::string s;
     if (!getline( infile, s )) break;
-    std::istringstream ss( s );
+    //std::istringstream ss( s );
     std::vector <double> record;
-    while (ss){
-      std::string s;
-      if (!getline( ss, s, sep )) break;
-      if ( s.size() ){
-	//std::cout << "Read=<" << s << ">" << std::endl;
-	record.push_back( atof( s.c_str() ));
+    while ( (deb=s.find_first_not_of(" \t", end)) != std::string::npos ) {
+      if ( (end=s.find_first_of(" \t",deb)) != std::string::npos ){
+	temp=atof( s.substr(deb,end).c_str() );
+	record.push_back( temp );
+	std::cout << "Read=<" << temp << ">" << std::endl;
       }
     }
     array.push_back( record );
