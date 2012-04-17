@@ -34,9 +34,7 @@ class onelabMetaModelServer : public GmshServer{
     std::string cmd(command);
     int pos;
     if((pos=cmd.find("incomp_ssh ")) != std::string::npos){
-      cmd.assign(cmd.substr(pos+7));
-      //cmd.append(" &>/dev/null & '");
-      //cmd.append(" &>onelab.log & '");
+      cmd.assign(cmd.substr(pos+7));  // remove "incomp_"  
       cmd.append(" & '");
     }
     else 
@@ -105,7 +103,6 @@ std::string localNetworkSolverClient::buildCommandLine(){
     }
     else if(action == "compute"){
       command.append(" " + getString("Arguments") + " " + computeCommand);
-      //command.append(" >> " + getName() + ".log 2>&1 "); // redirect
       command.append(" " + getSocketSwitch() + " " + getName() + " %s"); // -onelab option
     }
     else
@@ -674,6 +671,7 @@ void MetaModel::simpleCheck()
 void MetaModel::simpleCompute()
 {
   for(citer it = _clients.begin(); it != _clients.end(); it++){
+    //std::cout << "client:" << (*it)->getName() << " active:" << (*it)->getActive() << std::endl ;
     if((*it)->getActive()){
       Msg::SetOnelabString((*it)->getName() + "/Action","compute",false);
       freopen((*it)->getName().append(".log").c_str(),"w",stdout);
@@ -781,7 +779,7 @@ void EncapsulatedClient::compute() {
 // REMOTE CLIENT
 
 int mySystem(std::string commandLine){
-  //std::cout << "mySystem<" << commandLine << ">" << std::endl;
+  std::cout << "mySystem<" << commandLine << ">" << std::endl;
   return SystemCall(commandLine.c_str(), true);
 }
 
@@ -913,32 +911,32 @@ void RemoteInterfacedClient::compute(){
 // REMOTE ENCAPSULATED Client
 
 std::string RemoteEncapsulatedClient::buildCommandLine(){
-  std::vector<onelab::string> ps;
-  get(ps, getName() + "/Action");
-  std::string action = (ps.empty() ? "" : ps[0].getValue());
-  get(ps, getName() + "/9CheckCommand");
-  std::string checkCommand = (ps.empty() ? "" : ps[0].getValue());
-  get(ps, getName() + "/9ComputeCommand");
-  std::string computeCommand = (ps.empty() ? "" : ps[0].getValue());
+  std::string command;
+  command.assign("incomp_ssh "+getRemoteHost()+" 'cd "+getRemoteDir()+"; nohup "
+	         +FixWindowsPath(getCommandLine())+" ");
+  if(command.size()){
+    std::vector<onelab::string> ps;
+    get(ps, getName() + "/Action");
+    std::string action = (ps.empty() ? "" : ps[0].getValue());
+    get(ps, getName() + "/9CheckCommand");
+    std::string checkCommand = (ps.empty() ? "" : ps[0].getValue());
+    get(ps, getName() + "/9ComputeCommand");
+    std::string computeCommand = (ps.empty() ? "" : ps[0].getValue());
 
-  std::string cmd;
-  cmd.assign("incomp_ssh "+getRemoteHost()+" 'cd "+getRemoteDir()+"; nohup "
-	     +FixWindowsPath(getCommandLine())+" ");
-
-  if(action == "initialize")
-    cmd.append(" ");
-  else if(action == "check")
-    cmd.append(" " + getString("Arguments") + " " + checkCommand + " ");
-  else if(action == "compute")
-    cmd.append(" " + getString("Arguments") + " " + computeCommand + " ");
-  else
-    Msg::Fatal("remoteEncapsulatedClient::run: Unknown: Unknown Action <%s>", action.c_str());
-
-   // append "-onelab" command line argument
-  //cmd.append(getSocketSwitch() + " \"" + getName() + "\"");
-  cmd.append(getSocketSwitch() + " " + getName() + " ");
-
-  return cmd;
+    if(action == "initialize")
+      command.append(" " + getSocketSwitch() + " " + getName() + " %s");
+    else if(action == "check"){
+      command.append(" " + getString("Arguments") + " " + checkCommand + " ");
+      command.append(" " + getSocketSwitch() + " " + getName() + " %s");
+    }
+    else if(action == "compute"){
+      command.append(" " + getString("Arguments") + " " + computeCommand + " ");
+      command.append(" " + getSocketSwitch() + " " + getName() + " %s");
+    }
+    else
+      Msg::Fatal("remoteEncapsulatedClient::run: Unknown: Unknown Action <%s>", action.c_str());
+  }
+  return command;
 }
 
 bool RemoteEncapsulatedClient::checkCommandLine(){
@@ -1231,7 +1229,9 @@ std::vector <double> extract_column(const int col, array data){
 }
 
 double find_in_array(int lin, int col, const std::vector <std::vector <double> > &data){
-  if ( lin<0 ) lin=data.size();
+  if ( lin<0 ) {
+    lin=data.size();
+  }
   if ( lin>=1 && lin<=data.size()){
     if ( col>=1 && col<=data[lin-1].size() )
       return data[lin-1][col-1];
@@ -1264,14 +1264,14 @@ array read_array(std::string filename, char sep){
   while (infile){
     std::string s;
     if (!getline( infile, s )) break;
-    std::cout << "line=<" << s << ">" << std::endl;
+    //std::cout << "line=<" << s << ">" << std::endl;
     std::vector <double> record;
     end=0;
     while ( (deb=s.find_first_not_of(" \t\n", end)) != std::string::npos ) {
       if ( (end=s.find_first_of(" \t\n",deb)) != std::string::npos ){
 	temp=atof( s.substr(deb,end).c_str() );
 	record.push_back( temp );
-	std::cout << "Read=<" << temp << ">" << std::endl;
+	//std::cout << "Read=<" << temp << ">" << std::endl;
       }
     }
     array.push_back( record );

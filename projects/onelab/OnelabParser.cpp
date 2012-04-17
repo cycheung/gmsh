@@ -8,6 +8,7 @@ namespace olkey{
   static std::string label("OL."), comment("%"), separator(";");
   static std::string client(label+"client");
   static std::string param(label+"parameter");
+  static std::string setValue(label+"setValue");
   static std::string number(label+"number"), string(label+"string");
   static std::string include(label+"include");
   static std::string iftrue(label+"iftrue"), ifntrue(label+"ifntrue");
@@ -128,6 +129,7 @@ void localSolverClient::parse_oneline(std::string line, std::ifstream &infile) {
       olkey::label.assign(arguments[0]);
       olkey::client.assign(olkey::label+"client");
       olkey::param.assign(olkey::label+"parameter");
+      olkey::setValue.assign(olkey::label+"setValue");
       olkey::number.assign(olkey::label+"number"), olkey::string.assign(olkey::label+"string");
       olkey::include.assign(olkey::label+"include"); 
       olkey::iftrue.assign(olkey::label+"iftrue"), olkey::ifntrue.assign(olkey::label+"ifntrue"); 
@@ -278,6 +280,55 @@ void localSolverClient::parse_oneline(std::string line, std::ifstream &infile) {
 	    Msg::Fatal("The parameter <%s> does not exist",name.c_str());
 	  }
 	}
+      }
+      else
+	Msg::Fatal("Unknown action <%s>",action.c_str());
+      cursor=pos+1;
+    }
+    // fin de la boucle while
+  }
+  else if ( (pos=line.find(olkey::setValue)) != std::string::npos) {// onelab.setValue
+    cursor = pos+olkey::setValue.length();
+    while ( (pos=line.find(sep,cursor)) != std::string::npos){
+      std::string name, action;
+      extract(line.substr(cursor,pos-cursor),name,action,arguments);
+
+      if(!action.compare("number")) { 
+	if(arguments.empty())
+	  Msg::Fatal("No value given for parameter <%s>",name.c_str());
+	double val=atof(arguments[0].c_str());
+	if(arguments.size()>=2){
+	  name.assign(arguments[1] + name);
+	}
+	_parameters.insert(name);
+	get(numbers,name);
+	if(numbers.empty()) {
+	  numbers.resize(1);
+	  numbers[0].setName(name);
+	}
+	numbers[0].setValue(val);
+	if(arguments.size()>=3)
+	  numbers[0].setShortHelp(arguments[2]);
+	numbers[0].setAttribute("Highlight","Ivory");
+	set(numbers[0]);
+      }
+      else if(!action.compare("string")) {
+	if(arguments.empty())
+	  Msg::Fatal("No value given for parameter <%s>",name.c_str());
+	std::string value=arguments[0];
+	if(arguments.size()>=2)
+	  name.assign(arguments[1] + name);
+	_parameters.insert(name);
+	get(strings,name); 
+	if(strings.empty()){
+	  strings.resize(1);
+	  strings[0].setName(name);
+	}
+	strings[0].setValue(value);
+	if(arguments.size()>=3)
+	  strings[0].setShortHelp(arguments[2]);
+	strings[0].setAttribute("Highlight","Ivory");
+	set(strings[0]);
       }
       else
 	Msg::Fatal("Unknown action <%s>",action.c_str());
@@ -446,6 +497,7 @@ void localSolverClient::convert_oneline(std::string line, std::ifstream &infile,
       olkey::label.assign(arguments[0]);
       olkey::client.assign(olkey::label+"client");
       olkey::param.assign(olkey::label+"parameter");
+      olkey::setValue.assign(olkey::label+"setValue");
       olkey::number.assign(olkey::label+"number"), olkey::string.assign(olkey::label+"string");
       olkey::include.assign(olkey::label+"include"); 
       olkey::iftrue.assign(olkey::label+"iftrue"), olkey::ifntrue.assign(olkey::label+"ifntrue"); 
@@ -639,7 +691,7 @@ void MetaModel::parse_clientline(std::string line, std::ifstream &infile) {
 	if(c=findClientByName(name)){
 	  if(arguments.size()) {
 	    if(arguments[0].size())
-	      c->setActive(atof(arguments[0].c_str()));
+	      c->setActive(atof( resolveGetVal(arguments[0]).c_str() ));
 	    else
 	      Msg::Error("No argument for <%s.Active> statement", name.c_str());
 	  }

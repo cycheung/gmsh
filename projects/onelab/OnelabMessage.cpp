@@ -576,6 +576,7 @@ void Msg::AddOnelabNumberChoice(std::string name, double val)
     ps[0].setValue(val);
     choices.push_back(val);
     ps[0].setChoices(choices);
+    ps[0].setAttribute("Highlight","Salmon");
     _onelabClient->set(ps[0]);
   }
 }
