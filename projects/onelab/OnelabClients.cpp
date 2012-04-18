@@ -1268,11 +1268,10 @@ array read_array(std::string filename, char sep){
     std::vector <double> record;
     end=0;
     while ( (deb=s.find_first_not_of(" \t\n", end)) != std::string::npos ) {
-      if ( (end=s.find_first_of(" \t\n",deb)) != std::string::npos ){
-	temp=atof( s.substr(deb,end).c_str() );
-	record.push_back( temp );
-	//std::cout << "Read=<" << temp << ">" << std::endl;
-      }
+      end=s.find_first_of(" \t\n",deb);
+      temp=atof( s.substr(deb,end).c_str() );
+      record.push_back( temp );
+      //std::cout << "Read=<" << temp << ">" << std::endl;
     }
     array.push_back( record );
   }
