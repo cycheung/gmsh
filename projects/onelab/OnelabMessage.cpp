@@ -554,7 +554,7 @@ void Msg::ExchangeOnelabParameter(const std::string &key,
     if(fopt.count("Step")) o.setStep(fopt["Step"][0]);
     if(fopt.count("Choices")) o.setChoices(fopt["Choices"]);
     if(copt.count("Help")) o.setHelp(copt["Help"][0]);
-    if(copt.count("ShortHelp")) o.setShortHelp(copt["ShortHelp"][0]);
+    if(copt.count("Label")) o.setLabel(copt["Label"][0]);
     _onelabClient->set(o);
   }
 }

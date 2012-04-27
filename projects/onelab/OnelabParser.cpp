@@ -170,7 +170,7 @@ void localSolverClient::parse_oneline(std::string line, std::ifstream &infile) {
 	  numbers[0].setName(name);
 	  numbers[0].setValue(val);
 	  if(arguments.size()>=3)
-	    numbers[0].setShortHelp(arguments[2]);
+	    numbers[0].setLabel(arguments[2]);
 	  if(arguments.size()>=4){
 	    std::vector<double> bounds;
 	    if (extractRange(arguments[3],bounds)){
@@ -226,7 +226,7 @@ void localSolverClient::parse_oneline(std::string line, std::ifstream &infile) {
 	  strings[0].setName(name);
 	  strings[0].setValue(value);
 	  if(arguments.size()>2)
-	    strings[0].setShortHelp(arguments[2]);
+	    strings[0].setLabel(arguments[2]);
 	  set(strings[0]);
 	}
       }
@@ -308,7 +308,7 @@ void localSolverClient::parse_oneline(std::string line, std::ifstream &infile) {
 	}
 	numbers[0].setValue(val);
 	if(arguments.size()>=3)
-	  numbers[0].setShortHelp(arguments[2]);
+	  numbers[0].setLabel(arguments[2]);
 	numbers[0].setAttribute("Highlight","Ivory");
 	set(numbers[0]);
       }
@@ -326,7 +326,7 @@ void localSolverClient::parse_oneline(std::string line, std::ifstream &infile) {
 	}
 	strings[0].setValue(value);
 	if(arguments.size()>=3)
-	  strings[0].setShortHelp(arguments[2]);
+	  strings[0].setLabel(arguments[2]);
 	strings[0].setAttribute("Highlight","Ivory");
 	set(strings[0]);
       }
@@ -621,17 +621,13 @@ void localSolverClient::convert_onefile(std::string ifilename, std::ofstream &ou
 
 void MetaModel::parse_clientline(std::string line, std::ifstream &infile) { 
   int pos,cursor;
-  std::string name,action,cmdl;
+  std::string action,name;
   std::vector<std::string> arguments;
   std::vector<onelab::string> strings;
   char sep=';';
 
   if( (pos=line.find(olkey::client)) != std::string::npos) {// onelab.client
-    // syntax name.Register(interfaced)
-    //        name.Register(interfaced,cmdl)
-    //        name.Register(interfaced,remoteHost,remoteDir,cmdl)
-    //        name.Register(encapsulated)
-    //        name.Register(encapsulated,remoteHost,remoteDir,cmdl)
+    // syntax name.Register([interf...|encaps...]{,cmdl{,dir{,host}}})
     cursor = pos + olkey::client.length();
     while ( (pos=line.find(sep,cursor)) != std::string::npos){
       extract(line.substr(cursor,pos-cursor),name,action,arguments);
@@ -639,32 +635,32 @@ void MetaModel::parse_clientline(std::string line, std::ifstream &infile) {
 	if(!findClientByName(name)){
 	  Msg::Info("Define client <%s>", name.c_str());
 
-	  if(arguments.size()==1){ //local clients
-	    //check if one has a saved command line on the server (prealably read from file .ol.save)
-	    get(strings,name + "/CommandLine");
-	    if(strings.size())
-	      cmdl.assign(strings[0].getValue());
-	    else 
-	      cmdl.assign("");
-	    registerClient(name,resolveGetVal(arguments[0]),cmdl); // possibly with an empty cmdl
-	  }
-	  else if(arguments.size()==2){ //local clients
-	    registerClient(name,resolveGetVal(arguments[0]),resolveGetVal(arguments[1])); 
-	  }
-	  else if(arguments.size()==4){ //remote clients, disregard saved commandLine
-	    cmdl.assign(resolveGetVal(arguments[3]));
-	    registerClient(name,resolveGetVal(arguments[0]),cmdl,
-			   resolveGetVal(arguments[1]),resolveGetVal(arguments[2]));
-	  }
-	  else
-	    Msg::Fatal("Wrong number or arguments in client definition <%s>", name.c_str());
+	  std::string cmdl="",wdir="",host="",rdir="";
+	  if(arguments.size()>=2) cmdl.assign(resolveGetVal(arguments[1]));
+	  if(arguments.size()>=3) wdir.assign(resolveGetVal(arguments[2]));
+	  if(arguments.size()>=4) host.assign(resolveGetVal(arguments[3]));
+	  if(arguments.size()>=5) rdir.assign(resolveGetVal(arguments[4]));
 
-	  //set actual commandLine on server (for consistency)
+	  if(wdir.empty())
+	    wdir=Msg::GetOnelabString("Arguments/WorkingDir");
+
+	  // check if one has a saved command line on the server 
+	  // (prealably read from file .ol.save)
+	  if(cmdl.empty())
+	    cmdl=Msg::GetOnelabString(name + "/CommandLine");
+
+	  // if(cmdl.empty()){
+	  //   get(strings,name + "/CommandLine");
+	  //   if(strings.size())
+	  //     cmdl.assign(strings[0].getValue());
+	  // }
+	  registerClient(name,resolveGetVal(arguments[0]),cmdl,wdir,host,rdir);
+
 	  onelab::string o(name + "/CommandLine","");
 	  o.setValue(cmdl);
 	  o.setKind("file");
 	  o.setVisible(cmdl.empty());
-	  o.setAttribute("Highlight","true");
+	  o.setAttribute("Highlight","Ivory");
 	  set(o);
 	}
 	else
@@ -738,16 +734,16 @@ void MetaModel::parse_clientline(std::string line, std::ifstream &infile) {
 	  set(strings[0]);
 	}
       }
-      else if(!action.compare(olkey::redirect)){
-	if(arguments[0].size()){
-	  strings.resize(1);
-	  strings[0].setName(name+"/Redirect");
-	  strings[0].setValue(resolveGetVal(arguments[0]));
-	  strings[0].setKind("file");
-	  strings[0].setVisible(false);
-	  set(strings[0]);
-	}
-      }
+      // else if(!action.compare(olkey::redirect)){
+      // 	if(arguments[0].size()){
+      // 	  strings.resize(1);
+      // 	  strings[0].setName(name+"/Redirect");
+      // 	  strings[0].setValue(resolveGetVal(arguments[0]));
+      // 	  strings[0].setKind("file");
+      // 	  strings[0].setVisible(false);
+      // 	  set(strings[0]);
+      // 	}
+      // }
       else if(!action.compare(olkey::checkCmd)){
 	if(arguments[0].size()){
 	  strings.resize(1);
