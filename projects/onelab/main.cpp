@@ -12,15 +12,15 @@ int main(int argc, char *argv[]){
 
   getOptions(argc, argv, action, commandLine, caseName, clientName, sockName, modelNumber);
   
-  std::cout << "caseName=<" << caseName << ">" << std::endl;
-
   // Msg::_onelabclient is a onelab:LocalClient independent of MetaModel
+
   Msg::InitializeOnelab("metamodel","");
 
   if (sockName.size()){
     Msg::loader = new onelab::remoteNetworkClient(clientName, sockName);
     Msg::hasGmsh = clientName.compare("loadedMetaModel");
   }
+  Msg::SetOnelabNumber("HasGmsh",Msg::hasGmsh,false);
 
   if(Msg::loader)
     std::cout << "ONELAB: " << Msg::Synchronize_Down() << " parameters downloaded" << std::endl;

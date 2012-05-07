@@ -52,8 +52,8 @@ class PromptUser : public onelab::localClient {
 public:
  PromptUser(const std::string &name) : onelab::localClient(name) {}
   ~PromptUser(){}
-  int  getVerbosity();
-  void setVerbosity(const int ival);
+  /* int  getVerbosity(); */
+  /* void setVerbosity(const int ival); */
   void setNumber(const std::string paramName, const double val, const std::string &help="");
   double getNumber(const std::string paramName);
   bool existNumber(const std::string paramName);
@@ -123,7 +123,9 @@ class localSolverClient : public onelab::localClient{
   const bool getActive() { return _enabled; }
   const void setActive(int val) { _enabled=(bool)val; }
   bool buildRmCommand(std::string &cmd);
-
+  bool checkIfPresentLocal(const std::string &fileName){
+    return checkIfPresent(getWorkingDir()+fileName);
+  }
   virtual bool checkCommandLine();
   virtual std::string toChar();
 
@@ -138,6 +140,7 @@ class localSolverClient : public onelab::localClient{
 
   virtual void analyze() =0;
   virtual void compute() =0;
+  void PostArray(std::vector<std::string> choices);
 };
 
 class localNetworkSolverClient : public localSolverClient{
@@ -182,26 +185,23 @@ class remoteClient {
   const std::string &getRemoteDir() const { return _remoteDir; }
 
   bool checkIfPresentRemote(const std::string &fileName);
-  bool syncInputFile(const std::string &fileName);
-  bool syncOutputFile(const std::string &fileName);
+  bool syncInputFile(const std::string &wdir, const std::string &fileName);
+  bool syncOutputFile(const std::string &wdir, const std::string &fileName);
 };
 
 // ONELAB CLIENTS
 
 class MetaModel : public localSolverClient {
-private:
+ private:
   std::vector<localSolverClient *> _clients;
-  //void registerInterfacedClient(const std::string name, const std::string cmdl, const std::string dir);
-  //void registerDistantClient(const std::string name, const std::string cmdl, const std::string dir, const std::string host);
-  //void registerEncapsulatedClient(const std::string name, const std::string cmdl, const std::string dir);
  public:
  MetaModel(const std::string &cmdl, const std::string &wdir, const std::string &cname, const std::string &fname, const int number) 
    : localSolverClient(cname,cmdl,wdir){
     clientName = cname;
     modelNumberFromArgs = number;
     genericNameFromArgs = fname.size() ? fname : cmdl;
-    parse_onefile( wdir + genericNameFromArgs + onelabExtension);
-    parse_onefile( wdir + genericNameFromArgs + onelabExtension + ".save");
+    parse_onefile( genericNameFromArgs + onelabExtension);
+    parse_onefile( genericNameFromArgs + onelabExtension + ".save");
   }
   ~MetaModel(){}
   typedef std::vector<localSolverClient*>::iterator citer;
@@ -223,7 +223,7 @@ private:
   int modelNumberFromArgs;
   void parse_clientline(std::string line, std::ifstream &infile);
   std::string toChar(){}
-  void PostArray(std::vector<std::string> choices);
+  //void PostArray(std::vector<std::string> choices);
   void initialize();
   void simpleCheck();
   void simpleCompute();

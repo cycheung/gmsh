@@ -389,10 +389,6 @@ void Msg::Barrier()
 {
 }
 
-// int Msg::GetNumThreads(){ return 1; }
-// int Msg::GetMaxThreads(){ return 1; }
-// int Msg::GetThreadNum(){ return 0; }
-
 void Msg::InitializeOnelab(const std::string &name, const std::string &sockname)
 {
   if(_onelabClient) delete _onelabClient;
@@ -576,7 +572,7 @@ void Msg::AddOnelabNumberChoice(std::string name, double val)
     ps[0].setValue(val);
     choices.push_back(val);
     ps[0].setChoices(choices);
-    ps[0].setAttribute("Highlight","Salmon");
+    ps[0].setAttribute("Highlight","Coral");
     _onelabClient->set(ps[0]);
   }
 }

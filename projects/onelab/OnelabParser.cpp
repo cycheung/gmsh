@@ -7,7 +7,7 @@ namespace olkey{
   static std::string deflabel("onelab.tags");
   static std::string label("OL."), comment("%"), separator(";");
   static std::string client(label+"client");
-  static std::string param(label+"parameter");
+  static std::string param(label+"param");
   static std::string setValue(label+"setValue");
   static std::string number(label+"number"), string(label+"string");
   static std::string include(label+"include");
@@ -15,7 +15,7 @@ namespace olkey{
   static std::string olelse(label+"else"), olendif(label+"endif");
   static std::string ifequal(label+"ifequal");
   static std::string getValue(label+"getValue");
-  static std::string arguments("Args"), inFiles("In"), outFiles("Out"), redirect("Redirect");
+  static std::string arguments("Args"), inFiles("In"), outFiles("Out"), upload("Up");
   static std::string checkCmd("Check"), computeCmd("Compute");
 }
 
@@ -411,11 +411,11 @@ void localSolverClient::parse_oneline(std::string line, std::ifstream &infile) {
 
 void localSolverClient::parse_onefile(std::string fileName) { 
   std::string line;
-  // std::string fileNameSave = fileName+".save";
 
-  std::ifstream infile(fileName.c_str()); // read client description
+  std::string fullName=getWorkingDir()+fileName;
+  std::ifstream infile(fullName.c_str());
   if (infile.is_open()){
-    Msg::Info("Read file <%s>",fileName.c_str());
+    Msg::Info("Parse file <%s>",fullName.c_str());
     while ( infile.good() ) {
       getline (infile,line);
       parse_oneline(line,infile);
@@ -423,7 +423,7 @@ void localSolverClient::parse_onefile(std::string fileName) {
     infile.close();
   }
   else
-    Msg::Info("The file %s does not exist",fileName.c_str());
+    Msg::Info("The file %s does not exist",fullName.c_str());
 } 
 
 bool localSolverClient::parse_ifstatement(std::ifstream &infile, bool condition) { 
@@ -604,19 +604,19 @@ void localSolverClient::convert_oneline(std::string line, std::ifstream &infile,
   }
 }
 
-void localSolverClient::convert_onefile(std::string ifilename, std::ofstream &outfile) { 
-  std::string line;
-  std::ifstream infile(ifilename.c_str());
-  //fileName.assign(name.substr(0,name.find_last_of(".")));  // remove extension
+void localSolverClient::convert_onefile(std::string fileName, std::ofstream &outfile) { 
+  std::string fullName=getWorkingDir()+fileName;
+  std::ifstream infile(fullName.c_str());
   if (infile.is_open()){
     while ( infile.good() ) {
+      std::string line;
       getline (infile,line);
       convert_oneline(line,infile,outfile);
     }
     infile.close();
   }
   else
-    Msg::Fatal("The file %s cannot be opened",ifilename.c_str());
+    Msg::Fatal("The file %s cannot be opened",fullName.c_str());
 }
 
 void MetaModel::parse_clientline(std::string line, std::ifstream &infile) { 
@@ -627,7 +627,7 @@ void MetaModel::parse_clientline(std::string line, std::ifstream &infile) {
   char sep=';';
 
   if( (pos=line.find(olkey::client)) != std::string::npos) {// onelab.client
-    // syntax name.Register([interf...|encaps...]{,cmdl{,dir{,host}}})
+    // syntax name.Register([interf...|encaps...]{,cmdl{,wdir,{host{,rdir}}}}) ;
     cursor = pos + olkey::client.length();
     while ( (pos=line.find(sep,cursor)) != std::string::npos){
       extract(line.substr(cursor,pos-cursor),name,action,arguments);
@@ -641,20 +641,12 @@ void MetaModel::parse_clientline(std::string line, std::ifstream &infile) {
 	  if(arguments.size()>=4) host.assign(resolveGetVal(arguments[3]));
 	  if(arguments.size()>=5) rdir.assign(resolveGetVal(arguments[4]));
 
-	  if(wdir.empty())
-	    wdir=Msg::GetOnelabString("Arguments/WorkingDir");
-
 	  // check if one has a saved command line on the server 
 	  // (prealably read from file .ol.save)
 	  if(cmdl.empty())
 	    cmdl=Msg::GetOnelabString(name + "/CommandLine");
 
-	  // if(cmdl.empty()){
-	  //   get(strings,name + "/CommandLine");
-	  //   if(strings.size())
-	  //     cmdl.assign(strings[0].getValue());
-	  // }
-	  registerClient(name,resolveGetVal(arguments[0]),cmdl,wdir,host,rdir);
+	  registerClient(name,resolveGetVal(arguments[0]),cmdl,getWorkingDir()+wdir,host,rdir);
 
 	  onelab::string o(name + "/CommandLine","");
 	  o.setValue(cmdl);
@@ -734,16 +726,19 @@ void MetaModel::parse_clientline(std::string line, std::ifstream &infile) {
 	  set(strings[0]);
 	}
       }
-      // else if(!action.compare(olkey::redirect)){
-      // 	if(arguments[0].size()){
-      // 	  strings.resize(1);
-      // 	  strings[0].setName(name+"/Redirect");
-      // 	  strings[0].setValue(resolveGetVal(arguments[0]));
-      // 	  strings[0].setKind("file");
-      // 	  strings[0].setVisible(false);
-      // 	  set(strings[0]);
-      // 	}
-      // }
+      else if(!action.compare(olkey::upload)){
+      	if(arguments[0].size()){
+      	  strings.resize(1);
+      	  strings[0].setName(name+"/PostArray");
+      	  strings[0].setValue(resolveGetVal(arguments[0]));
+     	  std::vector<std::string> choices;
+	  for(unsigned int i = 0; i < arguments.size(); i++)
+	    choices.push_back(resolveGetVal(arguments[i]));
+	  strings[0].setChoices(choices);
+      	  strings[0].setVisible(false);
+      	  set(strings[0]);
+      	}
+      }
       else if(!action.compare(olkey::checkCmd)){
 	if(arguments[0].size()){
 	  strings.resize(1);
