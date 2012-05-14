@@ -610,6 +610,22 @@ void localSolverClient::PostArray(std::vector<std::string> choices)
   }
 }
 
+void localSolverClient::GmshMerge(std::vector<std::string> choices)
+{
+  if(choices.empty()) return;
+  std::string cmd=Msg::GetOnelabString("Starter/CommandLine")+" ";
+  for(unsigned int i = 0; i < choices.size(); i++){
+    std::string fileName=getWorkingDir()+choices[i];
+    cmd.append(fileName+" ");
+    if(Msg::hasGmsh){
+      Msg::loader->sendMergeFileRequest(fileName);
+      Msg::Info("Send merge request <%s>",fileName.c_str());
+    }
+  }
+  cmd.append(" &");
+  if(!Msg::hasGmsh) system(cmd.c_str());
+}
+
 // client METAMODEL
 
 //Metamodel::analyze and Metamodel::compute are defined in the file SOLVERS/onelab.cpp
@@ -681,25 +697,26 @@ void MetaModel::simpleCompute()
     if((*it)->getActive()){
       Msg::SetOnelabString((*it)->getName() + "/Action","compute",false);
       freopen((*it)->getName().append(".log").c_str(),"w",stdout);
+      freopen((*it)->getName().append(".err").c_str(),"w",stderr);
       (*it)->compute();
     }
   }
 }
 
-// void MetaModel::PostArray(std::vector<std::string> choices)
-// {
-//   int nb=0;
-//   onelab::number o;
-//   while( 4*(nb+1) <= choices.size()){
-//     int lin= atof(choices[4*nb+1].c_str());
-//     int col= atof(choices[4*nb+2].c_str());
-//     std::string filename = Msg::GetOnelabString("Arguments/WorkingDir")+choices[4*nb];
-//     double val=find_in_array(lin,col,read_array(filename,' '));
-//     Msg::AddOnelabNumberChoice(choices[4*nb+3],val);
-//     Msg::Info("PostArray <%s>=%e",choices[4*nb+3].c_str(),val);
-//     nb++;
-//   }
-// }
+void MetaModel::PostArray(std::vector<std::string> choices)
+{
+  int nb=0;
+  onelab::number o;
+  while( 4*(nb+1) <= choices.size()){
+    int lin= atof(choices[4*nb+1].c_str());
+    int col= atof(choices[4*nb+2].c_str());
+    std::string filename = Msg::GetOnelabString("Arguments/WorkingDir")+choices[4*nb];
+    double val=find_in_array(lin,col,read_array(filename,' '));
+    Msg::AddOnelabNumberChoice(choices[4*nb+3],val);
+    Msg::Info("PostArray <%s>=%e",choices[4*nb+3].c_str(),val);
+    nb++;
+  }
+}
 
 // INTERFACED client
 
@@ -764,6 +781,9 @@ void InterfacedClient::compute(){
   if(getList("PostArray",choices))
     PostArray(choices);
 
+  if(getList("Merge",choices))
+    GmshMerge(choices);
+
   Msg::Info("Client %s completed",_name.c_str());
 }
 
@@ -797,6 +817,9 @@ void EncapsulatedClient::compute() {
 
   if(getList("PostArray",choices))
     PostArray(choices);
+
+  if(getList("Merge",choices))
+    GmshMerge(choices);
 }
 
 // REMOTE CLIENT

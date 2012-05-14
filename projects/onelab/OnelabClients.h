@@ -141,6 +141,7 @@ class localSolverClient : public onelab::localClient{
   virtual void analyze() =0;
   virtual void compute() =0;
   void PostArray(std::vector<std::string> choices);
+  void GmshMerge(std::vector<std::string> choices);
 };
 
 class localNetworkSolverClient : public localSolverClient{
@@ -223,7 +224,7 @@ class MetaModel : public localSolverClient {
   int modelNumberFromArgs;
   void parse_clientline(std::string line, std::ifstream &infile);
   std::string toChar(){}
-  //void PostArray(std::vector<std::string> choices);
+  void PostArray(std::vector<std::string> choices);
   void initialize();
   void simpleCheck();
   void simpleCompute();

@@ -20,6 +20,9 @@ int main(int argc, char *argv[]){
     Msg::loader = new onelab::remoteNetworkClient(clientName, sockName);
     Msg::hasGmsh = clientName.compare("loadedMetaModel");
   }
+  else
+    Msg::hasGmsh=false;
+
   Msg::SetOnelabNumber("HasGmsh",Msg::hasGmsh,false);
 
   if(Msg::loader)
@@ -35,6 +38,9 @@ int main(int argc, char *argv[]){
       caseName= Msg::GetOnelabString("loadedMetaModel/InputFiles");
     }
   }
+
+  std::cout << "caseName=<" << caseName << ">" << std::endl;
+
   if(caseName.size()){
      fileName.assign(SplitFileName(caseName)[1]);
      workingDir.assign(SplitFileName(caseName)[0]);

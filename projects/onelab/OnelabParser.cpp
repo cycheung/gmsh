@@ -7,7 +7,7 @@ namespace olkey{
   static std::string deflabel("onelab.tags");
   static std::string label("OL."), comment("%"), separator(";");
   static std::string client(label+"client");
-  static std::string param(label+"param");
+  static std::string param(label+"parameter");
   static std::string setValue(label+"setValue");
   static std::string number(label+"number"), string(label+"string");
   static std::string include(label+"include");
@@ -15,7 +15,8 @@ namespace olkey{
   static std::string olelse(label+"else"), olendif(label+"endif");
   static std::string ifequal(label+"ifequal");
   static std::string getValue(label+"getValue");
-  static std::string arguments("Args"), inFiles("In"), outFiles("Out"), upload("Up");
+  static std::string arguments("Args"), inFiles("In"), outFiles("Out");
+  static std::string upload("Up"), merge("Merge");
   static std::string checkCmd("Check"), computeCmd("Compute");
 }
 
@@ -738,6 +739,20 @@ void MetaModel::parse_clientline(std::string line, std::ifstream &infile) {
       	  strings[0].setVisible(false);
       	  set(strings[0]);
       	}
+      }
+      else if(!action.compare(olkey::merge)){
+	if(arguments[0].size()){
+	  strings.resize(1);
+	  strings[0].setName(name+"/Merge");
+	  strings[0].setValue(resolveGetVal(arguments[0]));
+	  strings[0].setKind("file");
+	  strings[0].setVisible(false);
+	  std::vector<std::string> choices;
+	  for(unsigned int i = 0; i < arguments.size(); i++)
+	    choices.push_back(resolveGetVal(arguments[i]));
+	  strings[0].setChoices(choices);
+	  set(strings[0]);
+	}
       }
       else if(!action.compare(olkey::checkCmd)){
 	if(arguments[0].size()){

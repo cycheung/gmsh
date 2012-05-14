@@ -4,14 +4,14 @@
 
 PromptUser *OL = new PromptUser("onelab");
 void MetaModel::analyze(){
-  Msg::Info("Metamodel: analyze");
+  Msg::Info("\nMetamodel: now ANALYSING");
   simpleCheck();
   //std::cout << OL->showParamSpace() << std::endl;
   //std::cout << OL->showClientStatus() << std::endl;
 }
 
 void MetaModel::compute(){
-  Msg::Info("Metamodel: compute");
+  Msg::Info("\nMetamodel: now COMPUTING");
 
   simpleCompute();
 
