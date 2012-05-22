@@ -480,6 +480,12 @@ void Msg::SetOnelabString(onelab::string s){
   }
 }
 
+void Msg::SetOnelabRegion(onelab::region r){
+  if(_onelabClient){
+    _onelabClient->set(r);
+  }
+}
+
 void Msg::SetOnelabAttributeString(std::string name,std::string attrib,std::string val){
   if(_onelabClient){
     std::vector<onelab::string> ps;
@@ -510,6 +516,7 @@ std::string Msg::GetOnelabAttributeNumber(std::string name,std::string attrib){
   return str;
 }
 
+/* not used 
 void Msg::ExchangeOnelabParameter(const std::string &key,
                                   std::vector<double> &val,
                                   std::map<std::string, std::vector<double> > &fopt,
@@ -554,7 +561,7 @@ void Msg::ExchangeOnelabParameter(const std::string &key,
     _onelabClient->set(o);
   }
 }
-
+*/
 
 void Msg::AddOnelabNumberChoice(std::string name, double val)
 {
@@ -627,7 +634,19 @@ int Msg::Synchronize_Down(){
       delete ps;
     }
   }
-  return(numbers.size()+strings.size());
+  std::vector<onelab::region> regions;
+  onelab::region *pr;
+  loader->get(regions,"");
+  if(regions.size()){
+    for(std::vector<onelab::region>::const_iterator it = regions.begin();
+  	it != regions.end(); it++){
+      pr=new onelab::region;
+      pr->fromChar((*it).toChar());
+      Msg::SetOnelabRegion(*pr);
+      delete pr;
+    }
+  }
+  return(numbers.size()+strings.size()+regions.size());
 }
 
 int Msg::Synchronize_Up(){
@@ -655,7 +674,19 @@ int Msg::Synchronize_Up(){
       delete ps;
     }
   }
-  return(numbers.size()+strings.size());
+  std::vector<onelab::region> regions;
+  onelab::region *pr;
+  _onelabClient->get(regions,"");
+  if(regions.size()){
+    for(std::vector<onelab::region>::const_iterator it = regions.begin();
+	it != regions.end(); it++){
+      pr=new onelab::region;
+      pr->fromChar((*it).toChar());
+      loader->set(*pr);
+      delete pr;
+    }
+  }
+  return(numbers.size()+strings.size()+regions.size());
 }
 
 void Msg::FinalizeOnelab(){

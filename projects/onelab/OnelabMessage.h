@@ -96,6 +96,7 @@ class Msg {
   static std::string GetOnelabAttributeNumber(std::string name,std::string attrib);
   //static std::vector<std::string> GetOnelabChoices(std::string name);
   static bool GetOnelabChoices(std::string name, std::vector<std::string> &choices);
+  static void SetOnelabRegion(onelab::region r);
   static void ExchangeOnelabParameter(const std::string &key,
                                   std::vector<double> &val,
                                   std::map<std::string, std::vector<double> > &fopt,

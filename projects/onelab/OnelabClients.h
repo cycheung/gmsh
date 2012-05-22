@@ -34,7 +34,7 @@ void appendOption(std::string &str, const std::string &what);
 void GmshDisplay(onelab::remoteNetworkClient *loader, std::string fileName, std::vector<std::string> choices);
 std::string getCurrentWorkdir();
 std::string getUserHomedir();
-static std::string getNextToken(const std::string &msg,std::string::size_type &first);
+//static std::string getNextToken(const std::string &msg,std::string::size_type &first);
 std::string sanitize(const std::string &in);
 std::string removeBlanks(const std::string &in);
 int enclosed(const std::string &in, std::vector<std::string> &arguments);
@@ -90,27 +90,30 @@ class ShortNameLessThan{
 };
 
 /*
-
 VIRTUAL and BASE CLASSES
 
 localSolverClient est la classe de base pour tous les clients des métamodèles
-Elle a les méthodes (virtuelles) analyze() et compute()  (que la classe 'localClient' n'a pas)
+Elle a les méthodes (virtuelles) analyze() et compute() 
+(que la classe 'localClient' n'a pas)
 qui sont les deux modes d'exécution du métamodèle.
-Seule _commandLine et _workingDir est sont stockées dans la classe
-Les autres infos (input et output files, arguments) sont stockées sur le serveur... 
+Seule _commandLine et _workingDir sont stockées dans la classe
+Les autres données décrivant le client 
+(input et output files, arguments) sont stockées sur le serveur... 
 */
 class localSolverClient : public onelab::localClient{
  private:
   std::string _commandLine;
   std::string _workingDir;
   bool _enabled;
+  bool _onelabBlock;
   std::set<std::string, ShortNameLessThan> _parameters;
   std::string longName(const std::string name);
-
-  std::string evaluateGetVal(std::string line);
+  //std::string evaluateGetVal(std::string line);
  public:
- localSolverClient(const std::string &name, const std::string &cmdl, const std::string &wdir) 
-   : onelab::localClient(name), _commandLine(cmdl), _workingDir(wdir), _enabled(true) {
+ localSolverClient(const std::string &name, const std::string &cmdl, 
+		   const std::string &wdir) 
+   : onelab::localClient(name), _commandLine(cmdl), _workingDir(wdir),
+    _enabled(true), _onelabBlock(false) {
   }
   virtual ~localSolverClient(){}
   const std::string &getCommandLine(){ return _commandLine; }
@@ -119,9 +122,13 @@ class localSolverClient : public onelab::localClient{
   virtual void setWorkingDir(const std::string &s){ _workingDir = s; }
 
   const std::string getString(const std::string what);
-  const bool getList(const std::string type, std::vector<std::string> &choices);
-  const bool getActive() { return _enabled; }
+  const bool getList(const std::string type, 
+		     std::vector<std::string> &choices);
+  const bool isActive() { return _enabled; }
   const void setActive(int val) { _enabled=(bool)val; }
+  const bool isOnelabBlock() { return _onelabBlock; }
+  const void openOnelabBlock() { _onelabBlock=true; }
+  const void closeOnelabBlock() { _onelabBlock=false; }
   bool buildRmCommand(std::string &cmd);
   bool checkIfPresentLocal(const std::string &fileName){
     return checkIfPresent(getWorkingDir()+fileName);
@@ -130,14 +137,20 @@ class localSolverClient : public onelab::localClient{
   virtual std::string toChar();
 
   std::string resolveGetVal(std::string line);
-  void parse_onefile(std::string ifilename);
-  virtual void parse_clientline(std::string line, std::ifstream &infile) {}
+  bool resolveLogicExpr(std::vector<std::string> arguments);
+  virtual void client_sentence(const std::string &name, 
+			       const std::string &action, 
+			       const std::vector<std::string> &arguments);
+  void parse_sentence(std::string line) ;
   void parse_oneline(std::string line, std::ifstream &infile) ;
+  bool parse_block(std::ifstream &infile) ;
   bool parse_ifstatement(std::ifstream &infile, bool condition) ;
+  void parse_onefile(std::string ifilename);
+  void convert_oneline(std::string line, std::ifstream &infile, 
+		       std::ofstream &outfile);
+  bool convert_ifstatement(std::ifstream &infile, 
+			   std::ofstream &outfile, bool condition) ;
   void convert_onefile(std::string ifilename, std::ofstream &outfile);
-  void convert_oneline(std::string line, std::ifstream &infile, std::ofstream &outfile);
-  bool convert_ifstatement(std::ifstream &infile, std::ofstream &outfile, bool condition) ;
-
   virtual void analyze() =0;
   virtual void compute() =0;
   void PostArray(std::vector<std::string> choices);
@@ -201,8 +214,10 @@ class MetaModel : public localSolverClient {
     clientName = cname;
     modelNumberFromArgs = number;
     genericNameFromArgs = fname.size() ? fname : cmdl;
+    openOnelabBlock();
     parse_onefile( genericNameFromArgs + onelabExtension);
     parse_onefile( genericNameFromArgs + onelabExtension + ".save");
+    closeOnelabBlock();
   }
   ~MetaModel(){}
   typedef std::vector<localSolverClient*>::iterator citer;
@@ -210,9 +225,9 @@ class MetaModel : public localSolverClient {
   citer lastClient(){ return _clients.end(); }
   int getNumClients() { return _clients.size(); };
 
-  void registerClient(const std::string &name, const std::string &type, const std::string &cmdl, 
-		      const std::string &wdir, const std::string &host, const std::string &rdir);
-
+  void registerClient(const std::string &name, const std::string &type, 
+		      const std::string &cmdl, const std::string &wdir, 
+		      const std::string &host, const std::string &rdir);
   bool checkCommandLines();
   void saveCommandLines(const std::string fileName);
   localSolverClient *findClientByName(std::string name){
@@ -222,7 +237,8 @@ class MetaModel : public localSolverClient {
   }
   std::string genericNameFromArgs, clientName;
   int modelNumberFromArgs;
-  void parse_clientline(std::string line, std::ifstream &infile);
+  void client_sentence(const std::string &name, const std::string &action, 
+		       const std::vector<std::string> &arguments);
   std::string toChar(){}
   void PostArray(std::vector<std::string> choices);
   void initialize();

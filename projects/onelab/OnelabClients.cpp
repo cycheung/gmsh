@@ -136,7 +136,8 @@ bool localNetworkSolverClient::run()
   else{
     // TCP/IP socket
     if(socketName.size() && socketName[0] == ':')
-      tmp << GetHostName(); // prepend hostname if only the port number is given
+      // prepend hostname if only the port number is given
+      tmp << GetHostName(); 
     tmp << socketName ;
     sockname = tmp.str();
   }
@@ -526,8 +527,17 @@ bool PromptUser::menu(std::string commandLine, std::string workingDir, std::stri
 
 // client LOCALSOLVERCLIENT
 
+std::string localSolverClient::toChar(){
+  std::ostringstream sstream;
+  if(getCommandLine().size()){
+    sstream << getName() << "." << "CommandLine(" 
+	    << getCommandLine() << ");\n";
+  }
+  return sstream.str();
+}
+
 bool localSolverClient::checkCommandLine(){
-  if(!getActive()) return true;
+  if(!isActive()) return true;
   if(getCommandLine().empty()){
     std::string commandLine = getString("CommandLine");
     if(!commandLine.empty()){
@@ -684,7 +694,7 @@ void MetaModel::registerClient(const std::string &name, const std::string &type,
 void MetaModel::simpleCheck()
 {
   for(citer it = _clients.begin(); it != _clients.end(); it++){
-    if((*it)->getActive()){
+    if((*it)->isActive()){
 	Msg::SetOnelabString((*it)->getName() + "/Action","check",false);
 	(*it)->analyze();
       }
@@ -694,10 +704,10 @@ void MetaModel::simpleCheck()
 void MetaModel::simpleCompute()
 {
   for(citer it = _clients.begin(); it != _clients.end(); it++){
-    if((*it)->getActive()){
+    if((*it)->isActive()){
       Msg::SetOnelabString((*it)->getName() + "/Action","compute",false);
       freopen((*it)->getName().append(".log").c_str(),"w",stdout);
-      freopen((*it)->getName().append(".err").c_str(),"w",stderr);
+      //freopen((*it)->getName().append(".err").c_str(),"w",stderr);
       (*it)->compute();
     }
   }
@@ -911,7 +921,7 @@ bool RemoteInterfacedClient::checkCommandLine(){
   char cbuf [1024];
   FILE *fp;
 
-  if(!getActive()) return true;
+  if(!isActive()) return true;
   cmd.assign("ssh "+getRemoteHost()+" 'mkdir -p "+getRemoteDir()+"'");
   mySystem(cmd);
 
@@ -996,7 +1006,7 @@ bool RemoteEncapsulatedClient::checkCommandLine(){
   char cbuf [1024];
   FILE *fp;
 
-  if(!getActive()) return true;
+  if(!isActive()) return true;
   cmd.assign("ssh "+getRemoteHost()+" 'mkdir -p "+getRemoteDir()+"'");
   mySystem(cmd);
 
@@ -1097,15 +1107,6 @@ int getOptions(int argc, char *argv[], std::string &action, std::string &command
   }
 }
 
-static std::string getNextToken(const std::string &msg,
-				std::string::size_type &first){
-  if(first == std::string::npos) return "";
-  std::string::size_type last = msg.find_first_of(charSep(), first);
-  std::string next = msg.substr(first, last - first);
-  first = (last == std::string::npos) ? last : last + 1;
-  return next;
-}
- 
 std::string itoa(const int i){
   std::ostringstream tmp;
   tmp << i ;
@@ -1161,87 +1162,6 @@ std::string removeBlanks(const std::string &in)
   else
     return "";
 }
-int enclosed(const std::string &in, std::vector<std::string> &arguments){
-  int pos, cursor;
-  arguments.resize(0);
-  cursor=0;
-  if ( (pos=in.find("(",cursor)) == std::string::npos )
-     Msg::Fatal("Syntax error: <%s>",in.c_str());
-
-  unsigned int count=1;
-  pos++; // skips '('
-  cursor = pos; 
-  do{
-    if(in[pos]=='(') count++;
-    if(in[pos]==')') count--;
-    if(in[pos]==',') {
-      arguments.push_back(removeBlanks(in.substr(cursor,pos-cursor)));
-      if(count!=1)
-	Msg::Fatal("Syntax error: <%s>",in.c_str());
-      cursor=pos+1; // skips ','
-    }
-    pos++;
-  } while( count && (pos!=std::string::npos) ); // find closing brace
-  if(count)
-     Msg::Fatal("Syntax error: <%s>",in.c_str());
-  else
-    arguments.push_back(removeBlanks(in.substr(cursor,pos-1-cursor)));
-  return arguments.size();
-}
-int extract(const std::string &in, std::string &paramName, std::string &action, std::vector<std::string> &arguments){
-  // syntax: paramName.action( arg1, arg2, ... )
-  int pos, cursor,NumArg=0;
-  cursor=0;
-  if ( (pos=in.find(".",cursor)) == std::string::npos )
-     Msg::Fatal("Syntax error: <%s>",in.c_str());
-  else
-    paramName.assign(sanitize(in.substr(cursor,pos-cursor)));
-  cursor = pos+1; // skips '.'
-  if ( (pos=in.find("(",cursor)) == std::string::npos )
-     Msg::Fatal("Syntax error: <%s>",in.c_str());
-  else
-    action.assign(sanitize(in.substr(cursor,pos-cursor)));
-  cursor = pos;
-  unsigned int count=0;
-  do{
-    if(in[pos]=='(') count++;
-    if(in[pos]==')') count--;
-    pos++;
-  } while(count && (pos!=std::string::npos) ); // find closing brace
-  if(count)
-     Msg::Fatal("Syntax error: %s",in.c_str());
-  else
-    NumArg = enclosed(in.substr(cursor,pos-cursor),arguments);
-  // std::cout << "paramName=<" << paramName << ">" << std::endl;
-  // std::cout << "arguments=<" << in.substr(cursor,pos+1-cursor) << ">" << std::endl;
-  return NumArg;
-}
-
-bool extractRange(const std::string &in, std::vector<double> &arguments){
-  // syntax: a:b:c or a:b#n
-  int pos, cursor;
-  arguments.resize(0);
-  cursor=0;
-  if ( (pos=in.find(":",cursor)) == std::string::npos )
-     Msg::Fatal("Syntax error in range <%s>",in.c_str());
-  else{
-    arguments.push_back(atof(in.substr(cursor,pos-cursor).c_str()));
-  }
-  cursor = pos+1; // skips ':'
-  if ( (pos=in.find(":",cursor)) != std::string::npos ){
-    arguments.push_back(atof(in.substr(cursor,pos-cursor).c_str()));
-    arguments.push_back(atof(in.substr(pos+1).c_str()));
-  }
-  else if ( (pos=in.find("#",cursor)) != std::string::npos ){
-    arguments.push_back(atof(in.substr(cursor,pos-cursor).c_str()));
-    double NumStep = atof(in.substr(pos+1).c_str());
-    arguments.push_back((arguments[1]-arguments[0])/((NumStep==0)?1:NumStep));
-  }
-  else
-     Msg::Fatal("Syntax error in range <%s>",in.c_str());
-  return (arguments.size()==3);
-}
-
 
 void GmshDisplay(onelab::remoteNetworkClient *loader, std::string fileName, std::vector<std::string> choices){
   if(choices.empty()) return;
