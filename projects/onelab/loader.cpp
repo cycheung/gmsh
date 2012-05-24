@@ -44,9 +44,12 @@ int main(int argc, char *argv[]){
     }
   }
 
+  // Msg::_onelabclient is a onelab:LocalClient independent of MetaModel
+  Msg::InitializeOnelab("TheLoader","");
+
   std::cout << "command==" << commandLine << std::endl;
   std::cout << "fileName==" << fileName << std::endl;
-
-  globalParam->menu(commandLine, fileName, modelNumber); 
+  std::string workingDir="";
+  globalParam->menu(commandLine, workingDir, fileName, modelNumber); 
 }
 

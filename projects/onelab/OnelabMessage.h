@@ -83,7 +83,8 @@ class Msg {
   static void InitClient(std::string sockname);
   static GmshClient *GetClient(){ return _client; }
   static void FinalizeClient();
-  static void InitializeOnelab(const std::string &name, const std::string &sockname);
+  static void InitializeOnelab(const std::string &name, 
+			       const std::string &sockname);
   static void SetOnelabNumber(std::string name, double val, bool visible=true);
   static void SetOnelabNumber(onelab::number s);
   static void GetOnelabNumber(std::string name, double *val);
@@ -91,18 +92,23 @@ class Msg {
   static void SetOnelabString(std::string name, std::string val, bool visible=true);
   static void SetOnelabString(onelab::string s);
   static std::string GetOnelabString(std::string name); 
-  static void SetOnelabAttributeString(std::string name,std::string attrib,std::string val);
+  static void SetOnelabAttributeString(std::string name,
+				       std::string attrib,std::string val);
   static std::string GetOnelabAttributeString(std::string name,std::string attrib);
-  static std::string GetOnelabAttributeNumber(std::string name,std::string attrib);
+  static std::string GetOnelabAttributeNumber(std::string name,
+					      std::string attrib);
   //static std::vector<std::string> GetOnelabChoices(std::string name);
   static bool GetOnelabChoices(std::string name, std::vector<std::string> &choices);
   static void SetOnelabRegion(onelab::region r);
   static void ExchangeOnelabParameter(const std::string &key,
-                                  std::vector<double> &val,
-                                  std::map<std::string, std::vector<double> > &fopt,
-				  std::map<std::string, std::vector<std::string> > &copt);
+				      std::vector<double> &val,
+				      std::map<std::string, 
+				      std::vector<double> > &fopt,
+				      std::map<std::string,
+				      std::vector<std::string> > &copt);
   static void AddOnelabNumberChoice(std::string name, double val);
-  static void AddOnelabStringChoice(std::string name, std::string kind,std::string value);
+  static void AddOnelabStringChoice(std::string name, 
+				    std::string kind,std::string value);
 
   // communication with loader
   static onelab::remoteNetworkClient *loader;

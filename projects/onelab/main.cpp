@@ -13,7 +13,6 @@ int main(int argc, char *argv[]){
   getOptions(argc, argv, action, commandLine, caseName, clientName, sockName, modelNumber);
   
   // Msg::_onelabclient is a onelab:LocalClient independent of MetaModel
-
   Msg::InitializeOnelab("metamodel","");
 
   if (sockName.size()){
@@ -49,17 +48,20 @@ int main(int argc, char *argv[]){
   else
     Msg::Fatal("No valid input filename.");
 
-  Msg::Info("Filename <%s> and working dir <%s>", fileName.c_str(),workingDir.c_str());
+  Msg::Info("Filename <%s> and working dir <%s>",fileName.c_str(),
+	    workingDir.c_str());
   Msg::SetOnelabString("Arguments/FileName",fileName,false);
   Msg::SetOnelabString("Arguments/WorkingDir",workingDir,false);
 
-  MetaModel *myModel = new MetaModel(commandLine, workingDir, clientName, fileName, modelNumber);
-  if(!myModel->checkCommandLines()) //if all clients have valid commandlines and are initialized
+  MetaModel *myModel = new MetaModel(commandLine, workingDir, clientName,
+				     fileName, modelNumber);
+  if(!myModel->checkCommandLines()) 
+    //if all clients have valid commandlines and are initialized
     action.assign("exit");
   if(Msg::loader && !Msg::GetOnelabNumber(clientName + "/Initialized"))
     action.assign("initialize");
 
-  // std::cout << "   checkcmd:" << Msg::GetOnelabString(clientName+"/9CheckCommand") << std::endl;
+  // std::cout << "checkcmd:" << Msg::GetOnelabString(clientName+"/9CheckCommand") << std::endl;
   // std::cout << "     action:" << action << std::endl;
   // std::cout << "initialized:" << Msg::GetOnelabNumber(clientName + "/Initialized") << std::endl;
   // std::cout << "    hasGmsh:" << Msg::hasGmsh << std::endl;

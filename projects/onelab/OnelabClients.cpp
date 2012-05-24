@@ -106,7 +106,7 @@ std::string localNetworkSolverClient::buildCommandLine(){
       command.append(" " + getSocketSwitch() + " " + getName() + " %s"); // -onelab option
     }
     else
-      Msg::Fatal("localNetworkSolverClient::run: Unknown Action <%s>", action.c_str());
+      Msg::Fatal("localNetworkSolverClient::buildCommandLine: Unknown Action <%s> %s", action.c_str(), getName().c_str());
   }
   return command;
 }
@@ -201,75 +201,99 @@ bool localNetworkSolverClient::run()
         std::string version, type, name;
         onelab::parameter::getInfoFromChar(message, version, type, name);
         if(type == "number"){
-          onelab::number p;
-          p.fromChar(message);
-          set(p);
+          onelab::number p; p.fromChar(message); set(p);
         }
         else if(type == "string"){
-          onelab::string p;
-          p.fromChar(message);
-          set(p);
+          onelab::string p; p.fromChar(message); set(p);
+        }
+	else if(type == "region"){
+          onelab::region p; p.fromChar(message); set(p);
+        }
+        else if(type == "function"){
+          onelab::function p; p.fromChar(message); set(p);
         }
         else
-          Msg::Fatal("FIXME query not done for this parameter type: <%s>", message.c_str());
+          Msg::Fatal("FIXME query not done for this parameter type: <%s>",
+		     message.c_str());
       }
       break;
     case GmshSocket::GMSH_PARAMETER_QUERY:
       {
-        std::string version, type, name;
+        std::string version, type, name, reply;
         onelab::parameter::getInfoFromChar(message, version, type, name);
-        if(type == "number"){
-          std::vector<onelab::number> par;
-          get(par, name);
-          if(par.size() == 1){
-            std::string reply = par[0].toChar();
-            server->SendMessage(GmshSocket::GMSH_PARAMETER, reply.size(), &reply[0]);
-          }
-          else{
-            std::string reply = "Parameter (number) " + name + " not found";
-            server->SendMessage(GmshSocket::GMSH_INFO, reply.size(), &reply[0]);
-          }
+        if(onelab::parameter::version() != version){
+          Msg::Error("OneLab version mismatch (server: %s / client: %s)",
+                     onelab::parameter::version().c_str(), version.c_str());
         }
+        else if(type == "number"){
+          std::vector<onelab::number> par; get(par, name);
+          if(par.size() == 1) reply = par[0].toChar();
+	}
         else if(type == "string"){
-          std::vector<onelab::string> par;
-          get(par, name);
-          if(par.size() == 1){
-            std::string reply = par[0].toChar();
-            server->SendMessage(GmshSocket::GMSH_PARAMETER, reply.size(), &reply[0]);
-          }
-          else{
-            std::string reply = "Parameter (string) " + name + " not found";
-            server->SendMessage(GmshSocket::GMSH_INFO, reply.size(), &reply[0]);
-          }
+          std::vector<onelab::string> par; get(par, name);
+          if(par.size() == 1) reply = par[0].toChar();
+        }
+        else if(type == "region"){
+          std::vector<onelab::region> par; get(par, name);
+          if(par.size() == 1) par[0].toChar();
+        }
+        else if(type == "function"){
+          std::vector<onelab::function> par; get(par, name);
+          if(par.size() == 1) reply = par[0].toChar();
         }
         else
-          Msg::Fatal("FIXME query not done for this parameter type: <%s>", message.c_str());
+          Msg::Error("Unknown OneLab parameter type in query: %s",
+		     type.c_str());
+
+        if(reply.size()){
+          server->SendMessage(GmshSocket::GMSH_PARAMETER, 
+			      reply.size(), &reply[0]);
+        }
+        else{
+          reply = "OneLab parameter '" + name + "' not found";
+          server->SendMessage(GmshSocket::GMSH_INFO, reply.size(), &reply[0]);
+        }
       }
       break;
     case GmshSocket::GMSH_PARAM_QUERY_ALL:
       {
         std::string version, type, name, reply;
+        std::vector<std::string> replies;
         onelab::parameter::getInfoFromChar(message, version, type, name);
-	if(type == "number"){
-	  std::vector<onelab::number> numbers;
-	  get(numbers, "");
-	  for(std::vector<onelab::number>::iterator it = numbers.begin(); it != numbers.end(); it++){
-	    reply = (*it).toChar();
-	    server->SendMessage(GmshSocket::GMSH_PARAM_QUERY_ALL, reply.size(), &reply[0]);
-	  }
-	  server->SendMessage(GmshSocket::GMSH_PARAM_QUERY_END, 0, NULL);
+	if(onelab::parameter::version() != version){
+          Msg::Error("OneLab version mismatch (server: %s / client: %s)",
+                     onelab::parameter::version().c_str(), version.c_str());
+        }
+	else if(type == "number"){
+	  std::vector<onelab::number> numbers; get(numbers);
+	  for(std::vector<onelab::number>::iterator it = numbers.begin(); 
+	      it != numbers.end(); it++) replies.push_back((*it).toChar());
 	}
 	else if(type == "string"){
-	  std::vector<onelab::string> strings;
-	  get(strings, "");
-	  for(std::vector<onelab::string>::iterator it = strings.begin(); it != strings.end(); it++){
-	    reply = (*it).toChar();
-	    server->SendMessage(GmshSocket::GMSH_PARAM_QUERY_ALL, reply.size(), &reply[0]);
-	  }
-	  server->SendMessage(GmshSocket::GMSH_PARAM_QUERY_END, 0, NULL);
+	  std::vector<onelab::string> strings; get(strings);
+	  for(std::vector<onelab::string>::iterator it = strings.begin(); 
+	      it != strings.end(); it++) replies.push_back((*it).toChar());
 	}
+        else if(type == "region"){
+	  std::vector<onelab::region> regions; get(regions);
+	  for(std::vector<onelab::region>::iterator it = regions.begin();
+              it != regions.end(); it++) replies.push_back((*it).toChar());
+        }
+        else if(type == "function"){
+	  std::vector<onelab::function> functions; get(functions);
+	  for(std::vector<onelab::function>::iterator it = functions.begin();
+              it != functions.end(); it++) replies.push_back((*it).toChar());
+        }
         else
-          Msg::Fatal("FIXME query not done for this parameter type: <%s>", message.c_str());
+          Msg::Error("Unknown OneLab parameter type in query: %s",
+		     type.c_str());
+
+        for(unsigned int i = 0; i < replies.size(); i++)
+          server->SendMessage(GmshSocket::GMSH_PARAM_QUERY_ALL, 
+	     replies[i].size(), &replies[i][0]);
+        reply = "Sent all OneLab " + type + "s";
+        server->SendMessage(GmshSocket::GMSH_PARAM_QUERY_END, 
+			    reply.size(), &reply[0]);
       }
       break;
     case GmshSocket::GMSH_PROGRESS:
@@ -316,21 +340,6 @@ bool localNetworkSolverClient::kill()
 }
 
 // client PROMPTUSER
-
-// int PromptUser::getVerbosity(){
-//   std::vector<onelab::number> numbers;
-//   get(numbers,"VERBOSITY");
-//   if (numbers.size())
-//     return numbers[0].getValue();
-//   else
-//     return 0;
-// }
-// void PromptUser::setVerbosity(const int ival){
-//   onelab::number number;
-//   number.setName("VERBOSITY");
-//   number.setValue(ival);
-//   set(number);
-// }
 
 void PromptUser::setNumber(const std::string paramName, const double val, const std::string &help){
   onelab::number number;
@@ -417,11 +426,44 @@ std::string PromptUser::stateToChar(){
 }
 
 std::string PromptUser::showParamSpace(){
-  std::string db = "ONELAB parameter space: size=" + itoa(onelab::server::instance()->getNumParameters()) + "\n";
-  db.append(onelab::server::instance()->toChar());
-  for(unsigned int i = 0; i < db.size(); i++)
-    if(db[i] == onelab::parameter::charSep()) db[i] = '|';
-  return db.c_str();
+  std::vector<onelab::number> numbers;
+  std::vector<onelab::string> strings;
+  std::vector<onelab::region> regions;
+  std::ostringstream sstream;
+
+  get(numbers);
+  sstream << std::endl << itoa(numbers.size()) << " numbers" << std::endl;
+  for(std::vector<onelab::number>::iterator it = numbers.begin();
+      it != numbers.end(); it++)
+    sstream << (*it).getName() << " = " << (*it).getValue() << std::endl;
+
+  get(strings);
+  sstream << std::endl << itoa(strings.size()) << " strings" << std::endl;
+  for(std::vector<onelab::string>::iterator it = strings.begin();
+      it != strings.end(); it++)
+    sstream << (*it).getName() << " = " << (*it).getValue() << std::endl;
+
+  get(regions);
+  sstream << std::endl << itoa(regions.size()) << " regions" << std::endl;
+  for(std::vector<onelab::region>::iterator it = regions.begin();
+      it != regions.end(); it++){
+    std::set<std::string> region=  (*it).getValue();
+    sstream << "<" ;
+    for(std::set<std::string>::const_iterator iter = region.begin();
+	iter != region.end(); iter++)
+      sstream << sanitize(*iter);
+    sstream << ">" ;
+  }
+
+  return sstream.str();
+
+  // std::string db = "ONELAB parameter space: size=" 
+  //   + itoa(onelab::server::instance()->getNumParameters()) + "\n";
+  // db.append(onelab::server::instance()->toChar());
+  // for(unsigned int i = 0; i < db.size(); i++)
+  //   if(db[i] == onelab::parameter::charSep()) db[i] = '|';
+  // return db.c_str();
+
 }
 
 std::string PromptUser::showClientStatus(){
@@ -706,8 +748,10 @@ void MetaModel::simpleCompute()
   for(citer it = _clients.begin(); it != _clients.end(); it++){
     if((*it)->isActive()){
       Msg::SetOnelabString((*it)->getName() + "/Action","compute",false);
-      freopen((*it)->getName().append(".log").c_str(),"w",stdout);
-      //freopen((*it)->getName().append(".err").c_str(),"w",stderr);
+      if(Msg::GetOnelabNumber("Debug/LogFiles")){
+	freopen((*it)->getName().append(".log").c_str(),"w",stdout);
+	freopen((*it)->getName().append(".err").c_str(),"w",stderr);
+      }
       (*it)->compute();
     }
   }
@@ -736,7 +780,8 @@ void InterfacedClient::analyze() {
   Msg::SetOnelabString(getName() + "/Action","check",false);// a titre indicatif
   getList("InputFiles", choices);
   for(unsigned int i = 0; i < choices.size(); i++){
-    if((pos=choices[i].find(onelabExtension)) != std::string::npos){ // if .ol file
+    if((pos=choices[i].find(onelabExtension)) != std::string::npos){ 
+      // if .ol file
       checkIfPresentLocal(choices[i]);
       parse_onefile(choices[i]);
     }
@@ -869,7 +914,7 @@ bool remoteClient::syncInputFile(const std::string &wdir, const std::string &fil
       return mySystem(cmd);
     }
     else{
-      Msg::Fatal("The input file <%s> is not present present",fullName.c_str());
+      Msg::Fatal("The input file <%s> is not present", fullName.c_str());
       return false;
     }
   }
@@ -881,13 +926,13 @@ bool remoteClient::syncInputFile(const std::string &wdir, const std::string &fil
 	return mySystem(cmd);
       }
       else{
-	Msg::Fatal("The input file <%s> is not present present",fullName.c_str());
+	Msg::Fatal("The input file <%s> is not present", fullName.c_str());
 	return false;
       }
     }
     else { //should be found remote
       if(!checkIfPresentRemote(fileName)){
-	Msg::Fatal("The input file <%s> is not present present",fileName.c_str());
+	Msg::Fatal("The input file <%s> is not present", fileName.c_str());
 	return false;
       }
       else

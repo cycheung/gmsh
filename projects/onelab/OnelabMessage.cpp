@@ -472,6 +472,8 @@ void Msg::SetOnelabString(std::string name, std::string val, bool visible)
     o.setVisible(visible);
     _onelabClient->set(o);
   }
+  else
+    std::cout << "Pas de client" << std::endl;
 }
 
 void Msg::SetOnelabString(onelab::string s){
@@ -486,7 +488,8 @@ void Msg::SetOnelabRegion(onelab::region r){
   }
 }
 
-void Msg::SetOnelabAttributeString(std::string name,std::string attrib,std::string val){
+void Msg::SetOnelabAttributeString(std::string name,
+				   std::string attrib,std::string val){
   if(_onelabClient){
     std::vector<onelab::string> ps;
     _onelabClient->get(ps, name);
