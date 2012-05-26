@@ -748,7 +748,7 @@ void MetaModel::simpleCompute()
   for(citer it = _clients.begin(); it != _clients.end(); it++){
     if((*it)->isActive()){
       Msg::SetOnelabString((*it)->getName() + "/Action","compute",false);
-      if(Msg::GetOnelabNumber("Debug/LogFiles")){
+      if(Msg::GetOnelabNumber("Onelab/LOGFILES")){
 	freopen((*it)->getName().append(".log").c_str(),"w",stdout);
 	freopen((*it)->getName().append(".err").c_str(),"w",stderr);
       }

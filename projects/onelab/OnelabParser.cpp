@@ -240,7 +240,8 @@ void localSolverClient::parse_sentence(std::string line) {
       _parameters.insert(name);
       get(numbers, name);
       if(numbers.size()){ 
-	val = numbers[0].getValue(); // use value from server
+	if(!numbers[0].getReadOnly())
+	  val = numbers[0].getValue(); // use value from server
       }
       else{
 	numbers.resize(1);
@@ -269,8 +270,9 @@ void localSolverClient::parse_sentence(std::string line) {
       _parameters.insert(name);
 
       get(strings, name);
-      if(strings.size()){ 
-	val.assign(strings[0].getValue()); // use value from server
+      if(strings.size()){
+	if(!strings[0].getReadOnly())
+	  val.assign(strings[0].getValue()); // use value from server
       }
       else{
 	strings.resize(1);
