@@ -28,11 +28,9 @@ add_subdirectory(../.. "${CMAKE_CURRENT_BINARY_DIR}/gmsh")
 
 ## Add Sources
 add_subdirectory(assembler)
-#add_subdirectory(basis)
 add_subdirectory(common)
 add_subdirectory(formulation)
 add_subdirectory(geometry)
-#add_subdirectory(mathematics)
 add_subdirectory(postprocessing)
 add_subdirectory(solver)
 add_subdirectory(../../FunctionSpace 
@@ -44,11 +42,9 @@ list(APPEND sources Main.cpp)
 ## Include Path
 include_directories(
   assembler
-#  basis
   common
   formulation
   geometry
-#  mathematics
   postprocessing
   solver
   ../../FunctionSpace
