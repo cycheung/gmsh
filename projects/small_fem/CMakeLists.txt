@@ -12,9 +12,10 @@ endmacro(add_sources)
 
 ## Look for Packages
 include(FindPackageHandleStandardArgs)
-find_package(BLAS REQUIRED)
-find_package(LAPACK REQUIRED)
 find_package(Doxygen)
+
+## Include gmsh
+add_subdirectory(../.. "${CMAKE_CURRENT_BINARY_DIR}/gmsh")
 
 ## Add Sources
 add_subdirectory(assembler)
@@ -43,7 +44,9 @@ include_directories(
 
 ## Build Documentation
 if(DOXYGEN_FOUND)
-  add_custom_target(doc ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/doc/Doxyfile)
+  add_custom_target(doxygen
+    ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/doc/Doxyfile)
+
 endif(DOXYGEN_FOUND)
 
 ## Build
