@@ -10,6 +10,15 @@ macro(add_sources dir files)
   set(sources ${sources} ${list} PARENT_SCOPE)
 endmacro(add_sources)
 
+## Compatibility with gmsh (TO BE REMOVED !!!)
+macro(add_sources_in_gmsh dir files)
+  foreach(file ${files})
+    list(APPEND list ../../${dir}/${file})
+  endforeach(file)
+
+  set(sources ${sources} ${list} PARENT_SCOPE)
+endmacro(add_sources_in_gmsh)
+
 ## Look for Packages
 include(FindPackageHandleStandardArgs)
 find_package(Doxygen)
@@ -19,13 +28,15 @@ add_subdirectory(../.. "${CMAKE_CURRENT_BINARY_DIR}/gmsh")
 
 ## Add Sources
 add_subdirectory(assembler)
-add_subdirectory(basis)
+#add_subdirectory(basis)
 add_subdirectory(common)
 add_subdirectory(formulation)
 add_subdirectory(geometry)
-add_subdirectory(mathematics)
+#add_subdirectory(mathematics)
 add_subdirectory(postprocessing)
 add_subdirectory(solver)
+add_subdirectory(../../FunctionSpace 
+  "${CMAKE_CURRENT_BINARY_DIR}/FunctionSpace")
 
 ## Add Main
 list(APPEND sources Main.cpp)
@@ -33,13 +44,14 @@ list(APPEND sources Main.cpp)
 ## Include Path
 include_directories(
   assembler
-  basis
+#  basis
   common
   formulation
   geometry
-  mathematics
+#  mathematics
   postprocessing
   solver
+  ../../FunctionSpace
 )
 
 ## Build Documentation
