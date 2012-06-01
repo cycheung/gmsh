@@ -1,3 +1,4 @@
+#include "fullMatrix.h"
 #include "FormulationLaplace.h"
 #include <cmath>
 
@@ -42,17 +43,16 @@ FormulationLaplace::~FormulationLaplace(void){
   delete[] gradBasis;
 }
 
-
 double FormulationLaplace::weak(const int nodeI, const int nodeJ, 
 				const GroupOfDof& god) const{
   const Jacobian& jac = god.getJacobian();
 
   double integral = 0;  
   for(int g = 0; g < G; g++){
-    Vector<double> phiI = jac.grad(gradBasis[nodeI].at(gx[g], gy[g], 0));
-    Vector<double> phiJ = jac.grad(gradBasis[nodeJ].at(gx[g], gy[g], 0));
+    fullVector<double> phiI = jac.grad(gradBasis[nodeI].at(gx[g], gy[g], 0));
+    fullVector<double> phiJ = jac.grad(gradBasis[nodeJ].at(gx[g], gy[g], 0));
 
-    integral += phiI.dot(phiJ) * fabs(jac.det()) * gw[g];
+    integral += phiI * phiJ * fabs(jac.det()) * gw[g];
   }
 
   return integral;

@@ -114,8 +114,8 @@ void Solution::writeNodalValues(ofstream& out,
       if(isScalar)
 	out << (*nodalScalarValue)[id] << " ";
       else
-	out << (*nodalVectorValue)[id]->get(0) << " "
-	    << (*nodalVectorValue)[id]->get(1) << " "
+	out << (*(*nodalVectorValue)[id])(0) << " "
+	    << (*(*nodalVectorValue)[id])(1) << " "
 	    << "0 ";
     }
 

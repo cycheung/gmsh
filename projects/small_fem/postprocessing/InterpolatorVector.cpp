@@ -8,7 +8,7 @@ InterpolatorVector::InterpolatorVector(void){
 InterpolatorVector::~InterpolatorVector(void){
 }
 
-std::vector<Vector<double>*>*
+std::vector<fullVector<double>*>*
 InterpolatorVector::getNodeValue(void) const{
   if(!gotInterpolation)
     throw Exception("Field not interpolated");

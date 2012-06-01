@@ -26,11 +26,11 @@ void InterpolatorEdge::interpolate(const Mesh& mesh){
   msh   = &mesh;
   nNode =  mesh.getNbNode();
   
-  nodeValue      = new vector<Vector<double>*>(nNode);
+  nodeValue      = new vector<fullVector<double>*>(nNode);
   isInterpolated = new vector<bool>(nNode);
 
   for(int i = 0; i < nNode; i++){
-    (*nodeValue)[i] = new Vector<double>(2);
+    (*nodeValue)[i] = new fullVector<double>(2);
 
     (*nodeValue)[i]->set(0, 0.0); 
     (*nodeValue)[i]->set(1, 0.0);
@@ -60,14 +60,14 @@ void InterpolatorEdge::interpolateEdgeElement(void){
 	const double x = node[j]->getX();
 	const double y = node[j]->getY();
 	
-	Vector<double>* vn = (*nodeValue)[id];
-	Vector<double>  uv = jac.invMap(x, y);
+	fullVector<double>* vn = (*nodeValue)[id];
+	fullVector<double>  uv = jac.invMap(x, y);
 	
 	for(int k = 0; k < bSize; k++){
-	  Vector<double> vk = jac.grad(basis[k].at(uv(0), uv(1), 0));
+	  fullVector<double> vk = jac.grad(basis[k].at(uv(0), uv(1), 0));
 
-	  vk.mul(entity[k]->getValue() * orient[k]);
-	  vn->add(vk);
+	  vk.scale(entity[k]->getValue() * orient[k]);
+	  vn->axpy(vk, 1);
 	}
 	
 	(*isInterpolated)[id] = true;

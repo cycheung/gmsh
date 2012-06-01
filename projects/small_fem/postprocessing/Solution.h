@@ -3,7 +3,7 @@
 
 #include "Mesh.h"
 #include "Formulation.h"
-#include "Vector.h"
+#include "fullMatrix.h"
 
 #include "Interpolator.h"
 
@@ -41,7 +41,7 @@ class Solution{
   Interpolator* interp;
 
   std::vector<double>* nodalScalarValue;
-  const std::vector<Vector<double>*>* nodalVectorValue;
+  const std::vector<fullVector<double>*>* nodalVectorValue;
 
  public:
    Solution(const Mesh& mesh, const Formulation& formulation);

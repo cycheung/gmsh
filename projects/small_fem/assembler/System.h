@@ -2,7 +2,6 @@
 #define _SYSTEM_H_
 
 #include "fullMatrix.h"
-#include "Vector.h"
 #include "Mesh.h"
 #include "Jacobian.h"
 #include "DofManager.h"
@@ -66,7 +65,7 @@ class System{
    @fn Matrix& System::getMatrix(void) const
    @return Returns the assembled matrix of the the linear system
 
-   @fn Vector<double>& System::getRHS(void) const
+   @fn fullVector<double>& System::getRHS(void) const
    @return Returns the assembled Right Hand Side of the the linear system
 
    @fn void System::fixBC(const int physicalId, const double value)

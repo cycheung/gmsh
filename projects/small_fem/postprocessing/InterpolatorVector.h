@@ -2,7 +2,7 @@
 #define _INTERPOLATORVECTOR_H_
 
 #include <vector>
-#include "Vector.h"
+#include "fullMatrix.h"
 #include "Interpolator.h"
 
 /**
@@ -17,12 +17,12 @@
 
 class InterpolatorVector: public Interpolator{
  protected:
-  std::vector<Vector<double>*>* nodeValue;
+  std::vector<fullVector<double>*>* nodeValue;
 
  public:
   virtual ~InterpolatorVector(void);
 
-  std::vector<Vector<double>*>* getNodeValue(void) const;
+  std::vector<fullVector<double>*>* getNodeValue(void) const;
 
  protected:
   InterpolatorVector(void);

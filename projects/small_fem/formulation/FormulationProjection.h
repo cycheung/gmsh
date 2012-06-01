@@ -2,6 +2,7 @@
 #define _FORMULATIONPROJECTION_H_
 
 #include "Formulation.h"
+#include "fullMatrix.h"
 #include "Vector.h"
 #include "Polynomial.h"
 #include "TriNedelecBasis.h"
@@ -28,13 +29,13 @@ class FormulationProjection: public Formulation{
   int                       basisSize;
 
   // Vector to Project //
-  Vector<double>* f;
+  fullVector<double>* f;
 
   // Interpolator //
   InterpolatorEdge* interp;
 
  public:
-  FormulationProjection(Vector<double>& vectorToProject);
+  FormulationProjection(fullVector<double>& vectorToProject);
   
   virtual ~FormulationProjection(void);
 
@@ -49,7 +50,7 @@ class FormulationProjection: public Formulation{
 
 /**
    @fn FormulationProjection::FormulationProjection
-   @param vectorToProject A Vector<double>
+   @param vectorToProject A fullVector<double>
    @return Returns a new FormulationProjection to project
    the given Vector
  

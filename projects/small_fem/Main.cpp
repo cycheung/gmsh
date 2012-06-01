@@ -1,5 +1,6 @@
 #include <iostream>
 #include "Mesh.h"
+#include "fullMatrix.h"
 #include "Vector.h"
 #include "FormulationLaplace.h"
 #include "FormulationProjection.h"
@@ -27,7 +28,7 @@ int main(int argc, char** argv){
 
     
   // Projection //
-  Vector<double> f(2); 
+  fullVector<double> f(2); 
   f(0) = -1; f(1) = 1; // Vector to project
   
   FormulationProjection projection(f);

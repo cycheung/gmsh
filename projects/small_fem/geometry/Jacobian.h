@@ -2,7 +2,6 @@
 #define _JACOBIAN_H_
 
 #include <vector>
-#include "Vector.h"
 #include "fullMatrix.h"
 #include "Node.h"
 
@@ -54,13 +53,13 @@ class Jacobian{
 
   double det(void) const;
 
-  Vector<double> grad(const Vector<double>& gradUV) const;
+  fullVector<double> grad(const fullVector<double>& gradUV) const;
 
-  Vector<double> invMap(const Vector<double>& XY) const;
-  Vector<double> invMap(const double x, const double y) const;
+  fullVector<double> invMap(const fullVector<double>& XY) const;
+  fullVector<double> invMap(const double x, const double y) const;
 
-  Vector<double> map(const Vector<double>& UV) const;
-  Vector<double> map(const double u, const double v) const;
+  fullVector<double> map(const fullVector<double>& UV) const;
+  fullVector<double> map(const double u, const double v) const;
 
  private:
   void triJac(void);
@@ -85,7 +84,7 @@ class Jacobian{
    @returns Returns the given gradient in the 
    @em physical space
 
-   @fn Jacobian::invMap(const Vector<double>&) const
+   @fn Jacobian::invMap(const fullVector<double>&) const
    @param XY A @c 2D Vector with the coordinates 
    of a point in the @em physical (@c 2D) space
    @returns Returns the coordiantes of the given point
@@ -98,7 +97,7 @@ class Jacobian{
    @returns Returns the coordiantes of the given point
    in the @em reference space
 
-   @fn Jacobian::map(const Vector<double>&) const
+   @fn Jacobian::map(const fullVector<double>&) const
    @param UV A @c 2D Vector with the coordinates 
    of a point in the @em reference (@c 2D) space
    @returns Returns the coordiantes of the given point

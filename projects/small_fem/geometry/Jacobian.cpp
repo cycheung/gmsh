@@ -33,8 +33,8 @@ Jacobian::~Jacobian(void){
   delete   jac;
 }
 
-Vector<double> Jacobian::grad(const Vector<double>& gradUV) const{
-  Vector<double> gradXY(2);
+fullVector<double> Jacobian::grad(const fullVector<double>& gradUV) const{
+  fullVector<double> gradXY(2);
   
   gradXY(0) = gradUV(0) * dudx + gradUV(1) * dvdx;
   gradXY(1) = gradUV(0) * dudy + gradUV(1) * dvdy;    
@@ -42,8 +42,8 @@ Vector<double> Jacobian::grad(const Vector<double>& gradUV) const{
   return gradXY;
 }
 
-Vector<double> Jacobian::invMap(const Vector<double>& XY) const{
-  Vector<double> UV(2);
+fullVector<double> Jacobian::invMap(const fullVector<double>& XY) const{
+  fullVector<double> UV(2);
   
   UV(0) = (XY(0) - nodeX[0]) * dudx + (XY(1) - nodeY[0]) * dudy;
   UV(1) = (XY(0) - nodeX[0]) * dvdx + (XY(1) - nodeY[0]) * dvdy;  
@@ -51,8 +51,8 @@ Vector<double> Jacobian::invMap(const Vector<double>& XY) const{
   return UV;
 }
 
-Vector<double> Jacobian::invMap(const double x, const double y) const{
-  Vector<double> UV(2);
+fullVector<double> Jacobian::invMap(const double x, const double y) const{
+  fullVector<double> UV(2);
   
   UV(0) = (x - nodeX[0]) * dudx + (y - nodeY[0]) * dudy;
   UV(1) = (x - nodeX[0]) * dvdx + (y - nodeY[0]) * dvdy;  
@@ -60,8 +60,8 @@ Vector<double> Jacobian::invMap(const double x, const double y) const{
   return UV;
 }
 
-Vector<double> Jacobian::map(const Vector<double>& UV) const{
-  Vector<double> XY(2);
+fullVector<double> Jacobian::map(const fullVector<double>& UV) const{
+  fullVector<double> XY(2);
 
   XY(0) = UV(0) * dxdu + UV(1) * dxdv + nodeX[0];
   XY(1) = UV(0) * dydu + UV(1) * dydv + nodeY[0];  
@@ -69,8 +69,8 @@ Vector<double> Jacobian::map(const Vector<double>& UV) const{
   return XY;
 }
 
-Vector<double> Jacobian::map(const double u, const double v) const{
-  Vector<double> XY(2);
+fullVector<double> Jacobian::map(const double u, const double v) const{
+  fullVector<double> XY(2);
 
   XY(0) = u * dxdu + v * dxdv + nodeX[0];
   XY(1) = u * dydu + v * dydv + nodeY[0];  

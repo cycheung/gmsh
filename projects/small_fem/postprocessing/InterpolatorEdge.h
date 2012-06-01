@@ -3,8 +3,8 @@
 
 #include "InterpolatorVector.h"
 #include "BasisVector.h"
-#include "Polynomial.h"
 #include "Vector.h"
+#include "Polynomial.h"
 
 /**
    @class InterpolatorEdge

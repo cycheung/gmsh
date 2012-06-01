@@ -2,7 +2,6 @@
 #define _SOLVER_H_
 
 #include "fullMatrix.h"
-#include "Vector.h"
 
 /**
    @class Solver

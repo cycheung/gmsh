@@ -1,7 +1,7 @@
 #include "FormulationProjection.h"
 #include <cmath>
 
-FormulationProjection::FormulationProjection(Vector<double>& vectorToProject){
+FormulationProjection::FormulationProjection(fullVector<double>& vectorToProject){
   // Vector to Project //
   f = &vectorToProject;
 
@@ -48,10 +48,10 @@ double FormulationProjection::weak(const int edgeI, const int edgeJ,
   // Loop over Integration Point //
   double integral = 0;  
   for(int g = 0; g < G; g++){
-    Vector<double> phiI = jac.grad(basis[edgeI].at(gx[g], gy[g], 0));
-    Vector<double> phiJ = jac.grad(basis[edgeJ].at(gx[g], gy[g], 0));
+    fullVector<double> phiI = jac.grad(basis[edgeI].at(gx[g], gy[g], 0));
+    fullVector<double> phiJ = jac.grad(basis[edgeJ].at(gx[g], gy[g], 0));
 
-    integral += phiI.dot(phiJ) * fabs(jac.det()) * gw[g] * orientation;
+    integral += phiI * phiJ * fabs(jac.det()) * gw[g] * orientation;
   }
 
   return integral;
@@ -66,9 +66,9 @@ double FormulationProjection::rhs(const int equationI,
   // Loop over Integration Point //
   double integral = 0;
   for(int g = 0; g < G; g++){  
-    Vector<double> jPhiI = jac.grad(basis[equationI].at(gx[g], gy[g], 0));
+    fullVector<double> jPhiI = jac.grad(basis[equationI].at(gx[g], gy[g], 0));
  
-    integral += f->dot(jPhiI) * fabs(jac.det()) * gw[g] * orientation;
+    integral += (*f) * jPhiI * fabs(jac.det()) * gw[g] * orientation;
   }
 
   return integral;
