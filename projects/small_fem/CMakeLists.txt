@@ -11,6 +11,7 @@ macro(add_sources dir files)
 endmacro(add_sources)
 
 ## Compatibility with gmsh (TO BE REMOVED !!!)
+##############################################
 macro(add_sources_in_gmsh dir files)
   foreach(file ${files})
     list(APPEND list ../../${dir}/${file})
@@ -18,6 +19,7 @@ macro(add_sources_in_gmsh dir files)
 
   set(sources ${sources} ${list} PARENT_SCOPE)
 endmacro(add_sources_in_gmsh)
+##############################################
 
 ## Look for Packages
 include(FindPackageHandleStandardArgs)
@@ -33,8 +35,12 @@ add_subdirectory(formulation)
 add_subdirectory(geometry)
 add_subdirectory(postprocessing)
 add_subdirectory(solver)
+
+## TO BE REMOVED !!!
+####################
 add_subdirectory(../../FunctionSpace 
   "${CMAKE_CURRENT_BINARY_DIR}/FunctionSpace")
+####################
 
 ## Add Main
 list(APPEND sources Main.cpp)
@@ -47,7 +53,14 @@ include_directories(
   geometry
   postprocessing
   solver
+)
+
+## Include Path for gmsh
+include_directories(
+  ${CMAKE_CURRENT_BINARY_DIR}/gmsh/Common
+  ../../Common
   ../../FunctionSpace
+  ../../Numeric
 )
 
 ## Build Documentation
@@ -61,5 +74,5 @@ endif(DOXYGEN_FOUND)
 add_definitions(-pedantic -Wall -g)
 add_executable(sf ${sources}) 
 
-## Link
-target_link_libraries(sf cblas lapack)
+## Link (Note: 'lib' is gmsh static library)
+target_link_libraries(sf cblas lapack lib)

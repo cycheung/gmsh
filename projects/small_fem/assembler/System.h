@@ -1,7 +1,7 @@
 #ifndef _SYSTEM_H_
 #define _SYSTEM_H_
 
-#include "Matrix.h"
+#include "fullMatrix.h"
 #include "Vector.h"
 #include "Mesh.h"
 #include "Jacobian.h"
@@ -30,8 +30,8 @@
 
 class System{
  private:
-  Matrix* A;
-  Vector<double>* n;
+  fullMatrix<double>* A;
+  fullVector<double>* n;
   int size;
 
   DofManager* dofM;
@@ -42,8 +42,8 @@ class System{
 	  const Formulation& formulation);
   ~System(void);
 
-  Matrix& getMatrix(void) const;
-  Vector<double>& getRHS(void) const;
+  fullMatrix<double>& getMatrix(void) const;
+  fullVector<double>& getRHS(void) const;
 
   void fixBC(const int physicalId, const double value);
   void solve(void);
@@ -83,11 +83,11 @@ class System{
 //////////////////////
 
 
-inline Matrix& System::getMatrix(void) const{
+inline fullMatrix<double>& System::getMatrix(void) const{
   return *A;
 }
 
-inline Vector<double>& System::getRHS(void) const{
+inline fullVector<double>& System::getRHS(void) const{
   return *n;
 }
 

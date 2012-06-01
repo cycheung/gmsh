@@ -4,7 +4,7 @@
 Jacobian::Jacobian(const std::vector<Node*>& nodes){
   nNode = nodes.size();
   
-  jac = new Matrix(3, 3);
+  jac = new fullMatrix<double>(3, 3);
 
   nodeX = new double[nNode];
   nodeY = new double[nNode];

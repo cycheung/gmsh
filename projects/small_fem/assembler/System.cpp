@@ -22,11 +22,11 @@ System::System(const std::vector<Element*>& elements,
   const int E = dofM->groupNumber();
 
   // Create System //
-  A = new Matrix(size, size);
-  n = new Vector<double>(size);
+  A = new fullMatrix<double>(size, size);
+  n = new fullVector<double>(size);
 
-  A->allToZero();
-  n->allToZero();
+  //A->allToZero();
+  //n->allToZero();
 
   // Assemble System //
   for(int i = 0; i < E; i++)
@@ -72,14 +72,16 @@ void System::fixBC(const int physicalId, const double value){
 
 void System::solve(void){
   // Get dof value //
-  Solver::solve(*A, *n);
+  fullVector<double> x(size);
+
+  Solver::solve(*A, x, *n);
 
   // Set all Entities value //
   const vector<Dof*>* dof = &dofM->getAllDofs();
   const int N = dof->size();
   
   for(int i = 0; i < N; i++)
-    dofM->getEntity(*((*dof)[i])).setValue((*n)(i));
+    dofM->getEntity(*((*dof)[i])).setValue(x(i));
 }
 
 void System::assemble(GroupOfDof& group){

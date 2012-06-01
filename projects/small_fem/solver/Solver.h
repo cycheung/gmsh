@@ -1,7 +1,7 @@
 #ifndef _SOLVER_H_
 #define _SOLVER_H_
 
-#include "Matrix.h"
+#include "fullMatrix.h"
 #include "Vector.h"
 
 /**
@@ -23,7 +23,9 @@
 
 class Solver{
  public:
-  static void solve(Matrix& A, Vector<double>& x);
+  static void solve(fullMatrix<double>& A, 
+		    fullVector<double>& x,
+		    fullVector<double>& b);
 };
 
 /**

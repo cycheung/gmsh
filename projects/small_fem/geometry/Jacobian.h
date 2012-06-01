@@ -3,7 +3,7 @@
 
 #include <vector>
 #include "Vector.h"
-#include "Matrix.h"
+#include "fullMatrix.h"
 #include "Node.h"
 
 /**
@@ -34,7 +34,7 @@ class Jacobian{
   double* nodeY;
   double* nodeZ;
 
-  Matrix* jac; // From Ref. Space to Phys. Space
+  fullMatrix<double>* jac; // From Ref. to Phys. Space
 
   double dxdu;
   double dxdv;
