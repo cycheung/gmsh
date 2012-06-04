@@ -8,6 +8,7 @@
 
 #include <map>
 #include <string>
+#include <set>
 #include <stdarg.h>
 #include "onelab.h"
 
@@ -19,6 +20,14 @@ class GmshMessage{
   GmshMessage(){}
   virtual ~GmshMessage(){}
   virtual void operator()(std::string level, std::string message){}
+};
+
+class fullNameLessThan{
+public:
+  int compareFullNames(const std::string a, const std::string b) const;
+  bool operator()(const std::string p1, const std::string p2) const{
+    return compareFullNames(p1,p2);
+  }
 };
 
 // a class to manage messages
@@ -43,6 +52,8 @@ class Msg {
   static GmshClient *_client;
   // communication with onelab server
   static onelab::client *_onelabClient;
+  // dictionnary for parameter names
+  static std::set<std::string, fullNameLessThan> _fullNameDict;
  public:
   Msg() {}
   static void Init(int argc, char **argv);
@@ -116,6 +127,8 @@ class Msg {
   static int Synchronize_Down();
   static int Synchronize_Up();
   static void FinalizeOnelab();
+  static void recordFullName(const std::string &name);
+  static std::string obtainFullName(const std::string &name);
 };
 
 #endif

@@ -61,11 +61,6 @@ int main(int argc, char *argv[]){
   if(Msg::loader && !Msg::GetOnelabNumber(clientName + "/Initialized"))
     action.assign("initialize");
 
-  // std::cout << "checkcmd:" << Msg::GetOnelabString(clientName+"/9CheckCommand") << std::endl;
-  // std::cout << "     action:" << action << std::endl;
-  // std::cout << "initialized:" << Msg::GetOnelabNumber(clientName + "/Initialized") << std::endl;
-  // std::cout << "    hasGmsh:" << Msg::hasGmsh << std::endl;
-
   if(!action.compare("exit")){ // exit metamodel
   } 
   else if(!action.compare("initialize")){

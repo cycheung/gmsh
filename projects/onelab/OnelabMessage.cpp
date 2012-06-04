@@ -28,6 +28,7 @@ std::string Msg::_launchDate;
 GmshClient *Msg::_client = 0;
 onelab::client *Msg::_onelabClient = 0;
 bool Msg::hasGmsh=false;
+std::set<std::string, fullNameLessThan> Msg::_fullNameDict;
 
 #if defined(HAVE_NO_VSNPRINTF)
 static int vsnprintf(char *str, size_t size, const char *fmt, va_list ap)
@@ -60,13 +61,6 @@ void Msg::Init(int argc, char **argv)
 
 void Msg::Exit(int level)
 {
-  // delete the temp file
-  //if(!_commRank) UnlinkFile(CTX::instance()->homeDir + CTX::instance()->tmpFileName);
-
-  // exit directly on abnormal program termination (level != 0). We
-  // used to call abort() to flush open streams, but on modern OSes
-  // this calls the annoying "report this crash to the mothership"
-  // window... so just exit!
   if(level){
     exit(level);
   }
@@ -94,11 +88,10 @@ void Msg::Fatal(const char *fmt, ...)
    fflush(stderr);
   }
 
+  Msg::SetOnelabString("MetaModel/STATUS","STOP");
   FinalizeClient();
   FinalizeOnelab();
   delete loader;
-  // only exit if a callback is not provided
-  //if(!_callback) Exit(1);
   Exit(1);
 }
 
@@ -519,53 +512,6 @@ std::string Msg::GetOnelabAttributeNumber(std::string name,std::string attrib){
   return str;
 }
 
-/* not used 
-void Msg::ExchangeOnelabParameter(const std::string &key,
-                                  std::vector<double> &val,
-                                  std::map<std::string, std::vector<double> > &fopt,
-                                  std::map<std::string, std::vector<std::string> > &copt)
-{
-  if(!_onelabClient || val.empty()) return;
-
-  std::string name(key);
-  if(copt.count("Path")){
-    std::string path = copt["Path"][0];
-    // if path ends with a number, assume it's for ordering purposes
-    if(path.size() && path[path.size() - 1] >= '0' && path[path.size() - 1] <= '9')
-      name = path + name;
-    else if(path.size() && path[path.size() - 1] == '/')
-      name = path + name;
-    else
-      name = path + "/" + name;
-  }
-  std::vector<onelab::number> ps;
-  _onelabClient->get(ps, name);
-  if(ps.size()){ // use value from server
-    val[0] = ps[0].getValue();
-  }
-  else{ // send value to server
-    onelab::number o(name, val[0]);
-    if(fopt.count("Range") && fopt["Range"].size() == 2){
-      o.setMin(fopt["Range"][0]); o.setMax(fopt["Range"][1]);
-    }
-    else if(fopt.count("Min") && fopt.count("Max")){
-      o.setMin(fopt["Min"][0]); o.setMax(fopt["Max"][0]);
-    }
-    else if(fopt.count("Min")){
-      o.setMin(fopt["Min"][0]); o.setMax(1.e200);
-    }
-    else if(fopt.count("Max")){
-      o.setMax(fopt["Max"][0]); o.setMin(-1.e200);
-    }
-    if(fopt.count("Step")) o.setStep(fopt["Step"][0]);
-    if(fopt.count("Choices")) o.setChoices(fopt["Choices"]);
-    if(copt.count("Help")) o.setHelp(copt["Help"][0]);
-    if(copt.count("Label")) o.setLabel(copt["Label"][0]);
-    _onelabClient->set(o);
-  }
-}
-*/
-
 void Msg::AddOnelabNumberChoice(std::string name, double val)
 {
   if(_onelabClient){
@@ -612,7 +558,50 @@ void Msg::AddOnelabStringChoice(std::string name, std::string kind,
   }
 }
 
+int fullNameLessThan::compareFullNames(const std::string a, const std::string b) const{
+  std::string::const_iterator ita, itb;
+  ita=a.begin(); itb=b.begin();
+  do{
+    if(*ita == '/'){
+      ita++;
+      if( (*ita >= '0') && (*ita <= '9')) ita++;
+    }
+    else
+      ita++;
+
+    if(*itb == '/'){
+      *itb++;
+      if( (*itb >= '0') && (*itb <= '9')) itb++;
+    }
+    else
+      itb++;
+  } while( (ita<a.end()) && (itb<b.end()) && (*ita == *itb) );
+  return *ita < *itb ;
+}
+void Msg::recordFullName(const std::string &name){
+  Msg::_fullNameDict.insert(name);
+}
+std::string Msg::obtainFullName(const std::string &name){
+  std::set<std::string, fullNameLessThan>::iterator it;
+
+  // fullNameLessThan* comp=new fullNameLessThan;
+  // std::cout << "Dict=" << Msg::_fullNameDict.size() << std::endl;
+  // std::cout << "Looking for " << name << std::endl;
+  // for ( it=Msg::_fullNameDict.begin() ; it != Msg::_fullNameDict.end(); it++ )
+  //   std::cout << *it << " <" << comp->operator()(*it,name) << ">" << std::endl;
+  // std::cout << std::endl;
+
+  it = Msg::_fullNameDict.find(name);
+  if(it == Msg::_fullNameDict.end()){
+    return name;
+  }
+  else{
+    return *it;
+  }
+}
+
 int Msg::Synchronize_Down(){
+  Msg::_fullNameDict.clear();
   std::vector<onelab::number> numbers;
   onelab::number *pn;
   loader->get(numbers,"");
@@ -622,6 +611,7 @@ int Msg::Synchronize_Down(){
       pn=new onelab::number;
       pn->fromChar((*it).toChar());
       Msg::SetOnelabNumber(*pn);
+      Msg::recordFullName(pn->getName());
       delete pn;
     }
   }
@@ -634,6 +624,7 @@ int Msg::Synchronize_Down(){
       ps=new onelab::string;
       ps->fromChar((*it).toChar());
       Msg::SetOnelabString(*ps);
+      Msg::recordFullName(ps->getName());
       delete ps;
     }
   }
@@ -646,6 +637,7 @@ int Msg::Synchronize_Down(){
       pr=new onelab::region;
       pr->fromChar((*it).toChar());
       Msg::SetOnelabRegion(*pr);
+      Msg::recordFullName(pr->getName());
       delete pr;
     }
   }
@@ -700,4 +692,49 @@ void Msg::FinalizeOnelab(){
   }
 }
 
+/* not used 
+void Msg::ExchangeOnelabParameter(const std::string &key,
+                                  std::vector<double> &val,
+                                  std::map<std::string, std::vector<double> > &fopt,
+                                  std::map<std::string, std::vector<std::string> > &copt)
+{
+  if(!_onelabClient || val.empty()) return;
 
+  std::string name(key);
+  if(copt.count("Path")){
+    std::string path = copt["Path"][0];
+    // if path ends with a number, assume it's for ordering purposes
+    if(path.size() && path[path.size() - 1] >= '0' && path[path.size() - 1] <= '9')
+      name = path + name;
+    else if(path.size() && path[path.size() - 1] == '/')
+      name = path + name;
+    else
+      name = path + "/" + name;
+  }
+  std::vector<onelab::number> ps;
+  _onelabClient->get(ps, name);
+  if(ps.size()){ // use value from server
+    val[0] = ps[0].getValue();
+  }
+  else{ // send value to server
+    onelab::number o(name, val[0]);
+    if(fopt.count("Range") && fopt["Range"].size() == 2){
+      o.setMin(fopt["Range"][0]); o.setMax(fopt["Range"][1]);
+    }
+    else if(fopt.count("Min") && fopt.count("Max")){
+      o.setMin(fopt["Min"][0]); o.setMax(fopt["Max"][0]);
+    }
+    else if(fopt.count("Min")){
+      o.setMin(fopt["Min"][0]); o.setMax(1.e200);
+    }
+    else if(fopt.count("Max")){
+      o.setMax(fopt["Max"][0]); o.setMin(-1.e200);
+    }
+    if(fopt.count("Step")) o.setStep(fopt["Step"][0]);
+    if(fopt.count("Choices")) o.setChoices(fopt["Choices"]);
+    if(copt.count("Help")) o.setHelp(copt["Help"][0]);
+    if(copt.count("Label")) o.setLabel(copt["Label"][0]);
+    _onelabClient->set(o);
+  }
+}
+*/

@@ -2,7 +2,7 @@
 #include <string>
 #include "OnelabClients.h"
 
-PromptUser *OL = new PromptUser("onelab");
+//PromptUser *OL = new PromptUser("onelab");
 void MetaModel::analyze(){
   Msg::Info("\nMetamodel: now ANALYSING");
   simpleCheck();
@@ -12,7 +12,6 @@ void MetaModel::analyze(){
 
 void MetaModel::compute(){
   Msg::Info("\nMetamodel: now COMPUTING");
-
   simpleCompute();
 
   std::vector<std::string> choices;

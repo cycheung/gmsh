@@ -29,6 +29,7 @@ static std::string cmdSep(" ; ");
 
 int getOptions(int argc, char *argv[], std::string &action, std::string &commandLine, std::string &caseName, std::string &clientName, std::string &sockName, int &modelNumber);
 std::string itoa(const int i);
+std::string ftoa(const double x);
 void appendOption(std::string &str, const std::string &what, const int val);
 void appendOption(std::string &str, const std::string &what);
 void GmshDisplay(onelab::remoteNetworkClient *loader, std::string fileName, std::vector<std::string> choices);
@@ -141,11 +142,13 @@ class localSolverClient : public onelab::localClient{
   virtual void client_sentence(const std::string &name, 
 			       const std::string &action, 
 			       const std::vector<std::string> &arguments);
+  void modify_tags(const std::string lab, 
+		   const std::string com, const std::string sep);
   void parse_sentence(std::string line) ;
   void parse_oneline(std::string line, std::ifstream &infile) ;
   bool parse_block(std::ifstream &infile) ;
   bool parse_ifstatement(std::ifstream &infile, bool condition) ;
-  void parse_onefile(std::string ifilename);
+  void parse_onefile(std::string ifilename, bool mandatory=true);
   void convert_oneline(std::string line, std::ifstream &infile, 
 		       std::ofstream &outfile);
   bool convert_ifstatement(std::ifstream &infile, 
@@ -216,7 +219,7 @@ class MetaModel : public localSolverClient {
     genericNameFromArgs = fname.size() ? fname : cmdl;
     openOnelabBlock();
     parse_onefile( genericNameFromArgs + onelabExtension);
-    parse_onefile( genericNameFromArgs + onelabExtension + ".save");
+    parse_onefile( genericNameFromArgs + onelabExtension + ".save",false);
     closeOnelabBlock();
   }
   ~MetaModel(){}

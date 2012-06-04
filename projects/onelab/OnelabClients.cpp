@@ -572,7 +572,7 @@ bool PromptUser::menu(std::string commandLine, std::string workingDir, std::stri
 std::string localSolverClient::toChar(){
   std::ostringstream sstream;
   if(getCommandLine().size()){
-    sstream << getName() << "." << "CommandLine(" 
+    sstream << getName() << "." << "commandLine(" 
 	    << getCommandLine() << ");\n";
   }
   return sstream.str();
@@ -746,13 +746,16 @@ void MetaModel::simpleCheck()
 void MetaModel::simpleCompute()
 {
   for(citer it = _clients.begin(); it != _clients.end(); it++){
-    if((*it)->isActive()){
-      Msg::SetOnelabString((*it)->getName() + "/Action","compute",false);
-      if(Msg::GetOnelabNumber("Onelab/LOGFILES")){
-	freopen((*it)->getName().append(".log").c_str(),"w",stdout);
-	freopen((*it)->getName().append(".err").c_str(),"w",stderr);
+    if(Msg::GetOnelabString("MetaModel/STATUS").compare("STOP")){
+      if((*it)->isActive()){
+	Msg::SetOnelabString((*it)->getName() + "/Action","compute",false);
+	if(Msg::GetOnelabNumber("MetaModel/LOGFILES")){
+	  freopen((*it)->getName().append(".log").c_str(),"w",stdout);
+	  freopen((*it)->getName().append(".err").c_str(),"w",stderr);
+	}
+	(*it)->compute();
+	Msg::SetOnelabString((*it)->getName() + "/Action","alldone",false);
       }
-      (*it)->compute();
     }
   }
 }
@@ -786,6 +789,7 @@ void InterfacedClient::analyze() {
       parse_onefile(choices[i]);
     }
   }
+  convert();
 }
 
 void InterfacedClient::convert() {
@@ -810,7 +814,7 @@ void InterfacedClient::compute(){
   std::string cmd;
   std::vector<std::string> choices;
 
-  convert();
+  //convert();
   Msg::SetOnelabString(getName() + "/Action","compute",false); // a titre indicatif
 
   if(getList("InputFiles",choices)){
@@ -1156,6 +1160,12 @@ std::string itoa(const int i){
   std::ostringstream tmp;
   tmp << i ;
   return tmp.str();
+}
+
+std::string ftoa(const double x){
+  std::stringstream Num;
+  Num << x;
+  return Num.str();
 }
 
 #include <sys/stat.h>		

@@ -1,8 +1,9 @@
 SOLVERS=onelab
-SOURCES=OS StringUtils OnelabClients OnelabMessage OnelabParser main
+SOURCES=OS StringUtils mathex OnelabClients OnelabMessage OnelabParser main
 
 COMMON_DIR=$(GMSH_DIR)/Common
 ONELAB_DIR=$(GMSH_DIR)/projects/onelab
+MATHEX_DIR=$(GMSH_DIR)/contrib/MathEx
 
 OBJDIR=objects
 
@@ -34,8 +35,8 @@ TARGETS=$(SOLVERS:=_client$(EXESUFFIX))
 all : $(TARGETS)
 
 
-CPPFLAGS+=-I$(COMMON_DIR) -I$(ONELAB_DIR) -g
-VPATH=$(ONELAB_DIR):$(COMMON_DIR):$(ONELAB_DIR)/SOLVERS
+CPPFLAGS+=-I$(COMMON_DIR) -I$(ONELAB_DIR) -I$(MATHEX_DIR) -g
+VPATH=$(ONELAB_DIR):$(COMMON_DIR):$(MATHEX_DIR):$(ONELAB_DIR)/SOLVERS
 
 OBJECTS=$(foreach OBJ, $(SOURCES), $(OBJDIR)/$(OBJ).o)
 $(OBJDIR)/%.o : %.cpp $(ONELAB_DIR)/*.h
