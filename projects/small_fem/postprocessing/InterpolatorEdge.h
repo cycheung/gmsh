@@ -17,7 +17,7 @@
 
 class InterpolatorEdge: public InterpolatorVector{
  private:
-  const std::vector<Polynomial>* basis;
+  const std::vector<std::vector<Polynomial> >* basis;
   int bSize;
 
   const Mesh* msh;  

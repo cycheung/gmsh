@@ -21,7 +21,7 @@ class InterpolatorScalar: public Interpolator{
  public:
   virtual ~InterpolatorScalar(void);
 
-  std::vector<double>* getNodeValue(void) const;
+  const std::vector<double>& getNodeValue(void) const;
 
  protected:
   InterpolatorScalar(void);

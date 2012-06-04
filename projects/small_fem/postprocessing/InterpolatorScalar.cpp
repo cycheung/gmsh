@@ -8,10 +8,10 @@ InterpolatorScalar::InterpolatorScalar(void){
 InterpolatorScalar::~InterpolatorScalar(void){
 }
 
-std::vector<double>*
+const std::vector<double>&
 InterpolatorScalar::getNodeValue(void) const{
   if(!gotInterpolation)
     throw Exception("Field not interpolated");
 
-  return nodeValue;
+  return *nodeValue;
 }

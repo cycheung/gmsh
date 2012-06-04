@@ -26,7 +26,7 @@ FormulationLaplace::FormulationLaplace(void){
   // Basis //
   // Generate Basis
   base = new TriNodeBasis(1);  
-  const Polynomial* basis = base->getBasis();
+  const vector<Polynomial>& basis = base->getBasis();
 
   // Take gradient
   basisSize = base->getSize();  

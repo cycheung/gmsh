@@ -27,7 +27,7 @@ FormulationProjection::FormulationProjection(fullVector<double>& vectorToProject
 
   // Basis //
   baseGen   = new TriNedelecBasis;
-  basis     = baseGen->getBasis();
+  basis     = &(baseGen->getBasis());
   basisSize = baseGen->getSize(); 
 
   // Interpolator //
@@ -50,8 +50,11 @@ double FormulationProjection::weak(const int edgeI, const int edgeJ,
   // Loop over Integration Point //
   double integral = 0;  
   for(int g = 0; g < G; g++){
-    fullVector<double> phiI = jac.grad(Polynomial::at(basis[edgeI], gx[g], gy[g], 0));
-    fullVector<double> phiJ = jac.grad(Polynomial::at(basis[edgeJ], gx[g], gy[g], 0));
+    fullVector<double> phiI = jac.grad(Polynomial::at((*basis)[edgeI], 
+						      gx[g], gy[g], 0));
+    
+    fullVector<double> phiJ = jac.grad(Polynomial::at((*basis)[edgeJ], 
+						      gx[g], gy[g], 0));
 
     integral += phiI * phiJ * fabs(jac.det()) * gw[g] * orientation;
   }
@@ -68,7 +71,8 @@ double FormulationProjection::rhs(const int equationI,
   // Loop over Integration Point //
   double integral = 0;
   for(int g = 0; g < G; g++){  
-    fullVector<double> jPhiI = jac.grad(Polynomial::at(basis[equationI], gx[g], gy[g], 0));
+    fullVector<double> jPhiI = jac.grad(Polynomial::at((*basis)[equationI], 
+						       gx[g], gy[g], 0));
  
     integral += (*f) * jPhiI * fabs(jac.det()) * gw[g] * orientation;
   }

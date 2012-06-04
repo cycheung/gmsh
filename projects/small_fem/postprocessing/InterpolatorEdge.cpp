@@ -4,7 +4,7 @@
 using namespace std;
 
 InterpolatorEdge::InterpolatorEdge(const BasisVector& basis){
-  this->basis    = basis.getBasis();
+  this->basis    = &(basis.getBasis());
   this->bSize    = basis.getSize();
   nNode          = 0;
   nodeValue      = NULL;
@@ -64,7 +64,8 @@ void InterpolatorEdge::interpolateEdgeElement(void){
 	fullVector<double>  uv = jac.invMap(x, y);
 	
 	for(int k = 0; k < bSize; k++){
-	  fullVector<double> vk = jac.grad(Polynomial::at(basis[k], uv(0), uv(1), 0));
+	  fullVector<double> vk = jac.grad(Polynomial::at((*basis)[k], 
+							  uv(0), uv(1), 0));
 
 	  vk.scale(entity[k]->getValue() * orient[k]);
 	  vn->axpy(vk, 1);

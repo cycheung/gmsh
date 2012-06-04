@@ -24,9 +24,9 @@ class FormulationProjection: public Formulation{
   double gw[4];
 
   // Basis //
-  TriNedelecBasis*               baseGen;
-  const std::vector<Polynomial>* basis;
-  int                            basisSize;
+  TriNedelecBasis*                             baseGen;
+  const std::vector<std::vector<Polynomial> >* basis;
+  int                                          basisSize;
 
   // Vector to Project //
   fullVector<double>* f;

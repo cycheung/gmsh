@@ -21,14 +21,14 @@ Solution::Solution(const Mesh& mesh, const Formulation& formulation){
       static_cast<InterpolatorScalar&>(*interp); 
 
     nodalVectorValue = NULL;
-    nodalScalarValue = ic.getNodeValue(); 
+    nodalScalarValue = &(ic.getNodeValue()); 
   }
   
   else{
     InterpolatorVector& iv = 
       static_cast<InterpolatorVector&>(*interp); 
 
-    nodalVectorValue = iv.getNodeValue();
+    nodalVectorValue = &(iv.getNodeValue());
     nodalScalarValue = NULL; 
  }
 }

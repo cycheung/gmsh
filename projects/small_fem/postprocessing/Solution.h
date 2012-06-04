@@ -40,7 +40,7 @@ class Solution{
 
   Interpolator* interp;
 
-  std::vector<double>* nodalScalarValue;
+  const std::vector<double>*              nodalScalarValue;
   const std::vector<fullVector<double>*>* nodalVectorValue;
 
  public:

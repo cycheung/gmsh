@@ -22,7 +22,7 @@ class InterpolatorVector: public Interpolator{
  public:
   virtual ~InterpolatorVector(void);
 
-  std::vector<fullVector<double>*>* getNodeValue(void) const;
+  const std::vector<fullVector<double>*>& getNodeValue(void) const;
 
  protected:
   InterpolatorVector(void);
