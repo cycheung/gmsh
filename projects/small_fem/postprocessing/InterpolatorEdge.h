@@ -1,9 +1,9 @@
 #ifndef _INTERPOLATOREDGE_H_
 #define _INTERPOLATOREDGE_H_
 
+#include <vector>
 #include "InterpolatorVector.h"
 #include "BasisVector.h"
-#include "Vector.h"
 #include "Polynomial.h"
 
 /**
@@ -17,7 +17,7 @@
 
 class InterpolatorEdge: public InterpolatorVector{
  private:
-  const Vector<Polynomial>* basis;
+  const std::vector<Polynomial>* basis;
   int bSize;
 
   const Mesh* msh;  

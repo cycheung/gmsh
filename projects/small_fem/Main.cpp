@@ -1,7 +1,6 @@
 #include <iostream>
 #include "Mesh.h"
 #include "fullMatrix.h"
-#include "Vector.h"
 #include "FormulationLaplace.h"
 #include "FormulationProjection.h"
 #include "System.h"

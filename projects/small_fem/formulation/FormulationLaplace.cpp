@@ -2,6 +2,8 @@
 #include "FormulationLaplace.h"
 #include <cmath>
 
+using namespace std;
+
 FormulationLaplace::FormulationLaplace(void){
   // Gaussian Quadrature Data //
   G     = 4;
@@ -28,7 +30,7 @@ FormulationLaplace::FormulationLaplace(void){
 
   // Take gradient
   basisSize = base->getSize();  
-  gradBasis = new Vector<Polynomial> [basisSize];
+  gradBasis = new vector<Polynomial> [basisSize];
 
   for(int i = 0; i < basisSize; i++)
     gradBasis[i] = basis[i].gradient();
@@ -49,8 +51,8 @@ double FormulationLaplace::weak(const int nodeI, const int nodeJ,
 
   double integral = 0;  
   for(int g = 0; g < G; g++){
-    fullVector<double> phiI = jac.grad(gradBasis[nodeI].at(gx[g], gy[g], 0));
-    fullVector<double> phiJ = jac.grad(gradBasis[nodeJ].at(gx[g], gy[g], 0));
+    fullVector<double> phiI = jac.grad(Polynomial::at(gradBasis[nodeI], gx[g], gy[g], 0));
+    fullVector<double> phiJ = jac.grad(Polynomial::at(gradBasis[nodeJ], gx[g], gy[g], 0));
 
     integral += phiI * phiJ * fabs(jac.det()) * gw[g];
   }

@@ -1,9 +1,9 @@
 #ifndef _FORMULATIONLAPLACE_H_
 #define _FORMULATIONLAPLACE_H_
 
+#include <vector>
 #include "Formulation.h"
 #include "Polynomial.h"
-#include "Vector.h"
 #include "TriNodeBasis.h"
 #include "InterpolatorNode.h"
 
@@ -23,9 +23,9 @@ class FormulationLaplace: public Formulation{
   double gw[4];
 
   // Basis //
-  TriNodeBasis*       base;
-  Vector<Polynomial>* gradBasis;
-  int                 basisSize;
+  TriNodeBasis*            base;
+  std::vector<Polynomial>* gradBasis;
+  int                      basisSize;
 
   // Interpolator //
   InterpolatorNode* interp;

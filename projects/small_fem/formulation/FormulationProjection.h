@@ -1,9 +1,9 @@
 #ifndef _FORMULATIONPROJECTION_H_
 #define _FORMULATIONPROJECTION_H_
 
+#include <vector>
 #include "Formulation.h"
 #include "fullMatrix.h"
-#include "Vector.h"
 #include "Polynomial.h"
 #include "TriNedelecBasis.h"
 #include "InterpolatorEdge.h"
@@ -24,9 +24,9 @@ class FormulationProjection: public Formulation{
   double gw[4];
 
   // Basis //
-  TriNedelecBasis*          baseGen;
-  const Vector<Polynomial>* basis;
-  int                       basisSize;
+  TriNedelecBasis*               baseGen;
+  const std::vector<Polynomial>* basis;
+  int                            basisSize;
 
   // Vector to Project //
   fullVector<double>* f;
