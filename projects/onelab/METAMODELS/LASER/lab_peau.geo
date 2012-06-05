@@ -18,8 +18,6 @@ D = BEAMRADIUS *mm;
 H1 = DERMIS *mm;
 H2 = SKINWIDTH * mm;
 
-Printf("H2=%f",H2);
-
 lc = 1;
 Point(1) = {0, 0, 0, lc}; 
 Point(2) = {D, 0, 0, lc};

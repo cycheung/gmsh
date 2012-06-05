@@ -1,7 +1,6 @@
 LOGFILES.radioButton(0,MetaModel/,''Output goes in .log files'');
 
 % Model parameters
-
 TENEUR.radioButton(0,Parameters/Model/1,"Account for water content"); 
 CONVBC.radioButton(0,Parameters/Model/2,"Account for convection");
 BIOHEAT.radioButton(0,Parameters/Model/3,"Account for volume heat sources");
@@ -26,7 +25,8 @@ ZSURF1.number( OL.eval((OL.get(DERMIS)+OL.get(SKINWIDTH)-0.050)/1000), PostPro/)
 ZSURF2.number( OL.eval((OL.get(DERMIS)+OL.get(SKINWIDTH)-0.100)/1000), PostPro/);
 ZSURF3.number( OL.eval((OL.get(DERMIS)+OL.get(SKINWIDTH)-0.150)/1000), PostPro/);
 ZSURF4.number( OL.eval((OL.get(DERMIS)+OL.get(SKINWIDTH)-0.200)/1000), PostPro/);
-ZSURF0.setReadOnly(1);
+% depending variables must be set "ReadOnly"
+ZSURF0.setReadOnly(1); 
 ZSURF1.setReadOnly(1);
 ZSURF2.setReadOnly(1);
 ZSURF3.setReadOnly(1);
@@ -68,11 +68,11 @@ OL.endif
 
 %-1) Client Gmsh pour faire le maillage
 
-Gmsh.register(encapsulated);
-Gmsh.in( OL.get(Arguments/FileName).geo );
-Gmsh.args( OL.get(Arguments/FileName).geo );
-Gmsh.out( OL.get(Arguments/FileName).msh );
-Gmsh.merge( OL.get(Arguments/FileName).msh);
+Mesher.register(encapsulated);
+Mesher.in( OL.get(Arguments/FileName).geo );
+Mesher.args( OL.get(Arguments/FileName).geo );
+Mesher.out( OL.get(Arguments/FileName).msh );
+Mesher.merge( OL.get(Arguments/FileName).msh);
 
 %-2) Client ElmerGrid pour convertir le maillage pour Elmer
 ElmerGrid.register(interfaced);
@@ -92,9 +92,7 @@ Post.args(solution.pos script.opt -);
 Post.out(overheat.pos, temper.txt);
 Post.merge(overheat.pos);
 
-%GmshMerge.in(overheat.pos);
-
-%-6) Client Postpro avec Matlab ou gnuplot
+%-5) Client Postpro avec Matlab ou gnuplot
 
 POSTPRO.number(2, PostPro/,"Plot results with");
 POSTPRO.addChoices(1,2); 
@@ -108,4 +106,9 @@ Gnuplot.register(interfaced);
 Gnuplot.args(plot.plt );
 OL.endif
 
-
+%-6) Display solution with a client Gmsh 
+Display.register(interfaced);
+Display.args(OL.get(Arguments/FileName).msh overheat.pos);
+OL.if(OL.get(HasGmsh) == 0)
+Display.active(1);
+OL.endif
