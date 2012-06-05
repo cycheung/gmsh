@@ -34,6 +34,9 @@ int enclosed(const std::string &in, std::vector<std::string> &arguments,
   if ( (pos=in.find("(",cursor)) == std::string::npos )
      Msg::Fatal("Syntax error: <%s>",in.c_str());
 
+  if (pos>0)
+     Msg::Fatal("Syntax error: <%s>",in.c_str());
+
   unsigned int count=1;
   pos++; // skips '('
   cursor = pos; 
@@ -200,7 +203,7 @@ std::string localSolverClient::resolveGetVal(std::string line) {
     smlib::mathex* mathExp = new smlib::mathex();
     mathExp->expression(arguments[0]); 
     double val=mathExp->eval();
-    std::cout << "MathEx <" << arguments[0] << "> ="<< val << std::endl;
+    //std::cout << "MathEx <" << arguments[0] << "> ="<< val << std::endl;
     line.replace(pos0,cursor+pos-pos0,ftoa(val));
   }
 

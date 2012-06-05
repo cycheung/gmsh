@@ -665,7 +665,7 @@ void localSolverClient::PostArray(std::vector<std::string> choices)
 void localSolverClient::GmshMerge(std::vector<std::string> choices)
 {
   if(choices.empty()) return;
-  std::string cmd=Msg::GetOnelabString("Starter/CommandLine")+" ";
+  std::string cmd=Msg::GetOnelabString("Gmsh/CommandLine")+" ";
   for(unsigned int i = 0; i < choices.size(); i++){
     std::string fileName=getWorkingDir()+choices[i];
     cmd.append(fileName+" ");
