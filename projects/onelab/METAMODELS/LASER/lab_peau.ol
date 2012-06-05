@@ -10,7 +10,7 @@ SKINTYPE.addChoices(1,2);
 SKINTYPE.addLabels(hairy, hairless);
 
 SKINWIDTH.number(0.05,Parameters/Model/5,''Skin width [mm]'');
-//SKINWIDTH.setReadOnly(0);
+%SKINWIDTH.setReadOnly(1);
 OL.if( OL.get(SKINTYPE) == 1)
 SKINWIDTH.setValue(0.05);
 OL.endif
@@ -109,6 +109,6 @@ OL.endif
 %-6) Display solution with a client Gmsh 
 Display.register(interfaced);
 Display.args(OL.get(Arguments/FileName).msh overheat.pos);
-OL.if(OL.get(HasGmsh) == 0)
-Display.active(1);
+OL.if(OL.get(HasGmsh) == 1)
+Display.active(0);
 OL.endif

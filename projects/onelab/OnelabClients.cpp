@@ -662,20 +662,30 @@ void localSolverClient::PostArray(std::vector<std::string> choices)
   }
 }
 
+// void localSolverClient::GmshMerge(std::vector<std::string> choices)
+// {
+//   if(choices.empty()) return;
+//   std::string cmd=Msg::GetOnelabString("Gmsh/CommandLine")+" ";
+//   for(unsigned int i = 0; i < choices.size(); i++){
+//     std::string fileName=getWorkingDir()+choices[i];
+//     cmd.append(fileName+" ");
+//     if(Msg::hasGmsh){
+//       Msg::loader->sendMergeFileRequest(fileName);
+//       Msg::Info("Send merge request <%s>",fileName.c_str());
+//     }
+//   }
+//   cmd.append(" &");
+//   if(!Msg::hasGmsh) system(cmd.c_str());
+// }
+
 void localSolverClient::GmshMerge(std::vector<std::string> choices)
 {
-  if(choices.empty()) return;
-  std::string cmd=Msg::GetOnelabString("Gmsh/CommandLine")+" ";
+  if(!Msg::hasGmsh || choices.empty()) return;
   for(unsigned int i = 0; i < choices.size(); i++){
     std::string fileName=getWorkingDir()+choices[i];
-    cmd.append(fileName+" ");
-    if(Msg::hasGmsh){
-      Msg::loader->sendMergeFileRequest(fileName);
-      Msg::Info("Send merge request <%s>",fileName.c_str());
-    }
+    Msg::loader->sendMergeFileRequest(fileName);
+    Msg::Info("Send merge request <%s>",fileName.c_str());
   }
-  cmd.append(" &");
-  if(!Msg::hasGmsh) system(cmd.c_str());
 }
 
 // client METAMODEL
@@ -797,8 +807,8 @@ void InterfacedClient::convert() {
   std::vector<std::string> choices;
   getList("InputFiles", choices);
   for(unsigned int i = 0; i < choices.size(); i++){
-    checkIfPresentLocal(choices[i]);
     if((pos=choices[i].find(onelabExtension)) != std::string::npos){
+      checkIfPresentLocal(choices[i]);
       std::string ofilename = getWorkingDir() + choices[i].substr(0,pos); // remove .ol extension
       std::ofstream outfile(ofilename.c_str());
       if (outfile.is_open())
