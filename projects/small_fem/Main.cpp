@@ -17,6 +17,8 @@ int main(int argc, char** argv){
   FormulationLaplace laplace;
   System sysLaplace(msh.getAllNodeElements(), laplace);
 
+  sysLaplace.assemble();
+
   sysLaplace.fixBC(5, -2);
   sysLaplace.fixBC(6,  1);
 

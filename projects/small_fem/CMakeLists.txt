@@ -23,7 +23,6 @@ endmacro(add_sources_in_gmsh)
 
 ## Look for Packages
 include(FindPackageHandleStandardArgs)
-find_package(Doxygen)
 
 ## Include gmsh
 add_subdirectory(../.. "${CMAKE_CURRENT_BINARY_DIR}/gmsh")
@@ -62,13 +61,6 @@ include_directories(
   ../../FunctionSpace
   ../../Numeric
 )
-
-## Build Documentation
-if(DOXYGEN_FOUND)
-  add_custom_target(doxygen
-    ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/doc/Doxyfile)
-
-endif(DOXYGEN_FOUND)
 
 ## Build
 add_definitions(-pedantic -Wall -g)

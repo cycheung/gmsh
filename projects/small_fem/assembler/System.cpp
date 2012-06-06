@@ -3,8 +3,6 @@
 #include "Exception.h"
 #include "Solver.h"
 
-#include <cstdio>
-
 using namespace std;
 
 System::System(const std::vector<Element*>& elements,
@@ -18,24 +16,19 @@ System::System(const std::vector<Element*>& elements,
   // Get DofManager Data //
   size = dofM->dofNumber();
   
-  const std::vector<GroupOfDof*>& group = dofM->getAllGroups();
-  const int E = dofM->groupNumber();
-
   // Create System //
   A = new fullMatrix<double>(size, size);
-  n = new fullVector<double>(size);
+  b = new fullVector<double>(size);
+  x = new fullVector<double>(size);
 
-  //A->allToZero();
-  //n->allToZero();
-
-  // Assemble System //
-  for(int i = 0; i < E; i++)
-    assemble(*(group[i]));
+  // The system is not assembled //
+  isAssembled = false;
 }
 
 System::~System(void){
   delete A;
-  delete n;
+  delete b;
+  delete x;
   delete dofM;
   // System is not responsible for deleting 'Formulations'
 }
@@ -66,22 +59,37 @@ void System::fixBC(const int physicalId, const double value){
     (*A)(dofId, dofId) = 1.0;
     
     // We also set the 'dofId'th RHS to 'value' 
-    (*n)(dofId) = value;
+    (*b)(dofId) = value;
   }
 }
 
-void System::solve(void){
-  // Get dof value //
-  fullVector<double> x(size);
+void System::assemble(void){
+  // Get GroupOfDofs //
+  const std::vector<GroupOfDof*>& group = dofM->getAllGroups();
+  const int E = dofM->groupNumber();
 
-  Solver::solve(*A, x, *n);
+  // Assemble System //
+  for(int i = 0; i < E; i++)
+    assemble(*(group[i]));  
+  
+  // The system is assembled //
+  isAssembled = true;
+}
+
+void System::solve(void){
+  // Is the System assembled ? //
+  if(!isAssembled)
+    assemble();
+
+  // Get dof value //
+  Solver::solve(*A, *x, *b);
 
   // Set all Entities value //
   const vector<Dof*>* dof = &dofM->getAllDofs();
   const int N = dof->size();
   
   for(int i = 0; i < N; i++)
-    dofM->getEntity(*((*dof)[i])).setValue(x(i));
+    dofM->getEntity(*((*dof)[i])).setValue((*x)(i));
 }
 
 void System::assemble(GroupOfDof& group){
@@ -97,6 +105,6 @@ void System::assemble(GroupOfDof& group){
 	formulation->weak(i, j, group);
     }
 
-    (*n)(dofI) += formulation->rhs(i, group);
+    (*b)(dofI) += formulation->rhs(i, group);
   }
 }

@@ -19,18 +19,18 @@
    Also, we can @em only assemble Dof related to an Element@n
 
    @todo
-   Assembly done by a specific method, not the constructor@n
    Assembly of @em non @em geometric Dof@n
-   Maybe put the list of element on the formulation ? 
-   Or more abstract concept -- 'Problem' Class ?@n
-   Give the possiblite to get the solution Vector instead of setting 
-   Entity values
+   Keeping Entity away@n
  */
 
 class System{
  private:
+  bool isAssembled;
+
   fullMatrix<double>* A;
-  fullVector<double>* n;
+  fullVector<double>* b;
+  fullVector<double>* x;
+
   int size;
 
   DofManager* dofM;
@@ -43,8 +43,10 @@ class System{
 
   fullMatrix<double>& getMatrix(void) const;
   fullVector<double>& getRHS(void) const;
+  fullVector<double>& getSol(void) const;
 
   void fixBC(const int physicalId, const double value);
+  void assemble(void);
   void solve(void);
   
  private:
@@ -57,7 +59,7 @@ class System{
    const Formulation& formulation)
    @param elements A list of Element%s, giving the geomtry of the problem to solve
    @param formulation A Formulation, giving the way to assemble the system
-   @return A new @em assembled System
+   @return A new System
  
    @fn System::~System(void)
    @return Deletes the System
@@ -68,13 +70,21 @@ class System{
    @fn fullVector<double>& System::getRHS(void) const
    @return Returns the assembled Right Hand Side of the the linear system
 
+   @fn fullVector<double>& System::getSol(void) const
+   @return Returns the solution of the the linear system
+
    @fn void System::fixBC(const int physicalId, const double value)
    @param physicalId The physical @c ID on which the bondary condtion shall be imposed
    @param value The value of the bondary condition
    @return Fix a Boundary Condition on the linear system
 
+   @fn void System::assemble(void)
+   @return Assembles the linear system
+
    @fn void System::solve(void)
    @return Solves the linear system
+   @note If the System is @em not @em assembled,@n
+   the assembly method will be called
 */
 
 //////////////////////
@@ -87,7 +97,11 @@ inline fullMatrix<double>& System::getMatrix(void) const{
 }
 
 inline fullVector<double>& System::getRHS(void) const{
-  return *n;
+  return *b;
+}
+
+inline fullVector<double>& System::getSol(void) const{
+  return *x;
 }
 
 #endif
