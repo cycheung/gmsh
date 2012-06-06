@@ -529,7 +529,8 @@ void Msg::AddOnelabNumberChoice(std::string name, double val)
     choices.push_back(val);
     ps[0].setChoices(choices);
     ps[0].setAttribute("Highlight","Coral"); // only used by PostArray
-    ps[0].setReadOnly(true);
+    ps[0].setReadOnly(false);
+    ps[0].setVisible(true);
     _onelabClient->set(ps[0]);
   }
 }
@@ -561,7 +562,10 @@ void Msg::AddOnelabStringChoice(std::string name, std::string kind,
 int fullNameLessThan::compareFullNames(const std::string a, const std::string b) const{
   std::string::const_iterator ita, itb;
   ita=a.begin(); itb=b.begin();
-  do{
+  if( (*ita >= '0') && (*ita <= '9')) ita++;
+  if( (*itb >= '0') && (*itb <= '9')) itb++;
+
+  while( (ita<a.end()) && (itb<b.end()) && (*ita == *itb) ){
     if(*ita == '/'){
       ita++;
       if( (*ita >= '0') && (*ita <= '9')) ita++;
@@ -570,12 +574,12 @@ int fullNameLessThan::compareFullNames(const std::string a, const std::string b)
       ita++;
 
     if(*itb == '/'){
-      *itb++;
+      itb++;
       if( (*itb >= '0') && (*itb <= '9')) itb++;
     }
     else
       itb++;
-  } while( (ita<a.end()) && (itb<b.end()) && (*ita == *itb) );
+  }
   return *ita < *itb ;
 }
 void Msg::recordFullName(const std::string &name){

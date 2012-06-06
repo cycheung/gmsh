@@ -10,7 +10,6 @@ namespace olkey{
   static std::string line(label+"line");
   static std::string begin(label+"begin");
   static std::string end(label+"end");
-  static std::string setValue(label+"set");
   static std::string include(label+"include");
   static std::string ifcond(label+"if");
   static std::string ifequal(label+"ifequal");
@@ -255,30 +254,29 @@ void localSolverClient::parse_sentence(std::string line) {
     extract(line.substr(cursor,pos-cursor),name,action,arguments);
 
     if(!action.compare("number")) { 
+      double val;
       // syntax: paramName.number(val,path,help,range(optional))
-      if(arguments[0].empty())
-	Msg::Fatal("No value given for param <%s>",name.c_str());
-      double val=atof(resolveGetVal(arguments[0]).c_str());
-      if(arguments.size()>=2){
+      if(arguments.size()>1){
 	name.assign(arguments[1] + name);
       }
       _parameters.insert(name);
       Msg::recordFullName(name);
       get(numbers, name);
-      if(numbers.size()){ 
-	if(!numbers[0].getReadOnly()) // param is NOT read-only
-	  val = numbers[0].getValue(); // use value from server
-	else
-	  numbers[0].setValue(val);
-      }
-      else{
+      if(numbers.empty()){ 
 	numbers.resize(1);
 	numbers[0].setName(name);
+	if(arguments[0].empty()){
+	  numbers[0].setReadOnly(1);
+	  val=0;
+	}
+	else
+	  val=atof(resolveGetVal(arguments[0]).c_str());
 	numbers[0].setValue(val);
       }
-      if(arguments.size()>=3)
+
+      if(arguments.size()>2)
 	numbers[0].setLabel(arguments[2]);
-      if(arguments.size()>=4){
+      if(arguments.size()>3){
 	std::vector<double> bounds;
 	if (extractRange(arguments[3],bounds)){
 	  numbers[0].setMin(bounds[0]);
@@ -490,7 +488,6 @@ void localSolverClient::modify_tags(const std::string lab, const std::string com
     olkey::line.assign(olkey::label+"line");
     olkey::begin.assign(olkey::label+"begin");
     olkey::end.assign(olkey::label+"end");
-    olkey::setValue.assign(olkey::label+"set");
     olkey::include.assign(olkey::label+"include");
     olkey::ifcond.assign(olkey::label+"if");
     olkey::ifequal.assign(olkey::label+"ifequal");
@@ -1098,8 +1095,22 @@ void MetaModel::client_sentence(const std::string &name, const std::string &acti
       strings[0].setName(name+"/PostArray");
       strings[0].setValue(resolveGetVal(arguments[0]));
       std::vector<std::string> choices;
-      for(unsigned int i = 0; i < arguments.size(); i++)
-	choices.push_back(resolveGetVal(arguments[i]));
+      for(unsigned int i = 0; i < arguments.size(); i++){
+	std::string str=resolveGetVal(arguments[i]);
+	choices.push_back(str);
+	if(i%4==3){ // predefine the parameters to upload
+	  Msg::recordFullName(str);
+	  std::vector<onelab::number> numbers;
+	  get(numbers, str);
+	  if(numbers.empty()){ 
+	    numbers.resize(1);
+	    numbers[0].setName(str);
+	    numbers[0].setValue(0);
+	    numbers[0].setVisible(false);
+	    set(numbers[0]);
+	  }
+	}
+      }
       strings[0].setChoices(choices);
       strings[0].setVisible(false);
       set(strings[0]);

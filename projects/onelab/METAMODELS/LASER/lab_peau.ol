@@ -15,8 +15,8 @@ SKINTYPE.addLabels(hairy, hairless);
 
 % SKINWIDTH is determined by SKINTYPE
 % Such dependency can be implemented with setValue
-% The "setValue" sentence overrules the value on the server. 
-SKINWIDTH.number(0.05,Parameters/Model/5,''Skin width [mm]'');
+% The "setValue" statement overrules the value on the server. 
+SKINWIDTH.number(0,Parameters/Model/5,''Skin width [mm]'');
 OL.if( OL.get(SKINTYPE) == 1)
 SKINWIDTH.setValue(0.05);
 OL.endif
@@ -28,35 +28,26 @@ OL.endif
 DERMIS.number(1.5,Parameters/Model/6,''Dermis width [mm]'');
 BEAMRADIUS.number(5, Parameters/Model/, ''Beam radius [mm]'');
 WCONTENT.number(0.65,Parameters/Model/,''Water content []'');
-BODYTEMP.number(310, Parameters/Model/, Body temperature [K]'');
-OVERTEMP.number(320, Parameters/Model/, Maximum skin temperature [K]'');
+BODYTEMP.number(310, Parameters/Model/,''Body temperature [K]'');
+OVERTEMP.number(320, Parameters/Model/,''Maximum skin temperature [K]'');
 
 % z coordinates for post-processing curves
-ZSURF0.number( OL.eval((OL.get(DERMIS)+OL.get(SKINWIDTH)-0.001)/1000), PostPro/);
-ZSURF1.number( OL.eval((OL.get(DERMIS)+OL.get(SKINWIDTH)-0.050)/1000), PostPro/);
-ZSURF2.number( OL.eval((OL.get(DERMIS)+OL.get(SKINWIDTH)-0.100)/1000), PostPro/);
-ZSURF3.number( OL.eval((OL.get(DERMIS)+OL.get(SKINWIDTH)-0.150)/1000), PostPro/);
-ZSURF4.number( OL.eval((OL.get(DERMIS)+OL.get(SKINWIDTH)-0.200)/1000), PostPro/);
+% depending variables are defined with no value
+ZSURF0.number( , PostPro/);
+ZSURF1.number( , PostPro/);
+ZSURF2.number( , PostPro/);
+ZSURF3.number( , PostPro/);
+ZSURF4.number( , PostPro/);
+% and this definition must then be completed by a "setValue" statement
+ZSURF0.setValue(OL.eval((OL.get(DERMIS)+OL.get(SKINWIDTH)-0.001)/1000)); 
+ZSURF1.setValue(OL.eval((OL.get(DERMIS)+OL.get(SKINWIDTH)-0.050)/1000));
+ZSURF2.setValue(OL.eval((OL.get(DERMIS)+OL.get(SKINWIDTH)-0.100)/1000));
+ZSURF3.setValue(OL.eval((OL.get(DERMIS)+OL.get(SKINWIDTH)-0.150)/1000));
+ZSURF4.setValue(OL.eval((OL.get(DERMIS)+OL.get(SKINWIDTH)-0.200)/1000));
+
 % "OL.get" return the value on server of a parameter of type onelab::number or onelab::string
 % "OL.eval" allows evaluating analytical expressions involving onelab::numbers
 
-% In the above definition, ZSURFx is determined by DERMIS and SKINWIDTH
-% With the readOnly flag set to true, 
-% parsing the defnition ZSURFx.number(...) will always overrules the value on server
-% whereas with the readOnly flag set to false, the value on server would be retained.
-ZSURF0.setReadOnly(1); 
-ZSURF1.setReadOnly(1);
-ZSURF2.setReadOnly(1);
-ZSURF3.setReadOnly(1);
-ZSURF4.setReadOnly(1);
-
-% The lines:
-% ZSURF0.number( OL.eval((OL.get(DERMIS)+OL.get(SKINWIDTH)-0.001)/1000), PostPro/);
-% ZSURF0.setReadOnly(1);
-% are equivalent to:
-% ZSURF0.number( 0, PostPro/);
-% ZSURF0.setValue( OL.eval((OL.get(DERMIS)+OL.get(SKINWIDTH)-0.001)/1000));
-% It is a matter of choice to use "setValue" or "setReadOnly"
 
 % Available LASER models, another enumeration
 LASERTYPE.number(1, Parameters/Laser/1,''Laser type'');  
@@ -113,8 +104,8 @@ Elmer.out( solution.pos, temp.txt );
 Post.register(interfaced);
 Post.in(solution.pos , script.opt.ol ); 
 Post.args(solution.pos script.opt -);
-Post.out(overheat.pos, temper.txt);
-Post.merge(overheat.pos);
+Post.out(tempsurf.txt, tempmin.txt, tempmax.txt);
+Post.up( tempmin.txt,-1,8,Solution/Tmin, tempmax.txt,-1,8,Solution/Tmax);
 
 %-5) Display solution curves with either gnuplot or matlab
 POSTPRO.number(2, PostPro/,"Plot results with");
@@ -126,13 +117,13 @@ Matlab.args(-nosplash -desktop -r plotMatlab);
 OL.endif
 OL.if( OL.get(POSTPRO) == 2)
 Gnuplot.register(interfaced);
+Gnuplot.in(temp.txt, tempsurf.txt);
 Gnuplot.args(plot.plt );
 OL.endif
 
-%-6) Display solution with a client Gmsh if the metamodel runs in standalone
-% i.e. not as called from Gmsh
+%-6) Display solution with a client Gmsh
 Display.register(interfaced);
-Display.args(OL.get(Arguments/FileName).msh overheat.pos);
-OL.iftrue(HasGmsh)
-Display.active(0);
-OL.endif
+Display.in(solution.pos, script2.opt.ol, overheat.pos.opt.ol );
+Display.out(overheat.pos );
+Display.args( solution.pos script2.opt - );
+Display.merge(overheat.pos);

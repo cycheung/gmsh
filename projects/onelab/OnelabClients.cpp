@@ -799,7 +799,7 @@ void InterfacedClient::analyze() {
       parse_onefile(choices[i]);
     }
   }
-  convert();
+  convert(); // FIXME only for debug
 }
 
 void InterfacedClient::convert() {
@@ -824,7 +824,8 @@ void InterfacedClient::compute(){
   std::string cmd;
   std::vector<std::string> choices;
 
-  //convert();
+  convert(); 
+
   Msg::SetOnelabString(getName() + "/Action","compute",false); // a titre indicatif
 
   if(getList("InputFiles",choices)){

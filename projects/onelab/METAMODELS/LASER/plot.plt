@@ -18,7 +18,7 @@ set terminal aqua 1
 
 set xlabel "coord [m]"
 
-plot "temper.txt" u 5:8 w linesp
+plot "tempsurf.txt" u 5:8 w linesp
 
 
 
