@@ -1,4 +1,5 @@
 #include "fullMatrix.h"
+#include "GaussIntegration.h"
 #include "FormulationLaplace.h"
 #include <cmath>
 
@@ -6,22 +7,12 @@ using namespace std;
 
 FormulationLaplace::FormulationLaplace(void){
   // Gaussian Quadrature Data //
-  G     = 4;
+  gC = new fullMatrix<double>();
+  gW = new fullVector<double>();
 
-  gx[0] = 0.333333333333333;
-  gx[1] = 0.6;
-  gx[2] = 0.2;
-  gx[3] = 0.2;
+  gaussIntegration::getTriangle(1, *gC, *gW);
 
-  gy[0] = 0.333333333333333;
-  gy[1] = 0.2;
-  gy[2] = 0.6;
-  gy[3] = 0.2;
-
-  gw[0] = -0.28125;
-  gw[1] = +0.260416666666;
-  gw[2] = +0.260416666666;
-  gw[3] = +0.260416666666;
+  G = gW->size(); // Nbr of Gauss points
 
   // Basis //
   // Generate Basis
@@ -40,6 +31,8 @@ FormulationLaplace::FormulationLaplace(void){
 }
 
 FormulationLaplace::~FormulationLaplace(void){
+  delete   gC;
+  delete   gW;
   delete   interp;
   delete   base;
   delete[] gradBasis;
@@ -51,10 +44,17 @@ double FormulationLaplace::weak(const int nodeI, const int nodeJ,
 
   double integral = 0;  
   for(int g = 0; g < G; g++){
-    fullVector<double> phiI = jac.grad(Polynomial::at(gradBasis[nodeI], gx[g], gy[g], 0));
-    fullVector<double> phiJ = jac.grad(Polynomial::at(gradBasis[nodeJ], gx[g], gy[g], 0));
+    fullVector<double> phiI = jac.grad(Polynomial::at(gradBasis[nodeI], 
+						      (*gC)(g, 0), 
+						      (*gC)(g, 1),
+						      (*gC)(g, 2)));
+				       
+    fullVector<double> phiJ = jac.grad(Polynomial::at(gradBasis[nodeJ], 
+						      (*gC)(g, 0), 
+						      (*gC)(g, 1), 
+						      (*gC)(0, 2)));
 
-    integral += phiI * phiJ * fabs(jac.det()) * gw[g];
+    integral += phiI * phiJ * fabs(jac.det()) * (*gW)(g);
   }
 
   return integral;

@@ -1,3 +1,4 @@
+#include "GaussIntegration.h"
 #include "FormulationProjection.h"
 #include <cmath>
 
@@ -8,22 +9,12 @@ FormulationProjection::FormulationProjection(fullVector<double>& vectorToProject
   f = &vectorToProject;
 
   // Gaussian Quadrature Data //
-  G     = 4;
+  gC = new fullMatrix<double>();
+  gW = new fullVector<double>();
 
-  gx[0] = 0.333333333333333;
-  gx[1] = 0.6;
-  gx[2] = 0.2;
-  gx[3] = 0.2;
+  gaussIntegration::getTriangle(2, *gC, *gW);
 
-  gy[0] = 0.333333333333333;
-  gy[1] = 0.2;
-  gy[2] = 0.6;
-  gy[3] = 0.2;
-
-  gw[0] = -0.28125;
-  gw[1] = +0.260416666666;
-  gw[2] = +0.260416666666;
-  gw[3] = +0.260416666666;
+  G = gW->size(); // Nbr of Gauss points
 
   // Basis //
   baseGen   = new TriNedelecBasis;
@@ -35,6 +26,8 @@ FormulationProjection::FormulationProjection(fullVector<double>& vectorToProject
 }
 
 FormulationProjection::~FormulationProjection(void){
+  delete gC;
+  delete gW;
   delete baseGen;
   delete interp;
 }
@@ -50,13 +43,17 @@ double FormulationProjection::weak(const int edgeI, const int edgeJ,
   // Loop over Integration Point //
   double integral = 0;  
   for(int g = 0; g < G; g++){
-    fullVector<double> phiI = jac.grad(Polynomial::at((*basis)[edgeI], 
-						      gx[g], gy[g], 0));
+    fullVector<double> phiI = jac.grad(Polynomial::at((*basis)[edgeI],
+						      (*gC)(g, 0), 
+						      (*gC)(g, 1),
+						      (*gC)(g, 2)));
     
-    fullVector<double> phiJ = jac.grad(Polynomial::at((*basis)[edgeJ], 
-						      gx[g], gy[g], 0));
+    fullVector<double> phiJ = jac.grad(Polynomial::at((*basis)[edgeJ],
+						      (*gC)(g, 0), 
+						      (*gC)(g, 1),
+						      (*gC)(g, 2)));
 
-    integral += phiI * phiJ * fabs(jac.det()) * gw[g] * orientation;
+    integral += phiI * phiJ * fabs(jac.det()) * (*gW)(g) * orientation;
   }
 
   return integral;
@@ -71,10 +68,12 @@ double FormulationProjection::rhs(const int equationI,
   // Loop over Integration Point //
   double integral = 0;
   for(int g = 0; g < G; g++){  
-    fullVector<double> jPhiI = jac.grad(Polynomial::at((*basis)[equationI], 
-						       gx[g], gy[g], 0));
+    fullVector<double> jPhiI = jac.grad(Polynomial::at((*basis)[equationI],
+						      (*gC)(g, 0), 
+						      (*gC)(g, 1),
+						      (*gC)(g, 2)));
  
-    integral += (*f) * jPhiI * fabs(jac.det()) * gw[g] * orientation;
+    integral += (*f) * jPhiI * fabs(jac.det()) * (*gW)(g) * orientation;
   }
 
   return integral;

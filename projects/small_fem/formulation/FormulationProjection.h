@@ -19,9 +19,8 @@ class FormulationProjection: public Formulation{
  private:
   // Gaussian Quadrature Data //
   int G;
-  double gx[4];
-  double gy[4];
-  double gw[4];
+  fullMatrix<double>* gC;
+  fullVector<double>* gW;
 
   // Basis //
   TriNedelecBasis*                             baseGen;

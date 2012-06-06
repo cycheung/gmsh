@@ -14,10 +14,6 @@
    The solver is called by the 
    @em static method Solver::solve.@n
    So, their is @em no @em need to instantiate a Solver
-
-   @todo
-   Return the solution in a sperate vector, to save the RHS@n
-   Use other stuff than LAPACK
 */
 
 class Solver{
@@ -30,9 +26,11 @@ class Solver{
 /**
    @fn Solver::solve
    @param A The Matrix of the system to solve
-   @param x The Vector with the 
+   @param x The Vector with the futur solution
+   ot the system to solve
+   @param b The Vector with the    
    Right Hand Side of the system to solve
-   @returns The Vector @c x becomes the solution of the system
+   @returns Solves the linear System Ax = b
  */
 
 #endif
