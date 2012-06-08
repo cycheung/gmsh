@@ -34,3 +34,61 @@ Plugin(MinMax).Run;
 
 Save View [3] "tempmin.txt";
 Save View [4] "tempmax.txt";
+
+Plugin(CutPlane).A=0;
+Plugin(CutPlane).B=-1;
+Plugin(CutPlane).C=0;
+Plugin(CutPlane).D= OL.get(PostPro/ZSURF0);
+Plugin(CutPlane).ExtractVolume=0;
+Plugin(CutPlane).RecurLevel=4;
+Plugin(CutPlane).TargetError=0;
+Plugin(CutPlane).View=0;
+Plugin(CutPlane).Run;
+
+Plugin(CutPlane).A=0;
+Plugin(CutPlane).B=-1;
+Plugin(CutPlane).C=0;
+Plugin(CutPlane).D= OL.get(PostPro/ZSURF1);
+Plugin(CutPlane).ExtractVolume=0;
+Plugin(CutPlane).RecurLevel=4;
+Plugin(CutPlane).TargetError=0;
+Plugin(CutPlane).View=0;
+Plugin(CutPlane).Run;
+
+Plugin(CutPlane).A=0;
+Plugin(CutPlane).B=-1;
+Plugin(CutPlane).C=0;
+Plugin(CutPlane).D= OL.get(PostPro/ZSURF2);
+Plugin(CutPlane).ExtractVolume=0;
+Plugin(CutPlane).RecurLevel=4;
+Plugin(CutPlane).TargetError=0;
+Plugin(CutPlane).View=0;
+Plugin(CutPlane).Run;
+
+Plugin(CutPlane).A=0;
+Plugin(CutPlane).B=-1;
+Plugin(CutPlane).C=0;
+Plugin(CutPlane).D= OL.get(PostPro/ZSURF3);
+Plugin(CutPlane).ExtractVolume=0;
+Plugin(CutPlane).RecurLevel=4;
+Plugin(CutPlane).TargetError=0;
+Plugin(CutPlane).View=0;
+Plugin(CutPlane).Run;
+
+Plugin(CutPlane).A=0;
+Plugin(CutPlane).B=-1;
+Plugin(CutPlane).C=0;
+Plugin(CutPlane).D= OL.get(PostPro/ZSURF4);
+Plugin(CutPlane).ExtractVolume=0;
+Plugin(CutPlane).RecurLevel=4;
+Plugin(CutPlane).TargetError=0;
+Plugin(CutPlane).View=1;
+Plugin(CutPlane).Run;
+
+Save View [5] "temp0.txt";
+Save View [6] "temp1.txt";
+Save View [7] "temp2.txt";
+Save View [8] "temp3.txt";
+Save View [9] "temp4.txt";
+
+
