@@ -40,7 +40,7 @@ ZSURF3.number( , PostPro/);
 ZSURF4.number( , PostPro/);
 % and this definition must then be completed by a "setValue" statement
 ZSURF0.setValue(OL.eval((OL.get(DERMIS)+OL.get(SKINWIDTH)-0.001)/1000)); 
-ZSURF1.setValue(OL.eval((OL.get(DERMIS)+OL.get(SKINWIDTH)-0.050)/1000));
+ZSURF1.setValue(OL.eval((OL.get(DERMIS)+OL.get(SKINWIDTH)-0.05001)/1000));
 ZSURF2.setValue(OL.eval((OL.get(DERMIS)+OL.get(SKINWIDTH)-0.100)/1000));
 ZSURF3.setValue(OL.eval((OL.get(DERMIS)+OL.get(SKINWIDTH)-0.150)/1000));
 ZSURF4.setValue(OL.eval((OL.get(DERMIS)+OL.get(SKINWIDTH)-0.200)/1000));
