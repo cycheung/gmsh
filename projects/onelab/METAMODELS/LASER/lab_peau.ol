@@ -114,14 +114,18 @@ Post.up( tempmin.txt,-1,8,Solution/Tmin, tempmax.txt,-1,8,Solution/Tmax);
 POSTPRO.number(2, PostPro/,"Plot results with");
 POSTPRO.addChoices(1,2); 
 POSTPRO.addLabels(Matlab,Gnuplot);
-OL.if( OL.get(POSTPRO) == 1)
 Matlab.register(interfaced); 
 Matlab.args(-nosplash -desktop -r plotMatlab);
-OL.endif
-OL.if( OL.get(POSTPRO) == 2)
 Gnuplot.register(interfaced);
 Gnuplot.in(temp.txt, tempsurf.txt);
 Gnuplot.args(plot.plt );
+OL.if( OL.get(POSTPRO) == 1)
+Gnuplot.active(0);
+Matlab.active(1);
+OL.endif
+OL.if( OL.get(POSTPRO) == 2)
+Gnuplot.active(1);
+Matlab.active(0);
 OL.endif
 
 %-6) Display solution with a client Gmsh
