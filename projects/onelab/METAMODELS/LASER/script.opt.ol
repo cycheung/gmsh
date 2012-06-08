@@ -65,7 +65,7 @@ For k In {1:5}
  Plugin(MathEval).ForceInterpolation=0;
  Plugin(MathEval).PhysicalRegion=-1;
  Plugin(MathEval).Run;
- Save View [9+k] Sprintf("step%g.txt", k-1);
+ //Save View [9+k] Sprintf("step%g.txt", k-1);
 EndFor
 
 //INTEGRATE
@@ -78,8 +78,11 @@ EndFor
 //MIN MAX 
 For k In {1:5}
  Plugin(MinMax).View=14+k;
- Plugin(MinMax).OverTime=0;
+ Plugin(MinMax).OverTime=1;
  Plugin(MinMax).Argument=0;
  Plugin(MinMax).Run;
  Save View [19+(k*2)] Sprintf("activeMax%g.txt", k-1);
 EndFor
+
+Combine ElementsByViewName;
+Save View [9] "activeMax.txt";

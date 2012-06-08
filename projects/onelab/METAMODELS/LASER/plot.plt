@@ -20,11 +20,13 @@ set terminal aqua 1
 set xlabel "coord [mm]"
 plot "tempsurf.txt" u ($5)*1000:8 w linesp t "surface temp"
 
-
 set terminal aqua 1
 
 set xlabel "depth [mm]"
-plot "activeMax0.txt" u ($6)*0+0:8 w p  t "",  "activeMax1.txt" u ($6)*0+0.05:8 w p  t "",  "activeMax2.txt" u ($6)*0+0.1:8 w p t "", "activeMax3.txt" u ($6)*0+0.15:8 w p t "", "activeMax4.txt" u ($6)*0+0.2:8 w p  t ""
+#plot "activeMax.txt" u ($4)*0.05:8 w p  t "",  "activeMax1.txt" u ($6)*0+0.05:8 w p  t "",  "activeMax2.txt" u ($6)*0+0.1:8 w p t "", "activeMax3.txt" u ($6)*0+0.15:8 w p t "", "activeMax4.txt" u ($6)*0+0.2:8 w p  t ""
+
+set ylabel "Active surface [mm^2]"
+plot "activeMax.txt" u ($4)*0.05:($8)*10**6 w lp t "Treshold Ad"
 
 
 
