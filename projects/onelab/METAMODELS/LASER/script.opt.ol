@@ -74,3 +74,12 @@ For k In {1:5}
  Plugin(Integrate).Run; 
  Save View [14+k] Sprintf("active%g.txt", k-1);
 EndFor
+
+//MIN MAX 
+For k In {1:5}
+ Plugin(MinMax).View=14+k;
+ Plugin(MinMax).OverTime=0;
+ Plugin(MinMax).Argument=0;
+ Plugin(MinMax).Run;
+ Save View [19+(k*2)] Sprintf("activeMax%g.txt", k-1);
+EndFor

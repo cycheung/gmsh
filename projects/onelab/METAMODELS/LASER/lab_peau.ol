@@ -110,7 +110,14 @@ Post.args(solution.pos script.opt -);
 Post.out(tempsurf.txt, tempmin.txt, tempmax.txt);
 Post.up( tempmin.txt,-1,8,Solution/Tmin, tempmax.txt,-1,8,Solution/Tmax);
 
-%-5) Display solution curves with either gnuplot or matlab
+%-5) Display solution with a client Gmsh
+Display.register(interfaced);
+Display.in(solution.pos, script2.opt.ol, overheat.pos.opt.ol );
+Display.out(overheat.pos );
+Display.args( solution.pos script2.opt - );
+Display.merge(overheat.pos);
+
+%-6) Display solution curves with either gnuplot or matlab
 POSTPRO.number(2, PostPro/,"Plot results with");
 POSTPRO.addChoices(1,2); 
 POSTPRO.addLabels(Matlab,Gnuplot);
@@ -127,10 +134,3 @@ OL.if( OL.get(POSTPRO) == 2)
 Gnuplot.active(1);
 Matlab.active(0);
 OL.endif
-
-%-6) Display solution with a client Gmsh
-Display.register(interfaced);
-Display.in(solution.pos, script2.opt.ol, overheat.pos.opt.ol );
-Display.out(overheat.pos );
-Display.args( solution.pos script2.opt - );
-Display.merge(overheat.pos);
