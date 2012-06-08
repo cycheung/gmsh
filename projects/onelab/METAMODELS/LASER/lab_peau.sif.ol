@@ -19,7 +19,8 @@ Simulation
   Simulation Type = Transient 
   Timestep Intervals (1) = OL.eval(floor(OL.get(TimeEnd)/OL.get(TimeStep)))
   Timestep sizes (1) = OL.get(TimeStep) 
-  Timestepping Method = Implicit Euler
+  Timestepping Method = BDF !Implicit Euler
+  BDF Order = 1
   Output Intervals = 1
 End
 

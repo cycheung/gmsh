@@ -65,14 +65,17 @@ ABSORPTION.number(2e4, Parameters/Laser/, ''Absorption coefficient [1/m]'');
 OL.if( OL.get(LASERTYPE) == 1)
 LASERTEMP.setVisible(1);
 LASERPOWER.setVisible(0);
+ABSORPTION.setVisible(0);
 OL.endif
 OL.if( OL.get(LASERTYPE) == 2)
 LASERTEMP.setVisible(0);
 LASERPOWER.setVisible(1);
+ABSORPTION.setVisible(0);
 OL.endif
 OL.if( OL.get(LASERTYPE) == 3)
 LASERTEMP.setVisible(0);
 LASERPOWER.setVisible(1);
+ABSORPTION.setVisible(1);
 OL.endif
 
 % The metamodel is described as a list of clients in the "name.ol" file (this file)

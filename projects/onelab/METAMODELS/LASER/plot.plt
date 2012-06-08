@@ -12,7 +12,8 @@ plot "temp.txt" u 1:2 t"depth=0 mm",\
      "temp.txt" u 1:8 t"depth=0.05 mm",\
      "temp.txt" u 1:14 t"depth=0.10 mm",\
      "temp.txt" u 1:20 t"depth=0.15 mm",\
-     "temp.txt" u 1:26 t"depth=0.020 mm"
+     "temp.txt" u 1:26 t"depth=0.020 mm", \
+     320 t "seuil Ad"
 
 set terminal aqua 1
 
