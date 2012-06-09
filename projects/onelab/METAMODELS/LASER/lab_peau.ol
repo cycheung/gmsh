@@ -29,7 +29,7 @@ DERMIS.number(1.5,Parameters/Model/6,''Dermis width [mm]'');
 BEAMRADIUS.number(5, Parameters/Model/, ''Beam radius [mm]'');
 WCONTENT.number(0.65,Parameters/Model/,''Water content []'');
 BODYTEMP.number(310, Parameters/Model/,''Body temperature [K]'');
-OVERTEMP.number(320, Parameters/Model/,''Maximum skin temperature [K]'');
+OVERTEMP.number(320, Parameters/Model/,''Threshold Ad [K]'');
 
 % z coordinates for post-processing curves
 % depending variables are defined with no value
