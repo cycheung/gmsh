@@ -19,8 +19,8 @@ Simulation
   Simulation Type = Transient 
   Timestep Intervals (1) = OL.eval(floor(OL.get(TimeEnd)/OL.get(TimeStep)))
   Timestep sizes (1) = OL.get(TimeStep) 
-  Timestepping Method = BDF !Implicit Euler
-  BDF Order = 1
+  Timestepping Method = Implicit Euler
+  ! BDF Order = 1
   Output Intervals = 1
 End
 
@@ -149,7 +149,6 @@ Real MATC "if((hp-tx(1))<0.00008){0.15/80*(hp-tx(1))*10^6+0.25} else {0.25+0.35/
 OL.else
 Real MATC "0.25+0.4/(1+exp(-0.25*((hp-tx(1))*10^6-15)))"
 OL.endif
-
 OL.if( OL.get(Parameters/Model/TENEUR) )
 DensityBis = Variable Teneur
 Real MATC "1000/(6.16/100*tx(0)+0.938)" ! kg/m3
@@ -172,8 +171,6 @@ Boundary Condition 1 ! "Zero flux on axis and bottom"
 Target Boundaries(2) = OL.region(Axis) OL.region(Bottom)
 Heat Flux BC = Logical true
 Heat Flux Real = Real 0.0
-!Current Density BC = Logical true
-!Current Density Real = Real 0.0
 End
 
 Boundary Condition 2  ! "body temperature on far side"
@@ -205,5 +202,13 @@ OL.if( OL.get(Parameters/Laser/LASERTYPE) == 2)
    Heat Flux = Variable Coordinate 1, Coordinate 2, Time
    Real MATC "if(tx(2)<=tlaser) {2*pin*(1-0.0078)/(pi*r*r)*exp(-2*(tx(0)^2)/(r*r))} else {0.0}"
    End
+OL.endif
+
+
+OL.if( OL.get(Parameters/Laser/LASERTYPE) == 3)
+   Boundary Condition 3 ! "applied zero flux over whole skin surface"
+   Target Boundaries(2) = OL.region(LaserSpot) OL.region(FreeSkin)
+   Heat Flux BC = Logical true
+   Heat Flux = Real 0.0
 OL.endif
 
