@@ -7,7 +7,7 @@ TimeStep.setReadOnly(1);
 TimeEnd.number(OL.eval(3*OL.get(Parameters/Laser/APPLICTIME)),Parameters/Elmer/3,"Simulation end time [s]");
 OL.end
 
-%in the body of the file, onela recognizes the following commands:
+%in the body of the file, onelab recognizes the following commands:
 % OL.if, OL.if(n)true, OL.include, OL.eval, OL.get, OL.region
 
 Header
@@ -51,14 +51,8 @@ $r        = OL.get(Parameters/Model/BEAMRADIUS)/1000
 $mua      = OL.get(Parameters/Laser/ABSORPTION)
 $tlaser   = OL.get(Parameters/Laser/APPLICTIME)
 
-OL.if( OL.get(Parameters/Model/SKINTYPE) == 1 )
-    $hp     = 0.00162
-    $ylaser = 0.00162
-OL.endif
-OL.if( OL.get(Parameters/Model/SKINTYPE) == 2 )
-    $hp     = 0.00155
-    $ylaser = 0.00155
-OL.endif 
+$hp = (OL.get(Parameters/Model/DERMIS)+OL.get(Parameters/Model/SKINWIDTH))/1000
+$ylaser =  hp
 
 Body Force 1
 Heat Source = Variable DensityBis, Coordinate 1, Coordinate 2, Time
@@ -68,10 +62,10 @@ End
 Body Force 2
 OL.if( OL.get(Parameters/Model/BIOHEAT) )
 Heat Source = Variable DensityBis, Coordinate 1, Coordinate 2, Time, Temperature
-Real MATC "if(tx(3)<=tlaser) {2*pin*(1-0.0078)/(pi*r*r)*mua*exp(-mua*(ylaser-tx(2))-2*tx(1)^2/(r^2)))/tx(0)} else {0.0} + (1452*(310-tx(4))"
+Real MATC "if(tx(3)<=tlaser) {2*pin*(1-0.0078)/(pi*r*r)*mua*exp(-mua*(ylaser-tx(2))-2*(tx(1)/r)^2)/tx(0)+1452*(310-tx(4))} else {1452*(310-tx(4))}"
 OL.else
 Heat Source = Variable DensityBis, Coordinate 1, Coordinate 2, Time
-Real MATC "if(tx(3)<=tlaser) {2*pin*(1-0.0078)/(pi*r*r)*mua*exp(-mua*(ylaser-tx(2))-2*tx(1)^2/(r*r))/tx(0)} else {0.0}"
+Real MATC "if(tx(3)<=tlaser) {2*pin*(1-0.0078)/(pi*r*r)*mua*exp(-mua*(ylaser-tx(2))-2*tx(1)^2/(r*r))/tx(0)} else {0}"
 OL.endif
 End
 
@@ -184,6 +178,7 @@ OL.if( OL.get(Parameters/Laser/LASERTYPE) == 1)
    Temperature = Variable Time 
    Real MATC "if(tx(0)<=tlaser) {OL.get(Parameters/Laser/LASERTEMP)} else {OL.get(Parameters/Model/BODYTEMP)}"
    End
+
    Boundary Condition 4 ! "convection or zero heat flux"
    OL.if( OL.get(Parameters/Model/CONVBC) )
    Target Boundaries(1) = OL.region(FreeSkin)
