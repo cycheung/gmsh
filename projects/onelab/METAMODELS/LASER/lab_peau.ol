@@ -31,23 +31,24 @@ WCONTENT.number(0.65,Parameters/Model/,''Water content []'');
 BODYTEMP.number(310, Parameters/Model/,''Body temperature [K]'');
 OVERTEMP.number(320, Parameters/Model/,''Threshold Ad [K]'');
 
-% z coordinates for post-processing curves
 % depending variables are defined with no value
-ZSURF0.number( , PostPro/);
-ZSURF1.number( , PostPro/);
-ZSURF2.number( , PostPro/);
-ZSURF3.number( , PostPro/);
-ZSURF4.number( , PostPro/);
 % and this definition must then be completed by a "setValue" statement
-ZSURF0.setValue(OL.eval((OL.get(DERMIS)+OL.get(SKINWIDTH)-0.001)/1000)); 
-ZSURF1.setValue(OL.eval((OL.get(DERMIS)+OL.get(SKINWIDTH)-0.05001)/1000));
-ZSURF2.setValue(OL.eval((OL.get(DERMIS)+OL.get(SKINWIDTH)-0.100)/1000));
-ZSURF3.setValue(OL.eval((OL.get(DERMIS)+OL.get(SKINWIDTH)-0.150)/1000));
-ZSURF4.setValue(OL.eval((OL.get(DERMIS)+OL.get(SKINWIDTH)-0.200)/1000));
+ZSURF.number( , PostPro/);
+ZSURF.setValue(OL.eval( (OL.get( DERMIS)+OL.get(SKINWIDTH))/1000 )); 
 
-% "OL.get" return the value on server of a parameter of type onelab::number or onelab::string
+% "OL.get" return the value on server 
+% of a parameter of type onelab::number or onelab::string
 % "OL.eval" allows evaluating analytical expressions involving onelab::numbers
 
+% The value of ZSURF is complemented with a list of choices
+% which are the coordinates at which T wil be monitored.
+% The 'value' of a parameter and the 'choices' can be evaluated independently
+% acoording to the context and the needs.
+ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.001 * 1e-3) );
+ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.049 * 1e-3) );  
+ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.100 * 1e-3) );
+ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.150 * 1e-3) );
+ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.200 * 1e-3) );
 
 % Available LASER models, another enumeration
 LASERTYPE.number(1, Parameters/Laser/1,''Laser type'');  

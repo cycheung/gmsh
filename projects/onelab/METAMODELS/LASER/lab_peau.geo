@@ -65,11 +65,3 @@ Transfinite Line {4, 6, 9} = Nb2;
 Transfinite Line {3, 5, 12} = Nb3 Using Progression 0.7;
 Transfinite Line {-2, -8, -11} = Nb4 Using Progression 0.9;
 Transfinite Surface {1,2,3,4};
-
-/* ARCHIVES
-DefineConstant[ZSURF0 = {H1+H2-1e-6, Path "PostProcessing/", ReadOnly 1}];
-DefineConstant[ZSURF1 = {H1+H2-50e-6, Path "PostProcessing/", ReadOnly 1}];
-DefineConstant[ZSURF2 = {H1+H2-100e-6, Path "PostProcessing/", ReadOnly 1}];
-DefineConstant[ZSURF3 = {H1+H2-150e-6, Path "PostProcessing/", ReadOnly 1}];
-DefineConstant[ZSURF4 = {H1+H2-200e-6, Path "PostProcessing/", ReadOnly 1}];
-*/

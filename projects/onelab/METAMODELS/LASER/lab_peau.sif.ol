@@ -50,7 +50,6 @@ $pin      = OL.get(Parameters/Laser/LASERPOWER)
 $r        = OL.get(Parameters/Model/BEAMRADIUS)/1000
 $mua      = OL.get(Parameters/Laser/ABSORPTION)
 $tlaser   = OL.get(Parameters/Laser/APPLICTIME)
-
 $hp = (OL.get(Parameters/Model/DERMIS)+OL.get(Parameters/Model/SKINWIDTH))/1000
 $ylaser =  hp
 
@@ -59,10 +58,12 @@ Heat Source = Variable DensityBis, Coordinate 1, Coordinate 2, Time
 Real MATC "if(tx(3)<=tlaser) {2*pin*(1-0.0078)/(pi*r*r)*mua*exp(-mua*(ylaser-tx(2))-2*tx(1)^2/(r*r))/tx(0)} else {0.0}"
 End
 
+!Real MATC "if(tx(3)<=tlaser) {2*pin*(1-0.0078)/(pi*r*r)*mua*exp(-mua*(ylaser-tx(2))-2*(tx(1)/r)^2)/tx(0)+1452*(310-tx(4))} else {1452*(310-tx(4))}"
+
 Body Force 2
 OL.if( OL.get(Parameters/Model/BIOHEAT) )
 Heat Source = Variable DensityBis, Coordinate 1, Coordinate 2, Time, Temperature
-Real MATC "if(tx(3)<=tlaser) {2*pin*(1-0.0078)/(pi*r*r)*mua*exp(-mua*(ylaser-tx(2))-2*(tx(1)/r)^2)/tx(0)+1452*(310-tx(4))} else {1452*(310-tx(4))}"
+ Real MATC "if(tx(3)<=tlaser) {2*pin*(1-0.0078)/(pi*r*r)*mua*exp(-mua*(ylaser-tx(2))-2*tx(1)^2/(r*r))/tx(0)+1452*(310-tx(4))} else {0}"
 OL.else
 Heat Source = Variable DensityBis, Coordinate 1, Coordinate 2, Time
 Real MATC "if(tx(3)<=tlaser) {2*pin*(1-0.0078)/(pi*r*r)*mua*exp(-mua*(ylaser-tx(2))-2*tx(1)^2/(r*r))/tx(0)} else {0}"
@@ -115,13 +116,14 @@ Solver 2
    !Scalar Field 2 = String Teneur
    !Scalar Field 3 = String DensityBis
 End
+
 Solver 3 !ElmerModelsManuel page 187
    Exec solver = "After saving"
    Equation = "SaveScalars"
    Variable 1 = Temperature
    Variable 2 = Time
    Procedure = "SaveData" "SaveScalars"
-   Save Coordinates(5,2) = 1e-6 OL.get(PostPro/ZSURF0) 1e-6 OL.get(PostPro/ZSURF1) 1e-6 OL.get(PostPro/ZSURF2) 1e-6 OL.get(PostPro/ZSURF3) 1e-6 OL.get(PostPro/ZSURF4)
+   Save Coordinates(5,2) = 1e-6 OL.get(PostPro/ZSURF,choices.comp(0)) 1e-6 OL.get(PostPro/ZSURF,choices.comp(1)) 1e-6 OL.get(PostPro/ZSURF,choices.comp(2)) 1e-6 OL.get(PostPro/ZSURF,choices.comp(3)) 1e-6 OL.get(PostPro/ZSURF,choices.comp(4)) 
    Filename = "temp.txt"
 End
 

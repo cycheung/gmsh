@@ -825,12 +825,11 @@ void InterfacedClient::compute(){
   std::vector<std::string> choices;
 
   convert(); 
-
-  Msg::SetOnelabString(getName() + "/Action","compute",false); // a titre indicatif
-
+  Msg::SetOnelabString(getName() + "/Action","compute",false);
   if(getList("InputFiles",choices)){
     for(unsigned int i = 0; i < choices.size(); i++){
-      checkIfPresentLocal(choices[i].substr(0,choices[i].find(onelabExtension)));//remove .ol ext
+     //remove .ol ext
+     checkIfPresentLocal(choices[i].substr(0,choices[i].find(onelabExtension)));
     }
   }
 

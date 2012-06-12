@@ -11,7 +11,7 @@ Plugin(MathEval).Run;
 Plugin(CutPlane).A=0;
 Plugin(CutPlane).B=-1;
 Plugin(CutPlane).C=0;
-Plugin(CutPlane).D= OL.get(PostPro/ZSURF0);
+Plugin(CutPlane).D= OL.get(PostPro/ZSURF,choices.comp(0));
 Plugin(CutPlane).ExtractVolume=0;
 Plugin(CutPlane).RecurLevel=4;
 Plugin(CutPlane).TargetError=0;
@@ -27,26 +27,14 @@ Plugin(MinMax).Run;
 Save View [3] "tempmin.txt";
 Save View [4] "tempmax.txt";
 
+ListDepth=OL.get(PostPro/ZSURF,choices.expand( '{comma}' ));
+
 //CUT THE Z_PLANES
-For k In {1:5}
+For k In {1:# ListDepth[]}
     Plugin(CutPlane).A=0;
     Plugin(CutPlane).B=-1;
     Plugin(CutPlane).C=0;
-If(k==1)
-    Plugin(CutPlane).D= OL.get(PostPro/ZSURF0);
-EndIf
-If(k==2)
-    Plugin(CutPlane).D= OL.get(PostPro/ZSURF1);
-EndIf
-If(k==3)
-    Plugin(CutPlane).D= OL.get(PostPro/ZSURF2);
-EndIf
-If(k==4)
-    Plugin(CutPlane).D= OL.get(PostPro/ZSURF3);
-EndIf
-If(k==5)
-    Plugin(CutPlane).D= OL.get(PostPro/ZSURF4);
-EndIf
+    Plugin(CutPlane).D= ListDepth[k];
     Plugin(CutPlane).ExtractVolume=0;
     Plugin(CutPlane).RecurLevel=4;
     Plugin(CutPlane).TargetError=0;

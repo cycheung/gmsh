@@ -33,9 +33,10 @@ int enclosed(const std::string &in, std::vector<std::string> &arguments,
   if ( (pos=in.find("(",cursor)) == std::string::npos )
      Msg::Fatal("Syntax error: <%s>",in.c_str());
 
-  if (pos>0)
+  if (pos>0){
+    std::cout << pos << in << std::endl;
      Msg::Fatal("Syntax error: <%s>",in.c_str());
-
+  }
   unsigned int count=1;
   pos++; // skips '('
   cursor = pos; 
@@ -148,6 +149,20 @@ bool extractRange(const std::string &in, std::vector<double> &arguments){
   return (arguments.size()==3);
 }
 
+std::string extractExpandPattern(const std::string& str){
+  int posa,posb;
+  posa=str.find_first_of("\"\'<");
+  posb=str.find_last_of("\"\'>");
+  std::string pattern=str.substr(posa+1,posb-posa-1);
+  posa=pattern.find("comma");
+  if(posa!=std::string::npos) 
+    pattern.replace(posa,5,",");
+  if(pattern.size()!=3)
+    Msg::Fatal("Incorrect expand pattern <%s>",
+	       str.c_str());
+  return pattern; 
+}
+
 std::string localSolverClient::longName(const std::string name){
   std::set<std::string>::iterator it;
   std::string fullName;
@@ -170,15 +185,75 @@ std::string localSolverClient::resolveGetVal(std::string line) {
   while ( (pos=line.find(olkey::getValue,cursor)) != std::string::npos){
     pos0=pos; // for further use
     cursor = pos+olkey::getValue.length();
-    if(enclosed(line.substr(cursor),arguments,pos)<1)
-      Msg::Fatal("Misformed <%s> statement: (%s)",
+    int NumArg=enclosed(line.substr(cursor),arguments,pos);
+    if(NumArg<1)
+      Msg::Fatal("Misformed %s statement: <%s>",
 		 olkey::getValue.c_str(),line.c_str());
     std::string paramName=longName(arguments[0]);
     get(numbers,paramName);
     if (numbers.size()){
       std::stringstream Num;
-      Num << numbers[0].getValue();
-      buff.assign(Num.str());
+      if(NumArg==1){
+	Num << numbers[0].getValue();
+	buff.assign(Num.str());
+      }
+      else if(NumArg==2){
+	std::string name, action;
+	std::vector<std::string> args;
+	extract(arguments[1],name,action,args);
+	if(!name.compare("choices")) { 
+	  std::vector<double> choices=numbers[0].getChoices();
+	  if(!action.compare("size")) {
+	    buff.assign(ftoa(choices.size()));
+	  }
+	  else if(!action.compare("comp")) {
+	    int i=atoi(args[0].c_str());
+	    if( (i>=0) && (i<choices.size()) )
+	      Num << choices[i];
+	    buff.assign(ftoa(choices[i]));
+	  }
+	  else if(!action.compare("expand")) {
+	    std::string pattern;
+	    pattern.assign(extractExpandPattern(args[0]));
+	    Msg::Info("Expand parameter <%s> with pattern <%s>",
+		      paramName.c_str(),pattern.c_str());
+	    buff.assign(1,pattern[0]);
+	    for(std::vector<double>::iterator it = choices.begin();
+		it != choices.end(); it++){
+	      if(it != choices.begin())
+		buff.append(1,pattern[1]);
+	      buff.append(ftoa(*it));
+	    }
+	    buff.append(1,pattern[2]);	  
+	  }
+	  else
+	    Msg::Fatal("Unknown action <%s> in %s statement",
+		       action.c_str(),olkey::getValue.c_str());
+	}
+	else if(!name.compare("range")) {
+	  double stp, min, max;
+	  if( ((stp=numbers[0].getStep()) == 0) ||
+	      ((min=numbers[0].getMin()) ==-onelab::parameter::maxNumber()) ||
+	      ((max=numbers[0].getMax()) ==onelab::parameter::maxNumber()) )
+	    Msg::Fatal("Invalid range description for parameter <%s>",
+		       paramName.c_str());
+	  if(!action.compare("size")) {
+	    buff.assign(ftoa(fabs((max-min)/stp)));
+	  }
+	  else if(!action.compare("comp")) {
+	    int i= atof(args[0].c_str());
+	    if(stp > 0)
+		Num << min+i*stp;
+	    else if(stp < 0)
+	      Num << max-i*stp;
+	  }
+	  else if(!action.compare("expand")) {
+	  }
+	  else
+	    Msg::Fatal("Unknown action <%s> in %s statement",
+		       action.c_str(),olkey::getValue.c_str());
+	}
+      }
     }
     else{
       get(strings,longName(paramName));
@@ -370,7 +445,7 @@ void localSolverClient::parse_sentence(std::string line) {
 	if(numbers.size()){ // parameter must exist
 	  std::vector<double> choices=numbers[0].getChoices();
 	  for(unsigned int i = 0; i < arguments.size(); i++){
-	    double val=atof(arguments[i].c_str());
+	    double val=atof(resolveGetVal(arguments[i]).c_str());
 	    if(std::find(choices.begin(),choices.end(),val)==choices.end())
 	      choices.push_back(val);
 	  }
@@ -917,17 +992,8 @@ void localSolverClient::convert_oneline(std::string line, std::ifstream &infile,
 	    buff.assign(ftoa(region.size()));
 	  else if(!action.compare("expand")){
 	    std::string pattern;
-	    if(NumArg>=3){
-	      int posa,posb;
-	      posa=arguments[2].find_first_not_of(" /t");
-	      posb=arguments[2].find_last_not_of(" /t");
-	      pattern=arguments[2].substr(posa,posb-posa);
-	      posa=pattern.find("comma");
-	      if(posa!=std::string::npos) pattern.replace(posa,5,",");
-	      if(pattern.size()!=3)
-		Msg::Fatal("Incorrect substitution pattern <%s>",
-			   arguments[2].c_str());
-	    }
+	    if(NumArg>=3)
+	      pattern.assign(extractExpandPattern(arguments[2]));
 	    else
 	      pattern.assign("   ");
 

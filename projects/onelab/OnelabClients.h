@@ -41,7 +41,7 @@ std::string removeBlanks(const std::string &in);
 int enclosed(const std::string &in, std::vector<std::string> &arguments);
 int extract(const std::string &in, std::string &paramName, std::string &action, std::vector<std::string> &arguments);
 bool extractRange(const std::string &in, std::vector<double> &arguments);
-
+std::string extractExpandPattern(const std::string& str);
 bool checkIfPresent(std::string filename);
 
 typedef std::vector <std::vector <double> > array;
