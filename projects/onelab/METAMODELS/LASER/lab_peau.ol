@@ -34,18 +34,18 @@ OVERTEMP.number(320, Parameters/Model/,''Threshold Ad [K]'');
 % depending variables are defined with no value
 % and this definition must then be completed by a "setValue" statement
 ZSURF.number( , PostPro/);
-ZSURF.setValue(OL.eval( (OL.get( DERMIS)+OL.get(SKINWIDTH))/1000 )); 
+ZSURF.setValue(OL.eval( (OL.get( DERMIS)+OL.get(SKINWIDTH))* 1e-3)); 
 
 % "OL.get" return the value on server 
 % of a parameter of type onelab::number or onelab::string
 % "OL.eval" allows evaluating analytical expressions involving onelab::numbers
 
 % The value of ZSURF is complemented with a list of choices
-% which are the coordinates at which T wil be monitored.
+% which are the coordinates at which T will be monitored.
 % The list of choice can be constructed element by element (as below) or by blocks: 
 % param.addChoices(1,2,3); param.addChoices(7,12); 
 % The 'value' of a parameter and the 'choices' can be evaluated independently
-% acoording to the context and the needs.
+% according to the context and the needs.
 ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.001 * 1e-3) );
 ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.049 * 1e-3) );  
 ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.100 * 1e-3) );
