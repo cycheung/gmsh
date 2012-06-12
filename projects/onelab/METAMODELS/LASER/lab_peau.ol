@@ -42,6 +42,8 @@ ZSURF.setValue(OL.eval( (OL.get( DERMIS)+OL.get(SKINWIDTH))/1000 ));
 
 % The value of ZSURF is complemented with a list of choices
 % which are the coordinates at which T wil be monitored.
+% The list of choice can be constructed element by element (as below) or by blocks: 
+% param.addChoices(1,2,3); param.addChoices(7,12); 
 % The 'value' of a parameter and the 'choices' can be evaluated independently
 % acoording to the context and the needs.
 ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.001 * 1e-3) );
