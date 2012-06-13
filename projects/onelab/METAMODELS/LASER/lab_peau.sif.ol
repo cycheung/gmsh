@@ -1,9 +1,9 @@
 % in a name.xxx.ol file onelab parameter definition lines must be enclosed 
 % between "OL.begin" and "OL.end" or start with "OL.line"
 OL.begin
-NumStep.number(10,Parameters/Elmer/1, "Time steps during laser appl."); 
-TimeStep.number(OL.eval(OL.get(Parameters/Laser/APPLICTIME)/OL.get(NumStep)), Parameters/Elmer/2,"Time step [s]");
-TimeStep.setReadOnly(1);
+NumStep.number(50,Parameters/Elmer/1, "Time steps during laser appl."); 
+TimeStep.number(, Parameters/Elmer/2,"Time step [s]");
+TimeStep.setValue(OL.eval(OL.get(Parameters/Laser/APPLICTIME)/OL.get(NumStep)));
 TimeEnd.number(OL.eval(3*OL.get(Parameters/Laser/APPLICTIME)),Parameters/Elmer/3,"Simulation end time [s]");
 OL.end
 
@@ -30,9 +30,10 @@ Body 1 !Dermis
   Material = OL.region(Dermis)
   Initial Condition = 1
 OL.if( OL.get(Parameters/Laser/LASERTYPE) == 3)
+   Body Force = 1
+OL.endif
+OL.if( OL.get(Parameters/Laser/LASERTYPE) == 4)
    Body Force = 2
-OL.else
-   Body Force = 3
 OL.endif
 End
 
@@ -43,39 +44,8 @@ Body 2 !Epidermis
 OL.if( OL.get(Parameters/Laser/LASERTYPE) == 3)
    Body Force = 1
 OL.endif
-End $
-
-$teneurw  = OL.get(Parameters/Model/WCONTENT)
-$pin      = OL.get(Parameters/Laser/LASERPOWER)
-$r        = OL.get(Parameters/Model/BEAMRADIUS)/1000
-$mua      = OL.get(Parameters/Laser/ABSORPTION)
-$tlaser   = OL.get(Parameters/Laser/APPLICTIME)
-$hp = (OL.get(Parameters/Model/DERMIS)+OL.get(Parameters/Model/SKINWIDTH))/1000
-$ylaser =  hp
-
-Body Force 1
-Heat Source = Variable DensityBis, Coordinate 1, Coordinate 2, Time
-Real MATC "if(tx(3)<=tlaser) {2*pin*(1-0.0078)/(pi*r*r)*mua*exp(-mua*(ylaser-tx(2))-2*tx(1)^2/(r*r))/tx(0)} else {0.0}"
-End
-
-!Real MATC "if(tx(3)<=tlaser) {2*pin*(1-0.0078)/(pi*r*r)*mua*exp(-mua*(ylaser-tx(2))-2*(tx(1)/r)^2)/tx(0)+1452*(310-tx(4))} else {1452*(310-tx(4))}"
-
-Body Force 2
-OL.if( OL.get(Parameters/Model/BIOHEAT) )
-Heat Source = Variable DensityBis, Coordinate 1, Coordinate 2, Time, Temperature
- Real MATC "if(tx(3)<=tlaser) {2*pin*(1-0.0078)/(pi*r*r)*mua*exp(-mua*(ylaser-tx(2))-2*tx(1)^2/(r*r))/tx(0)+1452*(310-tx(4))} else {0}"
-OL.else
-Heat Source = Variable DensityBis, Coordinate 1, Coordinate 2, Time
-Real MATC "if(tx(3)<=tlaser) {2*pin*(1-0.0078)/(pi*r*r)*mua*exp(-mua*(ylaser-tx(2))-2*tx(1)^2/(r*r))/tx(0)} else {0}"
-OL.endif
-End
-
-Body Force 3
-OL.if( OL.get(Parameters/Model/BIOHEAT) )
-Heat Source = Variable DensityBis, Temperature
-Real MATC "1452*(310-tx(1))/tx(0)"
-OL.else
-    Heat Source = Real 0.0
+OL.if( OL.get(Parameters/Laser/LASERTYPE) == 4)
+   Body Force = 2
 OL.endif
 End
 
@@ -105,6 +75,8 @@ Solver 1
    Exported Variable 1 DOFs = 1
    Exported Variable 2 = String "Teneur"
    Exported Variable 2 DOFs = 1
+   Exported Variable 3 = String "Qvolume"
+   Exported Variable 3 DOFs = 1
 End
 Solver 2
    Exec Solver = after saving
@@ -127,6 +99,16 @@ Solver 3 !ElmerModelsManuel page 187
    Filename = "temp.txt"
 End
 
+!*********** Variables ************
+
+$teneurw  = OL.get(Parameters/Model/WCONTENT)
+$pin      = OL.get(Parameters/Laser/LASERPOWER)
+$r        = OL.get(Parameters/Model/BEAMRADIUS)/1000
+$mua      = OL.get(Parameters/Laser/ABSORPTION)
+$tlaser   = OL.get(Parameters/Laser/APPLICTIME)
+$hp = OL.get(PostPro/ZSURF)
+$ylaser =  hp
+$temp= OL.get(Parameters/Laser/LASERTEMP)
 
 !*********** Materials ************
 Material 1 !dermis
@@ -137,31 +119,50 @@ Material 2 !epidermis
       OL.include( skinMaterial.ol )
 End
 
+!*********** Initial condition ************
+
 Initial Condition 1
 Temperature = Real OL.get(Parameters/Model/BODYTEMP)
+
 Teneur = Variable Coordinate
 OL.if( OL.get(Parameters/Model/SKINTYPE) == 1)
-Real MATC "if((hp-tx(1))<0.00008){0.15/80*(hp-tx(1))*10^6+0.25} else {0.25+0.35/(1+exp(-0.25*((hp-tx(1))*10^6-80)))}"
+  Real MATC "if((hp-tx(1))<0.00008){0.15/80*(hp-tx(1))*10^6+0.25} else {0.25+0.35/(1+exp(-0.25*((hp-tx(1))*10^6-80)))}"
 OL.else
-Real MATC "0.25+0.4/(1+exp(-0.25*((hp-tx(1))*10^6-15)))"
+  Real MATC "0.25+0.4/(1+exp(-0.25*((hp-tx(1))*10^6-15)))"
 OL.endif
+
 OL.if( OL.get(Parameters/Model/TENEUR) )
-DensityBis = Variable Teneur
-Real MATC "1000/(6.16/100*tx(0)+0.938)" ! kg/m3
+  DensityBis = Variable Teneur
+  Real MATC "1000/(6.16/100*tx(0)+0.938)" ! kg/m3
 
-HConductivity = Variable Teneur, DensityBis
-Real MATC "tx(1)/1000*(0.454*tx(0)+0.174)" ! W/(mK) 
+  HConductivity = Variable Teneur, DensityBis
+  Real MATC "tx(1)/1000*(0.454*tx(0)+0.174)" ! W/(mK) 
 
-HCapacity = Variable Teneur
-Real MATC "2500*tx(0)+1700"  ! J/(kg/K)
+  HCapacity = Variable Teneur
+  Real MATC "2500*tx(0)+1700"  ! J/(kg/K)
 OL.else
-DensityBis = Real MATC "1000/(6.16/100*teneurw+0.938)" !1022.45 !1048.88 ! 1200.0
+
+  DensityBis = Real MATC "1000/(6.16/100*teneurw+0.938)" !1022.45 !1048.88 ! 1200.0
 OL.endif
+
+Qvolume = Variable DensityBis, Coordinate 1, Coordinate 2
+Real MATC " 2*pin/(pi*r*r)*mua*exp(-mua*(ylaser-tx(2))-2*tx(1)^2/(r*r))/tx(0)"
 
 End
 
-!*********** Boundary conditions ************
+!*********** Volume heat sources ************
 
+Body Force 1 ! constant power density
+Heat Source = Variable Qvolume, Time
+Real MATC " if(tx(1)<=tlaser) {tx(0)} else {0} "
+End
+
+Body Force 2 ! temperature controlled power density
+Heat Source = Variable Qvolume, Time,Temperature
+Real MATC " if(tx(1)<=tlaser) { if(tx(2)<temp){5*tx(0)} else{0} } else {0} "
+End
+
+!*********** Boundary conditions ************
 
 Boundary Condition 1 ! "Zero flux on axis and bottom"
 Target Boundaries(2) = OL.region(Axis) OL.region(Bottom)
@@ -179,9 +180,9 @@ OL.if( OL.get(Parameters/Laser/LASERTYPE) == 1)
    Target Boundaries(1) = OL.region(LaserSpot)
    Temperature = Variable Time 
    Real MATC "if(tx(0)<=tlaser) {OL.get(Parameters/Laser/LASERTEMP)} else {OL.get(Parameters/Model/BODYTEMP)}"
-   End
+End
 
-   Boundary Condition 4 ! "convection or zero heat flux"
+Boundary Condition 4 ! "convection or zero heat flux"
    OL.if( OL.get(Parameters/Model/CONVBC) )
    Target Boundaries(1) = OL.region(FreeSkin)
    Heat Transfer Coefficient = Real 75.0
@@ -201,8 +202,7 @@ OL.if( OL.get(Parameters/Laser/LASERTYPE) == 2)
    End
 OL.endif
 
-
-OL.if( OL.get(Parameters/Laser/LASERTYPE) == 3)
+OL.if( OL.get(Parameters/Laser/LASERTYPE) >= 3)
    Boundary Condition 3 ! "applied zero flux over whole skin surface"
    Target Boundaries(2) = OL.region(LaserSpot) OL.region(FreeSkin)
    Heat Flux BC = Logical true

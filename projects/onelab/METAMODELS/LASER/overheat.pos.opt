@@ -1,6 +1,6 @@
 View[0].IntervalsType = 3; 
 View[0].RangeType = 2; 
 View[0].NbIso = 10; 
-View[0].CustomMax = 35.923;
+View[0].CustomMax = 41.097;
 View[0].CustomMin =  0.0;
 

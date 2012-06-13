@@ -20,10 +20,10 @@ set title "Skin Temperature of a laser CO2 for different depths"
 set ylabel "Temperature [K]"
 set xlabel "Time [s]"
 plot "temp.txt" u 1:2 t"z0",\
-     "temp.txt" u 1:8 t"z1",\
-     "temp.txt" u 1:14 t"z2",\
-     "temp.txt" u 1:20 t"z3",\
-     "temp.txt" u 1:26 t"z4", \
+     "temp.txt" u 1:9 t"z1",\
+     "temp.txt" u 1:16 t"z2",\
+     "temp.txt" u 1:23 t"z3",\
+     "temp.txt" u 1:30 t"z4", \
      320 t "treshold Ad"
 
 

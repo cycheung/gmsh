@@ -6,7 +6,6 @@ LOGFILES.radioButton(0,MetaModel/,''Output goes in .log files'');
 % Flags to descibe model features that are activated or not
 TENEUR.radioButton(0,Parameters/Model/1,"Account for water content"); 
 CONVBC.radioButton(0,Parameters/Model/2,"Account for convection");
-BIOHEAT.radioButton(0,Parameters/Model/3,"Account for volume heat sources");
 
 % Enumeration, i.e. a set of real values each associated with a label
 SKINTYPE.number(1, Parameters/Model/4, ''Skin type''); 
@@ -53,9 +52,9 @@ ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.150 * 1e-3) );
 ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.200 * 1e-3) );
 
 % Available LASER models, another enumeration
-LASERTYPE.number(1, Parameters/Laser/1,''Laser type'');  
-LASERTYPE.addChoices(1,2,3); 
-LASERTYPE.addLabels(Applied temperature, Surface flux, Volume Flux);
+LASERTYPE.number(3, Parameters/Laser/1,''Laser type'');  
+LASERTYPE.addChoices(1,2,3,4); 
+LASERTYPE.addLabels(Applied temperature, Surface flux, Volume Flux, Controlled temperature);
 
 APPLICTIME.number(0.05, Parameters/Laser/, ''Application time [s]'');
 LASERTEMP.number(360, Parameters/Laser/, ''Laser temperature [K]'');
@@ -79,6 +78,11 @@ OL.if( OL.get(LASERTYPE) == 3)
 LASERTEMP.setVisible(0);
 LASERPOWER.setVisible(1);
 ABSORPTION.setVisible(1);
+OL.endif
+OL.if( OL.get(LASERTYPE) == 4)
+LASERTEMP.setVisible(1);
+LASERPOWER.setVisible(0);
+ABSORPTION.setVisible(0);
 OL.endif
 
 % The metamodel is described as a list of clients in the "name.ol" file (this file)
@@ -124,11 +128,14 @@ Display.merge(overheat.pos);
 POSTPRO.number(2, PostPro/,"Plot results with");
 POSTPRO.addChoices(1,2); 
 POSTPRO.addLabels(Matlab,Gnuplot);
+
 Matlab.register(interfaced); 
 Matlab.args(-nosplash -desktop -r plotMatlab);
+
 Gnuplot.register(interfaced);
 Gnuplot.in(temp.txt, tempsurf.txt);
 Gnuplot.args(plot.plt );
+
 OL.if( OL.get(POSTPRO) == 1)
 Gnuplot.active(0);
 Matlab.active(1);
