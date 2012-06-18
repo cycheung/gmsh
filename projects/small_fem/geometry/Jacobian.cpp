@@ -42,6 +42,15 @@ fullVector<double> Jacobian::grad(const fullVector<double>& gradUV) const{
   return gradXY;
 }
 
+fullVector<double> Jacobian::grad(const double u, const double v) const{
+  fullVector<double> gradXY(2);
+  
+  gradXY(0) = u * dudx + v * dvdx;
+  gradXY(1) = u * dudy + v * dvdy;    
+  
+  return gradXY;
+}
+
 fullVector<double> Jacobian::invMap(const fullVector<double>& XY) const{
   fullVector<double> UV(2);
   

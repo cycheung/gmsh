@@ -54,6 +54,7 @@ class Jacobian{
   double det(void) const;
 
   fullVector<double> grad(const fullVector<double>& gradUV) const;
+  fullVector<double> grad(const double u, const double v) const;
 
   fullVector<double> invMap(const fullVector<double>& XY) const;
   fullVector<double> invMap(const double x, const double y) const;
@@ -79,8 +80,15 @@ class Jacobian{
    @return Returns the determinant of the 
    transformation jacobian matrix
 
-   @fn Jacobian::grad
+   @fn Jacobian::grad(const fullVector<double>&) const
    @param gradUV A gradient in the @em reference space
+   @returns Returns the given gradient in the 
+   @em physical space
+
+   @fn Jacobian::grad(const double, const double) const
+   @param u The @c U coordinate 
+   of a gradient in the @em reference (@c 2D) space
+   @param v The @c V coordinate of the same gradient
    @returns Returns the given gradient in the 
    @em physical space
 
