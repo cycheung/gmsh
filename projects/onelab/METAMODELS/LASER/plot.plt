@@ -27,20 +27,25 @@ plot "temp.txt" u 1:2 t "",\
      "temp.txt" u 1:30 t "", \
      320 t "threshold "
 
-set title "Surface temperature at t=Tlaser"
+set title "Skin temperature (at t=Tlaser) at different depth "
 set size 0.5,0.5
 set origin 0.5,0.5  
 set xlabel "Radial coord [mm]"
-plot "tempsurf.txt" u ($5)*1000:8 w linesp t ""
+plot "templaser0.txt" u ($5)*1000:8 w l t "",\
+     "templaser1.txt" u ($5)*1000:8 w l t "",\
+     "templaser2.txt" u ($5)*1000:8 w l t "",\
+     "templaser3.txt" u ($5)*1000:8 w l t "",\
+     "templaser4.txt" u ($5)*1000:8 w l t "", \
+     320 t "threshold "
 
-set title "Active surface "
+set title "Maximum (in time) active surface"
 set size 0.5,0.5
 set origin 0.0,0.0
 set xlabel "Skin Depth [mm]"
 set ylabel "Active surface [mm^2]"
 plot "activeMax.txt" u ($4)*0.05:($8)*10**6 w lp t ""
 
-set title "Duration at threshold "
+set title "Maximum (at x=0) duration at threshold "
 set size 0.5,0.5
 set origin 0.5,0.0
 set xlabel "Skin Depth [mm]"

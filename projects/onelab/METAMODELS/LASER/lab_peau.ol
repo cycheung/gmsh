@@ -121,7 +121,7 @@ Elmer.out( solution.pos, temp.txt );
 Post.register(interfaced);
 Post.in(solution.pos , script.opt.ol ); 
 Post.args(solution.pos script.opt -);
-Post.out(tempsurf.txt, tempmin.txt, tempmax.txt);
+Post.out(tempmin.txt, tempmax.txt);
 Post.up( tempmin.txt,-1,8,Solution/Tmin, tempmax.txt,-1,8,Solution/Tmax);
 
 %-5) Display solution with a client Gmsh
@@ -140,7 +140,7 @@ Matlab.register(interfaced);
 Matlab.args(-nosplash -desktop -r plotMatlab);
 
 Gnuplot.register(interfaced);
-Gnuplot.in(temp.txt, tempsurf.txt);
+Gnuplot.in(temp.txt);
 Gnuplot.args(plot.plt );
 
 OL.if( OL.get(POSTPRO) == 1)
