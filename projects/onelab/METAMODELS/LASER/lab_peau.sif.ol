@@ -104,6 +104,7 @@ End
 $teneurw  = OL.get(Parameters/Model/WCONTENT)
 $pin      = OL.get(Parameters/Laser/LASERPOWER)
 $r        = OL.get(Parameters/Laser/BEAMRADIUS)/1000
+$refl     = OL.get(Parameters/Laser/REFLECTIVITY)
 $mua      = OL.get(Parameters/Laser/ABSORPTION)
 $tlaser   = OL.get(Parameters/Laser/APPLICTIME)
 $hp = OL.get(PostPro/ZSURF)
@@ -146,7 +147,7 @@ OL.else
 OL.endif
 
 Qvolume = Variable DensityBis, Coordinate 1, Coordinate 2
-Real MATC " 2*pin/(pi*r*r)*mua*exp(-mua*(ylaser-tx(2))-2*tx(1)^2/(r*r))/tx(0)"
+Real MATC " 2*(1-refl)*pin/(pi*r*r)*mua*exp(-mua*(ylaser-tx(2))-2*tx(1)^2/(r*r))/tx(0)"
 
 End
 
@@ -198,7 +199,7 @@ OL.if( OL.get(Parameters/Laser/LASERTYPE) == 2)
    Target Boundaries(2) = OL.region(LaserSpot) OL.region(FreeSkin)
    Heat Flux BC = Logical true
    Heat Flux = Variable Coordinate 1, Coordinate 2, Time
-   Real MATC "if(tx(2)<=tlaser) {2*pin*(1-0.0078)/(pi*r*r)*exp(-2*(tx(0)^2)/(r*r))} else {0.0}"
+   Real MATC "if(tx(2)<=tlaser) {2*(1-refl)*pin/(pi*r*r)*exp(-2*(tx(0)^2)/(r*r))} else {0.0}"
    End
 OL.endif
 

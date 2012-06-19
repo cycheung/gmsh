@@ -4,7 +4,7 @@
 
 DefineConstant[SKINWIDTH = {0.12, Path "Parameters/Model/5"}];
 DefineConstant[DERMIS = {1.5, Path "Parameters/Model/6"}];
-DefineConstant[BEAMRADIUS = {5, Path "Parameters/Model/"}];
+DefineConstant[BEAMRADIUS = {5, Path "Parameters/Laser/4"}];
 
 // Gmsh specific parameter
 DefineConstant[Nb1 = {10, Path "Gmsh/", ShortHelp "Elements on spot surface"}]; 

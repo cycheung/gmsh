@@ -11,12 +11,13 @@ set multiplot;
 set style function lines
 set size 1.0, 1.0
 set origin 0.0, 0.0
+
 set multiplot
-set size 1.0,0.5
-set origin 0.0,0.5
 set grid
 
-set title "Skin Temperature of a laser CO2 for different depths"
+set title "Skin Temperature of the laser for different depths"
+set size 0.5,0.5
+set origin 0.0,0.5
 set ylabel "Temperature [K]"
 set xlabel "Time [s]"
 plot "temp.txt" u 1:2 t"z0",\
@@ -24,20 +25,27 @@ plot "temp.txt" u 1:2 t"z0",\
      "temp.txt" u 1:16 t"z2",\
      "temp.txt" u 1:23 t"z3",\
      "temp.txt" u 1:30 t"z4", \
-     320 t "treshold Ad"
-
+     320 t "treshold "
 
 set title "Surface Temperature at Time=Tlaser"
 set size 0.5,0.5
-set origin 0.0,0.0  
-set xlabel "coord [mm]"
+set origin 0.5,0.5  
+set xlabel "Radial coord [mm]"
 plot "tempsurf.txt" u ($5)*1000:8 w linesp t "z0"
 
 set title "Active surface "
 set size 0.5,0.5
-set origin 0.5,0.0
+set origin 0.0,0.0
+set xlabel "Skin Depth [mm]"
 set ylabel "Active surface [mm^2]"
-plot "activeMax.txt" u ($4)*0.05:($8)*10**6 w lp t "Fiber treshold"
+plot "activeMax.txt" u ($4)*0.05:($8)*10**6 w lp t ""
+
+set title "Duration at threshold "
+set size 0.5,0.5
+set origin 0.5,0.0
+set xlabel "Skin Depth [mm]"
+set ylabel "Duration [s]"
+plot "activeMax.txt" u ($4)*0.05:($8)*10**6 w lp t ""
 
 unset multiplot
 

@@ -61,11 +61,12 @@ LASERTYPE.number(3, Parameters/Laser/1,''Laser type'');
 LASERTYPE.addChoices(1,2,3,4); 
 LASERTYPE.addLabels(Applied temperature, Surface flux, Volume Flux, Controlled temperature);
 
-APPLICTIME.number(0.05, Parameters/Laser/, ''Application time [s]'');
+APPLICTIME.number(0.05, Parameters/Laser/2, ''Application time [s]'');
+ABSORPTION.number(2e4, Parameters/Laser/3, ''Absorption coefficient [1/m]'');
+BEAMRADIUS.number(5, Parameters/Laser/4, ''Beam radius [mm]'');
+REFLECTIVITY.number(0.0078, Parameters/Laser/5, ''Skin reflectivity []'');
 LASERTEMP.number(360, Parameters/Laser/, ''Laser temperature [K]'');
 LASERPOWER.number(15, Parameters/Laser/, ''Injected power [W]'');
-ABSORPTION.number(2e4, Parameters/Laser/, ''Absorption coefficient [1/m]'');
-BEAMRADIUS.number(5, Parameters/Laser/, ''Beam radius [mm]'');
 
 % Visibility of the parameters in the onelab interactive window
 % are controled with conditional statements
