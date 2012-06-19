@@ -27,7 +27,7 @@ OL.endif
 DERMIS.number(1.5,Parameters/Model/6,''Dermis width [mm]'');
 WCONTENT.number(0.65,Parameters/Model/,''Water content []'');
 BODYTEMP.number(310, Parameters/Model/,''Body temperature [K]'');
-OVERTEMP.number(320, Parameters/Model/,''Threshold fiber [K]'');
+OVERTEMP.number(320, Parameters/Model/,''Thermal threshold fiber [K]'');
 
 OL.if( OL.get(Parameters/Model/TENEUR) )
 WCONTENT.setVisible(0);
