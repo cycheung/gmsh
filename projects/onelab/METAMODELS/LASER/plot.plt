@@ -37,7 +37,7 @@ set title "Active surface "
 set size 0.5,0.5
 set origin 0.5,0.0
 set ylabel "Active surface [mm^2]"
-plot "activeMax.txt" u ($4)*0.05:($8)*10**6 w lp t "Fiber Ad"
+plot "activeMax.txt" u ($4)*0.05:($8)*10**6 w lp t "Fiber treshold"
 
 unset multiplot
 

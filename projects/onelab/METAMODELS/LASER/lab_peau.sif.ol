@@ -103,7 +103,7 @@ End
 
 $teneurw  = OL.get(Parameters/Model/WCONTENT)
 $pin      = OL.get(Parameters/Laser/LASERPOWER)
-$r        = OL.get(Parameters/Model/BEAMRADIUS)/1000
+$r        = OL.get(Parameters/Laser/BEAMRADIUS)/1000
 $mua      = OL.get(Parameters/Laser/ABSORPTION)
 $tlaser   = OL.get(Parameters/Laser/APPLICTIME)
 $hp = OL.get(PostPro/ZSURF)

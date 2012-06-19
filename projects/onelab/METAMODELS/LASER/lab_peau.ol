@@ -4,7 +4,7 @@
 LOGFILES.radioButton(0,MetaModel/,''Output goes in .log files'');
 
 % Flags to descibe model features that are activated or not
-TENEUR.radioButton(0,Parameters/Model/1,"Account for water content"); 
+TENEUR.radioButton(0,Parameters/Model/1,"Account for variable water content"); 
 CONVBC.radioButton(0,Parameters/Model/2,"Account for convection");
 
 % Enumeration, i.e. a set of real values each associated with a label
@@ -25,10 +25,15 @@ OL.endif
 
 % onelab numbers
 DERMIS.number(1.5,Parameters/Model/6,''Dermis width [mm]'');
-BEAMRADIUS.number(5, Parameters/Model/, ''Beam radius [mm]'');
 WCONTENT.number(0.65,Parameters/Model/,''Water content []'');
 BODYTEMP.number(310, Parameters/Model/,''Body temperature [K]'');
-OVERTEMP.number(320, Parameters/Model/,''Threshold Ad [K]'');
+OVERTEMP.number(320, Parameters/Model/,''Threshold fiber [K]'');
+
+OL.if( OL.get(Parameters/Model/TENEUR) )
+WCONTENT.setVisible(0);
+OL.else
+WCONTENT.setVisible(1);
+OL.endif
 
 % depending variables are defined with no value
 % and this definition must then be completed by a "setValue" statement
@@ -60,6 +65,7 @@ APPLICTIME.number(0.05, Parameters/Laser/, ''Application time [s]'');
 LASERTEMP.number(360, Parameters/Laser/, ''Laser temperature [K]'');
 LASERPOWER.number(15, Parameters/Laser/, ''Injected power [W]'');
 ABSORPTION.number(2e4, Parameters/Laser/, ''Absorption coefficient [1/m]'');
+BEAMRADIUS.number(5, Parameters/Laser/, ''Beam radius [mm]'');
 
 % Visibility of the parameters in the onelab interactive window
 % are controled with conditional statements
@@ -82,7 +88,7 @@ OL.endif
 OL.if( OL.get(LASERTYPE) == 4)
 LASERTEMP.setVisible(1);
 LASERPOWER.setVisible(0);
-ABSORPTION.setVisible(0);
+ABSORPTION.setVisible(1);
 OL.endif
 
 % The metamodel is described as a list of clients in the "name.ol" file (this file)
