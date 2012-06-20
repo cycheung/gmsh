@@ -19,7 +19,7 @@ Plugin(CutPlane).View=1;
 Plugin(CutPlane).Run;
 Save View [2] "step.txt";
 
-//Plugin(Integrate).View=2;
-//Plugin(Integrate).OverTime=2;
-//Plugin(Integrate).Run; 
-//Save View [3] "duration.txt";
+Plugin(Integrate).View=2;
+Plugin(Integrate).OverTime=1;
+Plugin(Integrate).Run; 
+Save View [3] "duration.txt";
