@@ -34,11 +34,9 @@ int main(int argc, char *argv[]){
     // obtain the caseName from the loader
     caseName= Msg::GetOnelabString("Gmsh/MshFileName");
     if(caseName.empty()){
-      caseName= Msg::GetOnelabString("loadedMetaModel/InputFiles");
+      caseName= Msg::GetOnelabString("loadedMetaModel/CaseName");
     }
   }
-
-  std::cout << "caseName=<" << caseName << ">" << std::endl;
 
   if(caseName.size()){
      fileName.assign(SplitFileName(caseName)[1]);

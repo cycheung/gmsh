@@ -84,7 +84,8 @@ class onelabMetaModelServer : public GmshServer{
 };
 
 std::string localNetworkSolverClient::buildCommandLine(){
-  std::string command("cd "+getWorkingDir()+cmdSep+FixWindowsPath(getCommandLine()));
+  std::string command("cd " + getWorkingDir() + cmdSep
+		      + FixWindowsPath(getCommandLine()));
   if(command.size()){
     std::vector<onelab::string> ps;
     get(ps, getName() + "/Action");
@@ -95,15 +96,17 @@ std::string localNetworkSolverClient::buildCommandLine(){
     std::string computeCommand = (ps.empty() ? "" : ps[0].getValue());
 
     if(action == "initialize"){
-      command.append(" " + getSocketSwitch() + " " + getName() + " %s"); // -onelab option
+      command.append(" " + getSocketSwitch() + " " + getName() + " %s"); 
     }
     else if(action == "check") {
       command.append(" " + getString("Arguments") + " " + checkCommand) ;
-      command.append(" " + getSocketSwitch() + " " + getName() + " %s"); // -onelab option
+      command.append(" " + getSocketSwitch() + " " + getName() + " %s"); 
     }
     else if(action == "compute"){
       command.append(" " + getString("Arguments") + " " + computeCommand);
-      command.append(" " + getSocketSwitch() + " " + getName() + " %s"); // -onelab option
+      command.append(" " + getSocketSwitch() + " " + getName() + " %s"); 
+      command.append(" " + getString("Redirect"));
+      //does not quite work. Maybe using fork instead of system would help...
     }
     else
       Msg::Fatal("localNetworkSolverClient::buildCommandLine: Unknown Action <%s> %s", action.c_str(), getName().c_str());
@@ -489,7 +492,7 @@ bool PromptUser::menu(std::string commandLine, std::string workingDir, std::stri
   std::string clientName="loadedMetaModel";
   EncapsulatedClient *loadedSolver = new  EncapsulatedClient(clientName,commandLine,workingDir);
   //setString("Arguments/FileName",fileName);
-  addStringChoice(clientName + "/InputFiles", workingDir+fileName);
+  addStringChoice(clientName + "/CaseName", workingDir+fileName);
 
   do {
     std::cout << "\nONELAB: menu" << std::endl ;
@@ -749,6 +752,9 @@ void MetaModel::simpleCheck()
     if((*it)->isActive()){
 	Msg::SetOnelabString((*it)->getName() + "/Action","check",false);
 	(*it)->analyze();
+	//some clients must be run at the check phase
+	if((*it)->getActive()==2) 
+	  (*it)->compute();
       }
   }
 }
@@ -759,9 +765,9 @@ void MetaModel::simpleCompute()
     if(Msg::GetOnelabString("MetaModel/STATUS").compare("STOP")){
       if((*it)->isActive()){
 	Msg::SetOnelabString((*it)->getName() + "/Action","compute",false);
-	if(Msg::GetOnelabNumber("MetaModel/LOGFILES")){
+	if(Msg::GetOnelabNumber("LOGFILES")){
 	  freopen((*it)->getName().append(".log").c_str(),"w",stdout);
-	  freopen((*it)->getName().append(".err").c_str(),"w",stderr);
+	  //freopen((*it)->getName().append(".err").c_str(),"w",stderr);
 	}
 	(*it)->compute();
 	Msg::SetOnelabString((*it)->getName() + "/Action","alldone",false);
@@ -790,10 +796,10 @@ void MetaModel::PostArray(std::vector<std::string> choices)
 void InterfacedClient::analyze() {
   int pos;
   std::vector<std::string> choices;
-  Msg::SetOnelabString(getName() + "/Action","check",false);// a titre indicatif
+  Msg::SetOnelabString(getName() + "/Action","check",false);
   getList("InputFiles", choices);
   for(unsigned int i = 0; i < choices.size(); i++){
-    if((pos=choices[i].find(onelabExtension)) != std::string::npos){ 
+    if((pos=choices[i].find(onelabExtension)) != std::string::npos){
       // if .ol file
       checkIfPresentLocal(choices[i]);
       parse_onefile(choices[i]);
@@ -809,7 +815,8 @@ void InterfacedClient::convert() {
   for(unsigned int i = 0; i < choices.size(); i++){
     if((pos=choices[i].find(onelabExtension)) != std::string::npos){
       checkIfPresentLocal(choices[i]);
-      std::string ofilename = getWorkingDir() + choices[i].substr(0,pos); // remove .ol extension
+      // remove .ol extension
+      std::string ofilename = getWorkingDir() + choices[i].substr(0,pos);
       std::ofstream outfile(ofilename.c_str());
       if (outfile.is_open())
 	convert_onefile(choices[i],outfile);
@@ -859,7 +866,7 @@ void InterfacedClient::compute(){
 // ENCAPSULATED Client
 
 void EncapsulatedClient::analyze() {
-  Msg::SetOnelabString(getName() + "/Action","check",false); 
+  Msg::SetOnelabString(getName() + "/Action","check",false);
   run();
 }
 
@@ -1052,6 +1059,7 @@ std::string RemoteEncapsulatedClient::buildCommandLine(){
     else if(action == "compute"){
       command.append(" " + getString("Arguments") + " " + computeCommand + " ");
       command.append(" " + getSocketSwitch() + " " + getName() + " %s");
+      //FIXME redirect?
     }
     else
       Msg::Fatal("remoteEncapsulatedClient::run: Unknown: Unknown Action <%s>", action.c_str());

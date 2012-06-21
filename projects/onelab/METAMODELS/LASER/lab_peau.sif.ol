@@ -1,11 +1,11 @@
 % in a name.xxx.ol file onelab parameter definition lines must be enclosed 
 % between "OL.begin" and "OL.end" or start with "OL.line"
-OL.begin
+OL.block
 NumStep.number(50,Parameters/Elmer/1, "Time steps during laser appl."); 
 TimeStep.number(, Parameters/Elmer/2,"Time step [s]");
 TimeStep.setValue(OL.eval(OL.get(Parameters/Laser/APPLICTIME)/OL.get(NumStep)));
 TimeEnd.number(OL.eval(3*OL.get(Parameters/Laser/APPLICTIME)),Parameters/Elmer/3,"Simulation end time [s]");
-OL.end
+OL.endblock
 
 %in the body of the file, onelab recognizes the following commands:
 % OL.if, OL.if(n)true, OL.include, OL.eval, OL.get, OL.region

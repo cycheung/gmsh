@@ -3,13 +3,14 @@
 #include "mathex.h"
 
 // reserved keywords for the onelab parser
+// 
 
 namespace olkey{ 
   static std::string deflabel("onelab.tags");
   static std::string label("OL."), comment("%"), separator(";");
   static std::string line(label+"line");
-  static std::string begin(label+"begin");
-  static std::string end(label+"end");
+  static std::string begin(label+"block");
+  static std::string end(label+"endblock");
   static std::string include(label+"include");
   static std::string ifcond(label+"if");
   static std::string ifequal(label+"ifequal");
@@ -20,7 +21,7 @@ namespace olkey{
   static std::string getRegion(label+"region");
   static std::string number("number"), string("string");
   static std::string arguments("args"), inFiles("in"), outFiles("out");
-  static std::string upload("up"), merge("merge");
+  static std::string upload("up"), merge("merge"), redirect("redirect");
 }
 
 int enclosed(const std::string &in, std::vector<std::string> &arguments,
@@ -492,6 +493,9 @@ void localSolverClient::parse_sentence(std::string line) {
     else if(!action.compare("setValue")){ // force change on server
       if(arguments[0].empty())
 	Msg::Fatal("Missing argument SetValue <%s>",name.c_str());
+      if(arguments.size()>1){
+	name.assign(arguments[1] + name);
+      }
       name.assign(longName(name));
       get(numbers,name); 
       if(numbers.size()){ 
@@ -561,8 +565,8 @@ void localSolverClient::modify_tags(const std::string lab, const std::string com
     changed=true;
     olkey::label.assign(lab);
     olkey::line.assign(olkey::label+"line");
-    olkey::begin.assign(olkey::label+"begin");
-    olkey::end.assign(olkey::label+"end");
+    olkey::begin.assign(olkey::label+"block");
+    olkey::end.assign(olkey::label+"endblock");
     olkey::include.assign(olkey::label+"include");
     olkey::ifcond.assign(olkey::label+"if");
     olkey::ifequal.assign(olkey::label+"ifequal");
@@ -1048,12 +1052,14 @@ void localSolverClient::convert_onefile(std::string fileName, std::ofstream &out
 }
 
 
-void localSolverClient::client_sentence(const std::string &name, const std::string &action, 
+void localSolverClient::client_sentence(const std::string &name, 
+					const std::string &action, 
 		       const std::vector<std::string> &arguments) {
-  Msg::Fatal("The action <%s> is unknown in this ccontext",action.c_str());
+  Msg::Fatal("The action <%s> is unknown in this context",action.c_str());
 }
 
-void MetaModel::client_sentence(const std::string &name, const std::string &action, 
+void MetaModel::client_sentence(const std::string &name, 
+				const std::string &action, 
 		 const std::vector<std::string> &arguments){
   //std::vector<onelab::number> numbers;
   std::vector<onelab::string> strings;
@@ -1193,6 +1199,15 @@ void MetaModel::client_sentence(const std::string &name, const std::string &acti
       for(unsigned int i = 0; i < arguments.size(); i++)
 	choices.push_back(resolveGetVal(arguments[i]));
       strings[0].setChoices(choices);
+      set(strings[0]);
+    }
+  }
+  else if(!action.compare(olkey::redirect)){
+    if(arguments[0].size()){
+      strings.resize(1);
+      strings[0].setName(name+"/Redirect");
+      strings[0].setValue(arguments[0]);
+      strings[0].setVisible(false);
       set(strings[0]);
     }
   }

@@ -105,7 +105,7 @@ class localSolverClient : public onelab::localClient{
  private:
   std::string _commandLine;
   std::string _workingDir;
-  bool _enabled;
+  int _active;
   bool _onelabBlock;
   std::set<std::string, ShortNameLessThan> _parameters;
   std::string longName(const std::string name);
@@ -114,7 +114,7 @@ class localSolverClient : public onelab::localClient{
  localSolverClient(const std::string &name, const std::string &cmdl, 
 		   const std::string &wdir) 
    : onelab::localClient(name), _commandLine(cmdl), _workingDir(wdir),
-    _enabled(true), _onelabBlock(false) {
+    _active(1), _onelabBlock(false) {
   }
   virtual ~localSolverClient(){}
   const std::string &getCommandLine(){ return _commandLine; }
@@ -125,8 +125,9 @@ class localSolverClient : public onelab::localClient{
   const std::string getString(const std::string what);
   const bool getList(const std::string type, 
 		     std::vector<std::string> &choices);
-  const bool isActive() { return _enabled; }
-  const void setActive(int val) { _enabled=(bool)val; }
+  const bool isActive() { return (bool)_active; }
+  const void setActive(int val) { _active=val; }
+  int getActive() { return _active; }
   const bool isOnelabBlock() { return _onelabBlock; }
   const void openOnelabBlock() { _onelabBlock=true; }
   const void closeOnelabBlock() { _onelabBlock=false; }

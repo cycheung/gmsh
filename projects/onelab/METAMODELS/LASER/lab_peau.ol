@@ -26,7 +26,7 @@ OL.endif
 % onelab numbers
 DERMIS.number(1.5,Parameters/Model/6,''Dermis width [mm]'');
 WCONTENT.number(0.65,Parameters/Model/,''Water content []'');
-BODYTEMP.number(310, Parameters/Model/,''Body temperature [K]'');
+BODYTEMP.number(305, Parameters/Model/,''Body temperature [K]'');
 OVERTEMP.number(320, Parameters/Model/,''Thermal threshold fiber [K]'');
 
 OL.if( OL.get(Parameters/Model/TENEUR) )
