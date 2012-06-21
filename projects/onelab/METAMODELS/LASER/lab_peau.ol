@@ -4,7 +4,7 @@
 LOGFILES.radioButton(0,MetaModel/,''Output goes in .log files'');
 
 % Flags to descibe model features that are activated or not
-TENEUR.radioButton(0,Parameters/Model/1,"Account for variable water content"); 
+TENEUR.radioButton(1,Parameters/Model/1,"Account for variable water content"); 
 CONVBC.radioButton(0,Parameters/Model/2,"Account for convection");
 
 % Enumeration, i.e. a set of real values each associated with a label

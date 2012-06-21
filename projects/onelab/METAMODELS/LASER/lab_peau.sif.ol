@@ -135,14 +135,7 @@ OL.endif
 OL.if( OL.get(Parameters/Model/TENEUR) )
   DensityBis = Variable Teneur
   Real MATC "1000/(6.16/100*tx(0)+0.938)" ! kg/m3
-
-  HConductivity = Variable Teneur, DensityBis
-  Real MATC "tx(1)/1000*(0.454*tx(0)+0.174)" ! W/(mK) 
-
-  HCapacity = Variable Teneur
-  Real MATC "2500*tx(0)+1700"  ! J/(kg/K)
 OL.else
-
   DensityBis = Real MATC "1000/(6.16/100*teneurw+0.938)" !1022.45 !1048.88 ! 1200.0
 OL.endif
 
