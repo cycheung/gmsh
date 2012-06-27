@@ -9,6 +9,7 @@
 #include "Solution.h"
 
 #include "GModel.h"
+#include "MElement.h"
 
 using namespace std;
 
@@ -16,18 +17,12 @@ int main(int argc, char** argv){
   GModel msh("SmallFEM");
   msh.readMSH(string(argv[1]));
 
-  vector<GEntity*> entity;
-  
-  cout << entity.size() << endl;
+  int N = msh.getNumMeshElements();
 
-  msh.getEntities(entity);
+  cout << "Test: " << N << endl;
 
-  cout << entity.size() << endl;
-
-  for(int i = 0; i < entity.size(); i++)
-    cout << entity[i]->dim() << endl;
-
-  //msh.createTopologyFromMesh();
+  for(int i = 1; i <= N; i++)
+    cout << i << ": " << msh.getMeshElementByTag(i)->getType() << endl;
 
   /*
   // Get Mesh //
