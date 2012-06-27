@@ -60,6 +60,7 @@ include_directories(
   ../../Common
   ../../FunctionSpace
   ../../Numeric
+  ../../Geo
 )
 
 ## Build

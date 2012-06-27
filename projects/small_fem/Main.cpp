@@ -1,4 +1,6 @@
 #include <iostream>
+#include <string>
+#include <vector>
 #include "Mesh.h"
 #include "fullMatrix.h"
 #include "FormulationLaplace.h"
@@ -6,9 +8,28 @@
 #include "System.h"
 #include "Solution.h"
 
+#include "GModel.h"
+
 using namespace std;
 
 int main(int argc, char** argv){
+  GModel msh("SmallFEM");
+  msh.readMSH(string(argv[1]));
+
+  vector<GEntity*> entity;
+  
+  cout << entity.size() << endl;
+
+  msh.getEntities(entity);
+
+  cout << entity.size() << endl;
+
+  for(int i = 0; i < entity.size(); i++)
+    cout << entity[i]->dim() << endl;
+
+  //msh.createTopologyFromMesh();
+
+  /*
   // Get Mesh //
   Mesh msh(argv[1]);
   
@@ -39,7 +60,7 @@ int main(int argc, char** argv){
   
   Solution solProj(msh, projection);
   solProj.write("projection.pos", "projection");
-      
+  */      
   
   return 0;
 }
