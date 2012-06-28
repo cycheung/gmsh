@@ -11,6 +11,7 @@
 
 class Group{
  public:
+  int getNumElements(void);
   
 };
 
