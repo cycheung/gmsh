@@ -42,11 +42,11 @@
    @brief A private class of DofManager, which can compare two Dof%s
 
    A private class of DofManager, which can compare two Dof%s.
- */
+*/
 
 class DofManager{
  private:
-  
+
   class DofComparator{
   public:
     bool operator()(const Dof* a, const Dof* b) const;

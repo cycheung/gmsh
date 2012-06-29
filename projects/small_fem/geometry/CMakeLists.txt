@@ -5,6 +5,7 @@ set(src
   Jacobian.cpp
   Mesh.cpp
   Node.cpp
+  Group.cpp
 )
 
 

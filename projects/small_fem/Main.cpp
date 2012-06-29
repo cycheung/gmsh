@@ -8,27 +8,15 @@
 #include "System.h"
 #include "Solution.h"
 
-#include "GModel.h"
-#include "MElement.h"
-
 using namespace std;
 
 int main(int argc, char** argv){
-  GModel msh("SmallFEM");
-  msh.readMSH(string(argv[1]));
-
-  int N = msh.getNumMeshElements();
-
-  cout << "Test: " << N << endl;
-
-  for(int i = 1; i <= N; i++)
-    cout << i << ": " << msh.getMeshElementByTag(i)->getType() << endl;
-
-  /*
   // Get Mesh //
   Mesh msh(argv[1]);
-  
 
+  //cout << msh.toString() << endl;
+  
+  /*  
   // Laplace //
   FormulationLaplace laplace;
   System sysLaplace(msh.getAllNodeElements(), laplace);
@@ -55,8 +43,8 @@ int main(int argc, char** argv){
   
   Solution solProj(msh, projection);
   solProj.write("projection.pos", "projection");
-  */      
-  
+  */  
+
   return 0;
 }
 
