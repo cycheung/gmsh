@@ -28,11 +28,11 @@ include(FindPackageHandleStandardArgs)
 add_subdirectory(../.. "${CMAKE_CURRENT_BINARY_DIR}/gmsh")
 
 ## Add Sources
-add_subdirectory(assembler)
+#add_subdirectory(assembler)
 add_subdirectory(common)
-add_subdirectory(formulation)
+#add_subdirectory(formulation)
 add_subdirectory(geometry)
-add_subdirectory(postprocessing)
+#add_subdirectory(postprocessing)
 add_subdirectory(solver)
 
 ## TO BE REMOVED !!!
