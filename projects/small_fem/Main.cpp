@@ -8,13 +8,23 @@
 #include "System.h"
 #include "Solution.h"
 
+#include "Gmsh.h"
+
 using namespace std;
 
 int main(int argc, char** argv){
+  // Init Gmsh //
+  GmshInitialize(argc, argv);
+
   // Get Mesh //
   Mesh msh(argv[1]);
 
-  //cout << msh.toString() << endl;
+  cout << msh.toString() << endl;
+
+
+  // Stop Gmsh //
+  GmshFinalize();
+
   
   /*  
   // Laplace //

@@ -14,8 +14,7 @@
    
    This class represents a mesh.@n
 
-   A Mesh is composed of @em physicals and of @em Group%s 
-   @em of @em elements defined on those physicals.@n
+   A Mesh is a collection of @em Group%s 
 
    A Mesh is instantiated thanks to a 
    <a href="http://www.geuz.org/gmsh">gmsh</a>
@@ -25,18 +24,18 @@
 class Mesh{
  private:
   GModel* model;
-  
-  std::map<int, Group*>* physToGroup;
+
+  unsigned int               nEntity;
+  std::vector<Group*>*        group;
+  std::multimap<int, Group*>* physToGroup;
 
  public:
    Mesh(const std::string fileName);
   ~Mesh(void);
 
-  int    getNbPhysicals(void) const;
-  Group& getGroup(int i) const;
-
-  const std::vector<std::pair<int, Group*> >
-    getAllGroups(void) const;
+  int                        getNbGroup(void) const;
+  Group&                     getGroup(int i) const;
+  const std::vector<Group*>& getAllGroups(void) const;
   
   std::string toString(void) const;
 };
@@ -49,15 +48,15 @@ class Mesh{
    @fn Mesh::~Mesh
    Deletes this Mesh
 
-   @fn Mesh::getNbPhysicals
-   @return Returns the number of physical in this Mesh
+   @fn Mesh::getNbGroup
+   @return Returns the number of group in this Mesh
 
    @fn Mesh::getGroup
-   @param i A @em physical @c ID
+   @param i A number between 0 and getNbGroup() - 1
    @return Returns the requested Group
 
    @fn Mesh::getAllGroups
-   @return Returns all the pair <physical @c ID, Group>
+   @return Returns all the Mesh Groups
  
    @fn Mesh::toString
    @return Returns a description of this Mesh
@@ -68,12 +67,17 @@ class Mesh{
 // Inline Functions //
 //////////////////////
 
-inline int Mesh::getNbPhysicals(void) const{
-  return physToGroup->size();
+inline int Mesh::getNbGroup(void) const{
+  return nEntity;
 }
 
 inline Group& Mesh::getGroup(int i) const{
-  return *(physToGroup->find(i)->second);
+  return *((*group)[i]);
+}
+
+inline const std::vector<Group*>&
+Mesh::getAllGroups(void) const{
+  return *group;
 }
 
 #endif

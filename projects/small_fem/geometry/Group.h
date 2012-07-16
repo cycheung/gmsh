@@ -17,11 +17,11 @@ class Group{
  public:
   virtual ~Group(void);
 
-  virtual int getNumElements(void) const = 0;
+  virtual int getNbElements(void) const = 0;
   
   virtual MElement& getElement(int i) const = 0;
   
-  virtual const std::vector<MElement*> getAllElements(void) const = 0;
+  virtual const std::vector<MElement*>& getAllElements(void) const = 0;
 
   virtual std::string toString(void) const;
 };
@@ -30,7 +30,7 @@ class Group{
    @fn Group::~Group
    Deletes this Group
 
-   @fn Group::getNumElements
+   @fn Group::getNbElements
    @return Returns the number of elements in the Group
  
    @fn Group::getElement

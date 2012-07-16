@@ -6,7 +6,7 @@ set(src
   Mesh.cpp
   Node.cpp
   Group.cpp
+  GroupOfElements.cpp
 )
-
 
 add_sources(geometry "${src}")
