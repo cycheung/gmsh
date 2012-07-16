@@ -19,7 +19,7 @@ int main(int argc, char** argv){
   // Get Mesh //
   Mesh msh(argv[1]);
 
-  cout << msh.toString() << endl;
+  //cout << msh.toString() << endl;
 
 
   // Stop Gmsh //
