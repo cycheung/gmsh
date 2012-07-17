@@ -27,13 +27,13 @@ FormulationLaplace::FormulationLaplace(void){
     gradBasis[i] = basis[i].gradient();
 
   // Interpolator //
-  interp = new InterpolatorNode();
+  //interp = new InterpolatorNode();
 }
 
 FormulationLaplace::~FormulationLaplace(void){
   delete   gC;
   delete   gW;
-  delete   interp;
+  //delete   interp;
   delete   base;
   delete[] gradBasis;
 }

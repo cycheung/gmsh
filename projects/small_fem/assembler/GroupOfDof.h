@@ -3,6 +3,7 @@
 
 #include <vector>
 #include "Dof.h"
+#include "MElement.h"
 #include "Element.h"
 #include "Jacobian.h"
 
@@ -23,9 +24,6 @@
    @warning
    This class should be completly private to the @em DofManager and/or the @em System.@n
    The user shall not be aware of geometry, when it comes to Dof.
-
-   @todo
-   Chang GroupOfDof to a private class for the DofManager and/or System.
 */
 
 
@@ -49,6 +47,7 @@ class GroupOfDof{
 
   void add(Dof* dof);
   void jacobian(Element& element);
+  void jacobian(MElement& element);
   void orientation(const std::vector<int>& orientation);
 
  public:
@@ -82,8 +81,8 @@ class GroupOfDof{
 // Inline Functions //
 //////////////////////
 
-inline void GroupOfDof::jacobian(Element& element){
-  jac = &(element.getJacobian());
+inline void GroupOfDof::jacobian(MElement& element){
+  jac = new Jacobian(element);
 }
 
 inline void GroupOfDof::orientation(const std::vector<int>& orientation){

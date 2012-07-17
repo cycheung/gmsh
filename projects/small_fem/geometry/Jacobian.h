@@ -3,7 +3,7 @@
 
 #include <vector>
 #include "fullMatrix.h"
-#include "Node.h"
+#include "MElement.h"
 
 /**
    @class Jacobian
@@ -22,55 +22,31 @@
    @li @c U, @c V and @c W coordinates in @c 3D
 
    @todo
-   Use a real Matrix to handle Jacobian%s
+   Implement a cache ?
 */
 
 class Jacobian{
  private:
-  int nNode;
-
-  double* nodeX;
-  double* nodeY;
-  double* nodeZ;
-
-  fullMatrix<double>* jac; // From Ref. to Phys. Space
-
-  double dxdu;
-  double dxdv;
-  double dydu;
-  double dydv;
-
-  double detDxDu;
-
-  double dudx;
-  double dudy;
-  double dvdx;
-  double dvdy;
+  MElement* element;
 
  public:
-   Jacobian(const std::vector<Node*>& nodes);
+   Jacobian(const MElement& element);
   ~Jacobian(void);
 
   double det(void) const;
-
-  fullVector<double> grad(const fullVector<double>& gradUV) const;
-  fullVector<double> grad(const double u, const double v) const;
-
-  fullVector<double> invMap(const fullVector<double>& XY) const;
-  fullVector<double> invMap(const double x, const double y) const;
+  double det(const fullVector<double>& UV) const;
 
   fullVector<double> map(const fullVector<double>& UV) const;
-  fullVector<double> map(const double u, const double v) const;
 
- private:
-  void triJac(void);
+  fullVector<double> grad(const fullVector<double>& gradUV) const;
+
+  fullVector<double> invMap(const fullVector<double>& XY) const;
 };
 
 /**
    @fn Jacobian::Jacobian
-   @param nodes Node%s defining the geometry of the 
-   @em physical element to transform (onto the 
-   @em reference element)
+   @param element The Element from which the Jacobian 
+   will be computed
    @return Returns a new Jacobian
 
    @fn Jacobian::~Jacobian
@@ -123,8 +99,5 @@ class Jacobian{
 // Inline Functions //
 //////////////////////
 
-inline double Jacobian::det(void) const{
-  return detDxDu;
-}
 
 #endif

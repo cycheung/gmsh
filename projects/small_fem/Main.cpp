@@ -19,6 +19,8 @@ int main(int argc, char** argv){
   // Get Mesh //
   Mesh msh(argv[1]);
 
+  FormulationLaplace laplace;
+
   //cout << msh.toString() << endl;
 
 

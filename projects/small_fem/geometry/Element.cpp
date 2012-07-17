@@ -60,5 +60,5 @@ std::string Element::toString(void) const{
 }
 
 void Element::buildJacobian(void){
-  jac = new Jacobian(*node);
+  //jac = new Jacobian(*node);
 }

@@ -27,7 +27,7 @@ class FormulationLaplace: public Formulation{
   int                      basisSize;
 
   // Interpolator //
-  InterpolatorNode* interp;
+  //InterpolatorNode* interp;
 
  public:
   FormulationLaplace(void);
@@ -40,7 +40,9 @@ class FormulationLaplace: public Formulation{
   virtual double rhs(const int equationI,
 		     const GroupOfDof& god) const;
 
-  virtual Interpolator& interpolator(void) const;
+  virtual const std::vector<Dof*> getAllDofs(void) const;
+
+  //virtual Interpolator& interpolator(void) const;
 };
 
 /**
@@ -59,9 +61,15 @@ inline double FormulationLaplace::rhs(const int equationI,
 				      const GroupOfDof& god) const{
   return 0;
 }
-
+/*
 inline Interpolator& FormulationLaplace::interpolator(void) const{
   return *interp;
 }
+*/
+inline const std::vector<Dof*> 
+FormulationLaplace::getAllDofs(void) const{
+  return std::vector<Dof*>(42);
+}
+
 
 #endif
