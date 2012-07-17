@@ -22,7 +22,9 @@
    @li @c U, @c V and @c W coordinates in @c 3D
 
    @todo
-   Implement a cache ?
+   Implement a cache ?@n
+   const_cast is dirty:
+   Change MElement with const qualifier
 */
 
 class Jacobian{
@@ -34,13 +36,13 @@ class Jacobian{
   ~Jacobian(void);
 
   double det(void) const;
-  double det(const fullVector<double>& UV) const;
+  double det(const fullVector<double>& UVW) const;
 
-  fullVector<double> map(const fullVector<double>& UV) const;
+  fullVector<double> map(const fullVector<double>& UVW) const;
 
-  fullVector<double> grad(const fullVector<double>& gradUV) const;
+  fullVector<double> grad(const fullVector<double>& gradUVW) const;
 
-  fullVector<double> invMap(const fullVector<double>& XY) const;
+  fullVector<double> invMap(const fullVector<double>& XYZ) const;
 };
 
 /**
@@ -52,52 +54,43 @@ class Jacobian{
    @fn Jacobian::~Jacobian
    @return Deletes this Jacobian
 
-   @fn Jacobian::det
+   @fn Jacobian::det(const fullVector<double>&) const
+   @param UVW A @c 3D Vector with the coordinate
+   of a point in the @em reference (@c 3D) space
    @return Returns the determinant of the 
-   transformation jacobian matrix
+   jacobian matrix at the given point
+
+   @fn Jacobian::map(const fullVector<double>&) const
+   @param UVW A @c 3D Vector with the coordinate 
+   of a point in the @em reference (@c 3D) space
+   @returns Returns the coordiantes of the given point
+   in the @em physical space
 
    @fn Jacobian::grad(const fullVector<double>&) const
-   @param gradUV A gradient in the @em reference space
-   @returns Returns the given gradient in the 
-   @em physical space
-
-   @fn Jacobian::grad(const double, const double) const
-   @param u The @c U coordinate 
-   of a gradient in the @em reference (@c 2D) space
-   @param v The @c V coordinate of the same gradient
+   @param gradUVW A gradient in the @em reference space
    @returns Returns the given gradient in the 
    @em physical space
 
    @fn Jacobian::invMap(const fullVector<double>&) const
-   @param XY A @c 2D Vector with the coordinates 
-   of a point in the @em physical (@c 2D) space
+   @param XYZ A @c 3D Vector with the coordinate 
+   of a point in the @em physical (@c 3D) space
    @returns Returns the coordiantes of the given point
    in the @em reference space
-
-   @fn Jacobian::invMap(const double, const double) const
-   @param x The @c X coordinate 
-   of a point in the @em physical (@c 2D) space
-   @param y The @c Y coordinate of the same point
-   @returns Returns the coordiantes of the given point
-   in the @em reference space
-
-   @fn Jacobian::map(const fullVector<double>&) const
-   @param UV A @c 2D Vector with the coordinates 
-   of a point in the @em reference (@c 2D) space
-   @returns Returns the coordiantes of the given point
-   in the @em physical space
-
-   @fn Jacobian::map(const double, const double) const
-   @param u The @c U coordinate 
-   of a point in the @em reference (@c 2D) space
-   @param v The @c V coordinate of the same point
-   @returns Returns the coordiantes of the given point
-   in the @em physical space
  */
 
 //////////////////////
 // Inline Functions //
 //////////////////////
+
+inline double Jacobian::det(const fullVector<double>& UVW) const{
+  return element->getJacobianDeterminant(UVW(0), 
+					 UVW(1),
+					 UVW(2));
+}
+
+inline double Jacobian::det(void) const{
+  return 42;
+}
 
 
 #endif
