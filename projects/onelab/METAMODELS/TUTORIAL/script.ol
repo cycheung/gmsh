@@ -2,15 +2,6 @@ OL.block
 Khi.number(0.5, Parameters/,"Normalized hysteresis coefficient");
 OL.endblock
 
-/*
-(Jx,Jz)=(v0,v2)
-The functional to minimize is
-$J \atanh{J} +1/2 \ln(J^2-1) - H \cdot J + KK |J-J_P|$
-assuming $J_s=1$
-It is indefinite for |J|=1
-The domain of evaluation (circle.geo)  is thus limited to |J|<=0.99
-*/
-
 General.RotationX = 40; 
 General.RotationY = 0; 
 General.RotationZ = 60; 
