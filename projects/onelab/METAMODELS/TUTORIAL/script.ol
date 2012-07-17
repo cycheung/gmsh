@@ -2,8 +2,6 @@ OL.block
 Khi.number(0.5, Parameters/,"Normalized hysteresis coefficient");
 OL.endblock
 
-Merge "circle.geo";
-Mesh 2;
 Plugin(NewView).Run;
 
 /*

@@ -18,10 +18,10 @@ Jpz.number(0, Fields/,"Jpz");
 % Client 1: 
 
 Post.register (interfaced, gmsh);
-Post.in ( circle.pos , script.ol );
+Post.in ( circle.msh , script.ol );
 
 Post.out( minimum.txt );
-Post.args(circle.pos script -);
+Post.args(circle.msh script -);
 OL.iftrue(DISPLAY)
   Post.merge(Functional.pos);
 OL.endif
