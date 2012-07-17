@@ -2,11 +2,14 @@ OL.block
 Khi.number(0.5, Parameters/,"Normalized hysteresis coefficient");
 OL.endblock
 
-General.RotationX = 40; 
-General.RotationY = 0; 
-General.RotationZ = 60; 
+Merge "circle.geo";
+Mesh 2;
+Plugin(NewView).Run;
 
+/*
 Plugin(MathEval).Expression0= "Atanh(Sqrt(v0*v0+v2*v2))*Sqrt(v0*v0+v2*v2)+0.5*Log(1-v0*v0-v2*v2)-(OL.get(Fields/Hx))*v0-(OL.get(Fields/Hz))*v2+OL.get(Khi)*Sqrt( (v0-(OL.get(Fields/Jpx)))^2+(v2-(OL.get(Fields/Jpz)))^2 )";
+*/
+Plugin(MathEval).Expression0= "Atanh(Sqrt(x*x+z*z))*Sqrt(x*x+z*z)+0.5*Log(1-x*x-z*z)-(OL.get(Fields/Hx))*x-(OL.get(Fields/Hz))*z+OL.get(Khi)*Sqrt( (x-(OL.get(Fields/Jpx)))^2+(z-(OL.get(Fields/Jpz)))^2 )";
 Plugin(MathEval).TimeStep=-1;
 Plugin(MathEval).View=0;
 Plugin(MathEval).OtherTimeStep=-1;

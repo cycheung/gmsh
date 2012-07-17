@@ -4,5 +4,10 @@ View[k].NormalRaise = -1;
 View[k].Axes = 0;
 View[k].ShowScale = 1; 
 
-
+/*
+General.Trackball = 0; // Use trackball rotation mode
+General.RotationX = 270; // First Euler angle (used if Trackball=0)
+General.RotationY = 0; // Second Euler angle (used if Trackball=0)
+General.RotationZ = 180; // Third Euler angle (used if Trackball=0)
+*/
 
