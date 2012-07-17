@@ -341,14 +341,15 @@ void localSolverClient::parse_sentence(std::string line) {
       if(numbers.empty()){ 
 	numbers.resize(1);
 	numbers[0].setName(name);
-	if(arguments[0].empty()){
-	  numbers[0].setReadOnly(1);
+	if(arguments[0].empty())
 	  val=0;
-	}
 	else
 	  val=atof(resolveGetVal(arguments[0]).c_str());
 	numbers[0].setValue(val);
       }
+      // parameters defined with no value are ReadOnly
+      if(arguments[0].empty())
+	numbers[0].setReadOnly(1);
 
       if(arguments.size()>2)
 	numbers[0].setLabel(arguments[2]);
@@ -364,14 +365,12 @@ void localSolverClient::parse_sentence(std::string line) {
     }
     else if(!action.compare("string")) { 
       // paramName.string(val,path,help)
-      if(arguments[0].empty())
-	Msg::Fatal("No value given for param <%s>",name.c_str());
-      std::string val=resolveGetVal(arguments[0]);
       if(arguments.size()>1)
 	name.assign(arguments[1] + name); // append path
       _parameters.insert(name);
       Msg::recordFullName(name);
       get(strings, name);
+      /*
       if(strings.size()){
 	if(!strings[0].getReadOnly())
 	  val.assign(strings[0].getValue()); // use value from server
@@ -383,6 +382,16 @@ void localSolverClient::parse_sentence(std::string line) {
 	strings[0].setName(name);
 	strings[0].setValue(val);
       }
+      */
+      if(strings.empty()){
+	strings.resize(1);
+	strings[0].setName(name);
+	std::string val=resolveGetVal(arguments[0]);
+	strings[0].setValue(val);
+      }
+
+     if(arguments[0].empty())
+	strings[0].setReadOnly(1);
       if(arguments.size()>2)
 	strings[0].setLabel(arguments[2]);
       set(strings[0]);
@@ -1146,20 +1155,20 @@ void MetaModel::client_sentence(const std::string &name,
     }
   }
   else if(!action.compare(olkey::outFiles)){
+    strings.resize(1);
+    strings[0].setName(name+"/OutputFiles");
+    strings[0].setKind("file");
+    strings[0].setVisible(false);
+    std::vector<std::string> choices;
     if(arguments[0].size()){
-      strings.resize(1);
-      strings[0].setName(name+"/OutputFiles");
-      strings[0].setValue(resolveGetVal(arguments[0]));
-      strings[0].setKind("file");
-      strings[0].setVisible(false);
-      std::vector<std::string> choices;
       for(unsigned int i = 0; i < arguments.size(); i++)
 	//if(std::find(choices.begin(),choices.end(),arguments[i])
 	//==choices.end())
 	choices.push_back(resolveGetVal(arguments[i]));
-      strings[0].setChoices(choices);
-      set(strings[0]);
+      strings[0].setValue(resolveGetVal(arguments[0]));
     }
+    strings[0].setChoices(choices);
+    set(strings[0]);
   }
   else if(!action.compare(olkey::upload)){
     if(arguments[0].size()){
