@@ -12,6 +12,9 @@
    @brief Formulation for the Laplace problem
 
    Formulation for the @em Laplace problem.
+
+   @todo
+   Remove const_cast by correcting MElement constness
  */
 
 class FormulationLaplace: public Formulation{
@@ -35,10 +38,10 @@ class FormulationLaplace: public Formulation{
   virtual ~FormulationLaplace(void);
 
   virtual double weak(const int nodeI, const int nodeJ, 
-		      const GeoDof& god) const;
+		      const GroupOfDof& god) const;
 
   virtual double rhs(const int equationI,
-		     const GeoDof& god) const;
+		     const GroupOfDof& god) const;
 
   virtual const std::vector<Dof*> getAllDofs(void) const;
 
@@ -58,7 +61,7 @@ class FormulationLaplace: public Formulation{
 //////////////////////
 
 inline double FormulationLaplace::rhs(const int equationI,
-				      const GeoDof& god) const{
+				      const GroupOfDof& god) const{
   return 0;
 }
 /*

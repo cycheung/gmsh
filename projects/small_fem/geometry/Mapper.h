@@ -2,7 +2,6 @@
 #define _MAPPER_H_
 
 #include "fullMatrix.h"
-#include "MElement.h"
 
 /**
    @class Mapper
@@ -17,11 +16,6 @@
 
    The @em reference space is defined by the
    @li @c U, @c V and @c W coordinates.@n
-
-   @todo
-   Implement a cache ?@n
-   Change MElement with const qualifier, so we can use
-   'const MElement' in prototypes
 */
 
 class Mapper{
@@ -29,20 +23,14 @@ class Mapper{
    Mapper(void);
   ~Mapper(void);
 
-  static double det(double u, double v, double w,
-		    MElement& element);
-
-  static double det(const fullVector<double>& UVW, 
-		    MElement& element);
-
   static fullVector<double> map(const fullVector<double>& UVW, 
-				MElement& element);
+				const fullMatrix<double>& jac);
 
   static fullVector<double> grad(const fullVector<double>& gradUVW, 
-				 MElement& element);
+				 const fullMatrix<double>& invJac);
 
   static fullVector<double> invMap(const fullVector<double>& XYZ, 
-				   MElement& element);
+				   const fullMatrix<double>& invJac);
 };
 
 /**
@@ -55,26 +43,23 @@ class Mapper{
    @fn Mapper::~Mapper
    @return Deletes this Mapper
 
-   @fn Mapper::det(const fullVector<double>&) 
-   @param UVW A @c 3D Vector with the coordinate
-   of a point in the @em reference space
-   @return Returns the determinant of the 
-   jacobian matrix at the given point
-
    @fn Mapper::map(const fullVector<double>&) 
    @param UVW A @c 3D Vector with the coordinate 
    of a point in the @em reference space
+   @param jac The Jacobian Matrix evaluated at @c UVW 
    @returns Returns the coordiantes of the given point
    in the @em physical space
 
    @fn Mapper::grad(const fullVector<double>&) 
    @param gradUVW A gradient in the @em reference space
+   @param invJac The Invert Jacobian Matrix evaluated at @c UVW 
    @returns Returns the given gradient in the 
    @em physical space
 
    @fn Mapper::invMap(const fullVector<double>&) 
    @param XYZ A @c 3D Vector with the coordinate 
    of a point in the @em physical space
+   @param invJac The Invert Jacobian Matrix evaluated at @c UVW 
    @returns Returns the coordiantes of the given point
    in the @em reference space
  */
@@ -83,15 +68,19 @@ class Mapper{
 // Inline Functions //
 //////////////////////
 
-inline double Mapper::det(const fullVector<double>& UVW, MElement& element){
-  return element.getJacobianDeterminant(UVW(0), 
-					UVW(1),
-					UVW(2));
+inline fullVector<double> Mapper::map(const fullVector<double>& UVW,
+				      const fullMatrix<double>& jac){
+  fullVector<double> XYZ(3);
+  jac.mult(UVW, XYZ);
+  return XYZ;
 }
 
-inline double Mapper::det(double u, double v, double w, MElement& element){
-  return element.getJacobianDeterminant(u, v, w); 
-}
+inline fullVector<double> Mapper::grad(const fullVector<double>& gradUVW, 
+				       const fullMatrix<double>& invJac){
 
+  fullVector<double> gradXYZ(3);
+  invJac.multWithATranspose(gradUVW, 1, 1, gradXYZ);
+  return gradXYZ;
+}
 
 #endif

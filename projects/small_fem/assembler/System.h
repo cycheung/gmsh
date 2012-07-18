@@ -52,7 +52,7 @@ class System{
   void solve(void);
   
  private:
-  void assemble(GeoDof& group);
+  void assemble(GroupOfDof& group);
 };
 
 

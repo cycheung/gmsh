@@ -1,7 +1,7 @@
 #ifndef _FORMULATION_H_
 #define _FORMULATION_H_
 
-#include "GeoDof.h"
+#include "GroupOfDof.h"
 //#include "Interpolator.h"
 #include "Dof.h"
 
@@ -18,11 +18,11 @@
    handling solutions of this Formulation.
    
    @warning
-   A formulation is defined @em only on @em GeoDof%s.
+   A formulation is defined @em only on @em GroupOfDof%s.
 
    @todo
    Add quadrature laws as a paramaeter of a Formulation@n
-   Remove dependance on GeoDof%s
+   Remove dependance on GroupOfDof%s
  */
 
 class Formulation{
@@ -30,10 +30,10 @@ class Formulation{
   virtual ~Formulation(void);
   
   virtual double weak(const int entityI, const int entityJ,
-		      const GeoDof& god) const = 0;
+		      const GroupOfDof& god) const = 0;
   
   virtual double rhs(const int equationI,
-		     const GeoDof& god) const = 0;
+		     const GroupOfDof& god) const = 0;
 
   virtual const std::vector<Dof*> getAllDofs(void) const = 0;
   
@@ -44,12 +44,12 @@ class Formulation{
    @fn Formulation::weak
    @param entityI The @em first index of a formulation term 
    @param entityJ The @em second index of the formulation term
-   @param god The @em GeoDof associated with the formulation term   
+   @param god The @em GroupOfDof associated with the formulation term   
    @return The value of the given formulation term
 
    @fn Formulation::rhs
    @param equationI The @em ith equation of the formulation
-   @param god The @em GeoDof associated 
+   @param god The @em GroupOfDof associated 
    with the @em ith  equation of the formulation
    @return The value of the @em ith equation Right Hand Side
 

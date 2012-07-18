@@ -13,6 +13,9 @@
    @brief Formulation for the Projection problem
 
    Vectorial Formulation for the @em Projection problem.
+
+   @todo
+   Remove const_cast by correcting MElement constness
  */
 
 class FormulationProjection: public Formulation{
@@ -39,10 +42,10 @@ class FormulationProjection: public Formulation{
   virtual ~FormulationProjection(void);
 
   virtual double weak(const int edgeI, const int edgeJ, 
-		      const GeoDof& god) const;
+		      const GroupOfDof& god) const;
 
   virtual double rhs(const int equationI,
-		     const GeoDof& god) const;
+		     const GroupOfDof& god) const;
 
   //virtual Interpolator& interpolator(void) const;
 };

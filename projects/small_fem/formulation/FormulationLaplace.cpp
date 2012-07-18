@@ -1,6 +1,8 @@
 #include "fullMatrix.h"
 #include "GaussIntegration.h"
 #include "FormulationLaplace.h"
+#include "Mapper.h"
+#include "MElement.h"
 #include <cmath>
 
 using namespace std;
@@ -39,25 +41,33 @@ FormulationLaplace::~FormulationLaplace(void){
 }
 
 double FormulationLaplace::weak(const int nodeI, const int nodeJ, 
-				const GeoDof& god) const{
+				const GroupOfDof& god) const{
 
-  double integral = 0;
+  fullMatrix<double>  invJac(3, 3);        
+  MElement& element = const_cast<MElement&>(god.getElement());
+  double integral   = 0;
+
+  // Loop over Integration Point //
   for(int g = 0; g < G; g++){
-    fullVector<double> phiI = god.grad(Polynomial::at(gradBasis[nodeI], 
-						      (*gC)(g, 0), 
-						      (*gC)(g, 1),
-						      (*gC)(g, 2)));
-				       
-    fullVector<double> phiJ = god.grad(Polynomial::at(gradBasis[nodeJ], 
-						      (*gC)(g, 0), 
-						      (*gC)(g, 1), 
-						      (*gC)(g, 2)));
+    double det = element.getJacobian((*gC)(g, 0), 
+				     (*gC)(g, 1), 
+				     (*gC)(g, 2), 
+				     invJac);
+    invJac.invertInPlace();
 
-    integral += 
-      phiI * phiJ * 
-      fabs(god.getJacobian((*gC)(g, 0), 
-			   (*gC)(g, 1), 
-			   (*gC)(g, 2))) * (*gW)(g);
+    fullVector<double> phiI = Mapper::grad(Polynomial::at(gradBasis[nodeI], 
+							  (*gC)(g, 0), 
+							  (*gC)(g, 1),
+							  (*gC)(g, 2)),
+					   invJac);
+				       
+    fullVector<double> phiJ = Mapper::grad(Polynomial::at(gradBasis[nodeJ], 
+							  (*gC)(g, 0), 
+							  (*gC)(g, 1), 
+							  (*gC)(g, 2)),
+					   invJac);
+
+    integral += phiI * phiJ * fabs(det) * (*gW)(g);
   }
 			
   return integral;
