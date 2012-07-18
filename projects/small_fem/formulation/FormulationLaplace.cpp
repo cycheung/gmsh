@@ -39,23 +39,26 @@ FormulationLaplace::~FormulationLaplace(void){
 }
 
 double FormulationLaplace::weak(const int nodeI, const int nodeJ, 
-				const GroupOfDof& god) const{
-  const Jacobian& jac = god.getJacobian();
+				const GeoDof& god) const{
 
-  double integral = 0;  
+  double integral = 0;
   for(int g = 0; g < G; g++){
-    fullVector<double> phiI = jac.grad(Polynomial::at(gradBasis[nodeI], 
+    fullVector<double> phiI = god.grad(Polynomial::at(gradBasis[nodeI], 
 						      (*gC)(g, 0), 
 						      (*gC)(g, 1),
 						      (*gC)(g, 2)));
 				       
-    fullVector<double> phiJ = jac.grad(Polynomial::at(gradBasis[nodeJ], 
+    fullVector<double> phiJ = god.grad(Polynomial::at(gradBasis[nodeJ], 
 						      (*gC)(g, 0), 
 						      (*gC)(g, 1), 
-						      (*gC)(0, 2)));
+						      (*gC)(g, 2)));
 
-    integral += phiI * phiJ * fabs(jac.det()) * (*gW)(g);
+    integral += 
+      phiI * phiJ * 
+      fabs(god.getJacobian((*gC)(g, 0), 
+			   (*gC)(g, 1), 
+			   (*gC)(g, 2))) * (*gW)(g);
   }
-
+			
   return integral;
 }

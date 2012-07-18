@@ -50,7 +50,7 @@ include_directories(
   common
   formulation
   geometry
-  postprocessing
+#  postprocessing
   solver
 )
 

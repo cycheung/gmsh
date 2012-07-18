@@ -6,7 +6,7 @@
 #include "fullMatrix.h"
 #include "Polynomial.h"
 #include "TriNedelecBasis.h"
-#include "InterpolatorEdge.h"
+//#include "InterpolatorEdge.h"
 
 /**
    @class FormulationProjection
@@ -31,7 +31,7 @@ class FormulationProjection: public Formulation{
   fullVector<double>* f;
 
   // Interpolator //
-  InterpolatorEdge* interp;
+  //InterpolatorEdge* interp;
 
  public:
   FormulationProjection(fullVector<double>& vectorToProject);
@@ -39,12 +39,12 @@ class FormulationProjection: public Formulation{
   virtual ~FormulationProjection(void);
 
   virtual double weak(const int edgeI, const int edgeJ, 
-		      const GroupOfDof& god) const;
+		      const GeoDof& god) const;
 
   virtual double rhs(const int equationI,
-		     const GroupOfDof& god) const;
+		     const GeoDof& god) const;
 
-  virtual Interpolator& interpolator(void) const;
+  //virtual Interpolator& interpolator(void) const;
 };
 
 /**
@@ -60,10 +60,10 @@ class FormulationProjection: public Formulation{
 //////////////////////
 // Inline Functions //
 //////////////////////
-
+/*
 inline Interpolator& FormulationProjection::interpolator(void) const{
   return *interp;
 }
-
+*/
 
 #endif

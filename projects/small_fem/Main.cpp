@@ -6,7 +6,7 @@
 #include "FormulationLaplace.h"
 #include "FormulationProjection.h"
 #include "System.h"
-#include "Solution.h"
+//#include "Solution.h"
 
 #include "Gmsh.h"
 

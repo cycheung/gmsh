@@ -3,7 +3,7 @@
 
 #include "fullMatrix.h"
 #include "Mesh.h"
-#include "Jacobian.h"
+//#include "Jacobian.h"
 #include "DofManager.h"
 #include "Formulation.h"
 
@@ -39,7 +39,7 @@ class System{
   const Formulation* formulation;
 
  public:
-   System(const std::vector<Element*>& elements, 
+   System(const std::vector<MElement*>& elements, 
 	  const Formulation& formulation);
   ~System(void);
 
@@ -52,12 +52,12 @@ class System{
   void solve(void);
   
  private:
-  void assemble(GroupOfDof& group);
+  void assemble(GeoDof& group);
 };
 
 
 /**
-   @fn System::System(const std::vector<Element*>& elements, 
+   @fn System::System(const std::vector<MElement*>& elements, 
    const Formulation& formulation)
    @param elements A list of Element%s, giving the geomtry of the problem to solve
    @param formulation A Formulation, giving the way to assemble the system

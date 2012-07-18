@@ -1,18 +1,18 @@
-#include "Jacobian.h"
+#include "Mapper.h"
 #include "Exception.h"
 
-Jacobian::Jacobian(const MElement& element){
-  this->element = const_cast<MElement*>(&element);
+Mapper::Mapper(void){
 }
 
-Jacobian::~Jacobian(void){
+Mapper::~Mapper(void){
 }
 
-fullVector<double> Jacobian::map(const fullVector<double>& UVW) const{
+fullVector<double> Mapper::map(const fullVector<double>& UVW,
+				 MElement& element){
   fullVector<double> XYZ(3);
   fullMatrix<double> jac(3, 3);
 
-  element->getJacobian(UVW(0), UVW(1), UVW(2), jac);
+  element.getJacobian(UVW(0), UVW(1), UVW(2), jac);
 
   jac.mult(UVW, XYZ);
 
@@ -22,11 +22,12 @@ fullVector<double> Jacobian::map(const fullVector<double>& UVW) const{
   return XYZ;
 }
 
-fullVector<double> Jacobian::grad(const fullVector<double>& gradUVW) const{
+fullVector<double> Mapper::grad(const fullVector<double>& gradUVW, 
+				  MElement& element){
   fullVector<double> gradXYZ(3);
   fullMatrix<double> jac(3, 3);
 
-  element->getJacobian(gradUVW(0), gradUVW(1), gradUVW(2), jac);
+  element.getJacobian(gradUVW(0), gradUVW(1), gradUVW(2), jac);
   
   jac.invertInPlace();
   jac.multWithATranspose(gradUVW, 1, 1, gradXYZ);
@@ -37,7 +38,8 @@ fullVector<double> Jacobian::grad(const fullVector<double>& gradUVW) const{
   return gradXYZ;
 }
 
-fullVector<double> Jacobian::invMap(const fullVector<double>& XYZ) const{
+fullVector<double> Mapper::invMap(const fullVector<double>& XYZ, 
+				    MElement& element){
   fullVector<double> UVW(3);
   
   throw Exception("invMap not implemented");

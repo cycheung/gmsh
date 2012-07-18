@@ -22,58 +22,64 @@ FormulationProjection::FormulationProjection(fullVector<double>& vectorToProject
   basisSize = baseGen->getSize(); 
 
   // Interpolator //
-  interp = new InterpolatorEdge(*baseGen);
+  //interp = new InterpolatorEdge(*baseGen);
 }
 
 FormulationProjection::~FormulationProjection(void){
   delete gC;
   delete gW;
   delete baseGen;
-  delete interp;
+  //delete interp;
 }
 
 double FormulationProjection::weak(const int edgeI, const int edgeJ, 
-				   const GroupOfDof& god) const{
- 
-  const Jacobian& jac = god.getJacobian();
-  int orientationI    = god.getOrientation(edgeI);
-  int orientationJ    = god.getOrientation(edgeJ);
-  int orientation     = orientationI * orientationJ;
+				   const GeoDof& god) const{
+
+  int orientation = 
+    god.getOrientation(edgeI) * 
+    god.getOrientation(edgeJ);
   
   // Loop over Integration Point //
   double integral = 0;  
   for(int g = 0; g < G; g++){
-    fullVector<double> phiI = jac.grad(Polynomial::at((*basis)[edgeI],
+    fullVector<double> phiI = god.grad(Polynomial::at((*basis)[edgeI],
 						      (*gC)(g, 0), 
 						      (*gC)(g, 1),
 						      (*gC)(g, 2)));
     
-    fullVector<double> phiJ = jac.grad(Polynomial::at((*basis)[edgeJ],
+    fullVector<double> phiJ = god.grad(Polynomial::at((*basis)[edgeJ],
 						      (*gC)(g, 0), 
 						      (*gC)(g, 1),
 						      (*gC)(g, 2)));
 
-    integral += phiI * phiJ * fabs(jac.det()) * (*gW)(g) * orientation;
+    integral += 
+      phiI * phiJ * 
+      fabs(god.getJacobian((*gC)(g, 0), 
+			   (*gC)(g, 1), 
+			   (*gC)(g, 2))) * (*gW)(g) * orientation;
   }
 
   return integral;
 }
 
 double FormulationProjection::rhs(const int equationI,
-				  const GroupOfDof& god) const{
+				  const GeoDof& god) const{
  
-  const Jacobian& jac = god.getJacobian();
   int orientation = god.getOrientation(equationI);
 
   // Loop over Integration Point //
   double integral = 0;
   for(int g = 0; g < G; g++){  
-    fullVector<double> jPhiI = jac.grad(Polynomial::at((*basis)[equationI],
+    fullVector<double> phiI = god.grad(Polynomial::at((*basis)[equationI],
 						      (*gC)(g, 0), 
 						      (*gC)(g, 1),
 						      (*gC)(g, 2)));
  
-    integral += (*f) * jPhiI * fabs(jac.det()) * (*gW)(g) * orientation;
+    integral += 
+      (*f) * phiI *
+      fabs(god.getJacobian((*gC)(g, 0), 
+			   (*gC)(g, 1), 
+			   (*gC)(g, 2))) * (*gW)(g) * orientation;
   }
 
   return integral;

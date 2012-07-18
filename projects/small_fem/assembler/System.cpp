@@ -5,13 +5,13 @@
 
 using namespace std;
 
-System::System(const std::vector<Element*>& elements,
+System::System(const std::vector<MElement*>& elements,
 	       const Formulation& formulation){
   // Get Formulation //
   this->formulation = &formulation;
 
   // Get Dof Manager //
-  dofM = new DofManager(elements);
+  dofM = new DofManager();
 
   // Get DofManager Data //
   size = dofM->dofNumber();
@@ -64,8 +64,8 @@ void System::fixBC(const int physicalId, const double value){
 }
 
 void System::assemble(void){
-  // Get GroupOfDofs //
-  const std::vector<GroupOfDof*>& group = dofM->getAllGroups();
+  // Get GeoDofs //
+  const std::vector<GeoDof*>& group = dofM->getAllGroups();
   const int E = dofM->groupNumber();
 
   // Assemble System //
@@ -92,7 +92,7 @@ void System::solve(void){
     dofM->getEntity(*((*dof)[i])).setValue((*x)(i));
 }
 
-void System::assemble(GroupOfDof& group){
+void System::assemble(GeoDof& group){
   const vector<Dof*>& dof = group.getAllDofs();
   const int N = group.dofNumber();
 

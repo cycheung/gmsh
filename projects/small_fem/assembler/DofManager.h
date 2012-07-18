@@ -6,7 +6,7 @@
 #include <map>
 #include <vector>
 
-#include "GroupOfDof.h"
+#include "GeoDof.h"
 
 /**
    @class DofManager
@@ -23,11 +23,11 @@
 
    If a @em group of Dof got a special meaning 
    (@e e.g: members of the same element),@n
-   a DofManager can instantiate (and map) GroupOfDof%s.
+   a DofManager can instantiate (and map) GeoDof%s.
 
    @note
    A DofManager is the @em only @em one allowed to instatiate a Dof.@n
-   It is also the @em only @em one allowed to instatiate a GroupOfDof.
+   It is also the @em only @em one allowed to instatiate a GeoDof.
 
    @warning
    Up to know, a Dof @em can't be @em deleted.@n
@@ -57,16 +57,17 @@ class DofManager{
   std::vector<Dof*>* dof;
 
   std::map<Dof*, int    , DofComparator>* globalId;
-  std::map<Dof*, Entity*, DofComparator>* dofToEntityLookup;
+  //std::map<Dof*, Entity*, DofComparator>* dofToEntityLookup;
   std::multimap<int, Dof*>* physical;
 
-  std::vector<GroupOfDof*>* group;
+  std::vector<GeoDof*>* group;
   int nGroup;
 
   std::set<Dof*, DofComparator>* dofLookup;
 
  public:
-   DofManager(const std::vector<Element*>& element);
+   DofManager(void);
+   //DofManager(const std::vector<Element*>& element);
   ~DofManager(void);
 
   int dofNumber(void) const;
@@ -74,16 +75,16 @@ class DofManager{
 
   const std::vector<Dof*>& getAllDofs(void) const;
   const std::multimap<int, Dof*>& getAllPhysicals(void) const;
-  const std::vector<GroupOfDof*>& getAllGroups(void) const;
+  const std::vector<GeoDof*>& getAllGroups(void) const;
 
   int   getGlobalId(Dof& dof) const;
-  Entity& getEntity(Dof& dof) const;
+  //Entity& getEntity(Dof& dof) const;
 
   std::string toString(void) const;
 
  private:
-  void add(Element& element, int groupId);
-  int  getNbDofFromElements(const std::vector<Element*>& element) const;
+  //void add(Element& element, int groupId);
+  //int  getNbDofFromElements(const std::vector<Element*>& element) const;
 };
 
 
@@ -99,7 +100,7 @@ class DofManager{
    @return Returns the number of Dof mapped in the DofManager
 
    @fn int DofManager::groupNumber(void) const
-   @return Returns the number of GroupOfDof mapped in the DofManager   
+   @return Returns the number of GeoDof mapped in the DofManager   
 
    @fn const std::vector<Dof*>& DofManager::getAllDofs(void) const
    @return Returns all the Dof%s in the DofManager 
@@ -109,8 +110,8 @@ class DofManager{
    @warning This should be replaced with a method @em hiding the multimap
    @todo Replace with a method @em hiding the multimap
 
-   @fn const std::vector<GroupOfDof*>& DofManager::getAllGroups(void) const
-   @return Returns all the GroupOfDof%s in the DofManager
+   @fn const std::vector<GeoDof*>& DofManager::getAllGroups(void) const
+   @return Returns all the GeoDof%s in the DofManager
 
    @fn int DofManager::getGlobalId(Dof& dof) const
    @param dof The Dof from which we want the @em global @c ID
@@ -152,18 +153,18 @@ inline const std::multimap<int, Dof*>& DofManager::getAllPhysicals(void) const{
   return *physical;
 }
 
-inline const std::vector<GroupOfDof*>& DofManager::getAllGroups(void) const{
+inline const std::vector<GeoDof*>& DofManager::getAllGroups(void) const{
   return *group;
 }
 
 inline int DofManager::getGlobalId(Dof& dof) const{
   return globalId->find(&dof)->second;
 }
-
+/*
 inline Entity& DofManager::getEntity(Dof& dof) const{
   return *(dofToEntityLookup->find(&dof)->second);
 }
-
+*/
 inline bool DofManager::DofComparator::operator()(const Dof* a, const Dof* b) const{
   return *a < *b;
 }

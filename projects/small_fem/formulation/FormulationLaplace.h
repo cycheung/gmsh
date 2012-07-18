@@ -5,7 +5,7 @@
 #include "Formulation.h"
 #include "Polynomial.h"
 #include "TriNodeBasis.h"
-#include "InterpolatorNode.h"
+//#include "InterpolatorNode.h"
 
 /**
    @class FormulationLaplace
@@ -35,10 +35,10 @@ class FormulationLaplace: public Formulation{
   virtual ~FormulationLaplace(void);
 
   virtual double weak(const int nodeI, const int nodeJ, 
-		      const GroupOfDof& god) const;
+		      const GeoDof& god) const;
 
   virtual double rhs(const int equationI,
-		     const GroupOfDof& god) const;
+		     const GeoDof& god) const;
 
   virtual const std::vector<Dof*> getAllDofs(void) const;
 
@@ -58,7 +58,7 @@ class FormulationLaplace: public Formulation{
 //////////////////////
 
 inline double FormulationLaplace::rhs(const int equationI,
-				      const GroupOfDof& god) const{
+				      const GeoDof& god) const{
   return 0;
 }
 /*

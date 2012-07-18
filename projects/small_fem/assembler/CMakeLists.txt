@@ -1,7 +1,7 @@
 set(src
   Dof.cpp
-#  DofManager.cpp
-  GroupOfDof.cpp
+  DofManager.cpp
+  GeoDof.cpp
 #  System.cpp
 )
 

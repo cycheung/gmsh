@@ -2,14 +2,14 @@
 #include "DofManager.h"
 
 using namespace std;
-
+/*
 DofManager::DofManager(const std::vector<Element*>& element){
-  // Init Lookup struct and GroupOfDof //
+  // Init Lookup struct and GeoDof //
   nGroup = element.size();
   dof               = new vector<Dof*>(getNbDofFromElements(element));
   globalId          = new map<Dof*, int    , DofComparator>;
   dofToEntityLookup = new map<Dof*, Entity*, DofComparator>;
-  group             = new vector<GroupOfDof*>(nGroup);
+  group             = new vector<GeoDof*>(nGroup);
   physical          = new multimap<int, Dof*>;
 
   // Add Elements to DofManager //
@@ -24,6 +24,10 @@ DofManager::DofManager(const std::vector<Element*>& element){
 
   nDof = dof->size();
 }
+*/
+
+DofManager::DofManager(void){
+}
 
 DofManager::~DofManager(void){
   for(int i = 0; i < nGroup; i++)
@@ -31,20 +35,20 @@ DofManager::~DofManager(void){
   delete group;
 
   delete globalId;
-  delete dofToEntityLookup;
+  //delete dofToEntityLookup;
   delete physical;
 
   for(int i = 0; i < nDof; i++)
     delete (*dof)[i];
   delete dof;
 }
-
+/*
 void DofManager::add(Element& element, int groupId){  
   const int type = element.getType();
   const int nEntity = element.nEntity();
   const std::vector<Entity*>& entity = element.getAllEntities();
 
-  (*group)[groupId] = new GroupOfDof(nEntity, element.getId());
+  (*group)[groupId] = new GeoDof(nEntity, element.getId());
 
   for(int i = 0; i < nEntity; i++){
     pair<set<Dof*, DofComparator>::iterator, bool> p;
@@ -89,7 +93,7 @@ int DofManager::getNbDofFromElements(const vector<Element*>& element) const{
     
   return entityLookup.size();
 }
-
+*/
 string DofManager::toString(void) const{
   stringstream s;
   map<Dof*, int, DofComparator>::iterator i   = globalId->begin();
