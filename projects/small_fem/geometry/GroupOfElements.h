@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "GroupTyped.h"
+#include "Group.h"
 #include "GEntity.h"
 #include "MElement.h"
 
@@ -13,11 +13,11 @@
    @brief A Group of MElement%s
 
    This class is collection of @em discrete elements (MElement%s).@n
-   This class is @em GroupTyped<MElement>.
+   This class is @em Group.
 */
 
 
-class GroupOfElements: public GroupTyped<MElement>{
+class GroupOfElements: public Group{
  private:
   int                      id;      
   GEntity*                 entity;
@@ -30,10 +30,11 @@ class GroupOfElements: public GroupTyped<MElement>{
   virtual ~GroupOfElements(void);
 
   virtual int getNumber(void) const;
-  virtual int getId(void) const;
+  virtual int getId(void)     const;
+  virtual int getType(void)   const;
 
-  virtual MElement&                     get(int i) const;  
-  virtual const std::vector<MElement*>& getAll(void) const;  
+  MElement&                     get(int i) const;  
+  const std::vector<MElement*>& getAll(void) const;  
 
   GEntity& getEntity(void) const;
 
@@ -50,6 +51,14 @@ class GroupOfElements: public GroupTyped<MElement>{
 
    @fn GroupOfElements::~GroupOfElements
    Deletes this GroupOfElements
+
+   @fn GroupOfElements::get
+   @param i An interger ranging from 0 
+   to GroupOfElements::getNumber() - 1
+   @return Returns the ith element of the Group
+
+   @fn GroupOfElements::getAll
+   @return Returns all the elements of the Group
  
    @fn GroupOfElements::getEntity
    @return Returns the Entity used to build 
@@ -67,6 +76,10 @@ inline int GroupOfElements::getNumber(void) const{
 
 inline int GroupOfElements::getId(void) const{
   return id;
+}
+
+inline int GroupOfElements::getType(void) const{
+  return 1;
 }
 
 inline MElement& GroupOfElements::get(int i) const{

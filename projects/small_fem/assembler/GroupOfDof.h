@@ -2,15 +2,17 @@
 #define _GROUPOFDOF_H_
 
 #include <vector>
-#include "GroupTyped.h"
+#include "Group.h"
 #include "Dof.h"
 #include "Mapper.h"
 #include "MElement.h"
 #include "fullMatrix.h"
 
+class DofManager;
+
 /**
    @class GroupOfDof
-   @brief Handel a group of Dof%s with @em geometrical meaning
+   @brief Handels a Group of Dof%s with @em geometrical meaning
 
    This class handles a group of Dof%s with a @em geometrical meaning 
    (@e e.g: Dof%s that belongs to the same (finite) element).@n
@@ -18,13 +20,14 @@
    This class gives acces to individual Dof%s of the group.@n
    It also gives acces to the underlying Geometrical Element.@n
 
-   To conclude, this class is a GroupTyped<Dof>.
+   To conclude, this class is a Group.
+
+   @note
+   Note that a user @em can't instantiate a GroupOfDof.@n
+   This is the DofManager job.
 */
 
-
-class DofManager;
-
-class GroupOfDof: public GroupTyped<Dof>{
+class GroupOfDof: public Group{
  private:
   const MElement* element;
 
@@ -38,14 +41,17 @@ class GroupOfDof: public GroupTyped<Dof>{
 
  public:
   virtual int getNumber(void) const;
-  virtual int getId(void) const;
+  virtual int getId(void)     const;
+  virtual int getType(void)   const;
   
-  virtual Dof&                     get(int i) const; 
-  virtual const std::vector<Dof*>& getAll(void) const;
+  Dof&                     get(int i) const; 
+  const std::vector<Dof*>& getAll(void) const;
   
   const MElement&          getGeoElement(void) const;
 
   int getOrientation(const int dofId) const;
+
+  virtual std::string toString(void) const;
 
  private:
    GroupOfDof(int numberOfDof, const MElement& geoElement);
@@ -57,6 +63,14 @@ class GroupOfDof: public GroupTyped<Dof>{
 
 
 /** 
+   @fn GroupOfDof::get
+   @param i An interger ranging from 0 
+   to GroupOfDof::getNumber() - 1
+   @return Returns the ith element of the Group
+
+   @fn GroupOfDof::getAll
+   @return Returns all the elements of the Group
+
    @fn int GroupOfDof::getOrientation(const int dofId) const;
    @param dofId The @em local @c ID of a Dof in the GroupOfDof
    @return Returns the orientation of a Dof (indentified by its @em local @c ID)
@@ -72,6 +86,10 @@ inline int GroupOfDof::getNumber(void) const{
 
 inline int GroupOfDof::getId(void) const{
   return element->getNum();
+}
+
+inline int GroupOfDof::getType(void) const{
+  return 2;
 }
 
 inline Dof& GroupOfDof::get(int i) const{
