@@ -3,9 +3,9 @@
 
 using namespace std;
 /*
-DofManager::DofManager(const std::vector<MElement*>& element){
+DofManager::DofManager(const GroupOfElement& element){
   // Init Lookup struct and GroupOfDof //
-  nGroup = element.size();
+  nGroup            = element.getNumber();
   dof               = new vector<Dof*>(getNbDofFromElements(element));
   globalId          = new map<Dof*, int    , DofComparator>;
   dofToEntityLookup = new map<Dof*, Entity*, DofComparator>;

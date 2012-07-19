@@ -40,9 +40,9 @@
 
 /**
    @class DofManager::DofComparator
-   @brief A private class of DofManager, which can compare two Dof%s
+   @brief A private class of DofManager, that can compare two Dof%s
 
-   A private class of DofManager, which can compare two Dof%s.
+   A private class of DofManager, that can compare two Dof%s.
 */
 
 class DofManager{
@@ -68,7 +68,7 @@ class DofManager{
 
  public:
    DofManager(void);
-   DofManager(const std::vector<MElement*>& element);
+   DofManager(const GroupOfElement& element);
   ~DofManager(void);
 
   int dofNumber(void) const;
