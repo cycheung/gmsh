@@ -1,9 +1,9 @@
 #include <sstream>
-#include "GroupOfElements.h"
+#include "GroupOfElement.h"
 
 using namespace std;
 
-GroupOfElements::GroupOfElements(GEntity& entity, int id){
+GroupOfElement::GroupOfElement(GEntity& entity, int id){
   // Save Entity //
   this->id     = id;
   this->entity = &entity;
@@ -18,17 +18,17 @@ GroupOfElements::GroupOfElements(GEntity& entity, int id){
     (*element)[i] = entity.getMeshElement(i);
 }
 
-GroupOfElements::~GroupOfElements(void){
+GroupOfElement::~GroupOfElement(void){
   delete element;
   
   /*
-    GroupOfElements is *NOT* reponsible for
+    GroupOfElement is *NOT* reponsible for
     deleting 'entity', niether the MElements of
     'element' !!
   */
 }
 
-string GroupOfElements::toString(void) const{
+string GroupOfElement::toString(void) const{
   stringstream stream;
   
   stream << "*********************************************"    

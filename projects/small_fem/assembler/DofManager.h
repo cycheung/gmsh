@@ -6,6 +6,7 @@
 #include <map>
 #include <vector>
 
+#include "GroupOfElement.h"
 #include "GroupOfDof.h"
 
 /**
@@ -67,7 +68,7 @@ class DofManager{
 
  public:
    DofManager(void);
-   //DofManager(const std::vector<Element*>& element);
+   DofManager(const std::vector<MElement*>& element);
   ~DofManager(void);
 
   int dofNumber(void) const;
@@ -83,13 +84,13 @@ class DofManager{
   std::string toString(void) const;
 
  private:
-  //void add(Element& element, int groupId);
-  //int  getNbDofFromElements(const std::vector<Element*>& element) const;
+  //void add(MElement& element, int groupId);
+  //int  getNbDofFromElements(const std::vector<MElement*>& element) const;
 };
 
 
 /**
-   @fn DofManager::DofManager(const std::vector<Element*>& element)
+   @fn DofManager::DofManager(const std::vector<MElement*>& element)
    @param element A list of Element%s from which Dof%s will be instantiated
    @return Instantiate a new DofManager from the given list of Element%s
 

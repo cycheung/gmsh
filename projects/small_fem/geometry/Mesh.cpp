@@ -1,5 +1,4 @@
 #include "Mesh.h"
-#include "GroupOfElements.h"
 #include "Exception.h"
 
 #include <sstream>
@@ -9,7 +8,7 @@ using namespace std;
 Mesh::Mesh(const std::string fileName){ 
   // Alloc Memory //
   model       = new GModel("SmallFEM");
-  physToGroup = new multimap<int, Group*>;
+  physToGroup = new multimap<int, GroupOfElement*>;
 
   // Read Mesh //
   if(!model->readMSH(fileName))
@@ -21,17 +20,17 @@ Mesh::Mesh(const std::string fileName){
   nEntity = entity.size();
 
   // Get Entities (alloc) //
-  group = new vector<Group*>(nEntity);
+  group = new vector<GroupOfElement*>(nEntity);
   
   // Get Entities (get data) //
   for(unsigned int i = 0; i < nEntity; i++){
-    (*group)[i] = new GroupOfElements(*(entity[i]), i);
+    (*group)[i] = new GroupOfElement(*(entity[i]), i);
 
     vector<int> physical = entity[i]->getPhysicalEntities();
     int nPhysical        = physical.size();
 
     for(int j = 0; j < nPhysical; j++)
-      physToGroup->insert(pair<int, Group*>(physical[j], (*group)[i]));
+      physToGroup->insert(pair<int, GroupOfElement*>(physical[j], (*group)[i]));
   }
 }
  

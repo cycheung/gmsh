@@ -1,5 +1,5 @@
-#ifndef _GROUPOFELEMENTS_H_
-#define _GROUPOFELEMENTS_H_
+#ifndef _GROUPOFELEMENT_H_
+#define _GROUPOFELEMENT_H_
 
 #include <string>
 #include <vector>
@@ -9,7 +9,7 @@
 #include "MElement.h"
 
 /**
-   @class GroupOfElements
+   @class GroupOfElement
    @brief A Group of MElement%s
 
    This class is collection of @em discrete elements (MElement%s).@n
@@ -17,7 +17,7 @@
 */
 
 
-class GroupOfElements: public Group{
+class GroupOfElement: public Group{
  private:
   int                      id;      
   GEntity*                 entity;
@@ -26,8 +26,8 @@ class GroupOfElements: public Group{
   std::vector<MElement*>*  element;
 
  public:
-  GroupOfElements(GEntity& entity, int id);
-  virtual ~GroupOfElements(void);
+  GroupOfElement(GEntity& entity, int id);
+  virtual ~GroupOfElement(void);
 
   virtual int getNumber(void) const;
   virtual int getId(void)     const;
@@ -43,26 +43,26 @@ class GroupOfElements: public Group{
 
 
 /**
-   @fn GroupOfElements::GroupOfElements
-   Instantiates a new GroupOfElements 
+   @fn GroupOfElement::GroupOfElement
+   Instantiates a new GroupOfElement 
    based on a given GEntity and with the unique ID '@c id' 
    @param entity The GEntity that describes the Group
    @param id A @em unique number 
 
-   @fn GroupOfElements::~GroupOfElements
-   Deletes this GroupOfElements
+   @fn GroupOfElement::~GroupOfElement
+   Deletes this GroupOfElement
 
-   @fn GroupOfElements::get
+   @fn GroupOfElement::get
    @param i An interger ranging from 0 
-   to GroupOfElements::getNumber() - 1
+   to GroupOfElement::getNumber() - 1
    @return Returns the ith element of the Group
 
-   @fn GroupOfElements::getAll
+   @fn GroupOfElement::getAll
    @return Returns all the elements of the Group
  
-   @fn GroupOfElements::getEntity
+   @fn GroupOfElement::getEntity
    @return Returns the Entity used to build 
-   this GroupOfElements
+   this GroupOfElement
 */
 
 
@@ -70,28 +70,28 @@ class GroupOfElements: public Group{
 // Inline Functions //
 //////////////////////
 
-inline int GroupOfElements::getNumber(void) const{
+inline int GroupOfElement::getNumber(void) const{
   return nElement;
 }
 
-inline int GroupOfElements::getId(void) const{
+inline int GroupOfElement::getId(void) const{
   return id;
 }
 
-inline int GroupOfElements::getType(void) const{
+inline int GroupOfElement::getType(void) const{
   return 1;
 }
 
-inline MElement& GroupOfElements::get(int i) const{
+inline MElement& GroupOfElement::get(int i) const{
   return *((*element)[i]);
 }
 
 inline const std::vector<MElement*>& 
-GroupOfElements::getAll(void) const{
+GroupOfElement::getAll(void) const{
   return *element;
 }
 
-inline GEntity& GroupOfElements::getEntity(void) const{
+inline GEntity& GroupOfElement::getEntity(void) const{
   return *entity;
 }
 

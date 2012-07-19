@@ -3,13 +3,13 @@
 
 using namespace std;
 /*
-DofManager::DofManager(const std::vector<Element*>& element){
-  // Init Lookup struct and GeoDof //
+DofManager::DofManager(const std::vector<MElement*>& element){
+  // Init Lookup struct and GroupOfDof //
   nGroup = element.size();
   dof               = new vector<Dof*>(getNbDofFromElements(element));
   globalId          = new map<Dof*, int    , DofComparator>;
   dofToEntityLookup = new map<Dof*, Entity*, DofComparator>;
-  group             = new vector<GeoDof*>(nGroup);
+  group             = new vector<GroupOfDof*>(nGroup);
   physical          = new multimap<int, Dof*>;
 
   // Add Elements to DofManager //
@@ -43,12 +43,12 @@ DofManager::~DofManager(void){
   delete dof;
 }
 /*
-void DofManager::add(Element& element, int groupId){  
+void DofManager::add(MElement& element, int groupId){  
   const int type = element.getType();
   const int nEntity = element.nEntity();
   const std::vector<Entity*>& entity = element.getAllEntities();
 
-  (*group)[groupId] = new GeoDof(nEntity, element.getId());
+  (*group)[groupId] = new GroupOfDof(nEntity, element.getId());
 
   for(int i = 0; i < nEntity; i++){
     pair<set<Dof*, DofComparator>::iterator, bool> p;
@@ -79,7 +79,7 @@ void DofManager::add(Element& element, int groupId){
   (*group)[groupId]->orientation(element.getAllOrientations());
 }
 
-int DofManager::getNbDofFromElements(const vector<Element*>& element) const{
+int DofManager::getNbDofFromElements(const vector<MElement*>& element) const{
   set<int> entityLookup;
   const int N = element.size();
   

@@ -5,7 +5,7 @@
 #include <map>
 #include <string>
 
-#include "Group.h"
+#include "GroupOfElement.h"
 #include "GModel.h"
 
 /**
@@ -14,7 +14,7 @@
    
    This class represents a mesh.@n
 
-   A Mesh is a collection of @em Group%s 
+   A Mesh is a collection of @em GroupOfElement%s 
 
    A Mesh is instantiated thanks to a 
    <a href="http://www.geuz.org/gmsh">gmsh</a>
@@ -25,17 +25,17 @@ class Mesh{
  private:
   GModel* model;
 
-  unsigned int               nEntity;
-  std::vector<Group*>*        group;
-  std::multimap<int, Group*>* physToGroup;
+  unsigned int                        nEntity;
+  std::vector<GroupOfElement*>*        group;
+  std::multimap<int, GroupOfElement*>* physToGroup;
 
  public:
    Mesh(const std::string fileName);
   ~Mesh(void);
 
   int                        getNbGroup(void) const;
-  Group&                     getGroup(int i) const;
-  const std::vector<Group*>& getAllGroups(void) const;
+  GroupOfElement&                     getGroup(int i) const;
+  const std::vector<GroupOfElement*>& getAllGroups(void) const;
   
   std::string toString(void) const;
 };
@@ -53,10 +53,10 @@ class Mesh{
 
    @fn Mesh::getGroup
    @param i A number between 0 and getNbGroup() - 1
-   @return Returns the requested Group
+   @return Returns the requested GroupOfElement
 
    @fn Mesh::getAllGroups
-   @return Returns all the Mesh Groups
+   @return Returns all the Mesh GroupOfElements
  
    @fn Mesh::toString
    @return Returns a description of this Mesh
@@ -71,11 +71,11 @@ inline int Mesh::getNbGroup(void) const{
   return nEntity;
 }
 
-inline Group& Mesh::getGroup(int i) const{
+inline GroupOfElement& Mesh::getGroup(int i) const{
   return *((*group)[i]);
 }
 
-inline const std::vector<Group*>&
+inline const std::vector<GroupOfElement*>&
 Mesh::getAllGroups(void) const{
   return *group;
 }
