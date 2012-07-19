@@ -134,9 +134,9 @@ OL.endif
 
 OL.if( OL.get(Parameters/Model/TENEUR) )
   DensityBis = Variable Teneur
-  Real MATC "1000/(6.16/100*tx(0)+0.938)" ! kg/m3
+  Real MATC "1000/(0.0616*tx(0)+0.938)"
 OL.else
-  DensityBis = Real MATC "1000/(6.16/100*teneurw+0.938)" !1022.45 !1048.88 ! 1200.0
+  DensityBis = Real MATC "1000/(0.0616*teneurw+0.938)" 
 OL.endif
 
 Qvolume = Variable DensityBis, Coordinate 1, Coordinate 2

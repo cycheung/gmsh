@@ -1,8 +1,8 @@
 
 // Parameters shared with onelab need be defined here for consistency:
-// SKINWIDTH = 0.12 mm (hairless) or 0.05 mm (hairy) 
+// EPIDERMIS = 0.12 mm (hairless) or 0.05 mm (hairy) 
 
-DefineConstant[SKINWIDTH = {0.12, Path "Parameters/Model/5"}];
+DefineConstant[EPIDERMIS = {0.12, Path "Parameters/Model/5"}];
 DefineConstant[DERMIS = {1.5, Path "Parameters/Model/6"}];
 DefineConstant[BEAMRADIUS = {5, Path "Parameters/Laser/4"}];
 
@@ -16,7 +16,7 @@ mm=1.e-3;
 L = 10*mm;
 D = BEAMRADIUS *mm;
 H1 = DERMIS *mm;
-H2 = SKINWIDTH * mm;
+H2 = EPIDERMIS * mm;
 
 lc = 1;
 Point(1) = {0, 0, 0, lc}; 
@@ -62,6 +62,6 @@ Physical Line("FreeSkin") = {11};
 
 Transfinite Line {1, 7, 10} = Nb1;
 Transfinite Line {4, 6, 9} = Nb2;
-Transfinite Line {3, 5, 12} = Nb3 Using Progression 0.7;
+Transfinite Line {3, 5, 12} = Nb3 Using Progression 0.7;//0.9
 Transfinite Line {-2, -8, -11} = Nb4 Using Progression 0.9;
 Transfinite Surface {1,2,3,4};

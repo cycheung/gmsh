@@ -12,15 +12,15 @@ SKINTYPE.number(1, Parameters/Model/4, ''Skin type'');
 SKINTYPE.addChoices(1,2);
 SKINTYPE.addLabels(hairy, hairless);
 
-% SKINWIDTH is determined by SKINTYPE
+% EPIDERMIS is determined by SKINTYPE
 % Such dependency can be implemented with setValue
 % The "setValue" statement overrules the value on the server. 
-SKINWIDTH.number(0,Parameters/Model/5,''Skin width [mm]'');
+EPIDERMIS.number(0,Parameters/Model/5,''Epdidermis width [mm]'');
 OL.if( OL.get(SKINTYPE) == 1)
-SKINWIDTH.setValue(0.05);
+EPIDERMIS.setValue(0.05);
 OL.endif
 OL.if( OL.get(SKINTYPE) == 2)
-SKINWIDTH.setValue(0.12);
+EPIDERMIS.setValue(0.12);
 OL.endif
 
 % onelab numbers
@@ -38,7 +38,7 @@ OL.endif
 % depending variables are defined with no value
 % and this definition must then be completed by a "setValue" statement
 ZSURF.number( , PostPro/);
-ZSURF.setValue(OL.eval( (OL.get( DERMIS)+OL.get(SKINWIDTH))* 1e-3)); 
+ZSURF.setValue(OL.eval( (OL.get( DERMIS)+OL.get(EPIDERMIS))* 1e-3)); 
 
 % "OL.get" return the value on server 
 % of a parameter of type onelab::number or onelab::string
@@ -140,7 +140,7 @@ Matlab.register(interfaced);
 Matlab.args(-nosplash -desktop -r plotMatlab);
 
 Gnuplot.register(interfaced);
-Gnuplot.in(temp.txt);
+Gnuplot.in(temp.txt, plot.plt.ol);
 Gnuplot.args(plot.plt );
 
 OL.if( OL.get(POSTPRO) == 1)

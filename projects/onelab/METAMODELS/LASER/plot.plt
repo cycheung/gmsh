@@ -1,4 +1,3 @@
-
 #set terminal pdf font "Times-Roman,12" ; INTERACT = 0
 
 set terminal aqua; INTERACT=-1
@@ -39,6 +38,8 @@ plot "templaser0.txt" u ($5)*1000:($8)-273 w l t "",\
      "templaser4.txt" u ($5)*1000:($8)-273 w l t "", \
      320-273 t "threshold "
 
+skinWidth = (0.2+1.5)/1000
+
 set title "Maximum (in time) active surface"
 set size 0.5,0.5
 set origin 0.0,0.0
@@ -51,8 +52,11 @@ set size 0.5,0.5
 set origin 0.5,0.0
 set xlabel "Skin Depth [mm]"
 set ylabel "Duration [s]"
-plot [0:0.2] "duration.txt" u (0.00155-($6))*1000:8 w lp t ""
+plot [0:0.2] "duration.txt" u (skinWidth-($6))*1000:8 w lp t "" 
 
 unset multiplot
+
+
+
 
 
