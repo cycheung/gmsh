@@ -2,6 +2,7 @@
 #define _GROUPOFDOF_H_
 
 #include <vector>
+#include "GroupTyped.h"
 #include "Dof.h"
 #include "Mapper.h"
 #include "MElement.h"
@@ -15,13 +16,15 @@
    (@e e.g: Dof%s that belongs to the same (finite) element).@n
 
    This class gives acces to individual Dof%s of the group.@n
-   It also gives acces to the underlying Geometrical Element.  
+   It also gives acces to the underlying Geometrical Element.@n
+
+   To conclude, this class is a GroupTyped<Dof>.
 */
 
 
 class DofManager;
 
-class GroupOfDof{
+class GroupOfDof: public GroupTyped<Dof>{
  private:
   const MElement* element;
 
@@ -34,10 +37,13 @@ class GroupOfDof{
   friend class DofManager;
 
  public:
-  int getId(void) const;
-  int dofNumber(void) const;
-  const std::vector<Dof*>& getAllDofs(void) const;
-  const MElement&          getElement(void) const;
+  virtual int getNumber(void) const;
+  virtual int getId(void) const;
+  
+  virtual Dof&                     get(int i) const; 
+  virtual const std::vector<Dof*>& getAll(void) const;
+  
+  const MElement&          getGeoElement(void) const;
 
   int getOrientation(const int dofId) const;
 
@@ -50,19 +56,7 @@ class GroupOfDof{
 };
 
 
-/**
-   @fn int GroupOfDof::getId(void) const
-   @return Returns the @c ID of this GroupOfDof
-
-   @fn int GroupOfDof::dofNumber(void) const
-   @return Returns the number of Dof in this GroupOfDof
-
-   @fn const std::vector<Dof*>& GroupOfDof::getAllDofs(void) const
-   @return Returns all the Dof%s in this GroupOfDof
-
-   @fn const Jacobian& GroupOfDof::getJacobian(void) const;
-   @return Returns the Jacobian associated to this GroupOfDof
-   
+/** 
    @fn int GroupOfDof::getOrientation(const int dofId) const;
    @param dofId The @em local @c ID of a Dof in the GroupOfDof
    @return Returns the orientation of a Dof (indentified by its @em local @c ID)
@@ -72,28 +66,32 @@ class GroupOfDof{
 // Inline Functions //
 //////////////////////
 
-inline void GroupOfDof::orientation(const std::vector<int>& orientation){
-  direction = &orientation;
+inline int GroupOfDof::getNumber(void) const{
+  return nDof;
 }
 
 inline int GroupOfDof::getId(void) const{
   return element->getNum();
 }
 
-inline int GroupOfDof::dofNumber(void) const{
-  return nDof;
+inline Dof& GroupOfDof::get(int i) const{
+  return *((*dof)[i]);
 }
-
-inline const std::vector<Dof*>& GroupOfDof::getAllDofs(void) const{
+ 
+inline const std::vector<Dof*>& GroupOfDof::getAll(void) const{
   return *dof;
 }
 
-inline const MElement& GroupOfDof::getElement(void) const{
+inline const MElement& GroupOfDof::getGeoElement(void) const{
   return *element;
 }
 
 inline int GroupOfDof::getOrientation(const int dofId) const{
   return (*direction)[dofId];
+}
+
+inline void GroupOfDof::orientation(const std::vector<int>& orientation){
+  direction = &orientation;
 }
 
 #endif

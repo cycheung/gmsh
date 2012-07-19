@@ -38,7 +38,7 @@ double FormulationProjection::weak(const int edgeI, const int edgeJ,
 				   const GroupOfDof& god) const{
 
   fullMatrix<double>  invJac(3, 3);        
-  MElement& element = const_cast<MElement&>(god.getElement());
+  MElement& element = const_cast<MElement&>(god.getGeoElement());
   double integral   = 0;
   int orientation   = 
     god.getOrientation(edgeI) * 
@@ -74,7 +74,7 @@ double FormulationProjection::rhs(const int equationI,
 				  const GroupOfDof& god) const{
  
   fullMatrix<double>  invJac(3, 3);        
-  MElement& element = const_cast<MElement&>(god.getElement());
+  MElement& element = const_cast<MElement&>(god.getGeoElement());
   int orientation   = god.getOrientation(equationI);
   double integral   = 0;
 

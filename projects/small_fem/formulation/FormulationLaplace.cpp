@@ -44,7 +44,7 @@ double FormulationLaplace::weak(const int nodeI, const int nodeJ,
 				const GroupOfDof& god) const{
 
   fullMatrix<double>  invJac(3, 3);        
-  MElement& element = const_cast<MElement&>(god.getElement());
+  MElement& element = const_cast<MElement&>(god.getGeoElement());
   double integral   = 0;
 
   // Loop over Integration Point //

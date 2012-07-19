@@ -1,5 +1,6 @@
 set(src
   Exception.cpp
+  Group.cpp
 )
 
 

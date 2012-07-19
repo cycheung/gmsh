@@ -1,7 +1,6 @@
 set(src
   Mapper.cpp
   Mesh.cpp
-  Group.cpp
   GroupOfElements.cpp
 )
 
