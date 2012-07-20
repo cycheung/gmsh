@@ -45,7 +45,7 @@ OL.endif
 % Client 3:
 
 OL.if( OL.get(Fields/Hx) == 0.02)
-  Gnuplot.register(interfaced,gnuplot);
+  Gnuplot.register(interfaced, gnuplot);
   Gnuplot.in(results.txt, plot.plt);
   Gnuplot.args(plot.plt);
 OL.endif

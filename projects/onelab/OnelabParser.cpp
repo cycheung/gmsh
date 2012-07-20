@@ -351,6 +351,12 @@ void localSolverClient::parse_sentence(std::string line) {
       if(arguments[0].empty())
 	numbers[0].setReadOnly(1);
 
+      // choices and valueLables are reset
+      std::vector<double> choices;
+      numbers[0].setChoices(choices);
+      std::map<double, std::string> valuelabels;
+      numbers[0].setValueLabels(valuelabels);
+
       if(arguments.size()>2)
 	numbers[0].setLabel(arguments[2]);
       if(arguments.size()>3){
@@ -370,19 +376,6 @@ void localSolverClient::parse_sentence(std::string line) {
       _parameters.insert(name);
       Msg::recordFullName(name);
       get(strings, name);
-      /*
-      if(strings.size()){
-	if(!strings[0].getReadOnly())
-	  val.assign(strings[0].getValue()); // use value from server
-	else
-	  strings[0].setValue(val);
-      }
-      else{
-	strings.resize(1);
-	strings[0].setName(name);
-	strings[0].setValue(val);
-      }
-      */
       if(strings.empty()){
 	strings.resize(1);
 	strings[0].setName(name);
@@ -392,6 +385,11 @@ void localSolverClient::parse_sentence(std::string line) {
 
      if(arguments[0].empty())
 	strings[0].setReadOnly(1);
+
+      // choices list is reset
+     std::vector<std::string> choices;
+      strings[0].setChoices(choices);
+
       if(arguments.size()>2)
 	strings[0].setLabel(arguments[2]);
       set(strings[0]);
@@ -479,6 +477,29 @@ void localSolverClient::parse_sentence(std::string line) {
 	}
       }
     }
+    else if(!action.compare("valueLabels")){
+      if(arguments.size()){
+	name.assign(longName(name));
+	get(numbers,name);
+	if(numbers.size()){ // parameter must exist
+	  if(arguments.size() % 2)
+	    Msg::Fatal("Nb of labels does not match nb of choices for <%s>",
+		       name.c_str());
+	  std::vector<double> choices=numbers[0].getChoices();
+	  for(unsigned int i = 0; i < arguments.size(); i=i+2){
+	    double val=atof(resolveGetVal(arguments[i]).c_str());
+	    if(std::find(choices.begin(),choices.end(),val)==choices.end())
+	      choices.push_back(val);
+	    numbers[0].setValueLabel(val,arguments[i+1]);
+	  }
+	  numbers[0].setChoices(choices);
+	  set(numbers[0]);
+	}
+	else
+	  Msg::Fatal("The number <%s> does not exist",name.c_str());
+      }
+    }
+    /*
     else if(!action.compare("addLabels")){
       if(arguments.size()){
 	name.assign(longName(name));
@@ -486,7 +507,7 @@ void localSolverClient::parse_sentence(std::string line) {
 	if(numbers.size()){ // parameter must exist
 	  std::vector<double> choices=numbers[0].getChoices();
 	  if(choices.size() != arguments.size())
-	    Msg::Fatal("Nb of labels does not match nb of choices <%s>",
+	    Msg::Fatal("Nb of labels does not match nb of choices for <%s>",
 		       name.c_str());
 	  std::vector<std::string> labels;
 	  for(unsigned int i = 0; i < arguments.size(); i++){
@@ -499,6 +520,7 @@ void localSolverClient::parse_sentence(std::string line) {
 	  Msg::Fatal("The number <%s> does not exist",name.c_str());
       }
     }
+    */
     else if(!action.compare("setValue")){ // force change on server
       if(arguments[0].empty())
 	Msg::Fatal("Missing argument SetValue <%s>",name.c_str());
@@ -1139,20 +1161,20 @@ void MetaModel::client_sentence(const std::string &name,
     }
   }
   else if(!action.compare(olkey::inFiles)){
+    strings.resize(1);
+    strings[0].setName(name+"/InputFiles");
+    strings[0].setKind("file");
+    strings[0].setVisible(false);
+    std::vector<std::string> choices;
     if(arguments[0].size()){
-      strings.resize(1);
-      strings[0].setName(name+"/InputFiles");
-      strings[0].setValue(resolveGetVal(arguments[0]));
-      strings[0].setKind("file");
-      strings[0].setVisible(false);
-      std::vector<std::string> choices;
       for(unsigned int i = 0; i < arguments.size(); i++)
 	//if(std::find(choices.begin(),choices.end(),arguments[i])
 	//==choices.end())
 	choices.push_back(resolveGetVal(arguments[i]));
-      strings[0].setChoices(choices);
-      set(strings[0]);
+      strings[0].setValue(resolveGetVal(arguments[0]));
     }
+    strings[0].setChoices(choices);
+    set(strings[0]);
   }
   else if(!action.compare(olkey::outFiles)){
     strings.resize(1);

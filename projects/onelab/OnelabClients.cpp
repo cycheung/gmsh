@@ -582,7 +582,6 @@ std::string localSolverClient::toChar(){
 }
 
 bool localSolverClient::checkCommandLine(){
-  if(!isActive()) return true;
   if(getCommandLine().empty()){
     std::string commandLine = getString("CommandLine");
     if(!commandLine.empty()){
@@ -590,12 +589,15 @@ bool localSolverClient::checkCommandLine(){
     }
   }
 
+  if(!isActive()) return true;
+
   if(!getCommandLine().empty()){
     Msg::SetOnelabString(getName() + "/Action","initialize",false);
     run();
   }
   else{
-    if(Msg::hasGmsh) {// exits metamodel and restores control to the onelab window
+    if(Msg::hasGmsh) {
+      // exits metamodel and restores control to the onelab window
       Msg::Error("The command line of client <%s> is undefined.", getName().c_str());
       std::cout << "\n\nBrowse for executable in the ONELAB window.\n\n" << std::endl;
       return false;
@@ -749,13 +751,13 @@ void MetaModel::registerClient(const std::string &name, const std::string &type,
 void MetaModel::simpleCheck()
 {
   for(citer it = _clients.begin(); it != _clients.end(); it++){
-    if((*it)->isActive()){
-	Msg::SetOnelabString((*it)->getName() + "/Action","check",false);
-	(*it)->analyze();
-	//some clients must be run at the check phase
-	if((*it)->getActive()==2) 
-	  (*it)->compute();
-      }
+    //if((*it)->isActive()){ // also inactive clients are checked
+      Msg::SetOnelabString((*it)->getName() + "/Action","check",false);
+      (*it)->analyze();
+      //some clients must be run at the check phase
+      if((*it)->getActive()==2) 
+	(*it)->compute();
+      //}
   }
 }
 
@@ -840,8 +842,9 @@ void InterfacedClient::compute(){
     }
   }
 
-  if(buildRmCommand(cmd))
-    SystemCall("cd "+getWorkingDir()+cmdSep+cmd,true);
+  if(getActive())
+    if(buildRmCommand(cmd))
+      SystemCall("cd "+getWorkingDir()+cmdSep+cmd,true);
 
   cmd = "cd "+getWorkingDir()+cmdSep+FixWindowsPath(getCommandLine() + " ") ;
   cmd.append(getString("Arguments"));
@@ -1193,7 +1196,7 @@ bool checkIfPresent(std::string fileName){
   if (!stat(fileName.c_str(), &buf))
     return true;
   else{
-    Msg::Fatal("The file <%s> is not present",fileName.c_str());
+    Msg::Fatal("The file <%s> is not present...",fileName.c_str());
     return false;
   }
 }
