@@ -62,6 +62,6 @@ Physical Line("FreeSkin") = {11};
 
 Transfinite Line {1, 7, 10} = Nb1;
 Transfinite Line {4, 6, 9} = Nb2;
-Transfinite Line {3, 5, 12} = Nb3 Using Progression 0.7;//0.9
+Transfinite Line {3, 5, 12} = Nb3 Using Progression 0.9;//0.9
 Transfinite Line {-2, -8, -11} = Nb4 Using Progression 0.9;
 Transfinite Surface {1,2,3,4};

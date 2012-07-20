@@ -38,9 +38,9 @@ plot "templaser0.txt" u ($5)*1000:($8)-273 w l t "",\
      "templaser4.txt" u ($5)*1000:($8)-273 w l t "", \
      320-273 t "threshold "
 
-skinWidth = (0.05+1.5)/1000
+skinWidth = (OL.get(Parameters/Model/EPIDERMIS)+OL.get(Parameters/Model/DERMIS))/1000
 
-ListDepth={0.001549,0.001501,0.00145,0.0014,0.00135,0.0015249,0.001475,0.0014249,0.0013749,0.0015499,0.0015001,0.0014749,0.0014499,0.0013999,0.0013499};
+ListDepth=OL.get(PostPro/ZSURF,choices.expand( '[comma]' ));
 dd = ListDepth[2] - ListDepth[1];;
 
 set title "Maximum (in time) active surface"
@@ -59,7 +59,6 @@ set ylabel "Duration [s]"
 plot [0:0.2] "duration.txt" u (skinWidth-($6))*1000:8 w lp t "" 
 
 unset multiplot
-
 
 
 

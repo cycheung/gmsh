@@ -95,7 +95,7 @@ Solver 3 !ElmerModelsManuel page 187
    Variable 1 = Temperature
    Variable 2 = Time
    Procedure = "SaveData" "SaveScalars"
-   Save Coordinates(5,2) = 1e-6 OL.get(PostPro/ZSURF,choices.comp(0)) 1e-6 OL.get(PostPro/ZSURF,choices.comp(1)) 1e-6 OL.get(PostPro/ZSURF,choices.comp(2)) 1e-6 OL.get(PostPro/ZSURF,choices.comp(3)) 1e-6 OL.get(PostPro/ZSURF,choices.comp(4)) 
+   Save Coordinates(5,2) = 1e-6 OL.get(PostPro/ZSURF,choices.comp(0)) 1e-6 OL.get(PostPro/ZSURF,choices.comp(2)) 1e-6 OL.get(PostPro/ZSURF,choices.comp(4)) 1e-6 OL.get(PostPro/ZSURF,choices.comp(6)) 1e-6 OL.get(PostPro/ZSURF,choices.comp(8)) 
    Filename = "temp.txt"
 End
 
