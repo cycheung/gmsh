@@ -40,16 +40,14 @@ plot "templaser0.txt" u ($5)*1000:($8)-273 w l t "",\
 
 skinWidth = (0.05+1.5)/1000
 
-ListDepth={0.001549,0.001501,0.00145,0.0014,0.00135,0.0015249,0.001475,0.0014249,0.0013749,0.0015499,0.0015001,0.0014749,0.0014499,0.0013999,0.0013499};
-dd = ListDepth[2] - ListDepth[1];;
+zsurf=0.00155;
 
 set title "Maximum (in time) active surface"
 set size 0.5,0.5
 set origin 0.0,0.0
 set xlabel "Skin Depth [mm]"
 set ylabel "Active surface [mm^2]"
-plot "activeMax.txt" u ($4)*dd:($8)*10**6 w lp t ""
-
+plot "activeMax.txt" u (zsurf-($6))*1000:($8)*10**6 w lp t ""
 
 set title "Maximum (at x=0) duration at threshold "
 set size 0.5,0.5

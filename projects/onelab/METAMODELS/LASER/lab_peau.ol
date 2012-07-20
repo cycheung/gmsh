@@ -50,15 +50,11 @@ ZSURF.setValue(OL.eval( (OL.get( DERMIS)+OL.get(EPIDERMIS))* 1e-3));
 % param.addChoices(1,2,3); param.addChoices(7,12); 
 % The 'value' of a parameter and the 'choices' can be evaluated independently
 % according to the context and the needs.
-ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.0001 * 1e-3) );
-ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.0251 * 1e-3) ); 
-ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.0499 * 1e-3) );
-ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.0751 * 1e-3) );  
-ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.1001 * 1e-3) );
-ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.1251 * 1e-3) ); 
-ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.1501 * 1e-3) );
-ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.1751 * 1e-3) ); 
-ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.2001 * 1e-3) );
+ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.001 * 1e-3) );
+ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.049 * 1e-3) );
+ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.100 * 1e-3) );
+ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.150 * 1e-3) );
+ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.200 * 1e-3) );
 
 % Available LASER models, another enumeration
 LASERTYPE.number(3, Parameters/Laser/1,''Laser type'');  
@@ -125,7 +121,7 @@ Elmer.out( solution.pos, temp.txt );
 Post.register(interfaced);
 Post.in(solution.pos , script.opt.ol ); 
 Post.args(solution.pos script.opt -);
-Post.out(tempmin.txt, tempmax.txt);
+Post.out(tempmin.txt, tempmax.txt, active*.txt, temp*.txt);
 Post.up( tempmin.txt,-1,8,Solution/Tmin, tempmax.txt,-1,8,Solution/Tmax);
 
 %-5) Display solution with a client Gmsh

@@ -40,16 +40,14 @@ plot "templaser0.txt" u ($5)*1000:($8)-273 w l t "",\
 
 skinWidth = (OL.get(Parameters/Model/EPIDERMIS)+OL.get(Parameters/Model/DERMIS))/1000
 
-ListDepth=OL.get(PostPro/ZSURF,choices.expand( '[comma]' ));
-dd = ListDepth[2] - ListDepth[1];;
+zsurf=OL.get(PostPro/ZSURF);
 
 set title "Maximum (in time) active surface"
 set size 0.5,0.5
 set origin 0.0,0.0
 set xlabel "Skin Depth [mm]"
 set ylabel "Active surface [mm^2]"
-plot "activeMax.txt" u ($4)*dd:($8)*10**6 w lp t ""
-
+plot "activeMax.txt" u (zsurf-($6))*1000:($8)*10**6 w lp t ""
 
 set title "Maximum (at x=0) duration at threshold "
 set size 0.5,0.5
