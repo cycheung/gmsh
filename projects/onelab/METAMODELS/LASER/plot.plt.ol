@@ -24,22 +24,26 @@ plot "temp.txt" u 1:($2)-273 t "",\
      "temp.txt" u 1:($16)-273 t "",\
      "temp.txt" u 1:($23)-273 t "",\
      "temp.txt" u 1:($30)-273 t "", \
-     320-273 t "threshold "
+     320-273 w l  lt rgb "black" t "threshold "
 
 set title "Skin temperature (at t=Tlaser) at different depth "
 set size 0.5,0.5
 set origin 0.5,0.5  
 set ylabel "Temperature [degC]"
 set xlabel "Radial coord [mm]"
-plot "templaser0.txt" u ($5)*1000:($8)-273 w l t "",\
-     "templaser1.txt" u ($5)*1000:($8)-273 w l t "",\
-     "templaser2.txt" u ($5)*1000:($8)-273 w l t "",\
-     "templaser3.txt" u ($5)*1000:($8)-273 w l t "",\
-     "templaser4.txt" u ($5)*1000:($8)-273 w l t "", \
-     320-273 t "threshold "
+#plot "templaser0.txt" u ($5)*1000:($8)-273 w l t "",\
+#     "templaser1.txt" u ($5)*1000:($8)-273 w l t "",\
+#     "templaser2.txt" u ($5)*1000:($8)-273 w l t "",\
+#     "templaser3.txt" u ($5)*1000:($8)-273 w l t "",\
+#     "templaser4.txt" u ($5)*1000:($8)-273 w l t "", \
+#     320-273 w l  lt rgb "black" t "threshold "
+
+nbfiles= OL.get(PostPro/ZSURF,choices.size())
+filename(n) = sprintf("templaser%d.txt", n)
+plot for [i=0:nbfiles-1] filename(i) u ($5)*1000:($8)-273 w l t "", \
+     320-273 w l  lt rgb "black" t "threshold "
 
 skinWidth = (OL.get(Parameters/Model/EPIDERMIS)+OL.get(Parameters/Model/DERMIS))/1000
-
 zsurf=OL.get(PostPro/ZSURF);
 
 set title "Maximum (in time) active surface"

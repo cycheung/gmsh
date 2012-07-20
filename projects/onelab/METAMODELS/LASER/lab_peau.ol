@@ -11,8 +11,7 @@ CONVBC.radioButton(0,Parameters/Model/2,"Account for convection");
 
 # Enumeration, i.e. a set of real values each associated with a label
 SKINTYPE.number(1, Parameters/Model/4, ''Skin type''); 
-SKINTYPE.addChoices(1,2);
-SKINTYPE.addLabels(hairy, hairless);
+SKINTYPE.valueLabels(1, hairy, 2, hairless);
 
 # EPIDERMIS is determined by SKINTYPE
 # Such dependency can be implemented with setValue
@@ -52,16 +51,27 @@ ZSURF.setValue(OL.eval( (OL.get( DERMIS)+OL.get(EPIDERMIS))* 1e-3));
 # param.addChoices(1,2,3); param.addChoices(7,12); 
 # The 'value' of a parameter and the 'choices' can be evaluated independently
 # according to the context and the needs.
-ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.001 * 1e-3) );
-ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.049 * 1e-3) );
-ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.100 * 1e-3) );
-ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.150 * 1e-3) );
-ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.200 * 1e-3) );
+ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.0001 * 1e-3) );
+ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.0125 * 1e-3) );
+ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.0250 * 1e-3) );
+ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.0375 * 1e-3) );
+ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.0501 * 1e-3) );
+ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.0625 * 1e-3) );
+ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.0750 * 1e-3) );
+ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.0875 * 1e-3) );
+ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.1000 * 1e-3) );
+ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.1125 * 1e-3) );
+ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.1250 * 1e-3) );
+ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.1375 * 1e-3) );
+ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.1500 * 1e-3) );
+ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.1625 * 1e-3) );
+ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.1750 * 1e-3) );
+ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.1875 * 1e-3) );
+ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.2000 * 1e-3) );
 
 # Available LASER models, another enumeration
 LASERTYPE.number(3, Parameters/Laser/1,''Laser type'');  
-LASERTYPE.addChoices(1,2,3,4); 
-LASERTYPE.addLabels(Applied temperature, Surface flux, Volume Flux, Controlled temperature);
+LASERTYPE.valueLabels(1, Applied temperature, 2,Surface flux, 3, Volume Flux, 4,Controlled temperature);
 
 APPLICTIME.number(0.05, Parameters/Laser/2, ''Application time [s]'');
 ABSORPTION.number(2e4, Parameters/Laser/3, ''Absorption coefficient [1/m]'');
@@ -124,7 +134,7 @@ Elmer.active(1);
 Post.register(interfaced);
 Post.in(solution.pos , script.opt.ol ); 
 Post.args(solution.pos script.opt -);
-Post.out(tempmin.txt, tempmax.txt, active0.txt, temp0.txt);
+Post.out(tempmin.txt, tempmax.txt, temp0.txt, activeMax.txt);
 Post.up( tempmin.txt,-1,8,Solution/Tmin, tempmax.txt,-1,8,Solution/Tmax);
 
 #-5) Display solution with a client Gmsh
@@ -136,14 +146,13 @@ Display.merge(overheat.pos);
 
 #-6) Display solution curves with either gnuplot or matlab
 POSTPRO.number(2, PostPro/,"Plot results with");
-POSTPRO.addChoices(1,2); 
-POSTPRO.addLabels(Matlab,Gnuplot);
+POSTPRO.valueLabels(1, Matlab,2, Gnuplot);
 
 Matlab.register(interfaced); 
 Matlab.args(-nosplash -desktop -r plotMatlab);
 
 Gnuplot.register(interfaced);
-Gnuplot.in(temp.txt, plot.plt);
+Gnuplot.in(temp.txt, plot.plt.ol);
 Gnuplot.args(plot.plt );
 
 OL.if( OL.get(POSTPRO) == 1)

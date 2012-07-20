@@ -7,10 +7,10 @@ DefineConstant[DERMIS = {1.5, Path "Parameters/Model/6"}];
 DefineConstant[BEAMRADIUS = {5, Path "Parameters/Laser/4"}];
 
 // Gmsh specific parameter
-DefineConstant[Nb1 = {10, Path "Gmsh/", ShortHelp "Elements on spot surface"}]; 
-DefineConstant[Nb2 = {20, Path "Gmsh/", ShortHelp "Elements across epidermis"}];
-DefineConstant[Nb3 = {10, Path "Gmsh/", ShortHelp "Elements across dermis"}]; 
-DefineConstant[Nb4 = {10, Path "Gmsh/", ShortHelp "Elements on free surface"}]; 
+DefineConstant[Nb1 = {30, Path "Gmsh/", ShortHelp "Elements on spot surface"}]; 
+DefineConstant[Nb2 = {30, Path "Gmsh/", ShortHelp "Elements across epidermis"}];
+DefineConstant[Nb3 = {33, Path "Gmsh/", ShortHelp "Elements across dermis"}]; 
+DefineConstant[Nb4 = {15, Path "Gmsh/", ShortHelp "Elements on free surface"}]; 
 
 mm=1.e-3;
 L = 10*mm;

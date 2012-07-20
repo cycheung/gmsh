@@ -66,7 +66,6 @@ ViewNum=ViewNum+nbDepth;
 For k In {1:nbDepth}
  Plugin(Integrate).View=ViewNum+k;
  Plugin(Integrate).Run; 
- Save View [ViewNum+k] Sprintf("active%g.txt", k-1);
 EndFor
 
 ViewNum=ViewNum+nbDepth;
@@ -77,7 +76,7 @@ For k In {1:nbDepth}
  Plugin(MinMax).OverTime=1;
  Plugin(MinMax).Argument=0;
  Plugin(MinMax).Run;
- Save View [ViewNum+(k*2)] Sprintf("activeMax%g.txt", k-1);
+ Save View [ViewNum+nbDepth+(k*2)] Sprintf("activeMax%g.txt", k-1);
 EndFor
 
 ViewNum=ViewNum+nbDepth;
