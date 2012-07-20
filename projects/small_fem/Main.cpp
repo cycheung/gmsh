@@ -6,7 +6,7 @@
 #include "FormulationLaplace.h"
 #include "FormulationProjection.h"
 #include "System.h"
-//#include "Solution.h"
+#include "Solution.h"
 
 #include "Gmsh.h"
 
@@ -19,10 +19,11 @@ int main(int argc, char** argv){
   // Get Mesh //
   Mesh msh(argv[1]);
 
-  FormulationLaplace laplace;
+  cout << msh.toString() << endl;
+
+  //FormulationLaplace laplace;
 
   //cout << msh.toString() << endl;
-
 
   // Stop Gmsh //
   GmshFinalize();

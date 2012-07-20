@@ -33,8 +33,8 @@
 class Solution{
  private:
   const Mesh* msh;
-  const std::vector<Element*>* element;
-  const std::vector<Node*>*    node;
+  const std::vector<MElement*>* element;
+  const std::vector<MVertex*>*    node;
   int N;
   int E;
 

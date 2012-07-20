@@ -1,7 +1,7 @@
 #ifndef _INTERPOLATOR_H_
 #define _INTERPOLATOR_H_
 
-#include "Mesh.h"
+#include "GroupOfElement.h"
 
 /**
    @class Interpolator
@@ -11,8 +11,8 @@
    of all Interpolator%s.@n
 
    An Interpolator interpolates Entity values 
-   (of a  Mesh) on the @em Node%s 
-   (of the same Mesh).@n
+   (of a GroupOfElement) on the @em Node%s 
+   (of the same GroupOfElement).@n
 
    The Entity @em type to concider is given
    by the @em different @em implementations 
@@ -32,7 +32,7 @@ class Interpolator{
  public:
   virtual ~Interpolator(void);
 
-  virtual void interpolate(const Mesh& mesh) = 0;
+  virtual void interpolate(const GroupOfElement& mesh) = 0;
 
   bool isScalar(void) const;
 
@@ -45,10 +45,10 @@ class Interpolator{
    @return Deletes the Interpolator
 
    @fn Interpolator::interpolate
-   @param mesh A Mesh to interpolate on
+   @param mesh A GroupOfElement to interpolate on
    @return Computes the interpolation of the
-   Entity of the given Mesh on the Node%s
-   (of the same Mesh)
+   Entity of the given GroupOfElement on the Node%s
+   (of the same GroupOfElement)
 
    @fn Interpolator::isScalar
    @return Returns:

@@ -3,7 +3,6 @@
 
 #include "GroupOfDof.h"
 //#include "Interpolator.h"
-#include "Dof.h"
 
 /**
    @interface Formulation
@@ -34,8 +33,6 @@ class Formulation{
   
   virtual double rhs(const int equationI,
 		     const GroupOfDof& god) const = 0;
-
-  virtual const std::vector<Dof*> getAllDofs(void) const = 0;
   
   //virtual Interpolator& interpolator(void) const = 0;
 };
@@ -52,12 +49,6 @@ class Formulation{
    @param god The @em GroupOfDof associated 
    with the @em ith  equation of the formulation
    @return The value of the @em ith equation Right Hand Side
-
-   @fn Formulation::getAllDofs
-   @return Returns all the Dofs that are part of 
-   the formulation
-   @note Note that the first call to this method
-   will also generate the requested Dofs
 
    @fn Formulation::interpolator
    @return Returns the Interpolator associated with

@@ -33,7 +33,7 @@ class Mesh{
    Mesh(const std::string fileName);
   ~Mesh(void);
 
-  int                        getNbGroup(void) const;
+  int                                 getNbGroup(void) const;
   GroupOfElement&                     getGroup(int i) const;
   const std::vector<GroupOfElement*>& getAllGroups(void) const;
   

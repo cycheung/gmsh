@@ -2,11 +2,12 @@
 #include "DofManager.h"
 
 using namespace std;
-/*
+
 DofManager::DofManager(const GroupOfElement& element){
+  /*
   // Init Lookup struct and GroupOfDof //
   nGroup            = element.getNumber();
-  dof               = new vector<Dof*>(getNbDofFromElements(element));
+  //dof               = new vector<Dof*>(getNbDofFromElements(element));
   globalId          = new map<Dof*, int    , DofComparator>;
   dofToEntityLookup = new map<Dof*, Entity*, DofComparator>;
   group             = new vector<GroupOfDof*>(nGroup);
@@ -23,8 +24,9 @@ DofManager::DofManager(const GroupOfElement& element){
   delete dofLookup;
 
   nDof = dof->size();
+  */
 }
-*/
+
 
 DofManager::DofManager(void){
 }
@@ -37,10 +39,10 @@ DofManager::~DofManager(void){
   delete globalId;
   //delete dofToEntityLookup;
   delete physical;
-
-  for(int i = 0; i < nDof; i++)
-    delete (*dof)[i];
-  delete dof;
+  
+  //for(int i = 0; i < nDof; i++)
+  //  delete (*dof)[i];
+  //delete dof;
 }
 /*
 void DofManager::add(MElement& element, int groupId){  
