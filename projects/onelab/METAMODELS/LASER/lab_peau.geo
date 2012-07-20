@@ -7,13 +7,13 @@ DefineConstant[DERMIS = {1.5, Path "Parameters/Model/6"}];
 DefineConstant[BEAMRADIUS = {5, Path "Parameters/Laser/4"}];
 
 // Gmsh specific parameter
-DefineConstant[Nb1 = {30, Path "Gmsh/", ShortHelp "Elements on spot surface"}]; 
+DefineConstant[Nb1 = {40, Path "Gmsh/", ShortHelp "Elements on spot surface"}]; 
 DefineConstant[Nb2 = {30, Path "Gmsh/", ShortHelp "Elements across epidermis"}];
-DefineConstant[Nb3 = {33, Path "Gmsh/", ShortHelp "Elements across dermis"}]; 
-DefineConstant[Nb4 = {15, Path "Gmsh/", ShortHelp "Elements on free surface"}]; 
+DefineConstant[Nb3 = {25, Path "Gmsh/", ShortHelp "Elements across dermis"}]; 
+DefineConstant[Nb4 = {7, Path "Gmsh/", ShortHelp "Elements on free surface"}]; 
 
 mm=1.e-3;
-L = 10*mm;
+L = 7*mm;
 D = BEAMRADIUS *mm;
 H1 = DERMIS *mm;
 H2 = EPIDERMIS * mm;
@@ -62,6 +62,6 @@ Physical Line("FreeSkin") = {11};
 
 Transfinite Line {1, 7, 10} = Nb1;
 Transfinite Line {4, 6, 9} = Nb2;
-Transfinite Line {3, 5, 12} = Nb3 Using Progression 0.9;//0.9
-Transfinite Line {-2, -8, -11} = Nb4 Using Progression 0.9;
+Transfinite Line {3, 5, 12} = Nb3 Using Progression 0.85;//0.9
+Transfinite Line {-2, -8, -11} = Nb4 Using Progression 0.7;
 Transfinite Surface {1,2,3,4};

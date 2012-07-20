@@ -4,7 +4,7 @@ OL.block
 NumStep.number(50,Parameters/Elmer/1, "Time steps during laser appl."); 
 TimeStep.number(, Parameters/Elmer/2,"Time step [s]");
 TimeStep.setValue(OL.eval(OL.get(Parameters/Laser/APPLICTIME)/OL.get(NumStep)));
-TimeEnd.number(OL.eval(3*OL.get(Parameters/Laser/APPLICTIME)),Parameters/Elmer/3,"Simulation end time [s]");
+TimeEnd.number(OL.eval(10*OL.get(Parameters/Laser/APPLICTIME)),Parameters/Elmer/3,"Simulation end time [s]");
 OL.endblock
 
 %in the body of the file, onelab recognizes the following commands:
@@ -126,11 +126,11 @@ End
 Initial Condition 1
 Temperature = Real OL.get(Parameters/Model/BODYTEMP)
 
-Teneur = Variable Coordinate
+Teneur = Variable Coordinate 1, Coordinate 2
 OL.if( OL.get(Parameters/Model/SKINTYPE) == 1)
-  Real MATC "if((hp-tx(1))<0.00008){0.15/80*(hp-tx(1))*10^6+0.25} else {0.25+0.35/(1+exp(-0.25*((hp-tx(1))*10^6-80)))}"
-OL.else
   Real MATC "0.25+0.4/(1+exp(-0.25*((hp-tx(1))*10^6-15)))"
+OL.else
+  Real MATC "if((hp-tx(1))*10^6<80){0.15/80*(hp-tx(1))*10^6+0.25} else {0.25+0.35/(1+exp(-0.25*((hp-tx(1))*10^6-80)))}"
 OL.endif
 
 OL.if( OL.get(Parameters/Model/TENEUR) )
