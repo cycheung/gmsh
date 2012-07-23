@@ -5,13 +5,13 @@
 
 using namespace std;
 
-System::System(const std::vector<MElement*>& elements,
+System::System(const GroupOfElement& goe,
 	       const Formulation& formulation){
   // Get Formulation //
   this->formulation = &formulation;
 
   // Get Dof Manager //
-  dofM = new DofManager();
+  dofM = new DofManager(goe);
 
   // Get DofManager Data //
   size = dofM->dofNumber();
@@ -32,7 +32,7 @@ System::~System(void){
   delete dofM;
   // System is not responsible for deleting 'Formulations'
 }
-
+/*
 void System::fixBC(const int physicalId, const double value){
   
   const multimap<int, Dof*>& physicals = dofM->getAllPhysicals();
@@ -62,10 +62,10 @@ void System::fixBC(const int physicalId, const double value){
     (*b)(dofId) = value;
   }
 }
-
+*/
 void System::assemble(void){
-  // Get GeoDofs //
-  const std::vector<GeoDof*>& group = dofM->getAllGroups();
+  // Get GroupOfDofs //
+  const std::vector<GroupOfDof*>& group = dofM->getAllGroups();
   const int E = dofM->groupNumber();
 
   // Assemble System //
@@ -83,18 +83,19 @@ void System::solve(void){
 
   // Get dof value //
   Solver::solve(*A, *x, *b);
-
+  /*
   // Set all Entities value //
   const vector<Dof*>* dof = &dofM->getAllDofs();
   const int N = dof->size();
   
   for(int i = 0; i < N; i++)
     dofM->getEntity(*((*dof)[i])).setValue((*x)(i));
+  */
 }
 
-void System::assemble(GeoDof& group){
-  const vector<Dof*>& dof = group.getAllDofs();
-  const int N = group.dofNumber();
+void System::assemble(GroupOfDof& group){
+  const vector<Dof*>& dof = group.getAll();
+  const int N = group.getNumber();
 
   for(int i = 0; i < N; i++){
     int dofI = dofM->getGlobalId(*(dof[i]));

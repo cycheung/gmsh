@@ -2,8 +2,7 @@
 #define _SYSTEM_H_
 
 #include "fullMatrix.h"
-#include "Mesh.h"
-//#include "Jacobian.h"
+#include "GroupOfElement.h"
 #include "DofManager.h"
 #include "Formulation.h"
 
@@ -39,7 +38,7 @@ class System{
   const Formulation* formulation;
 
  public:
-   System(const std::vector<MElement*>& elements, 
+   System(const GroupOfElement& goe, 
 	  const Formulation& formulation);
   ~System(void);
 
@@ -47,7 +46,7 @@ class System{
   fullVector<double>& getRHS(void) const;
   fullVector<double>& getSol(void) const;
 
-  void fixBC(const int physicalId, const double value);
+  //void fixBC(const int physicalId, const double value);
   void assemble(void);
   void solve(void);
   

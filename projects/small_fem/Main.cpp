@@ -15,19 +15,16 @@ using namespace std;
 int main(int argc, char** argv){
   // Init Gmsh //
   GmshInitialize(argc, argv);
-
+  
   // Get Mesh //
   Mesh msh(argv[1]);
 
-  DofManager dom(msh.getGroup(2));
+  FormulationLaplace laplace;
 
-  cout << msh.toString() << endl;
-  cout << dom.toString() << endl;
+  System sysLaplace(msh.getGroup(2), laplace);
+  sysLaplace.assemble();
 
-
-  //FormulationLaplace laplace;
-
-  //cout << msh.toString() << endl;
+  sysLaplace.getMatrix().print();
 
   // Stop Gmsh //
   GmshFinalize();
