@@ -2,7 +2,8 @@
 #include "Exception.h"
 
 InterpolatorScalar::InterpolatorScalar(void){
-  scalar = true;
+  scalar           = true;
+  gotInterpolation = false;
 }
 
 InterpolatorScalar::~InterpolatorScalar(void){

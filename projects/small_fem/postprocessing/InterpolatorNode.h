@@ -5,7 +5,7 @@
 
 /**
    @class InterpolatorNode
-   @brief Interpolator for Edge%s
+   @brief Interpolator for Node%s
 
    This class is a @em scalar Interpolator
    for values defined on the @em Node%s of a 

@@ -33,7 +33,6 @@ class GroupOfDof: public Group{
 
   int nDof;
   std::vector<Dof*>* dof;
-  const std::vector<int>* direction;
   
   int nextDof;
   
@@ -58,7 +57,6 @@ class GroupOfDof: public Group{
   ~GroupOfDof(void);
 
   void add(Dof* dof);
-  void orientation(const std::vector<int>& orientation);
 };
 
 
@@ -102,14 +100,6 @@ inline const std::vector<Dof*>& GroupOfDof::getAll(void) const{
 
 inline const MElement& GroupOfDof::getGeoElement(void) const{
   return *element;
-}
-
-inline int GroupOfDof::getOrientation(const int dofId) const{
-  return (*direction)[dofId];
-}
-
-inline void GroupOfDof::orientation(const std::vector<int>& orientation){
-  direction = &orientation;
 }
 
 #endif

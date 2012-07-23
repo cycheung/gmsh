@@ -2,7 +2,8 @@
 #include "Exception.h"
 
 InterpolatorVector::InterpolatorVector(void){
-  scalar = false;
+  scalar           = false;
+  gotInterpolation = false;
 }
 
 InterpolatorVector::~InterpolatorVector(void){

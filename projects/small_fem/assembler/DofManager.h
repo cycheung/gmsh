@@ -6,6 +6,7 @@
 #include <map>
 #include <vector>
 
+#include "Basis.h"
 #include "GroupOfElement.h"
 #include "GroupOfDof.h"
 
@@ -57,9 +58,7 @@ class DofManager{
   int nextId;
   std::vector<Dof*>* dof;
 
-  std::map<Dof*, int    , DofComparator>* globalId;
-  //std::map<Dof*, Entity*, DofComparator>* dofToEntityLookup;
-  std::multimap<int, Dof*>* physical;
+  std::map<Dof*, int, DofComparator>* globalId;
 
   std::vector<GroupOfDof*>* group;
   int nGroup;
@@ -68,7 +67,7 @@ class DofManager{
 
  public:
    DofManager(void);
-   DofManager(const GroupOfElement& element);
+   DofManager(const GroupOfElement& goe);
   ~DofManager(void);
 
   int dofNumber(void) const;
@@ -79,13 +78,11 @@ class DofManager{
   const std::vector<GroupOfDof*>& getAllGroups(void) const;
 
   int   getGlobalId(Dof& dof) const;
-  //Entity& getEntity(Dof& dof) const;
 
   std::string toString(void) const;
 
  private:
-  //void add(MElement& element, int groupId);
-  //int  getNbDofFromElements(const std::vector<MElement*>& element) const;
+  void add(MElement& element, int groupId);
 };
 
 
@@ -150,10 +147,6 @@ inline const std::vector<Dof*>& DofManager::getAllDofs(void) const{
   return *dof;
 }
 
-inline const std::multimap<int, Dof*>& DofManager::getAllPhysicals(void) const{
-  return *physical;
-}
-
 inline const std::vector<GroupOfDof*>& DofManager::getAllGroups(void) const{
   return *group;
 }
@@ -161,11 +154,7 @@ inline const std::vector<GroupOfDof*>& DofManager::getAllGroups(void) const{
 inline int DofManager::getGlobalId(Dof& dof) const{
   return globalId->find(&dof)->second;
 }
-/*
-inline Entity& DofManager::getEntity(Dof& dof) const{
-  return *(dofToEntityLookup->find(&dof)->second);
-}
-*/
+
 inline bool DofManager::DofComparator::operator()(const Dof* a, const Dof* b) const{
   return *a < *b;
 }

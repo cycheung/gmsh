@@ -19,7 +19,11 @@ int main(int argc, char** argv){
   // Get Mesh //
   Mesh msh(argv[1]);
 
+  DofManager dom(msh.getGroup(2));
+
   cout << msh.toString() << endl;
+  cout << dom.toString() << endl;
+
 
   //FormulationLaplace laplace;
 

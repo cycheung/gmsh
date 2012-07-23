@@ -1,17 +1,18 @@
 #include <sstream>
+#include "MVertex.h"
 #include "DofManager.h"
 
 using namespace std;
 
-DofManager::DofManager(const GroupOfElement& element){
-  /*
+DofManager::DofManager(const GroupOfElement& goe){
+  
   // Init Lookup struct and GroupOfDof //
-  nGroup            = element.getNumber();
-  //dof               = new vector<Dof*>(getNbDofFromElements(element));
+  nGroup            = goe.getNumber();
   globalId          = new map<Dof*, int    , DofComparator>;
-  dofToEntityLookup = new map<Dof*, Entity*, DofComparator>;
   group             = new vector<GroupOfDof*>(nGroup);
-  physical          = new multimap<int, Dof*>;
+
+  // Get MElements //
+  const vector<MElement*>& element = goe.getAll();
 
   // Add Elements to DofManager //
   nextId = 0;
@@ -19,12 +20,13 @@ DofManager::DofManager(const GroupOfElement& element){
   dofLookup = new set<Dof*, DofComparator>;
 
   for(int i = 0; i < nGroup; i++)
-    add(*element[i], i);
+    add(*(element[i]), i);
 
-  delete dofLookup;
 
+  dof  = new vector<Dof*>(dofLookup->begin(), dofLookup->end());  
   nDof = dof->size();
-  */
+  
+  delete dofLookup;
 }
 
 
@@ -37,36 +39,32 @@ DofManager::~DofManager(void){
   delete group;
 
   delete globalId;
-  //delete dofToEntityLookup;
-  delete physical;
   
-  //for(int i = 0; i < nDof; i++)
-  //  delete (*dof)[i];
-  //delete dof;
+  for(int i = 0; i < nDof; i++)
+    delete (*dof)[i];
+  delete dof;
 }
-/*
+
 void DofManager::add(MElement& element, int groupId){  
-  const int type = element.getType();
-  const int nEntity = element.nEntity();
-  const std::vector<Entity*>& entity = element.getAllEntities();
+  // Up to now, we do only vertices ...//
+  const int type = 1; 
+  const int nEntity = element.getNumVertices();
+  
+  vector<MVertex*> entity;
+  element.getVertices(entity);
 
-  (*group)[groupId] = new GroupOfDof(nEntity, element.getId());
-
+  (*group)[groupId] = new GroupOfDof(nEntity, element);
+  
   for(int i = 0; i < nEntity; i++){
     pair<set<Dof*, DofComparator>::iterator, bool> p;
-    Dof* tmp = new Dof(entity[i]->getId(), type);
+    Dof* tmp = new Dof(entity[i]->getNum(), type);
 
     p = dofLookup->insert(tmp);
  
     if(p.second){
-      (*dof)[nextId] = tmp;
       globalId->insert(pair<Dof*, int>(tmp, nextId));
-      dofToEntityLookup->insert(pair<Dof*, Entity*>(tmp, entity[i]));
       
       (*group)[groupId]->add(tmp);
-
-      if(entity[i]->gotPhysical())
-	physical->insert(pair<int, Dof*>(entity[i]->getPhysical(), tmp));
 
       nextId += 1;
     }
@@ -77,25 +75,8 @@ void DofManager::add(MElement& element, int groupId){
     }
   }
   
-  (*group)[groupId]->jacobian(element);
-  (*group)[groupId]->orientation(element.getAllOrientations());
 }
 
-int DofManager::getNbDofFromElements(const vector<MElement*>& element) const{
-  set<int> entityLookup;
-  const int N = element.size();
-  
-  for(int i = 0; i < N; i++){
-    const vector<int>& id = element[i]->getAllEntitiesId();
-    const int M = id.size();
-    
-    for(int j = 0; j < M; j++)
-      entityLookup.insert(id[j]);
-  }
-    
-  return entityLookup.size();
-}
-*/
 string DofManager::toString(void) const{
   stringstream s;
   map<Dof*, int, DofComparator>::iterator i   = globalId->begin();
