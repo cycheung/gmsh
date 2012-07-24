@@ -1,42 +1,45 @@
 #include "fullMatrix.h"
 #include "GaussIntegration.h"
 #include "FormulationLaplace.h"
+#include "BasisScalar.h"
 #include "Mapper.h"
-#include "MElement.h"
+
 #include <cmath>
 
 using namespace std;
 
-FormulationLaplace::FormulationLaplace(void){
+FormulationLaplace::FormulationLaplace(const GroupOfElement& goe){
   // Gaussian Quadrature Data //
   gC = new fullMatrix<double>();
   gW = new fullVector<double>();
 
-  gaussIntegration::getTriangle(1, *gC, *gW);
+  // Look for 1st element to get element type
+  // (We suppose only one type of Mesh !!)
+  gaussIntegration::get(goe.get(0).getType(), 1, *gC, *gW);
 
   G = gW->size(); // Nbr of Gauss points
 
+  // Function Space //
+  fspace = new FunctionSpace(goe, 0, 1);
+
   // Basis //
-  // Generate Basis
-  base = new TriNodeBasis(1);  
-  const vector<Polynomial>& basis = base->getBasis();
+  // Get Basis
+  const BasisScalar& base = 
+    static_cast<const BasisScalar&>(fspace->getBasis(goe.get(0)));
+  const vector<Polynomial>& basis = base.getBasis();
 
   // Take gradient
-  basisSize = base->getSize();  
-  gradBasis = new vector<Polynomial> [basisSize];
+  unsigned int basisSize = basis.size();
+  gradBasis = new vector<Polynomial>[basisSize];
 
-  for(int i = 0; i < basisSize; i++)
+  for(unsigned int i = 0; i < basisSize; i++)
     gradBasis[i] = basis[i].gradient();
-
-  // Interpolator //
-  //interp = new InterpolatorNode();
 }
 
 FormulationLaplace::~FormulationLaplace(void){
   delete   gC;
   delete   gW;
-  //delete   interp;
-  delete   base;
+  delete   fspace;
   delete[] gradBasis;
 }
 

@@ -5,13 +5,12 @@
 
 using namespace std;
 
-System::System(const GroupOfElement& goe,
-	       const Formulation& formulation){
+System::System(const Formulation& formulation){
   // Get Formulation //
   this->formulation = &formulation;
 
   // Get Dof Manager //
-  dofM = new DofManager(goe);
+  dofM = new DofManager(formulation.fs());
 
   // Get DofManager Data //
   size = dofM->dofNumber();

@@ -1,32 +1,31 @@
 #include <sstream>
+#include "GroupOfElement.h"
 #include "MVertex.h"
+#include "MEdge.h"
+#include "MFace.h"
 #include "DofManager.h"
 
 using namespace std;
 
-DofManager::DofManager(const GroupOfElement& goe){
-  
-  // Init Lookup struct and GroupOfDof //
-  nGroup            = goe.getNumber();
-  globalId          = new map<Dof*, int    , DofComparator>;
-  group             = new vector<GroupOfDof*>(nGroup);
+DofManager::DofManager(const FunctionSpace& fs){
+  // Remember FunctionSpace //
+  this->fs = &fs;
 
-  // Get MElements //
-  const vector<MElement*>& element = goe.getAll();
+  // Get Support from FunctionSpace //
+  const GroupOfElement& support    = fs.getSupport();
+  int nElement                     = support.getNumber();
+  const vector<MElement*>& element = support.getAll();
 
-  // Add Elements to DofManager //
+  // Init Struct //
+  dof      = new set<Dof*>;         
+  group    = new vector<GroupOfDof*>(nElement);
+  globalId = new map<Dof*, int, DofComparator>;
+
+  // Create Dofs & Numbering//
   nextId = 0;
 
-  dofLookup = new set<Dof*, DofComparator>;
-
-  for(int i = 0; i < nGroup; i++)
+  for(int i = 0; i < nElement; i++)
     add(*(element[i]), i);
-
-
-  dof  = new vector<Dof*>(dofLookup->begin(), dofLookup->end());  
-  nDof = dof->size();
-  
-  delete dofLookup;
 }
 
 
@@ -34,27 +33,56 @@ DofManager::DofManager(void){
 }
 
 DofManager::~DofManager(void){
-  for(int i = 0; i < nGroup; i++)
+  int nElement = group->size();
+
+  for(int i = 0; i < nElement; i++)
     delete (*group)[i];
   delete group;
 
-  delete globalId;
-  
-  for(int i = 0; i < nDof; i++)
-    delete (*dof)[i];
+  set<Dof*>::iterator it;
+  set<Dof*>::iterator end = dof->end();
+
+  for(it = dof->begin(); it != end; it++)
+    delete *it;
   delete dof;
+
+  delete globalId;
 }
 
 void DofManager::add(MElement& element, int groupId){  
-  // Up to now, we do only vertices ...//
-  const int type = 1; 
-  const int nEntity = element.getNumVertices();
-  
-  vector<MVertex*> entity;
-  element.getVertices(entity);
+  // Get Element Data //
+  const int nVertex = element.getNumVertices();
+  const int nEdge   = element.getNumEdges();
+  const int nFace   = element.getNumFaces(); 
 
-  (*group)[groupId] = new GroupOfDof(nEntity, element);
+  vector<MVertex*> vertex(nVertex);
+  vector<MEdge> edge(nEdge);
+  vector<MFace> face(nFace);
+
+  for(int i = 0; i < nVertex; i++)
+    vertex[i] = element.getVertex(i);
+
+  for(int i = 0; i < nEdge; i++)    
+    edge[i] = element.getEdge(i);
   
+  for(int i = 0; i < nFace; i++)
+    face[i] = element.getFace(i);
+  
+  // Get FunctionSpace Data for this Element //
+  const int nFVertex = fs->getNFunctionPerVertex(element);
+  const int nFEdge   = fs->getNFunctionPerEdge(element);
+  const int nFFace   = fs->getNFunctionPerFace(element);
+  const int nFCell   = fs->getNFunctionPerCell(element);
+
+  // Create GroupOfDof //
+  const int nDof = 
+    nFVertex * nVertex +
+    nFEdge   * nEdge   +
+    nFFace   * nFace   +
+    nFCell;
+  
+  (*group)[groupId] = new GroupOfDof(nDof, element);
+  /*
   for(int i = 0; i < nEntity; i++){
     pair<set<Dof*, DofComparator>::iterator, bool> p;
     Dof* tmp = new Dof(entity[i]->getNum(), type);
@@ -74,7 +102,7 @@ void DofManager::add(MElement& element, int groupId){
       (*group)[groupId]->add(*(p.first)); // Add real Dof
     }
   }
-  
+  */
 }
 
 string DofManager::toString(void) const{

@@ -6,8 +6,8 @@
 #include <map>
 #include <vector>
 
-#include "Basis.h"
-#include "GroupOfElement.h"
+#include "FunctionSpace.h"
+#include "MElement.h"
 #include "GroupOfDof.h"
 
 /**
@@ -54,30 +54,27 @@ class DofManager{
     bool operator()(const Dof* a, const Dof* b) const;
   };
 
-  int nDof;
-  int nextId;
-  std::vector<Dof*>* dof;
+  const FunctionSpace* fs;
 
+  std::set<Dof*>*                     dof;
+  std::vector<GroupOfDof*>*           group;
   std::map<Dof*, int, DofComparator>* globalId;
 
-  std::vector<GroupOfDof*>* group;
-  int nGroup;
-
-  std::set<Dof*, DofComparator>* dofLookup;
+  int nextId;
+  
 
  public:
    DofManager(void);
-   DofManager(const GroupOfElement& goe);
+   DofManager(const FunctionSpace& fs);
   ~DofManager(void);
 
   int dofNumber(void) const;
   int groupNumber(void) const;
 
-  const std::vector<Dof*>& getAllDofs(void) const;
-  const std::multimap<int, Dof*>& getAllPhysicals(void) const;
+  //const std::vector<Dof*>&        getAllDofs(void) const;
   const std::vector<GroupOfDof*>& getAllGroups(void) const;
 
-  int   getGlobalId(Dof& dof) const;
+  int getGlobalId(Dof& dof) const;
 
   std::string toString(void) const;
 
@@ -136,17 +133,17 @@ class DofManager{
 //////////////////////
 
 inline int DofManager::dofNumber(void) const{
-  return nDof;
+  return dof->size();
 }
 
 inline int DofManager::groupNumber(void) const{
-  return nGroup;
+  return group->size();
 }
-
+/*
 inline const std::vector<Dof*>& DofManager::getAllDofs(void) const{
   return *dof;
 }
-
+*/
 inline const std::vector<GroupOfDof*>& DofManager::getAllGroups(void) const{
   return *group;
 }

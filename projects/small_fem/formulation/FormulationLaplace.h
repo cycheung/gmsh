@@ -4,8 +4,6 @@
 #include <vector>
 #include "Formulation.h"
 #include "Polynomial.h"
-#include "TriNodeBasis.h"
-//#include "InterpolatorNode.h"
 
 /**
    @class FormulationLaplace
@@ -14,7 +12,8 @@
    Formulation for the @em Laplace problem.
 
    @todo
-   Remove const_cast by correcting MElement constness
+   Remove const_cast by correcting MElement constness@n
+   Allow Hybrid Mesh
  */
 
 class FormulationLaplace: public Formulation{
@@ -24,16 +23,14 @@ class FormulationLaplace: public Formulation{
   fullMatrix<double>* gC;
   fullVector<double>* gW;
 
-  // Basis //
-  TriNodeBasis*            base;
-  std::vector<Polynomial>* gradBasis;
-  int                      basisSize;
+  // Function Space //
+  FunctionSpace* fspace;
 
-  // Interpolator //
-  //InterpolatorNode* interp;
+  // Grad Field //
+  std::vector<Polynomial>* gradBasis;
 
  public:
-  FormulationLaplace(void);
+  FormulationLaplace(const GroupOfElement& goe);
 
   virtual ~FormulationLaplace(void);
 
@@ -43,7 +40,7 @@ class FormulationLaplace: public Formulation{
   virtual double rhs(const int equationI,
 		     const GroupOfDof& god) const;
 
-  //virtual Interpolator& interpolator(void) const;
+  virtual FunctionSpace& fs(void) const;
 };
 
 /**
@@ -62,10 +59,9 @@ inline double FormulationLaplace::rhs(const int equationI,
 				      const GroupOfDof& god) const{
   return 0;
 }
-/*
-inline Interpolator& FormulationLaplace::interpolator(void) const{
-  return *interp;
+
+inline FunctionSpace& FormulationLaplace::fs(void) const{
+  return *fspace;
 }
-*/
 
 #endif

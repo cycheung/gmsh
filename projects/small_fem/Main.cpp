@@ -19,9 +19,9 @@ int main(int argc, char** argv){
   // Get Mesh //
   Mesh msh(argv[1]);
 
-  FormulationLaplace laplace;
+  FormulationLaplace laplace(msh.getGroup(2));
 
-  System sysLaplace(msh.getGroup(2), laplace);
+  System sysLaplace(laplace);
   sysLaplace.assemble();
 
   sysLaplace.getMatrix().print();

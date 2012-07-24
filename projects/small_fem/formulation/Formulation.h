@@ -2,6 +2,7 @@
 #define _FORMULATION_H_
 
 #include "GroupOfDof.h"
+#include "FunctionSpace.h"
 //#include "Interpolator.h"
 
 /**
@@ -33,6 +34,8 @@ class Formulation{
   
   virtual double rhs(const int equationI,
 		     const GroupOfDof& god) const = 0;
+
+  virtual FunctionSpace& fs(void) const = 0;
   
   //virtual Interpolator& interpolator(void) const = 0;
 };

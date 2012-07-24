@@ -38,8 +38,7 @@ class System{
   const Formulation* formulation;
 
  public:
-   System(const GroupOfElement& goe, 
-	  const Formulation& formulation);
+   System(const Formulation& formulation);
   ~System(void);
 
   fullMatrix<double>& getMatrix(void) const;
