@@ -1,4 +1,6 @@
+#include <set>
 #include <sstream>
+#include "MVertex.h"
 #include "GroupOfElement.h"
 
 using namespace std;
@@ -26,6 +28,23 @@ GroupOfElement::~GroupOfElement(void){
     deleting 'entity', niether the MElements of
     'element' !!
   */
+}
+
+int GroupOfElement::getNVertex(void) const{
+  set<MVertex*, MVertexLessThanNum> vertex;
+
+  for(unsigned int i = 0; i < nElement; i++){
+    // Get Vertices
+    vector<MVertex*> v;
+    (*element)[i]->getVertices(v);
+    const unsigned int nVertex = v.size();
+    
+    // Insert Vertex
+    for(unsigned int j = 0; j < nVertex; j++)
+      vertex.insert(v[j]);
+  }
+
+  return vertex.size();
 }
 
 string GroupOfElement::toString(void) const{

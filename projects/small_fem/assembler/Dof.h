@@ -30,12 +30,12 @@ class Dof{
 
  private:
   // Construction and destruction are not for the user responsablity
-   Dof(const int entity, const int type);
+   Dof(const unsigned int entity, const unsigned int type);
   ~Dof(void);
 
  public:
-  int getEntity(void) const;
-  int getType(void) const;
+  unsigned int getEntity(void) const;
+  unsigned int getType(void) const;
 
   bool operator<(const Dof& other) const;
   bool operator>(const Dof& other) const;
@@ -80,11 +80,11 @@ class Dof{
 inline Dof::~Dof(void){
 }
 
-inline int Dof::getEntity(void) const{
+inline unsigned int Dof::getEntity(void) const{
   return entity;
 }
 
-inline int Dof::getType(void) const{
+inline unsigned int Dof::getType(void) const{
   return type;
 }
 

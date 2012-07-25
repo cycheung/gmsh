@@ -5,6 +5,10 @@
 #include "MFace.h"
 #include "DofManager.h"
 
+
+
+#include <iostream>
+
 using namespace std;
 
 DofManager::DofManager(const FunctionSpace& fs){
@@ -15,9 +19,11 @@ DofManager::DofManager(const FunctionSpace& fs){
   const GroupOfElement& support    = fs.getSupport();
   int nElement                     = support.getNumber();
   const vector<MElement*>& element = support.getAll();
+  
+  nTotVertex = support.getNVertex();
 
   // Init Struct //
-  dof      = new set<Dof*>;         
+  dof      = new set<Dof*, DofComparator>;         
   group    = new vector<GroupOfDof*>(nElement);
   globalId = new map<Dof*, int, DofComparator>;
 
@@ -26,10 +32,6 @@ DofManager::DofManager(const FunctionSpace& fs){
 
   for(int i = 0; i < nElement; i++)
     add(*(element[i]), i);
-}
-
-
-DofManager::DofManager(void){
 }
 
 DofManager::~DofManager(void){
@@ -75,34 +77,77 @@ void DofManager::add(MElement& element, int groupId){
   const int nFCell   = fs->getNFunctionPerCell(element);
 
   // Create GroupOfDof //
+  const int nDofVertex = nFVertex * nVertex; 
+  const int nDofEdge   = nFEdge   * nEdge;
+  const int nDofFace   = nFFace   * nFace;
+  const int nDofCell   = nFCell;
+
   const int nDof = 
-    nFVertex * nVertex +
-    nFEdge   * nEdge   +
-    nFFace   * nFace   +
-    nFCell;
+    nDofVertex + nDofEdge + nDofFace + nDofCell;
   
   (*group)[groupId] = new GroupOfDof(nDof, element);
-  /*
-  for(int i = 0; i < nEntity; i++){
-    pair<set<Dof*, DofComparator>::iterator, bool> p;
-    Dof* tmp = new Dof(entity[i]->getNum(), type);
+  
+  // Add Vertex Based Dof //
+  for(int i = 0; i < nVertex; i++){
+    // Get Id of Vertex
+    const int id = vertex[i]->getNum();
 
-    p = dofLookup->insert(tmp);
- 
-    if(p.second){
-      globalId->insert(pair<Dof*, int>(tmp, nextId));
-      
-      (*group)[groupId]->add(tmp);
+    // Insert new Dof
+    for(int j = 0; j < nFVertex; j++){
+      cout << "Inserting Vertex (" << id << "): ";
 
-      nextId += 1;
-    }
-
-    else{
-      delete tmp; // Dof already exists
-      (*group)[groupId]->add(*(p.first)); // Add real Dof
+      Dof* tmp = new Dof(id, j);
+      insertDof(tmp, (*group)[groupId]);
     }
   }
-  */
+
+  // Add Edge Based Dof //
+  for(int i = 0; i < nEdge; i++){
+    // Get Id of Edge 
+    MVertex* vEdge0 = edge[i].getSortedVertex(0);
+    MVertex* vEdge1 = edge[i].getSortedVertex(1);
+
+    const int id = 
+      vEdge0->getNum() + 
+      vEdge1->getNum() * nTotVertex;
+
+    // Insert new Dof
+    for(int j = 0; j < nFEdge; j++){
+      cout << "Inserting Edge" 
+	   << "(" << vEdge0->getNum() << ", " << vEdge1->getNum() << ") "
+	   << "(" << id << "): ";
+      
+      Dof* tmp = new Dof(id, j);
+      insertDof(tmp, (*group)[groupId]);
+    }
+  }  
+}
+
+void DofManager::insertDof(Dof* d, GroupOfDof* god){
+  // Try to insert Dof //
+  pair<set<Dof*, DofComparator>::iterator, bool> p;
+  p = dof->insert(d);
+ 
+  // If insertion is OK (Dof 'd' didn't exist) //
+  //   --> Add new Dof
+  if(p.second){
+    cout << "Yes -- ID: " << nextId << endl;
+
+    globalId->insert(pair<Dof*, int>(d, nextId));
+    
+    god->add(d);
+    
+    nextId += 1;
+  }
+  
+  // If insertion failed (Dof 'd' already exists) //
+  //   --> delete 'd' and add existing Dof
+  else{
+    cout << "No" << endl;
+
+    delete d; 
+    god->add(*(p.first));
+  }
 }
 
 string DofManager::toString(void) const{

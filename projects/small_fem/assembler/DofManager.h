@@ -56,15 +56,14 @@ class DofManager{
 
   const FunctionSpace* fs;
 
-  std::set<Dof*>*                     dof;
+  std::set<Dof*, DofComparator>*      dof;
   std::vector<GroupOfDof*>*           group;
   std::map<Dof*, int, DofComparator>* globalId;
 
+  int nTotVertex;
   int nextId;
   
-
  public:
-   DofManager(void);
    DofManager(const FunctionSpace& fs);
   ~DofManager(void);
 
@@ -80,6 +79,7 @@ class DofManager{
 
  private:
   void add(MElement& element, int groupId);
+  void insertDof(Dof* d, GroupOfDof* god);
 };
 
 

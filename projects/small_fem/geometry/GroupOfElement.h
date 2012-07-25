@@ -38,6 +38,8 @@ class GroupOfElement: public Group{
 
   GEntity& getEntity(void) const;
 
+  int getNVertex(void) const;
+
   virtual std::string toString(void) const;
 };
 

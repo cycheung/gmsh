@@ -24,7 +24,7 @@ int main(int argc, char** argv){
   System sysLaplace(laplace);
   sysLaplace.assemble();
 
-  sysLaplace.getMatrix().print();
+  //sysLaplace.getMatrix().print();
 
   // Stop Gmsh //
   GmshFinalize();
