@@ -36,7 +36,8 @@
    It is also @em impossible to create a @em non @em Mesh @em Related Dof.
 
    @todo
-   A more @em general DofManager, with non Mesh Dof, etc
+   A more @em general DofManager, with non Mesh Dof, etc@n
+   Allow hybrid mesh
 */
 
 /**
@@ -70,16 +71,19 @@ class DofManager{
   int dofNumber(void) const;
   int groupNumber(void) const;
 
-  //const std::vector<Dof*>&        getAllDofs(void) const;
+  const std::vector<Dof*>         getAllDofs(void) const;
   const std::vector<GroupOfDof*>& getAllGroups(void) const;
 
   int getGlobalId(Dof& dof) const;
 
+  void setAsConstant(const GroupOfElement& goe, double value);
+
   std::string toString(void) const;
 
  private:
-  void add(MElement& element, int groupId);
-  void insertDof(Dof* d, GroupOfDof* god);
+  Dof** dofFromElement(MElement& element, int* nDof);
+  void  insertDof(Dof* d, GroupOfDof* god);
+  
 };
 
 
@@ -139,11 +143,11 @@ inline int DofManager::dofNumber(void) const{
 inline int DofManager::groupNumber(void) const{
   return group->size();
 }
-/*
-inline const std::vector<Dof*>& DofManager::getAllDofs(void) const{
-  return *dof;
+
+inline const std::vector<Dof*> DofManager::getAllDofs(void) const{
+  return std::vector<Dof*>(dof->begin(), dof->end());
 }
-*/
+
 inline const std::vector<GroupOfDof*>& DofManager::getAllGroups(void) const{
   return *group;
 }

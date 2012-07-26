@@ -37,6 +37,8 @@ class Mesh{
   GroupOfElement&                     getGroup(int i) const;
   const std::vector<GroupOfElement*>& getAllGroups(void) const;
   
+  const std::vector<GroupOfElement*>  getFromPhysical(int physical) const;
+
   std::string toString(void) const;
 };
 

@@ -3,6 +3,7 @@
 
 #include "fullMatrix.h"
 #include "GroupOfElement.h"
+#include "GroupOfDof.h"
 #include "DofManager.h"
 #include "Formulation.h"
 
@@ -14,14 +15,7 @@
    and a list of Element%s.@n
   
    @warning
-   Up to now, the assembly is done when the System is instantiated@n
-   Also, we can @em only assemble Dof related to an Element@n
-
-   @todo
-   Assembly of @em non @em geometric Dof@n
-   Keeping Entity away@n
-   Use Mesh instead of Element list ---> Element type shall be given by 
-   the Basis used in the Formulation !!
+   We can @em only assemble Dof related to an Element@n
  */
 
 class System{
@@ -45,7 +39,7 @@ class System{
   fullVector<double>& getRHS(void) const;
   fullVector<double>& getSol(void) const;
 
-  //void fixBC(const int physicalId, const double value);
+  void fixBC(const GroupOfElement& goe, double value);
   void assemble(void);
   void solve(void);
   
@@ -91,7 +85,6 @@ class System{
 // Inline Functions //
 //////////////////////
 
-
 inline fullMatrix<double>& System::getMatrix(void) const{
   return *A;
 }
@@ -102,6 +95,10 @@ inline fullVector<double>& System::getRHS(void) const{
 
 inline fullVector<double>& System::getSol(void) const{
   return *x;
+}
+
+inline void System::fixBC(const GroupOfElement& goe, double value){
+  dofM->setAsConstant(goe, value);
 }
 
 #endif

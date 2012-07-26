@@ -1,6 +1,7 @@
 #include "Mesh.h"
 #include "Exception.h"
 
+#include <list>
 #include <sstream>
 
 using namespace std;
@@ -33,7 +34,7 @@ Mesh::Mesh(const std::string fileName){
       physToGroup->insert(pair<int, GroupOfElement*>(physical[j], (*group)[i]));
   }
 }
- 
+
 Mesh::~Mesh(void){
   delete model;  
   delete physToGroup;
@@ -41,6 +42,20 @@ Mesh::~Mesh(void){
   for(unsigned int i = 0; i < nEntity; i++)
     delete (*group)[i];
   delete group;
+}
+
+const vector<GroupOfElement*> Mesh::getFromPhysical(int physical) const{
+  pair<multimap<int, GroupOfElement*>::iterator, 
+       multimap<int, GroupOfElement*>::iterator> startStop = 
+    physToGroup->equal_range(physical);
+  
+  multimap<int, GroupOfElement*>::iterator it;
+  list<GroupOfElement*> lst;
+  
+  for(it = startStop.first; it != startStop.second; it++)
+    lst.push_back((*it).second);
+
+  return vector<GroupOfElement*>(lst.begin(), lst.end());
 }
 
 string Mesh::toString(void) const{

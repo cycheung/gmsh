@@ -3,6 +3,7 @@
 
 #include <vector>
 #include "Formulation.h"
+#include "Mesh.h"
 #include "Polynomial.h"
 
 /**
@@ -27,9 +28,11 @@ class FormulationLaplace: public Formulation{
   FunctionSpace* fspace;
 
   // Grad Field //
+  unsigned int             basisSize;
   std::vector<Polynomial>* gradBasis;
 
  public:
+  FormulationLaplace(const Mesh& mesh, int physical);
   FormulationLaplace(const GroupOfElement& goe);
 
   virtual ~FormulationLaplace(void);

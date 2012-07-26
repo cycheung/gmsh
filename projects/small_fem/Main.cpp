@@ -19,12 +19,13 @@ int main(int argc, char** argv){
   // Get Mesh //
   Mesh msh(argv[1]);
 
-  FormulationLaplace laplace(msh.getGroup(2));
+  FormulationLaplace laplace(*msh.getFromPhysical(7).at(0));
 
   System sysLaplace(laplace);
+  sysLaplace.fixBC(*msh.getFromPhysical(6).at(0), -1);
   sysLaplace.assemble();
 
-  //sysLaplace.getMatrix().print();
+  sysLaplace.getMatrix().print();
 
   // Stop Gmsh //
   GmshFinalize();

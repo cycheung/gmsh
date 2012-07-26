@@ -15,7 +15,7 @@ FormulationLaplace::FormulationLaplace(const GroupOfElement& goe){
 
   // Look for 1st element to get element type
   // (We suppose only one type of Mesh !!)
-  gaussIntegration::get(goe.get(0).getType(), 1, *gC, *gW);
+  gaussIntegration::get(goe.get(0).getType(), 2, *gC, *gW);
 
   G = gW->size(); // Nbr of Gauss points
 
@@ -29,7 +29,7 @@ FormulationLaplace::FormulationLaplace(const GroupOfElement& goe){
   const vector<Polynomial>& basis = base.getBasis();
 
   // Take gradient
-  unsigned int basisSize = basis.size();
+  basisSize = basis.size();
   gradBasis = new vector<Polynomial>[basisSize];
 
   for(unsigned int i = 0; i < basisSize; i++)

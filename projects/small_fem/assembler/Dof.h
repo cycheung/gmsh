@@ -23,8 +23,12 @@ class DofManager;
 
 class Dof{
  private:
-  int entity;
-  int type;
+  bool unknown;
+
+  unsigned int entity;
+  unsigned int type;
+
+  double value;
 
   friend class DofManager;
 
@@ -34,8 +38,12 @@ class Dof{
   ~Dof(void);
 
  public:
+  bool isUnknown(void) const;
+
   unsigned int getEntity(void) const;
   unsigned int getType(void) const;
+
+  double getValue(void) const;
 
   bool operator<(const Dof& other) const;
   bool operator>(const Dof& other) const;
@@ -77,7 +85,8 @@ class Dof{
 // Inline Functions //
 //////////////////////
 
-inline Dof::~Dof(void){
+inline bool Dof::isUnknown(void) const{
+  return unknown;
 }
 
 inline unsigned int Dof::getEntity(void) const{

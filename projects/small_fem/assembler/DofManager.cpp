@@ -3,11 +3,10 @@
 #include "MVertex.h"
 #include "MEdge.h"
 #include "MFace.h"
+#include "Exception.h"
 #include "DofManager.h"
 
-
-
-#include <iostream>
+#include <cstdio>
 
 using namespace std;
 
@@ -30,8 +29,22 @@ DofManager::DofManager(const FunctionSpace& fs){
   // Create Dofs & Numbering//
   nextId = 0;
 
-  for(int i = 0; i < nElement; i++)
-    add(*(element[i]), i);
+  // Loop over Element
+  for(int i = 0; i < nElement; i++){
+    // Get Dof for this Element
+    int nDof;
+    Dof** myDof = dofFromElement(*(element[i]) ,&nDof);
+    
+    // Create new GroupOfDof
+    (*group)[i] = new GroupOfDof(nDof, *(element[i]));
+
+    // Add Dof
+    for(int j = 0; j < nDof; j++)
+      insertDof(myDof[j], (*group)[i]);
+
+    // Delete Dof 'Container'
+    delete[] myDof;
+  }
 }
 
 DofManager::~DofManager(void){
@@ -51,7 +64,7 @@ DofManager::~DofManager(void){
   delete globalId;
 }
 
-void DofManager::add(MElement& element, int groupId){  
+Dof** DofManager::dofFromElement(MElement& element, int* nDof){  
   // Get Element Data //
   const int nVertex = element.getNumVertices();
   const int nEdge   = element.getNumEdges();
@@ -76,28 +89,28 @@ void DofManager::add(MElement& element, int groupId){
   const int nFFace   = fs->getNFunctionPerFace(element);
   const int nFCell   = fs->getNFunctionPerCell(element);
 
-  // Create GroupOfDof //
+  // Create Dof //
   const int nDofVertex = nFVertex * nVertex; 
   const int nDofEdge   = nFEdge   * nEdge;
   const int nDofFace   = nFFace   * nFace;
   const int nDofCell   = nFCell;
 
-  const int nDof = 
+  *nDof = 
     nDofVertex + nDofEdge + nDofFace + nDofCell;
+
+  Dof** myDof = new Dof*[*nDof];
   
-  (*group)[groupId] = new GroupOfDof(nDof, element);
-  
+  int it = 0;
+
   // Add Vertex Based Dof //
   for(int i = 0; i < nVertex; i++){
     // Get Id of Vertex
     const int id = vertex[i]->getNum();
 
-    // Insert new Dof
+    // New Dof
     for(int j = 0; j < nFVertex; j++){
-      cout << "Inserting Vertex (" << id << "): ";
-
-      Dof* tmp = new Dof(id, j);
-      insertDof(tmp, (*group)[groupId]);
+      myDof[it] = new Dof(id, j);
+      it++;
     }
   }
 
@@ -113,14 +126,22 @@ void DofManager::add(MElement& element, int groupId){
 
     // Insert new Dof
     for(int j = 0; j < nFEdge; j++){
-      cout << "Inserting Edge" 
-	   << "(" << vEdge0->getNum() << ", " << vEdge1->getNum() << ") "
-	   << "(" << id << "): ";
-      
-      Dof* tmp = new Dof(id, j);
-      insertDof(tmp, (*group)[groupId]);
+      myDof[it] = new Dof(id, j);
+      it++;
     }
   }  
+
+  // Add Cell Based Dof //
+  // Get Id of Cell 
+  const int id = element.getNum() * nTotVertex * nTotVertex;
+
+  // Insert new Dof
+  for(int j = 0; j < nFCell; j++){
+    myDof[it] = new Dof(id, j);
+    it++;
+  }
+
+  return myDof;
 }
 
 void DofManager::insertDof(Dof* d, GroupOfDof* god){
@@ -131,8 +152,6 @@ void DofManager::insertDof(Dof* d, GroupOfDof* god){
   // If insertion is OK (Dof 'd' didn't exist) //
   //   --> Add new Dof
   if(p.second){
-    cout << "Yes -- ID: " << nextId << endl;
-
     globalId->insert(pair<Dof*, int>(d, nextId));
     
     god->add(d);
@@ -143,10 +162,46 @@ void DofManager::insertDof(Dof* d, GroupOfDof* god){
   // If insertion failed (Dof 'd' already exists) //
   //   --> delete 'd' and add existing Dof
   else{
-    cout << "No" << endl;
-
     delete d; 
     god->add(*(p.first));
+  }
+}
+
+void DofManager::setAsConstant(const GroupOfElement& goe, double value){
+  // Get Element //
+  const vector<MElement*>& element = goe.getAll();
+  const unsigned int      nElement = goe.getNumber();
+
+  // For All Element //
+  for(unsigned int i = 0; i < nElement; i++){
+    // Get Dof (with same key, *not* same instance)
+    int   nDof;
+    Dof** myDof = dofFromElement(*element[i], &nDof);
+
+    // Look for 'Real' Dof and set Value
+    for(int j = 0; j < nDof; j++){
+      // Lookup in Dof set
+      pair<set<Dof*, DofComparator>::iterator, bool> p 
+	= dof->insert(myDof[j]);
+
+      printf("Element: %d | Dof: %d\n", i, j);
+
+      // If Dof doesn't exist --> Exception
+      if(p.second)
+	throw Exception
+	  ("Dof (%d, %d) don't exist: can't set value", 
+	   myDof[j]->getEntity(), myDof[j]->getType());
+
+      // Else, set Dof to value
+      (*(p.first))->unknown = false; // Dof is no longer an unknown
+      (*(p.first))->value   = value; // And has the value 'value' 
+    
+      // Delete Dof
+      delete myDof[j];
+    }
+    
+    // Delete myDof
+    delete[] myDof;
   }
 }
 
