@@ -28,10 +28,11 @@ class System{
 
   int size;
 
-  DofManager* dofM;
   const Formulation* formulation;
 
  public:
+  DofManager* dofM;
+
    System(const Formulation& formulation);
   ~System(void);
 

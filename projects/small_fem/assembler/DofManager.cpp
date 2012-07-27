@@ -6,8 +6,6 @@
 #include "Exception.h"
 #include "DofManager.h"
 
-#include <cstdio>
-
 using namespace std;
 
 DofManager::DofManager(const FunctionSpace& fs){
@@ -184,13 +182,11 @@ void DofManager::setAsConstant(const GroupOfElement& goe, double value){
       pair<set<Dof*, DofComparator>::iterator, bool> p 
 	= dof->insert(myDof[j]);
 
-      printf("Element: %d | Dof: %d\n", i, j);
-
       // If Dof doesn't exist --> Exception
       if(p.second)
 	throw Exception
-	  ("Dof (%d, %d) don't exist: can't set value", 
-	   myDof[j]->getEntity(), myDof[j]->getType());
+	  ("Dof %s don't exist: can't set value", 
+	   myDof[j]->toString().c_str());
 
       // Else, set Dof to value
       (*(p.first))->unknown = false; // Dof is no longer an unknown

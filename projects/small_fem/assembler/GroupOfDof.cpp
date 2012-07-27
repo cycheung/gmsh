@@ -29,8 +29,11 @@ std::string GroupOfDof::toString(void) const{
 	 << "******************* " << std::endl
 	 << "* Associated Dofs:  " << std::endl;
 
-  for(int i = 0; i < nDof; i++)
+  for(int i = 0; i < nDof; i++){
     stream << "*    -- " << get(i).toString() << std::endl;
+    stream << "*      Entity: " << const_cast<MElement*>(element)->getVertex(i)->getNum()
+	   << std::endl;
+  }
 
   stream << "******************* " << std::endl;
 

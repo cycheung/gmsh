@@ -79,7 +79,7 @@ inline fullVector<double> Mapper::grad(const fullVector<double>& gradUVW,
 				       const fullMatrix<double>& invJac){
 
   fullVector<double> gradXYZ(3);
-  invJac.multWithATranspose(gradUVW, 1, 1, gradXYZ);
+  invJac.multWithATranspose(gradUVW, 1, 0, gradXYZ);
   return gradXYZ;
 }
 

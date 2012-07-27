@@ -33,7 +33,7 @@ FormulationLaplace::FormulationLaplace(const GroupOfElement& goe){
   gradBasis = new vector<Polynomial>[basisSize];
 
   for(unsigned int i = 0; i < basisSize; i++)
-    gradBasis[i] = basis[i].gradient();
+    gradBasis[i] = basis[i].gradient();  
 }
 
 FormulationLaplace::~FormulationLaplace(void){
@@ -56,6 +56,7 @@ double FormulationLaplace::weak(const int nodeI, const int nodeJ,
 				     (*gC)(g, 1), 
 				     (*gC)(g, 2), 
 				     invJac);
+    //invJac.print();
     invJac.invertInPlace();
 
     fullVector<double> phiI = Mapper::grad(Polynomial::at(gradBasis[nodeI], 

@@ -23,10 +23,16 @@ int main(int argc, char** argv){
 
   System sysLaplace(laplace);
   sysLaplace.fixBC(*msh.getFromPhysical(6).at(0), -1);
+  sysLaplace.fixBC(*msh.getFromPhysical(5).at(0),  2);
   sysLaplace.assemble();
 
   sysLaplace.getMatrix().print();
+  sysLaplace.getRHS().print();
 
+  sysLaplace.solve();
+
+  sysLaplace.getSol().print();
+ 
   // Stop Gmsh //
   GmshFinalize();
 

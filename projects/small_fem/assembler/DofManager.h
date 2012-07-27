@@ -37,7 +37,8 @@
 
    @todo
    A more @em general DofManager, with non Mesh Dof, etc@n
-   Allow hybrid mesh
+   Allow hybrid mesh@n
+   Put dofFromElement in FunctionSpace ?? 
 */
 
 /**

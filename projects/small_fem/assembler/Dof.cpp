@@ -15,8 +15,8 @@ Dof::~Dof(void){
 double Dof::getValue(void) const{
   if(unknown)
     throw Exception
-      ("Dof (%d, %d) is an unknown, and has no value", 
-       entity, type);
+      ("Dof %s is an unknown, and has no value", 
+       toString().c_str());
 
   return value;
 }

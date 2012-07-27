@@ -3,6 +3,9 @@
 #include "Exception.h"
 #include "Solver.h"
 
+
+#include <iostream>
+
 using namespace std;
 
 System::System(const Formulation& formulation){
@@ -25,6 +28,8 @@ System::System(const Formulation& formulation){
 }
 
 System::~System(void){
+ cout << dofM->toString() << endl;
+
   delete A;
   delete b;
   delete x;
@@ -41,8 +46,32 @@ void System::assemble(void){
   for(int i = 0; i < E; i++)
     assemble(*(group[i]));  
   
+  // Set BC //
+  for(int i = 0; i < size; i++){
+    (*A)(0, i) = 0.0;
+    (*A)(1, i) = 0.0;
+    (*A)(4, i) = 0.0;
+    (*A)(5, i) = 0.0;
+    (*A)(6, i) = 0.0;
+    (*A)(8, i) = 0.0;
+  }
+
+  (*A)(0, 0) = 1.0;
+  (*A)(1, 1) = 1.0;
+  (*A)(4, 4) = 1.0;
+  (*A)(5, 5) = 1.0;
+  (*A)(6, 6) = 1.0;
+  (*A)(8, 8) = 1.0;  
+
+  (*b)(0) = -1.0;
+  (*b)(1) = -1.0;
+  (*b)(4) =  2.0;
+  (*b)(5) =  2.0;
+  (*b)(6) = -1.0;
+  (*b)(8) =  2.0;    
+
   // The system is assembled //
-  isAssembled = true;
+  isAssembled = true;  
 }
 
 void System::solve(void){
@@ -66,23 +95,32 @@ void System::assemble(GroupOfDof& group){
   const vector<Dof*>& dof = group.getAll();
   const int N = group.getNumber();
 
+  cout << " --- " << endl;
+  cout << group.getGeoElement().getNum() << endl;
+  cout << group.toString() << endl;
+
   for(int i = 0; i < N; i++){
     int dofI = dofM->getGlobalId(*(dof[i]));
-    
-    if(dof[i]->isUnknown()){    
-      (*A)(dofI, dofI) = 1;
-      (*b)(dofI)       = dof[i]->getValue();
-    } 
+       
+    for(int j = 0; j < N; j++){
+      int dofJ = dofM->getGlobalId(*(dof[j]));
 
-    else{
-      for(int j = 0; j < N; j++){
-	int dofJ = dofM->getGlobalId(*(dof[j]));
-	
-	(*A)(dofI, dofJ) += 
-	  formulation->weak(i, j, group);
-      }
+      double term = formulation->weak(i, j, group);
+
+      cout << "(" << dofI << ", " << dofJ << ")"
+	   << " = " << term << endl;
       
-      (*b)(dofI) += formulation->rhs(i, group);
+      (*A)(dofI, dofJ) += term;
     }
-  }
+    
+    cout << endl;
+
+    (*b)(dofI) += formulation->rhs(i, group);
+  } 
+
+  cout << " --- " << endl;
+
+  A->print();
+  cout << endl;
 }
+
