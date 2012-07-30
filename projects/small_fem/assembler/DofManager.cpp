@@ -22,7 +22,8 @@ DofManager::DofManager(const FunctionSpace& fs){
   // Init Struct //
   dof      = new set<Dof*, DofComparator>;         
   group    = new vector<GroupOfDof*>(nElement);
-  globalId = new map<Dof*, int, DofComparator>;
+  globalId = new map<const Dof*, int, DofComparator>;
+  fixedDof = new map<const Dof*, double, DofComparator>;
 
   // Create Dofs & Numbering//
   nextId = 0;
@@ -60,6 +61,7 @@ DofManager::~DofManager(void){
   delete dof;
 
   delete globalId;
+  delete fixedDof;
 }
 
 Dof** DofManager::dofFromElement(MElement& element, int* nDof){  
@@ -164,7 +166,7 @@ void DofManager::insertDof(Dof* d, GroupOfDof* god){
     god->add(*(p.first));
   }
 }
-
+/*
 void DofManager::setAsConstant(const GroupOfElement& goe, double value){
   // Get Element //
   const vector<MElement*>& element = goe.getAll();
@@ -200,11 +202,29 @@ void DofManager::setAsConstant(const GroupOfElement& goe, double value){
     delete[] myDof;
   }
 }
+*/
+
+pair<bool, double> DofManager::getValue(const Dof& dof) const{
+  map<const Dof*, double, DofComparator>::iterator end = 
+    fixedDof->end();
+
+  map<const Dof*, double, DofComparator>::iterator it = 
+    fixedDof->find(&dof);
+
+  if(it == end)
+    return pair<bool, double>(false, 42);
+
+  else
+    return pair<bool, double>(true, it->second);
+}
 
 string DofManager::toString(void) const{
   stringstream s;
-  map<Dof*, int, DofComparator>::iterator i   = globalId->begin();
-  map<Dof*, int, DofComparator>::iterator end = globalId->end();
+  map<const Dof*, int, DofComparator>::iterator i = 
+    globalId->begin();
+  
+  map<const Dof*, int, DofComparator>::iterator end = 
+    globalId->end();
   
   for(; i != end; i++)
     s << "("  << (*i).first->toString() 

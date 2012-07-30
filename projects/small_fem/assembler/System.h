@@ -98,8 +98,4 @@ inline fullVector<double>& System::getSol(void) const{
   return *x;
 }
 
-inline void System::fixBC(const GroupOfElement& goe, double value){
-  dofM->setAsConstant(goe, value);
-}
-
 #endif

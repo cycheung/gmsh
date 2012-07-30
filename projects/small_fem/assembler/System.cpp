@@ -3,9 +3,6 @@
 #include "Exception.h"
 #include "Solver.h"
 
-
-#include <iostream>
-
 using namespace std;
 
 System::System(const Formulation& formulation){
@@ -28,8 +25,6 @@ System::System(const Formulation& formulation){
 }
 
 System::~System(void){
- cout << dofM->toString() << endl;
-
   delete A;
   delete b;
   delete x;
@@ -74,6 +69,10 @@ void System::assemble(void){
   isAssembled = true;  
 }
 
+void System::fixBC(const GroupOfElement& goe, double value){
+  //dofM->setAsConstant(goe, value);
+}
+
 void System::solve(void){
   // Is the System assembled ? //
   if(!isAssembled)
@@ -95,32 +94,17 @@ void System::assemble(GroupOfDof& group){
   const vector<Dof*>& dof = group.getAll();
   const int N = group.getNumber();
 
-  cout << " --- " << endl;
-  cout << group.getGeoElement().getNum() << endl;
-  cout << group.toString() << endl;
-
   for(int i = 0; i < N; i++){
     int dofI = dofM->getGlobalId(*(dof[i]));
        
     for(int j = 0; j < N; j++){
       int dofJ = dofM->getGlobalId(*(dof[j]));
 
-      double term = formulation->weak(i, j, group);
-
-      cout << "(" << dofI << ", " << dofJ << ")"
-	   << " = " << term << endl;
-      
-      (*A)(dofI, dofJ) += term;
+      (*A)(dofI, dofJ) += 
+	formulation->weak(i, j, group);
     }
-    
-    cout << endl;
 
     (*b)(dofI) += formulation->rhs(i, group);
   } 
-
-  cout << " --- " << endl;
-
-  A->print();
-  cout << endl;
 }
 

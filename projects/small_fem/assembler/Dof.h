@@ -13,43 +13,39 @@
    A Dof is defined by a pair of to integers called (@c entity, @c type).@n
    By themselfs, these integers have no meaning.@n
    They just @em define a Dof.
+*/
 
-   @note
-   Note that users are not allowed to instanciate a Dof.@n
-   This is the DofManager's responsability.
+/**
+   @class DofComparator
+   @brief A class to compare two Dof%s
+
+   A class to compare two Dof%s.
 */
 
 class DofManager;
 
 class Dof{
  private:
-  bool unknown;
-
   unsigned int entity;
   unsigned int type;
 
-  double value;
-
-  friend class DofManager;
-
- private:
-  // Construction and destruction are not for the user responsablity
+ public:
    Dof(const unsigned int entity, const unsigned int type);
   ~Dof(void);
 
- public:
-  bool isUnknown(void) const;
-
   unsigned int getEntity(void) const;
   unsigned int getType(void) const;
-
-  double getValue(void) const;
 
   bool operator<(const Dof& other) const;
   bool operator>(const Dof& other) const;
   bool operator==(const Dof& other) const;
 
   std::string toString(void) const;
+};
+
+class DofComparator{
+ public:
+  bool operator()(const Dof* a, const Dof* b) const;
 };
 
 /**
@@ -79,15 +75,18 @@ class Dof{
 
    @fn std::string Dof::toString(void) const
    @return Returns the Dof's string
+
+   @fn bool DofComparator::operator()(const Dof* a, const Dof* b) const
+   @param a A Dof
+   @param b Another Dof
+   @return operator() is:
+   @li @c true, if a is @em smaller than b  
+   @li @c false, otherwise
 */
 
 //////////////////////
 // Inline Functions //
 //////////////////////
-
-inline bool Dof::isUnknown(void) const{
-  return unknown;
-}
 
 inline unsigned int Dof::getEntity(void) const{
   return entity;
@@ -109,6 +108,10 @@ inline bool Dof::operator>(const Dof& other) const{
 
 inline bool Dof::operator==(const Dof& other) const{
   return (entity == other.entity) && (type == other.type);
+}
+
+inline bool DofComparator::operator()(const Dof* a, const Dof* b) const{
+  return *a < *b;
 }
 
 #endif

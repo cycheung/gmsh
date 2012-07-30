@@ -56,7 +56,6 @@ double FormulationLaplace::weak(const int nodeI, const int nodeJ,
 				     (*gC)(g, 1), 
 				     (*gC)(g, 2), 
 				     invJac);
-    //invJac.print();
     invJac.invertInPlace();
 
     fullVector<double> phiI = Mapper::grad(Polynomial::at(gradBasis[nodeI], 

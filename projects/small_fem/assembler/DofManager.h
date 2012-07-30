@@ -6,6 +6,7 @@
 #include <map>
 #include <vector>
 
+#include "Dof.h"
 #include "FunctionSpace.h"
 #include "MElement.h"
 #include "GroupOfDof.h"
@@ -38,29 +39,18 @@
    @todo
    A more @em general DofManager, with non Mesh Dof, etc@n
    Allow hybrid mesh@n
-   Put dofFromElement in FunctionSpace ?? 
-*/
-
-/**
-   @class DofManager::DofComparator
-   @brief A private class of DofManager, that can compare two Dof%s
-
-   A private class of DofManager, that can compare two Dof%s.
 */
 
 class DofManager{
  private:
-
-  class DofComparator{
-  public:
-    bool operator()(const Dof* a, const Dof* b) const;
-  };
+  friend class FunctionSpace;
 
   const FunctionSpace* fs;
 
-  std::set<Dof*, DofComparator>*      dof;
-  std::vector<GroupOfDof*>*           group;
-  std::map<Dof*, int, DofComparator>* globalId;
+  std::set<Dof*, DofComparator>*               dof;
+  std::vector<GroupOfDof*>*                    group;
+  std::map<const Dof*, int, DofComparator>*    globalId;
+  std::map<const Dof*, double, DofComparator>* fixedDof;
 
   int nTotVertex;
   int nextId;
@@ -75,16 +65,18 @@ class DofManager{
   const std::vector<Dof*>         getAllDofs(void) const;
   const std::vector<GroupOfDof*>& getAllGroups(void) const;
 
-  int getGlobalId(Dof& dof) const;
+  int getGlobalId(const Dof& dof) const;
 
-  void setAsConstant(const GroupOfElement& goe, double value);
+  bool isUnknown(const Dof& dof) const;
+  bool fixValue(const Dof& dof, double value);
+  std::pair<bool, double> getValue(const Dof& dof) const;
 
   std::string toString(void) const;
 
  private:
+  // To FunctionSpace !!
   Dof** dofFromElement(MElement& element, int* nDof);
-  void  insertDof(Dof* d, GroupOfDof* god);
-  
+  void  insertDof(Dof* d, GroupOfDof* god);  
 };
 
 
@@ -123,13 +115,6 @@ class DofManager{
 
    @fn std::string DofManager::toString(void) const
    @return Returns the DofManager's string
-
-   @fn bool DofManager::DofComparator::operator()(const Dof* a, const Dof* b) const
-   @param a A Dof
-   @param b Another Dof
-   @return operator() is:
-   @li @c true, if a is @em smaller than b  
-   @li @c false, otherwise
 }
 */
 
@@ -153,12 +138,16 @@ inline const std::vector<GroupOfDof*>& DofManager::getAllGroups(void) const{
   return *group;
 }
 
-inline int DofManager::getGlobalId(Dof& dof) const{
+inline int DofManager::getGlobalId(const Dof& dof) const{
   return globalId->find(&dof)->second;
 }
 
-inline bool DofManager::DofComparator::operator()(const Dof* a, const Dof* b) const{
-  return *a < *b;
+inline bool DofManager::isUnknown(const Dof& dof) const{
+  return fixedDof->count(&dof) == 0;
+}
+
+inline bool DofManager::fixValue(const Dof& dof, double value){
+  return fixedDof->insert(std::pair<const Dof*, double>(&dof, value)).second;
 }
 
 #endif

@@ -71,7 +71,9 @@ class Mapper{
 inline fullVector<double> Mapper::map(const fullVector<double>& UVW,
 				      const fullMatrix<double>& jac){
   fullVector<double> XYZ(3);
-  jac.mult(UVW, XYZ);
+  fullMatrix<double> tJac = jac.transpose();
+  
+  tJac.mult(UVW, XYZ);
   return XYZ;
 }
 
@@ -79,7 +81,9 @@ inline fullVector<double> Mapper::grad(const fullVector<double>& gradUVW,
 				       const fullMatrix<double>& invJac){
 
   fullVector<double> gradXYZ(3);
-  invJac.multWithATranspose(gradUVW, 1, 0, gradXYZ);
+  fullMatrix<double> itJac = invJac.transpose();
+  
+  itJac.multWithATranspose(gradUVW, 1, 0, gradXYZ);
   return gradXYZ;
 }
 
