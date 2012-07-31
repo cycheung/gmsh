@@ -13,8 +13,8 @@
 
    Every Group has a particular type of element.@n
    Each type is represented by a number:
+   @li 0 for Group of @em Dof%s
    @li 1 for Group of @em MElement%s
-   @li 2 for Group of @em Dof%s
 
    For a @em full access, use implemented classes (GroupOf*).@n
 

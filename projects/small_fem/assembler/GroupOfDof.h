@@ -87,7 +87,7 @@ inline int GroupOfDof::getId(void) const{
 }
 
 inline int GroupOfDof::getType(void) const{
-  return 2;
+  return 0;
 }
 
 inline const Dof& GroupOfDof::get(int i) const{
