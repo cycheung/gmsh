@@ -43,7 +43,7 @@ class GroupOfDof: public Group{
   virtual int getId(void)     const;
   virtual int getType(void)   const;
   
-  Dof&                     get(int i) const; 
+  const Dof&               get(int i) const; 
   const std::vector<Dof*>& getAll(void) const;
   
   const MElement&          getGeoElement(void) const;
@@ -90,7 +90,7 @@ inline int GroupOfDof::getType(void) const{
   return 2;
 }
 
-inline Dof& GroupOfDof::get(int i) const{
+inline const Dof& GroupOfDof::get(int i) const{
   return *((*dof)[i]);
 }
  

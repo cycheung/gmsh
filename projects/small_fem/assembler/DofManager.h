@@ -74,9 +74,7 @@ class DofManager{
   std::string toString(void) const;
 
  private:
-  // To FunctionSpace !!
-  Dof** dofFromElement(MElement& element, int* nDof);
-  void  insertDof(Dof* d, GroupOfDof* god);  
+  void insertDof(Dof* d, GroupOfDof* god);  
 };
 
 
