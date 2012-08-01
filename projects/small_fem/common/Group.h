@@ -15,6 +15,8 @@
    Each type is represented by a number:
    @li 0 for Group of @em Dof%s
    @li 1 for Group of @em MElement%s
+   @li 2 for Group of @em MVertex%s
+   @li 3 for Group of @em MEdge%s
 
    For a @em full access, use implemented classes (GroupOf*).@n
 
@@ -35,8 +37,6 @@ class Group{
   virtual ~Group(void);
 
   virtual int getNumber(void) const = 0;
-  
-  virtual int getId(void) const = 0; 
 
   virtual int getType(void) const = 0;
 
@@ -50,9 +50,6 @@ class Group{
 
    @fn Group::getNumber
    @return Returns the number of elements in the Group
-
-   @fn Group::getId
-   @return Returns the @c ID of this Group 
 
    @fn Group::getType
    @return Returns the type of the elements 

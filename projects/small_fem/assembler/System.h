@@ -5,6 +5,7 @@
 #include "GroupOfElement.h"
 #include "GroupOfDof.h"
 #include "DofManager.h"
+#include "FunctionSpace.h"
 #include "Formulation.h"
 
 /**
@@ -28,11 +29,11 @@ class System{
 
   int size;
 
-  const Formulation* formulation;
+  const Formulation*   formulation;
+  const FunctionSpace* fs;
+  DofManager*          dofM;
 
  public:
-  DofManager* dofM;
-
    System(const Formulation& formulation);
   ~System(void);
 

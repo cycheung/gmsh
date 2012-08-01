@@ -5,9 +5,8 @@
 
 using namespace std;
 
-GroupOfElement::GroupOfElement(GEntity& entity, int id){
+GroupOfElement::GroupOfElement(GEntity& entity){
   // Save Entity //
-  this->id     = id;
   this->entity = &entity;
   
   // Get Number of Mesh Elements //
@@ -18,11 +17,16 @@ GroupOfElement::GroupOfElement(GEntity& entity, int id){
 
   for(unsigned int i = 0; i < nElement; i++)
     (*element)[i] = entity.getMeshElement(i);
+
+  // Init Other Struct //
+  gov = NULL;
 }
 
 GroupOfElement::~GroupOfElement(void){
   delete element;
   
+  if(gov)
+    delete gov;
   /*
     GroupOfElement is *NOT* reponsible for
     deleting 'entity', niether the MElements of
@@ -31,20 +35,10 @@ GroupOfElement::~GroupOfElement(void){
 }
 
 int GroupOfElement::getNVertex(void) const{
-  set<MVertex*, MVertexLessThanNum> vertex;
-
-  for(unsigned int i = 0; i < nElement; i++){
-    // Get Vertices
-    vector<MVertex*> v;
-    (*element)[i]->getVertices(v);
-    const unsigned int nVertex = v.size();
-    
-    // Insert Vertex
-    for(unsigned int j = 0; j < nVertex; j++)
-      vertex.insert(v[j]);
-  }
-
-  return vertex.size();
+  if(!gov)
+    gov = new GroupOfVertex(*this);
+  
+  return gov->getNumber();
 }
 
 string GroupOfElement::toString(void) const{
@@ -52,7 +46,7 @@ string GroupOfElement::toString(void) const{
   
   stream << "*********************************************"    
 	 << endl
-	 << "* Groups Of Elements number " << id    
+	 << "* Group Of Element                          *"    
 	 << endl
 	 << "*********************************************" 
 	 << endl << "*" 

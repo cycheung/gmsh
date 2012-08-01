@@ -25,7 +25,7 @@ Mesh::Mesh(const std::string fileName){
   
   // Get Entities (get data) //
   for(unsigned int i = 0; i < nEntity; i++){
-    (*group)[i] = new GroupOfElement(*(entity[i]), i);
+    (*group)[i] = new GroupOfElement(*(entity[i]));
 
     vector<int> physical = entity[i]->getPhysicalEntities();
     int nPhysical        = physical.size();

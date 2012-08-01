@@ -22,8 +22,6 @@
    A class to compare two Dof%s.
 */
 
-class DofManager;
-
 class Dof{
  private:
   unsigned int entity;

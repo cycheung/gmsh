@@ -1,15 +1,15 @@
 #include <set>
 #include <sstream>
-#include "GroupOfVertex.h"
+#include "GroupOfEdge.h"
 
 using namespace std;
 
-GroupOfVertex::GroupOfVertex(const GroupOfElement& goe){
+GroupOfEdge::GroupOfEdge(const GroupOfElement& goe){
   // Save GoE //
   this->goe = &goe;
-
+  /*
   // Init Set //
-  set<MVertex*, MVertexLessThanNum> v;
+  set<MEdge*, MEdgeLessThanNum> e;
 
   // Get Elements //
   const vector<MElement*>&  element = goe.getAll();  
@@ -17,42 +17,44 @@ GroupOfVertex::GroupOfVertex(const GroupOfElement& goe){
 
   // Get Vertices //
   for(unsigned int i = 0; i < nElement; i++){
-    vector<MVertex*> eVertex;
-    element[i]->getVertices(eVertex);
-    const unsigned int nEVertex = eVertex.size();
+    vector<MEdge*> eEdge;
+    element[i]->getVertices(eEdge);
+    const unsigned int nEEdge = eEdge.size();
 
-    for(unsigned int j = 0; j < nEVertex; j++)
-      v.insert(eVertex[j]);
+    for(unsigned int j = 0; j < nEEdge; j++)
+      e.insert(eEdge[j]);
   }
 
   // Save Data //
-  vertex  = new vector<MVertex*>(v.begin(), v.end());
-  nVertex = v.size();
+  edge  = new vector<MEdge*>(e.begin(), e.end());
+  nEdge = e.size();
+  */
 }
 
-GroupOfVertex::~GroupOfVertex(void){
-  delete vertex;
+GroupOfEdge::~GroupOfEdge(void){
+  delete edge;
+  delete lookup;
 }
 
-string GroupOfVertex::toString(void) const{
+string GroupOfEdge::toString(void) const{
   stringstream stream;
-  
+  /*  
   stream << "*********************************************"    
 	 << endl
-	 << "* Group Of Vertex                          *"    
+	 << "* Group Of Edge                          *"    
 	 << endl
 	 << "*********************************************" 
 	 << endl << "*" 
 	 << endl
 	 << "* This group contains the following vertices: " << endl;
 
-  for(unsigned int i = 0; i < nVertex; i++){
+  for(unsigned int i = 0; i < nEdge; i++){
     stream << "*    -- ID: " 
-	   << (*vertex)[i]->getNum() << endl;
+	   << (*edge)[i]->getNum() << endl;
   }
   
   stream << "*********************************************" 
 	 << endl;
-  
+  */
   return stream.str();
 }

@@ -16,10 +16,11 @@
    This class is @em Group.
 */
 
+class GroupOfElement;
 
 class GroupOfVertex: public Group{
  private:
-  int                      id;      
+  const GroupOfElement*    goe;
 
   unsigned int            nVertex;
   std::vector<MVertex*>*  vertex;
@@ -29,11 +30,11 @@ class GroupOfVertex: public Group{
   virtual ~GroupOfVertex(void);
 
   virtual int getNumber(void) const;
-  virtual int getId(void)     const;
   virtual int getType(void)   const;
 
   MVertex&                     get(int i) const;  
   const std::vector<MVertex*>& getAll(void) const;  
+  const GroupOfElement&        getGoE(void) const;
 
   virtual std::string toString(void) const;
 };
@@ -47,10 +48,6 @@ inline int GroupOfVertex::getNumber(void) const{
   return nVertex;
 }
 
-inline int GroupOfVertex::getId(void) const{
-  return id;
-}
-
 inline int GroupOfVertex::getType(void) const{
   return 2;
 }
@@ -62,6 +59,10 @@ inline MVertex& GroupOfVertex::get(int i) const{
 inline const std::vector<MVertex*>& 
 GroupOfVertex::getAll(void) const{
   return *vertex;
+}
+
+inline const GroupOfElement& GroupOfVertex::getGoE(void) const{
+  return *goe;
 }
 
 #endif

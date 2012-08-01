@@ -8,6 +8,8 @@
 #include "GEntity.h"
 #include "MElement.h"
 
+#include "GroupOfVertex.h"
+
 /**
    @class GroupOfElement
    @brief A Group of MElement%s
@@ -16,21 +18,22 @@
    This class is @em Group.
 */
 
+class GroupOfVertex;
 
 class GroupOfElement: public Group{
  private:
-  int                      id;      
   GEntity*                 entity;
 
   unsigned int            nElement;
   std::vector<MElement*>*  element;
 
+  mutable GroupOfVertex*   gov;
+
  public:
-  GroupOfElement(GEntity& entity, int id);
+  GroupOfElement(GEntity& entity);
   virtual ~GroupOfElement(void);
 
   virtual int getNumber(void) const;
-  virtual int getId(void)     const;
   virtual int getType(void)   const;
 
   MElement&                     get(int i) const;  
@@ -74,10 +77,6 @@ class GroupOfElement: public Group{
 
 inline int GroupOfElement::getNumber(void) const{
   return nElement;
-}
-
-inline int GroupOfElement::getId(void) const{
-  return id;
 }
 
 inline int GroupOfElement::getType(void) const{

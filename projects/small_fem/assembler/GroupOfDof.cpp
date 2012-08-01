@@ -25,7 +25,7 @@ std::string GroupOfDof::toString(void) const{
   std::stringstream stream;
   
   stream << "******************* " << std::endl
-	 << "* GroupOfDof number " << getId() << std::endl
+	 << "* Group Of Dof    * " << std::endl
 	 << "******************* " << std::endl
 	 << "* Associated Dofs:  " << std::endl;
 

@@ -40,7 +40,6 @@ class GroupOfDof: public Group{
 
  public:
   virtual int getNumber(void) const;
-  virtual int getId(void)     const;
   virtual int getType(void)   const;
   
   const Dof&               get(int i) const; 
@@ -80,10 +79,6 @@ class GroupOfDof: public Group{
 
 inline int GroupOfDof::getNumber(void) const{
   return nDof;
-}
-
-inline int GroupOfDof::getId(void) const{
-  return element->getNum();
 }
 
 inline int GroupOfDof::getType(void) const{

@@ -3,6 +3,7 @@ set(src
   Mesh.cpp
   GroupOfElement.cpp
   GroupOfVertex.cpp
+  GroupOfEdge.cpp
 )
 
 add_sources(geometry "${src}")
