@@ -87,6 +87,8 @@ void WriterMsh::writeElements(void) const{
     
     *out << endl;
   }
+  
+  *out << "$EndElements" << endl;
 }
 
 void WriterMsh::writeNodalValues(const string name) const{

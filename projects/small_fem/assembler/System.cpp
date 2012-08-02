@@ -79,6 +79,11 @@ void System::solve(void){
   */
 }
 
+void System::writeSolution(Writer& writer,
+			   const string name) const{
+  writer.write(name);
+} 
+			   
 void System::assemble(GroupOfDof& group){
   const vector<Dof*>& dof = group.getAll();
   const int N = group.getNumber();

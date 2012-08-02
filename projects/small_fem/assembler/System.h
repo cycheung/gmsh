@@ -4,9 +4,13 @@
 #include "fullMatrix.h"
 #include "GroupOfElement.h"
 #include "GroupOfDof.h"
+#include "Writer.h"
+
 #include "DofManager.h"
 #include "FunctionSpace.h"
 #include "Formulation.h"
+
+#include <string>
 
 /**
    @class System
@@ -44,7 +48,10 @@ class System{
   void fixBC(const GroupOfElement& goe, double value);
   void assemble(void);
   void solve(void);
-  
+
+  void writeSolution(Writer& writer, 
+		     const std::string name) const;
+
  private:
   void assemble(GroupOfDof& group);
 };
