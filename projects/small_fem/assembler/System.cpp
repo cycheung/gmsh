@@ -69,20 +69,7 @@ void System::solve(void){
 
   // Get dof value //
   Solver::solve(*A, *x, *b);
-  /*
-  // Set all Entities value //
-  const vector<Dof*>* dof = &dofM->getAllDofs();
-  const int N = dof->size();
-  
-  for(int i = 0; i < N; i++)
-    dofM->getEntity(*((*dof)[i])).setValue((*x)(i));
-  */
 }
-
-void System::writeSolution(Writer& writer,
-			   const string name) const{
-  writer.write(name);
-} 
 			   
 void System::assemble(GroupOfDof& group){
   const vector<Dof*>& dof = group.getAll();

@@ -49,9 +49,6 @@ class System{
   void assemble(void);
   void solve(void);
 
-  void writeSolution(Writer& writer, 
-		     const std::string name) const;
-
  private:
   void assemble(GroupOfDof& group);
 };
