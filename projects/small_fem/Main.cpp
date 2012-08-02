@@ -12,7 +12,7 @@
 
 using namespace std;
 
-int ain(int argc, char** argv){
+int main(int argc, char** argv){
   // Init Gmsh //
   GmshInitialize(argc, argv);
   

@@ -30,6 +30,7 @@ WriterMsh::WriterMsh(const std::vector<MElement*>& element){
 }
 
 WriterMsh::~WriterMsh(void){
+  delete node;
 }
 
 void WriterMsh::write(const std::string name) const{
