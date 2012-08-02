@@ -1,12 +1,20 @@
 #include <sstream>
 #include <set>
 
+#include "BasisScalar.h"
+#include "BasisVector.h"
 #include "Polynomial.h"
+
 #include "PlotBasis.h"
 
 using namespace std;
 
-PlotBasis::PlotBasis(const GroupOfElement& group, const Basis& basis){
+PlotBasis::PlotBasis(const GroupOfElement& group, 
+		     const Basis& basis,
+		     Writer& writer){
+
+  this->writer = &writer;
+  
   nFunction = basis.getSize();
   getGeometry(group);
 
@@ -39,27 +47,19 @@ PlotBasis::~PlotBasis(void){
   }
 }
 
-void PlotBasis::write(const string name) const{
-  out = new ofstream;
-
+void PlotBasis::plot(const string name) const{
   for(int i = 0; i < nFunction; i++){
-    stringstream nameCat, fileName; 
-    
+    stringstream nameCat; 
     nameCat  << name << i + 1;
-    fileName << nameCat.str() << ".msh";
-
-    out->open(fileName.str().c_str());
     
-    writeHeader();
-    writeNodes();
-    writeElements();
-    
-    writeNodalValues(nameCat.str(), i);  
+    if(isScalar)
+      writer->setValues(*(nodalScalarValue[i]));
 
-    out->close();
+    else
+      writer->setValues(*(nodalVectorValue[i]));
+
+    writer->write(nameCat.str());
   }
-
-  delete out;
 }
 
 void PlotBasis::getGeometry(const GroupOfElement& group){

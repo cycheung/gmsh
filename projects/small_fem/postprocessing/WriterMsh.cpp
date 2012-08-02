@@ -1,11 +1,53 @@
+#include <sstream>
+#include <set>
+
 #include "WriterMsh.h"
 
 using namespace std;
 
-WriterMsh::WriterMsh(void){
+WriterMsh::WriterMsh(const std::vector<MElement*>& element){
+  // Get Elements //
+  this->element = &element;
+  this->E       = element.size();
+
+  // Set hasValue
+  hasValue = false;
+
+  // Get All Vertices //
+  set<MVertex*, MVertexLessThanNum> setVertex;
+
+  for(int i = 0; i < E; i++){
+    const int N = element[i]->getNumVertices();
+    
+    for(int j = 0; j < N; j++)
+      setVertex.insert(element[i]->getVertex(j));
+  }
+
+  // Serialize the set into a vector //
+  node = new vector<MVertex*>(setVertex.begin(), 
+			      setVertex.end());
+  N    = node->size();
 }
 
 WriterMsh::~WriterMsh(void){
+}
+
+void WriterMsh::write(const std::string name) const{
+  stringstream fileName; 
+  fileName << name << ".msh";
+
+  out = new ofstream;
+  out->open(fileName.str().c_str());
+    
+  writeHeader();
+  writeNodes();
+  writeElements();
+  
+  if(hasValue)
+    writeNodalValues(name);  
+
+  out->close();
+  delete out;
 }
 
 void WriterMsh::writeHeader(void) const{
@@ -46,7 +88,7 @@ void WriterMsh::writeElements(void) const{
   }
 }
 
-void WriterMsh::writeNodalValues(const string name, int num) const{
+void WriterMsh::writeNodalValues(const string name) const{
   *out << "$ElementNodeData"   << endl
        << "1"                  << endl  // 1 string tag
        << "\"" << name << "\"" << endl  // (name)
@@ -74,11 +116,11 @@ void WriterMsh::writeNodalValues(const string name, int num) const{
       //   --> we need to substract 1 !!
 
       if(isScalar)
-	*out << (*nodalScalarValue[num])[id] << " ";
+	*out << (*nodalScalarValue)[id] << " ";
       else
-	*out << (*nodalVectorValue[num])[id](0) << " "
-	     << (*nodalVectorValue[num])[id](1) << " "
-	     << (*nodalVectorValue[num])[id](2) << " ";
+	*out << (*nodalVectorValue)[id](0) << " "
+	     << (*nodalVectorValue)[id](1) << " "
+	     << (*nodalVectorValue)[id](2) << " ";
     }
     
     *out << endl;

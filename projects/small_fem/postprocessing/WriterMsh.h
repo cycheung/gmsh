@@ -15,28 +15,24 @@ class WriterMsh: public Writer{
  protected:
   int  N;
   int  E;
-  bool isScalar;
 
   const std::vector<MElement*>* element;
   const std::vector<MVertex*>*    node;
-  
-  std::vector<double>**              nodalScalarValue;
-  std::vector<fullVector<double> >** nodalVectorValue;
-    
+      
   mutable std::ofstream* out;
   
  public:
-  WriterMsh(void);
+  WriterMsh(const std::vector<MElement*>& element);
   
   virtual ~WriterMsh(void);
   
-  virtual void write(const std::string name) const = 0;
+  virtual void write(const std::string name) const;
 
  protected:
   void writeHeader(void) const;
   void writeNodes(void) const;
   void writeElements(void) const;
-  void writeNodalValues(const std::string name, int num) const;
+  void writeNodalValues(const std::string name) const;
 };
 
 #endif

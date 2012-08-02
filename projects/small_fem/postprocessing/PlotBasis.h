@@ -1,28 +1,38 @@
 #ifndef _PLOTBASIS_H_
 #define _PLOTBASIS_H_
 
-#include "WriterMsh.h"
+#include "Writer.h"
 
 #include "GroupOfElement.h"
 #include "fullMatrix.h"
 #include "Basis.h"
-#include "BasisScalar.h"
-#include "BasisVector.h"
 
-#include <fstream>
 #include <string>
 #include <vector>
 
-class PlotBasis: public WriterMsh{
+class PlotBasis{
  private:
+  Writer* writer;
   int nFunction;
+  bool isScalar;
+
+  int N;
+  int E;
+
+  const std::vector<MElement*>* element;
+  const std::vector<MVertex*>*    node;
+
+  std::vector<double>**              nodalScalarValue;
+  std::vector<fullVector<double> >** nodalVectorValue;
 
  public:
-  PlotBasis(const GroupOfElement& group, const Basis& basis);
+  PlotBasis(const GroupOfElement& group, 
+	    const Basis& basis,
+	    Writer& writer);
   
   virtual ~PlotBasis(void);
 
-  virtual void write(const std::string name) const;
+  virtual void plot(const std::string name) const;
 
  private:
   void getGeometry(const GroupOfElement& group);
