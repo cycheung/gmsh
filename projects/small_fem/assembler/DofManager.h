@@ -41,14 +41,25 @@
    Allow hybrid mesh@n
 */
 
+class FunctionSpace;
+
 class DofManager{
  private:
-  friend class FunctionSpace;
+  //friend class FunctionSpace;
+
+  class ElementComparator{
+  public:
+    bool operator()(const MElement* a, const MElement* b) const;
+  };
 
   const FunctionSpace* fs;
 
   std::set<Dof*, DofComparator>*               dof;
   std::vector<GroupOfDof*>*                    group;
+
+  std::map<const MElement*, 
+           const GroupOfDof*, 
+           ElementComparator>*                 elementToGroup;  
   std::map<const Dof*, int, DofComparator>*    globalId;
   std::map<const Dof*, double, DofComparator>* fixedDof;
 
@@ -56,7 +67,7 @@ class DofManager{
   int nextId;
   
  public:
-   DofManager(const FunctionSpace& fs);
+   DofManager(FunctionSpace& fs);
   ~DofManager(void);
 
   int dofNumber(void) const;
@@ -65,7 +76,8 @@ class DofManager{
   const std::vector<Dof*>         getAllDofs(void) const;
   const std::vector<GroupOfDof*>& getAllGroups(void) const;
 
-  int getGlobalId(const Dof& dof) const;
+  int               getGlobalId(const Dof& dof) const;
+  const GroupOfDof& getGroup(const MElement& element) const;
 
   bool isUnknown(const Dof& dof) const;
   bool fixValue(const Dof& dof, double value);
@@ -136,16 +148,13 @@ inline const std::vector<GroupOfDof*>& DofManager::getAllGroups(void) const{
   return *group;
 }
 
-inline int DofManager::getGlobalId(const Dof& dof) const{
-  return globalId->find(&dof)->second;
-}
-
 inline bool DofManager::isUnknown(const Dof& dof) const{
   return fixedDof->count(&dof) == 0;
 }
 
-inline bool DofManager::fixValue(const Dof& dof, double value){
-  return fixedDof->insert(std::pair<const Dof*, double>(&dof, value)).second;
+inline bool DofManager::ElementComparator::
+operator()(const MElement* a, const MElement* b) const{
+  return a->getNum() < b->getNum();
 }
 
 #endif

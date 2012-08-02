@@ -4,6 +4,9 @@ set(src
 #  InterpolatorVector.cpp
 #  InterpolatorNode.cpp
 #  InterpolatorEdge.cpp
+  Writer.cpp
+  WriterMsh.cpp
+
   Solution.cpp
   PlotBasis.cpp
 )

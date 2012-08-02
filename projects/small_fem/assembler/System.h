@@ -30,7 +30,7 @@ class System{
   int size;
 
   const Formulation*   formulation;
-  const FunctionSpace* fs;
+  FunctionSpace*       fs;
   DofManager*          dofM;
 
  public:

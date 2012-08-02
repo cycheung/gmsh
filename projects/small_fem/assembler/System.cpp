@@ -56,6 +56,7 @@ void System::fixBC(const GroupOfElement& goe, double value){
     
     for(unsigned int j = 0; j < nDof; j++){
       dofM->fixValue(*dof[j], value);
+
       delete dof[j];
     }
   }

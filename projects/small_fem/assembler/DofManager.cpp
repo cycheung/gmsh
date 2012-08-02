@@ -8,8 +8,9 @@
 
 using namespace std;
 
-DofManager::DofManager(const FunctionSpace& fs){
-  // Remember FunctionSpace //
+DofManager::DofManager(FunctionSpace& fs){
+  // Remember FunctionSpace & Associate//
+  fs.associate(*this);
   this->fs = &fs;
 
   // Get Support from FunctionSpace //
@@ -25,6 +26,10 @@ DofManager::DofManager(const FunctionSpace& fs){
   globalId = new map<const Dof*, int, DofComparator>;
   fixedDof = new map<const Dof*, double, DofComparator>;
 
+  elementToGroup = new map<const MElement*, 
+			   const GroupOfDof*, 
+			   ElementComparator>;
+
   // Create Dofs & Numbering//
   nextId = 0;
 
@@ -35,11 +40,15 @@ DofManager::DofManager(const FunctionSpace& fs){
     int nDof           = myDof.size();
     
     // Create new GroupOfDof
-    (*group)[i] = new GroupOfDof(nDof, *(element[i]));
+    GroupOfDof* god = new GroupOfDof(nDof, *(element[i])); 
+    
+    (*group)[i] = god;
+    elementToGroup->insert
+      (pair<const MElement*, const GroupOfDof*>(element[i], god));
 
     // Add Dof
     for(int j = 0; j < nDof; j++)
-      insertDof(myDof[j], (*group)[i]);
+      insertDof(myDof[j], god);
   }
 }
 
@@ -59,6 +68,33 @@ DofManager::~DofManager(void){
 
   delete globalId;
   delete fixedDof;
+  delete elementToGroup;
+}
+
+int DofManager::getGlobalId(const Dof& dof) const{
+  const map<const Dof*, int, DofComparator>::iterator it = 
+    globalId->find(&dof);
+
+  if(it == globalId->end())
+    throw 
+      Exception("Their is no Dof %s", dof.toString().c_str());
+
+  else
+    return it->second; 
+}
+
+const GroupOfDof& DofManager::getGroup(const MElement& element) const{
+  const map<const MElement*, 
+	    const GroupOfDof*, 
+	    ElementComparator>::iterator it = 
+    elementToGroup->find(&element);
+
+  if(it == elementToGroup->end())
+    throw 
+      Exception("Their is no Element %d", element.getNum());
+
+  else
+    return *(it->second);   
 }
 
 void DofManager::insertDof(Dof* d, GroupOfDof* god){
@@ -82,6 +118,19 @@ void DofManager::insertDof(Dof* d, GroupOfDof* god){
     delete d; 
     god->add(*(p.first));
   }
+}
+
+bool DofManager::fixValue(const Dof& dof, double value){
+  // Get *REAL* Dof
+  set<Dof*, DofComparator>::const_iterator it = 
+    this->dof->find(const_cast<Dof*>(&dof));
+
+  // Check if 'dof' exists
+  if(it == this->dof->end())
+    return false; // 'dof' doesn't exist
+
+  // Insert *REAL* Dof 
+  return fixedDof->insert(std::pair<const Dof*, double>(*it, value)).second;
 }
 
 pair<bool, double> DofManager::getValue(const Dof& dof) const{
