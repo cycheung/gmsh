@@ -8,26 +8,18 @@
 #include "Writer.h"
 
 #include "fullMatrix.h"
-#include "DofManager.h"
 #include "MElement.h"
-#include "GroupOfDof.h"
-
-#include "FunctionSpace.h"
-#include "FunctionSpaceScalar.h"
+#include "DofManager.h"
 
 class Solution{
  private:
   fullVector<double>* sol;
 
-  const DofManager*               dofM;
-  const std::vector<GroupOfDof*>* god;
   const std::vector<MElement*>*   element;
-  int                             nGod;
-  int                             nVertex;
+  const DofManager*               dofM;
+  int                             nDof;
 
   bool                              isScalar;
-  const FunctionSpaceScalar*        fsScalar;
-
   std::vector<double>*              nodalScalarValue;
   std::vector<fullVector<double> >* nodalVectorValue;
 

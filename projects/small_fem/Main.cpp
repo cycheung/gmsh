@@ -24,15 +24,22 @@ int main(int argc, char** argv){
 
   System sysLaplace(laplace);
   sysLaplace.fixBC(*msh.getFromPhysical(6).at(0), -1);
+  sysLaplace.fixBC(*msh.getFromPhysical(6).at(1), -1);
+  sysLaplace.fixBC(*msh.getFromPhysical(6).at(2), -1);
+  sysLaplace.fixBC(*msh.getFromPhysical(6).at(3), -1);
+
   sysLaplace.fixBC(*msh.getFromPhysical(5).at(0),  2);
+  sysLaplace.fixBC(*msh.getFromPhysical(5).at(1),  2);
+  sysLaplace.fixBC(*msh.getFromPhysical(5).at(2),  2);
+  sysLaplace.fixBC(*msh.getFromPhysical(5).at(3),  2);
   sysLaplace.assemble();
 
-  sysLaplace.getMatrix().print();
-  sysLaplace.getRHS().print();
+  //sysLaplace.getMatrix().print();
+  //sysLaplace.getRHS().print();
 
   sysLaplace.solve();
 
-  sysLaplace.getSol().print();
+  //sysLaplace.getSol().print();
 
   Solution solLaplace(sysLaplace);
 
