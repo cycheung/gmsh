@@ -2,13 +2,23 @@
 #define _WRITER_H_
 
 #include "fullMatrix.h"
+#include "MElement.h"
+#include "MVertex.h"
+
 #include <string>
 #include <vector>
 
 class Writer{
  protected:
+  bool hasDomain;
   bool hasValue;
   bool isScalar;
+
+  int  N;
+  int  E;
+
+  const std::vector<MElement*>* element;
+  const std::vector<MVertex*>*    node;
 
   std::vector<double>*              nodalScalarValue;
   std::vector<fullVector<double> >* nodalVectorValue;
@@ -22,6 +32,7 @@ class Writer{
 
   void setValues(std::vector<double>& value);
   void setValues(std::vector<fullVector<double> >& value);
+  void setDomain(const std::vector<MElement*>& element);
 };
 
 #endif

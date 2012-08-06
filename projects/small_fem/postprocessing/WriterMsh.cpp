@@ -1,51 +1,33 @@
 #include <sstream>
-#include <set>
-
 #include "WriterMsh.h"
 
 using namespace std;
 
-WriterMsh::WriterMsh(const std::vector<MElement*>& element){
-  // Get Elements //
-  this->element = &element;
-  this->E       = element.size();
-
-  // Set hasValue
-  hasValue = false;
-
-  // Get All Vertices //
-  set<MVertex*, MVertexLessThanNum> setVertex;
-
-  for(int i = 0; i < E; i++){
-    const int N = element[i]->getNumVertices();
-    
-    for(int j = 0; j < N; j++)
-      setVertex.insert(element[i]->getVertex(j));
-  }
-
-  // Serialize the set into a vector //
-  node = new vector<MVertex*>(setVertex.begin(), 
-			      setVertex.end());
-  N    = node->size();
+WriterMsh::WriterMsh(void){
 }
 
 WriterMsh::~WriterMsh(void){
-  delete node;
 }
 
 void WriterMsh::write(const std::string name) const{
   stringstream fileName; 
   fileName << name << ".msh";
-
+  
   out = new ofstream;
   out->open(fileName.str().c_str());
-    
-  writeHeader();
-  writeNodes();
-  writeElements();
   
-  if(hasValue)
-    writeNodalValues(name);  
+  if(!hasDomain){
+    *out << "No Domain has been given !" << endl;
+  }
+  
+  else{
+    writeHeader();
+    writeNodes();
+    writeElements();
+    
+    if(hasValue)
+      writeNodalValues(name);  
+  }
 
   out->close();
   delete out;

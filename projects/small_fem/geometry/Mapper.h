@@ -26,11 +26,12 @@ class Mapper{
   static fullVector<double> map(const fullVector<double>& UVW, 
 				const fullMatrix<double>& jac);
 
+  static fullVector<double> invMap(const fullVector<double>& XYZ, 
+				   const fullVector<double>& origin,
+				   const fullMatrix<double>& invJac);
+
   static fullVector<double> grad(const fullVector<double>& gradUVW, 
 				 const fullMatrix<double>& invJac);
-
-  static fullVector<double> invMap(const fullVector<double>& XYZ, 
-				   const fullMatrix<double>& invJac);
 };
 
 /**
@@ -63,28 +64,5 @@ class Mapper{
    @returns Returns the coordiantes of the given point
    in the @em reference space
  */
-
-//////////////////////
-// Inline Functions //
-//////////////////////
-
-inline fullVector<double> Mapper::map(const fullVector<double>& UVW,
-				      const fullMatrix<double>& jac){
-  fullVector<double> XYZ(3);
-  fullMatrix<double> tJac = jac.transpose();
-  
-  tJac.mult(UVW, XYZ);
-  return XYZ;
-}
-
-inline fullVector<double> Mapper::grad(const fullVector<double>& gradUVW, 
-				       const fullMatrix<double>& invJac){
-
-  fullVector<double> gradXYZ(3);
-  fullMatrix<double> itJac = invJac.transpose();
-  
-  itJac.multWithATranspose(gradUVW, 1, 0, gradXYZ);
-  return gradXYZ;
-}
 
 #endif

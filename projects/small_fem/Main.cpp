@@ -7,6 +7,7 @@
 #include "FormulationProjection.h"
 #include "System.h"
 #include "Solution.h"
+#include "WriterMsh.h"
 
 #include "Gmsh.h"
 
@@ -32,7 +33,12 @@ int main(int argc, char** argv){
   sysLaplace.solve();
 
   sysLaplace.getSol().print();
- 
+
+  Solution solLaplace(sysLaplace);
+
+  WriterMsh writer;  
+  solLaplace.write("laplace", writer);
+
   // Stop Gmsh //
   GmshFinalize();
 

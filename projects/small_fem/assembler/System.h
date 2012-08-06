@@ -45,6 +45,10 @@ class System{
   fullVector<double>& getRHS(void) const;
   fullVector<double>& getSol(void) const;
 
+  FunctionSpace&     getFunctionSpace(void) const;
+  DofManager&        getDofManager(void) const;
+  const Formulation& getFormulation(void) const;
+
   void fixBC(const GroupOfElement& goe, double value);
   void assemble(void);
   void solve(void);
@@ -101,6 +105,18 @@ inline fullVector<double>& System::getRHS(void) const{
 
 inline fullVector<double>& System::getSol(void) const{
   return *x;
+}
+
+inline FunctionSpace& System::getFunctionSpace(void) const{
+  return *fs;
+}
+
+inline DofManager& System::getDofManager(void) const{
+  return *dofM;
+}
+
+inline const Formulation& System::getFormulation(void) const{
+  return *formulation;
 }
 
 #endif
