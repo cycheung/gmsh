@@ -45,21 +45,9 @@ class FunctionSpace;
 
 class DofManager{
  private:
-  //friend class FunctionSpace;
-
-  class ElementComparator{
-  public:
-    bool operator()(const MElement* a, const MElement* b) const;
-  };
-
-  const FunctionSpace* fs;
-
-  std::set<Dof*, DofComparator>*               dof;
+  std::set<const Dof*, DofComparator>*         dof;
   std::vector<GroupOfDof*>*                    group;
 
-  std::map<const MElement*, 
-           const GroupOfDof*, 
-           ElementComparator>*                 elementToGroup;  
   std::map<const Dof*, int, DofComparator>*    globalId;
   std::map<const Dof*, double, DofComparator>* fixedDof;
 
@@ -73,11 +61,11 @@ class DofManager{
   int dofNumber(void) const;
   int groupNumber(void) const;
 
-  const std::vector<Dof*>         getAllDofs(void) const;
+  const std::vector<const Dof*>   getAllDofs(void) const;
   const std::vector<GroupOfDof*>& getAllGroups(void) const;
 
-  int               getGlobalId(const Dof& dof) const;
-  const GroupOfDof& getGroup(const MElement& element) const;
+  const Dof& search(const Dof& dof) const;
+  int getGlobalId(const Dof& dof) const;
 
   bool isUnknown(const Dof& dof) const;
   bool fixValue(const Dof& dof, double value);
@@ -86,7 +74,7 @@ class DofManager{
   std::string toString(void) const;
 
  private:
-  void insertDof(Dof* d, GroupOfDof* god);  
+  void insertDof(Dof& d, GroupOfDof* god);  
 };
 
 
@@ -140,8 +128,8 @@ inline int DofManager::groupNumber(void) const{
   return group->size();
 }
 
-inline const std::vector<Dof*> DofManager::getAllDofs(void) const{
-  return std::vector<Dof*>(dof->begin(), dof->end());
+inline const std::vector<const Dof*> DofManager::getAllDofs(void) const{
+  return std::vector<const Dof*>(dof->begin(), dof->end());
 }
 
 inline const std::vector<GroupOfDof*>& DofManager::getAllGroups(void) const{
@@ -150,11 +138,6 @@ inline const std::vector<GroupOfDof*>& DofManager::getAllGroups(void) const{
 
 inline bool DofManager::isUnknown(const Dof& dof) const{
   return fixedDof->count(&dof) == 0;
-}
-
-inline bool DofManager::ElementComparator::
-operator()(const MElement* a, const MElement* b) const{
-  return a->getNum() < b->getNum();
 }
 
 #endif

@@ -1,9 +1,18 @@
 #include <sstream>
-
 #include "Dof.h"
-#include "Exception.h"
 
-Dof::Dof(const unsigned int entity, const unsigned int type){
+
+Dof::Dof(void){
+  this->entity  = 0;
+  this->type    = 0;
+}
+
+Dof::Dof(const Dof& other){
+  this->entity  = other.entity;
+  this->type    = other.type;
+}
+
+Dof::Dof(unsigned int entity, unsigned int type){
   this->entity  = entity;
   this->type    = type;
 }

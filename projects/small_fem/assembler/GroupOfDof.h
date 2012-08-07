@@ -32,7 +32,7 @@ class GroupOfDof: public Group{
   const MElement* element;
 
   int nDof;
-  std::vector<Dof*>* dof;
+  std::vector<const Dof*>* dof;
   
   int nextDof;
   
@@ -43,7 +43,7 @@ class GroupOfDof: public Group{
   virtual int getType(void)   const;
   
   const Dof&               get(int i) const; 
-  const std::vector<Dof*>& getAll(void) const;
+  const std::vector<const Dof*>& getAll(void) const;
   
   const MElement&          getGeoElement(void) const;
 
@@ -55,7 +55,7 @@ class GroupOfDof: public Group{
    GroupOfDof(int numberOfDof, const MElement& geoElement);
   ~GroupOfDof(void);
 
-  void add(Dof* dof);
+  void add(const Dof* dof);
 };
 
 
@@ -89,7 +89,7 @@ inline const Dof& GroupOfDof::get(int i) const{
   return *((*dof)[i]);
 }
  
-inline const std::vector<Dof*>& GroupOfDof::getAll(void) const{
+inline const std::vector<const Dof*>& GroupOfDof::getAll(void) const{
   return *dof;
 }
 

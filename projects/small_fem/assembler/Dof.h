@@ -28,11 +28,17 @@ class Dof{
   unsigned int type;
 
  public:
-   Dof(const unsigned int entity, const unsigned int type);
+   Dof(void);
+   Dof(const Dof& other); 
+   Dof(unsigned int entity, unsigned int type);
   ~Dof(void);
 
   unsigned int getEntity(void) const;
   unsigned int getType(void) const;
+
+  void setEntity(unsigned int entity);
+  void setType(unsigned int type);
+  void setDof(unsigned int entity, unsigned int type);
 
   bool operator<(const Dof& other) const;
   bool operator>(const Dof& other) const;
@@ -92,6 +98,19 @@ inline unsigned int Dof::getEntity(void) const{
 
 inline unsigned int Dof::getType(void) const{
   return type;
+}
+
+inline void Dof::setEntity(unsigned int entity){
+  this->entity = entity;
+}
+
+inline void Dof::setType(unsigned int type){
+  this->type = type;
+}
+
+inline void Dof::setDof(unsigned int entity, unsigned int type){
+  this->entity = entity;
+  this->type   = type;
 }
 
 inline bool Dof::operator<(const Dof& other) const{

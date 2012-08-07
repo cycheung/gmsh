@@ -43,8 +43,8 @@ void Solution::write(const std::string name, Writer& writer) const{
 }
 
 void Solution::interpolateScalar(void){
-  const vector<Dof*> dof = dofM->getAllDofs();
-  nDof                   = dof.size();
+  const vector<const Dof*> dof = dofM->getAllDofs();
+  nDof                         = dof.size();
 
   nodalScalarValue = new vector<double>(nDof);
 

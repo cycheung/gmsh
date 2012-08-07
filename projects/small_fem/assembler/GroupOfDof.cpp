@@ -5,7 +5,7 @@ GroupOfDof::GroupOfDof(int numberOfDof, const MElement& geoElement){
   element = &geoElement;
   
   nDof = numberOfDof;
-  dof  = new std::vector<Dof*>(nDof);
+  dof  = new std::vector<const Dof*>(nDof);
 
   nextDof = 0;
 }
@@ -16,7 +16,7 @@ GroupOfDof::~GroupOfDof(void){
   delete dof;
 }
 
-void GroupOfDof::add(Dof* dof){
+void GroupOfDof::add(const Dof* dof){
   this->dof->at(nextDof) = dof;
   nextDof++;
 }

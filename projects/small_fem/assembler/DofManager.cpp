@@ -9,10 +9,6 @@
 using namespace std;
 
 DofManager::DofManager(FunctionSpace& fs){
-  // Remember FunctionSpace & Associate//
-  fs.associate(*this);
-  this->fs = &fs;
-
   // Get Support from FunctionSpace //
   const GroupOfElement& support    = fs.getSupport();
   int nElement                     = support.getNumber();
@@ -21,14 +17,10 @@ DofManager::DofManager(FunctionSpace& fs){
   nTotVertex = support.getNVertex();
 
   // Init Struct //
-  dof      = new set<Dof*, DofComparator>;         
+  dof      = new set<const Dof*, DofComparator>;         
   group    = new vector<GroupOfDof*>(nElement);
   globalId = new map<const Dof*, int, DofComparator>;
   fixedDof = new map<const Dof*, double, DofComparator>;
-
-  elementToGroup = new map<const MElement*, 
-			   const GroupOfDof*, 
-			   ElementComparator>;
 
   // Create Dofs & Numbering//
   nextId = 0;
@@ -36,16 +28,13 @@ DofManager::DofManager(FunctionSpace& fs){
   // Loop over Element
   for(int i = 0; i < nElement; i++){
     // Get Dof for this Element
-    vector<Dof*> myDof = fs.getKeys(*(element[i]));
-    int nDof           = myDof.size();
+    vector<Dof> myDof = fs.getKeys(*(element[i]));
+    int nDof          = myDof.size();
     
     // Create new GroupOfDof
     GroupOfDof* god = new GroupOfDof(nDof, *(element[i])); 
     
     (*group)[i] = god;
-    elementToGroup->insert
-      (pair<const MElement*, const GroupOfDof*>(element[i], god));
-
     // Add Dof
     for(int j = 0; j < nDof; j++)
       insertDof(myDof[j], god);
@@ -59,8 +48,8 @@ DofManager::~DofManager(void){
     delete (*group)[i];
   delete group;
 
-  set<Dof*>::iterator it;
-  set<Dof*>::iterator end = dof->end();
+  set<const Dof*>::iterator it;
+  set<const Dof*>::iterator end = dof->end();
 
   for(it = dof->begin(); it != end; it++)
     delete *it;
@@ -68,7 +57,6 @@ DofManager::~DofManager(void){
 
   delete globalId;
   delete fixedDof;
-  delete elementToGroup;
 }
 
 int DofManager::getGlobalId(const Dof& dof) const{
@@ -83,31 +71,32 @@ int DofManager::getGlobalId(const Dof& dof) const{
     return it->second; 
 }
 
-const GroupOfDof& DofManager::getGroup(const MElement& element) const{
-  const map<const MElement*, 
-	    const GroupOfDof*, 
-	    ElementComparator>::iterator it = 
-    elementToGroup->find(&element);
+inline const Dof& DofManager::search(const Dof& d) const{
+  const set<const Dof*, DofComparator>::iterator it = 
+    dof->find(&d);
 
-  if(it == elementToGroup->end())
+  if(it == dof->end())
     throw 
-      Exception("Their is no Element %d", element.getNum());
+      Exception("Their is no Dof %s", d.toString().c_str());
 
   else
-    return *(it->second);   
+    return **it; 
 }
 
-void DofManager::insertDof(Dof* d, GroupOfDof* god){
+void DofManager::insertDof(Dof& d, GroupOfDof* god){
+  // Copy 'd'
+  const Dof* tmp = new Dof(d);
+
   // Try to insert Dof //
-  pair<set<Dof*, DofComparator>::iterator, bool> p;
-  p = dof->insert(d);
+  pair<set<const Dof*, DofComparator>::iterator, bool> p
+    = dof->insert(tmp);
  
   // If insertion is OK (Dof 'd' didn't exist) //
   //   --> Add new Dof
   if(p.second){
-    globalId->insert(pair<Dof*, int>(d, nextId));
+    globalId->insert(pair<const Dof*, int>(tmp, nextId));
     
-    god->add(d);
+    god->add(tmp);
     
     nextId += 1;
   }
@@ -115,14 +104,14 @@ void DofManager::insertDof(Dof* d, GroupOfDof* god){
   // If insertion failed (Dof 'd' already exists) //
   //   --> delete 'd' and add existing Dof
   else{
-    delete d; 
+    delete tmp; 
     god->add(*(p.first));
   }
 }
 
 bool DofManager::fixValue(const Dof& dof, double value){
   // Get *REAL* Dof
-  set<Dof*, DofComparator>::const_iterator it = 
+  set<const Dof*, DofComparator>::const_iterator it = 
     this->dof->find(const_cast<Dof*>(&dof));
 
   // Check if 'dof' exists
