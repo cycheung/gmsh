@@ -32,6 +32,7 @@ int main(int argc, char** argv){
   sysLaplace.fixBC(*msh.getFromPhysical(5).at(1),  2);
   sysLaplace.fixBC(*msh.getFromPhysical(5).at(2),  2);
   sysLaplace.fixBC(*msh.getFromPhysical(5).at(3),  2);
+  
   sysLaplace.assemble();
 
   //sysLaplace.getMatrix().print();

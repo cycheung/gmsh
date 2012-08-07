@@ -42,7 +42,7 @@ FormulationLaplace::~FormulationLaplace(void){
   delete   fspace;
   delete[] gradBasis;
 }
-
+#include <cstdio>
 double FormulationLaplace::weak(const int nodeI, const int nodeJ, 
 				const GroupOfDof& god) const{
 
@@ -56,6 +56,24 @@ double FormulationLaplace::weak(const int nodeI, const int nodeJ,
 				     (*gC)(g, 1), 
 				     (*gC)(g, 2), 
 				     invJac);
+    /*
+    printf("%d\n", element.getNum());
+    printf("zero : (%lf\t%lf\t%lf)\n", element.getVertex(0)->x(),
+	   element.getVertex(0)->y(),
+	   element.getVertex(0)->z());
+    printf("one  : (%lf\t%lf\t%lf)\n", element.getVertex(1)->x(),
+	   element.getVertex(1)->y(),
+	   element.getVertex(1)->z());
+    printf("two  : (%lf\t%lf\t%lf)\n", element.getVertex(2)->x(),
+	   element.getVertex(2)->y(),
+	   element.getVertex(2)->z());
+    printf("three: (%lf\t%lf\t%lf)\n", element.getVertex(3)->x(),
+	   element.getVertex(3)->y(),
+	   element.getVertex(3)->z());
+ 
+    invJac.print();
+    */
+    //printf("(%lf\t%lf\t%lf)\n", (*gC)(g, 0), (*gC)(g, 1), (*gC)(g, 2));
     invJac.invertInPlace();
 
     fullVector<double> phiI = Mapper::grad(Polynomial::at(gradBasis[nodeI], 

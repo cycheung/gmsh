@@ -1,4 +1,5 @@
 #include "Mapper.h"
+#include "Exception.h"
 
 Mapper::Mapper(void){
 }
@@ -13,7 +14,10 @@ fullVector<double> Mapper::map(const fullVector<double>& UVW,
 
   fullVector<double> XYZ(3);
 
-  jac.multWithATranspose(UVW, 1, 0, XYZ);
+  throw Exception("Bad implementation of Mapper::map");
+
+  //jac.multWithATranspose(UVW, 1, 0, XYZ);
+  // + origin !!!!!!!!
   return XYZ;
 }
 
