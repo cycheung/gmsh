@@ -5,8 +5,6 @@
 using namespace std;
 
 GroupOfEdge::GroupOfEdge(const GroupOfElement& goe){
-  // Save GoE //
-  this->goe = &goe;
   /*
   // Init Set //
   set<MEdge*, MEdgeLessThanNum> e;
@@ -33,7 +31,6 @@ GroupOfEdge::GroupOfEdge(const GroupOfElement& goe){
 
 GroupOfEdge::~GroupOfEdge(void){
   delete edge;
-  delete lookup;
 }
 
 string GroupOfEdge::toString(void) const{

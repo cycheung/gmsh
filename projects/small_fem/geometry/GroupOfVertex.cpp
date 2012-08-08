@@ -5,9 +5,6 @@
 using namespace std;
 
 GroupOfVertex::GroupOfVertex(const GroupOfElement& goe){
-  // Save GoE //
-  this->goe = &goe;
-
   // Init Set //
   set<MVertex*, MVertexLessThanNum> v;
 

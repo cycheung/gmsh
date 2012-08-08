@@ -20,8 +20,6 @@ class GroupOfElement;
 
 class GroupOfVertex: public Group{
  private:
-  const GroupOfElement*    goe;
-
   unsigned int            nVertex;
   std::vector<MVertex*>*  vertex;
 
@@ -34,7 +32,6 @@ class GroupOfVertex: public Group{
 
   MVertex&                     get(int i) const;  
   const std::vector<MVertex*>& getAll(void) const;  
-  const GroupOfElement&        getGoE(void) const;
 
   virtual std::string toString(void) const;
 };
@@ -59,10 +56,6 @@ inline MVertex& GroupOfVertex::get(int i) const{
 inline const std::vector<MVertex*>& 
 GroupOfVertex::getAll(void) const{
   return *vertex;
-}
-
-inline const GroupOfElement& GroupOfVertex::getGoE(void) const{
-  return *goe;
 }
 
 #endif

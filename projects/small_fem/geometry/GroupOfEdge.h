@@ -2,7 +2,6 @@
 #define _GROUPOFEDGE_H_
 
 #include <string>
-#include <map>
 #include <vector>
 
 #include "Group.h"
@@ -27,8 +26,6 @@ class GroupOfEdge: public Group{
   unsigned int         nEdge;
   std::vector<MEdge*>*  edge;
 
-  std::map<MEdge, MVertex*, Less_Edge>* lookup;
-
  public:
   GroupOfEdge(const GroupOfElement& goe);
   virtual ~GroupOfEdge(void);
@@ -38,7 +35,6 @@ class GroupOfEdge: public Group{
 
   MEdge&                     get(int i) const;  
   const std::vector<MEdge*>& getAll(void) const;  
-  const GroupOfElement&      getGoE(void) const;
 
   virtual std::string toString(void) const;
 };
@@ -63,10 +59,6 @@ inline MEdge& GroupOfEdge::get(int i) const{
 inline const std::vector<MEdge*>& 
 GroupOfEdge::getAll(void) const{
   return *edge;
-}
-
-inline const GroupOfElement& GroupOfEdge::getGoE(void) const{
-  return *goe;
 }
 
 #endif

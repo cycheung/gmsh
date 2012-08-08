@@ -33,6 +33,11 @@ class Mesh{
    Mesh(const std::string fileName);
   ~Mesh(void);
 
+  unsigned int getGlobalId(const MVertex& vertex) const;
+  unsigned int getGlobalId(const MEdge& edge) const;
+  unsigned int getGlobalId(const MFace& face) const;
+  unsigned int getGlobalId(const MElement& element) const;
+
   int                                 getNbGroup(void) const;
   GroupOfElement&                     getGroup(int i) const;
   const std::vector<GroupOfElement*>& getAllGroups(void) const;
@@ -68,6 +73,14 @@ class Mesh{
 //////////////////////
 // Inline Functions //
 //////////////////////
+
+inline unsigned int Mesh::getGlobalId(const MVertex& vertex) const{
+  return vertex.getNum();
+}
+
+inline unsigned int Mesh::getGlobalId(const MElement& element) const{
+  return element.getNum();
+}
 
 inline int Mesh::getNbGroup(void) const{
   return nEntity;

@@ -9,6 +9,7 @@
 #include "MElement.h"
 
 #include "GroupOfVertex.h"
+#include "GroupOfEdge.h"
 
 /**
    @class GroupOfElement
@@ -19,6 +20,7 @@
 */
 
 class GroupOfVertex;
+class GroupOfEdge;
 
 class GroupOfElement: public Group{
  private:
@@ -28,6 +30,7 @@ class GroupOfElement: public Group{
   std::vector<MElement*>*  element;
 
   mutable GroupOfVertex*   gov;
+  mutable GroupOfEdge*     goe;
 
  public:
   GroupOfElement(GEntity& entity);
@@ -39,9 +42,9 @@ class GroupOfElement: public Group{
   MElement&                     get(int i) const;  
   const std::vector<MElement*>& getAll(void) const;  
 
-  GEntity& getEntity(void) const;
-
-  int getNVertex(void) const;
+  GEntity&       getEntity(void) const;
+  GroupOfVertex& getGroupOfVertex(void) const;
+  GroupOfEdge&   getGroupOfEdge(void) const;
 
   virtual std::string toString(void) const;
 };

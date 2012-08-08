@@ -20,6 +20,7 @@ GroupOfElement::GroupOfElement(GEntity& entity){
 
   // Init Other Struct //
   gov = NULL;
+  goe = NULL;
 }
 
 GroupOfElement::~GroupOfElement(void){
@@ -27,6 +28,9 @@ GroupOfElement::~GroupOfElement(void){
   
   if(gov)
     delete gov;
+
+  if(goe)
+    delete goe;
   /*
     GroupOfElement is *NOT* reponsible for
     deleting 'entity', niether the MElements of
@@ -34,11 +38,18 @@ GroupOfElement::~GroupOfElement(void){
   */
 }
 
-int GroupOfElement::getNVertex(void) const{
+GroupOfVertex& GroupOfElement::getGroupOfVertex(void) const{
   if(!gov)
     gov = new GroupOfVertex(*this);
   
-  return gov->getNumber();
+  return *gov;
+}
+
+GroupOfEdge& GroupOfElement::getGroupOfEdge(void) const{
+  if(!goe)
+    goe = new GroupOfEdge(*this);
+  
+  return *goe;
 }
 
 string GroupOfElement::toString(void) const{

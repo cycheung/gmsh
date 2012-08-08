@@ -13,8 +13,6 @@ DofManager::DofManager(FunctionSpace& fs){
   const GroupOfElement& support    = fs.getSupport();
   int nElement                     = support.getNumber();
   const vector<MElement*>& element = support.getAll();
-  
-  nTotVertex = support.getNVertex();
 
   // Init Struct //
   dof      = new set<const Dof*, DofComparator>;         

@@ -51,7 +51,6 @@ class DofManager{
   std::map<const Dof*, int, DofComparator>*    globalId;
   std::map<const Dof*, double, DofComparator>* fixedDof;
 
-  int nTotVertex;
   int nextId;
   
  public:
