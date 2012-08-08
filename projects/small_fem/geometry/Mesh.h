@@ -31,18 +31,16 @@
 class GroupOfVertex;
 class GroupOfEdge;
 
+class MEdgeLessThanNum;
+class MElementLessThanNum;
+
 class Mesh{
  private:
-  typedef struct{
-    unsigned int id;
-    int orientation;
-  } edge_data;
-
   class MEdgeLessThanNum{
   public:
     bool operator()(const MEdge *e1, const MEdge *e2) const;
   };
-
+  
   class MElementLessThanNum{
   public:
     bool operator()(const MElement *e1, const MElement *e2) const;
@@ -64,7 +62,7 @@ class Mesh{
            GroupComparator>* elementToEdge;
 
   std::map<MVertex*, unsigned int, MVertexLessThanNum>*   vertex;
-  std::map<MEdge*, edge_data, MEdgeLessThanNum>*          edge;
+  std::map<MEdge*, unsigned int, MEdgeLessThanNum>*       edge;
   std::map<MElement*, unsigned int, MElementLessThanNum>* element;           
 
   std::map<unsigned int, MVertex*>*   idVertex;
@@ -77,10 +75,10 @@ class Mesh{
    Mesh(const std::string fileName);
   ~Mesh(void);
 
-  unsigned int getGlobalId(MElement& element) const;
-  unsigned int getGlobalId(MVertex& vertex) const;
-  unsigned int getGlobalId(MEdge& edge) const;
-  unsigned int getGlobalId(MFace& face) const;
+  unsigned int getGlobalId(const MElement& element) const;
+  unsigned int getGlobalId(const MVertex& vertex) const;
+  unsigned int getGlobalId(const MEdge& edge) const;
+  unsigned int getGlobalId(const MFace& face) const;
 
   MElement& getElement(unsigned int id) const;
   MVertex&  getVertex(unsigned int id) const;
@@ -98,10 +96,13 @@ class Mesh{
   std::string toString(void) const;
 
  private:
+  static MEdge invert(MEdge& edge);
+
   void extractElement(GEntity& entity, int i);
   void extractVertex(GroupOfElement& goe);
   void extractEdge(GroupOfElement& goe);
 };
+
 
 /**
    @fn Mesh::Mesh

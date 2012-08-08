@@ -32,7 +32,7 @@ Mesh::Mesh(const std::string fileName){
 			    GroupComparator>;
 
   vertex  = new map<MVertex*, unsigned int, MVertexLessThanNum>;
-  edge    = new map<MEdge*, edge_data, MEdgeLessThanNum>;
+  edge    = new map<MEdge*, unsigned int, MEdgeLessThanNum>;
   element = new map<MElement*, unsigned int, MElementLessThanNum>;
 
   idVertex  = new map<unsigned int, MVertex*>;
@@ -48,6 +48,10 @@ Mesh::Mesh(const std::string fileName){
   // Extract Vertex
   for(unsigned int i = 0; i < nEntity; i++)
     extractVertex(*(*group)[i]);
+
+  // Extract Edge
+  for(unsigned int i = 0; i < nEntity; i++)
+    extractEdge(*(*group)[i]);
 }
 
 Mesh::~Mesh(void){
@@ -123,46 +127,56 @@ const vector<GroupOfElement*> Mesh::getFromPhysical(int physical) const{
   return vector<GroupOfElement*>(lst.begin(), lst.end());
 }
 
-unsigned int Mesh::getGlobalId(MElement& element) const{
+unsigned int Mesh::getGlobalId(const MElement& element) const{
+  MElement& eelement = const_cast<MElement&>(element);
+
   map<MElement*, 
       unsigned int, 
       MElementLessThanNum>::iterator it = 
-    this->element->find(&element);
+    this->element->find(&eelement);
 
   if(it == this->element->end())
     throw 
       Exception("Element not found");
 
-  else
-    return it->second;   
+  return it->second;   
 }
 
-unsigned int Mesh::getGlobalId(MVertex& vertex) const{
+unsigned int Mesh::getGlobalId(const MVertex& vertex) const{
+  MVertex& vvertex = const_cast<MVertex&>(vertex);
+
   map<MVertex*, 
       unsigned int, 
       MVertexLessThanNum>::iterator it = 
-    this->vertex->find(&vertex);
+    this->vertex->find(&vvertex);
 
   if(it == this->vertex->end())
     throw 
       Exception("Vertex not found");
 
-  else
-    return it->second; 
+  return it->second; 
 }
 
-unsigned int Mesh::getGlobalId(MEdge& edge) const{
-  map<MEdge*, 
-      edge_data, 
-      MEdgeLessThanNum>::iterator it = 
-    this->edge->find(&edge);
+unsigned int Mesh::getGlobalId(const MEdge& edge) const{
+  MEdge& eedge = const_cast<MEdge&>(edge);
 
-  if(it == this->edge->end())
+  // WARNING:
+  // Here, we use a Edge Comparator,
+  // such that Edge Orientation
+  // do *NOT* matter !!
+
+  // Look for Edge //
+  map<MEdge*, 
+      unsigned int, 
+      MEdgeLessThanNum>::iterator it = 
+    this->edge->find(&eedge);
+
+  if(it == this->edge->end()){
     throw 
       Exception("Edge not found");
+  }
 
-  else
-    return it->second.id; 
+  return it->second; 
 }
 
 MElement& Mesh::getElement(unsigned int id) const{
@@ -173,8 +187,7 @@ MElement& Mesh::getElement(unsigned int id) const{
     throw 
       Exception("No Element with Global Id %d found", id);
 
-  else
-    return *(it->second);   
+  return *(it->second);   
 }
 
 MVertex& Mesh::getVertex(unsigned int id) const{
@@ -185,8 +198,7 @@ MVertex& Mesh::getVertex(unsigned int id) const{
     throw 
       Exception("No Vertex with Global Id %d found", id);
 
-  else
-    return *(it->second);   
+  return *(it->second);   
 }
 
 MEdge& Mesh::getEdge(unsigned int id) const{
@@ -197,8 +209,7 @@ MEdge& Mesh::getEdge(unsigned int id) const{
     throw 
       Exception("No Edge with Global Id %d found", id);
 
-  else
-    return *(it->second);   
+  return *(it->second);   
 }
 
 GroupOfVertex& Mesh::getGroupOfVertex(GroupOfElement& goe){
@@ -210,6 +221,25 @@ GroupOfVertex& Mesh::getGroupOfVertex(GroupOfElement& goe){
   map<GroupOfElement*, 
       GroupOfVertex*, 
       GroupComparator>::iterator end = elementToVertex->end();
+
+  // Check If we have the requested Group
+  if(it != end)
+    return *(it->second);
+  
+  // Else: Exception !
+  else
+    throw Exception("GroupOfVertex not found");
+}
+
+GroupOfEdge& Mesh::getGroupOfEdge(GroupOfElement& goe){
+  // Iterator //
+  map<GroupOfElement*, 
+      GroupOfEdge*, 
+      GroupComparator>::iterator it = elementToEdge->find(&goe);
+  
+  map<GroupOfElement*, 
+      GroupOfEdge*, 
+      GroupComparator>::iterator end = elementToEdge->end();
 
   // Check If we have the requested Group
   if(it != end)
@@ -274,6 +304,31 @@ void Mesh::extractVertex(GroupOfElement& goe){
   }
 }
 
+void Mesh::extractEdge(GroupOfElement& goe){
+  // Build GroupOfEdge
+  GroupOfEdge* goEd = new GroupOfEdge(goe, *this);
+  
+  // Insert in lookup table
+  elementToEdge->insert
+    (pair<GroupOfElement*, GroupOfEdge*>(&goe, goEd));
+
+  // Number Edges
+  const std::vector<MEdge*>& myEdge = goEd->getAll();
+  unsigned int                    N = goEd->getNumber();
+  
+  for(unsigned int i = 0; i < N; i++){
+    edge->insert
+      (pair<MEdge*, unsigned int>
+       (myEdge[i], nextEntityId));
+    
+    idEdge->insert
+      (pair<unsigned int, MEdge*>
+       (nextEntityId, myEdge[i]));
+    
+    nextEntityId++;
+  }
+}
+
 string Mesh::toString(void) const{
   stringstream stream;
 
@@ -289,4 +344,11 @@ string Mesh::toString(void) const{
     stream << (*group)[i]->toString() << endl;
 
   return stream.str();
+}
+
+MEdge Mesh::invert(MEdge& edge){
+  MVertex* begin = edge.getVertex(0);
+  MVertex* end   = edge.getVertex(1);
+
+  return MEdge(end, begin);
 }

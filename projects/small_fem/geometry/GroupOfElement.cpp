@@ -46,7 +46,7 @@ GroupOfVertex& GroupOfElement::getGroupOfVertex(void){
 
 GroupOfEdge& GroupOfElement::getGroupOfEdge(void){
   if(!goe)
-    goe = new GroupOfEdge(*this);
+    goe = &(mesh->getGroupOfEdge(*this));
   
   return *goe;
 }

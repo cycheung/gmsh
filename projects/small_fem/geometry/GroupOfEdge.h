@@ -3,11 +3,12 @@
 
 #include <string>
 #include <vector>
+#include <map>
 
+#include "Mesh.h"
 #include "Group.h"
 #include "GroupOfElement.h"
 #include "MEdge.h"
-#include "MVertex.h"
 
 /**
    @class GroupOfEdge
@@ -17,20 +18,29 @@
    This class is @em Group.
 */
 
+class Mesh;
 class GroupOfElement;
 
 class GroupOfEdge: public Group{
  private:
+  class EdgeComparator{
+  public:
+    bool operator()(const MEdge& e1, const MEdge& e2) const;
+  };
+
+ private:
+  Mesh* mesh;
+
   static unsigned int nextId;
   unsigned int            id;
 
-  const GroupOfElement* goe;
-
   unsigned int         nEdge;
+  
   std::vector<MEdge*>*  edge;
+  std::map<MEdge, int, EdgeComparator>* orientation;
 
  public:
-  GroupOfEdge(const GroupOfElement& goe);
+  GroupOfEdge(const GroupOfElement& goe, Mesh& mesh);
   virtual ~GroupOfEdge(void);
 
   virtual unsigned int getNumber(void) const;
@@ -39,8 +49,13 @@ class GroupOfEdge: public Group{
 
   MEdge&                     get(unsigned int i) const;  
   const std::vector<MEdge*>& getAll(void) const;  
+  int                        getOrientation(const MEdge& edge) const;
+  Mesh&                      getMesh(void) const;
 
   virtual std::string toString(void) const;
+
+ private:
+  static MEdge invert(MEdge& edge);
 };
 
 
@@ -68,5 +83,18 @@ inline const std::vector<MEdge*>&
 GroupOfEdge::getAll(void) const{
   return *edge;
 }
+
+inline Mesh& GroupOfEdge::getMesh(void) const{
+  return *mesh;
+}
+
+inline bool GroupOfEdge::EdgeComparator::
+operator()(const MEdge& e1, const MEdge& e2) const{
+  return 
+    ( e1.getVertex(0)->getNum() <  e2.getVertex(0)->getNum()) ||
+    ((e1.getVertex(0)->getNum() == e2.getVertex(0)->getNum()) && 
+     (e1.getVertex(1)->getNum() <  e2.getVertex(1)->getNum()));
+}
+
 
 #endif
