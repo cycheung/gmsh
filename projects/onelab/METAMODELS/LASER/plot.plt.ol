@@ -43,7 +43,7 @@ filename(n) = sprintf("templaser%d.txt", n)
 plot for [i=0:nbfiles-1] filename(i) u ($5)*1000:($8)-273 w l t "", \
      320-273 w l  lt rgb "black" t "threshold "
 
-skinWidth = (OL.get(Parameters/Model/EPIDERMIS)+OL.get(Parameters/Model/DERMIS))/1000
+skinWidth = (OL.get(Parameters/Skin/EPIDERMIS)+OL.get(Parameters/Skin/DERMIS))/1000
 zsurf=OL.get(PostPro/ZSURF);
 
 set title "Maximum (in time) active surface"

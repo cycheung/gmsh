@@ -1,4 +1,5 @@
-OL.if( OL.get(Parameters/Model/TENEUR) )
+
+OL.if( OL.get(Parameters/Skin/TENEUR) )
   Density = Variable Teneur
     Real MATC "1000/(0.0616*tx(0)+0.938)" ! kg/m3
   Heat Conductivity = Variable Teneur, DensityBis

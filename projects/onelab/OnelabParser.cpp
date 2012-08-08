@@ -351,7 +351,7 @@ void localSolverClient::parse_sentence(std::string line) {
       if(arguments[0].empty())
 	numbers[0].setReadOnly(1);
 
-      // choices and valueLables are reset
+      // choices and valueLabels are reset
       std::vector<double> choices;
       numbers[0].setChoices(choices);
       std::map<double, std::string> valuelabels;
@@ -700,8 +700,10 @@ void localSolverClient::parse_oneline(std::string line, std::ifstream &infile) {
     cursor = pos+olkey::ifcond.length();
     int NumArgs=extractLogic(line.substr(cursor),arguments);
     bool condition= resolveLogicExpr(arguments);
-    if (!parse_ifstatement(infile,condition))
-      Msg::Fatal("Misformed %s statement: <%s>", line.c_str());
+    if (!parse_ifstatement(infile,condition)){
+      Msg::Fatal("Misformed %s statement: <%s>", 
+		 olkey::ifcond.c_str(), line.c_str());
+    }
   }
   else if ( (pos=line.find(olkey::ifequal)) != std::string::npos) {
     // onelab.ifequal

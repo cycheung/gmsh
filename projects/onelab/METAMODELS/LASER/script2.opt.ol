@@ -1,4 +1,4 @@
-Plugin(MathEval).Expression0= "Step(v0-OL.get(Parameters/Model/OVERTEMP))";
+Plugin(MathEval).Expression0= "Step(v0-OL.get(Parameters/Skin/OVERTEMP))";
 Plugin(MathEval).TimeStep=-1;
 Plugin(MathEval).View=0;
 Plugin(MathEval).OtherTimeStep=-1;
