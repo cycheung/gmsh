@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include "Mesh.h"
 #include "Group.h"
 #include "GroupOfElement.h"
 #include "MVertex.h"
@@ -16,22 +17,30 @@
    This class is @em Group.
 */
 
+class Mesh;
 class GroupOfElement;
 
 class GroupOfVertex: public Group{
  private:
+  Mesh* mesh;
+
+  static unsigned int nextId;
+  unsigned int        id;
+
   unsigned int            nVertex;
   std::vector<MVertex*>*  vertex;
 
  public:
-  GroupOfVertex(const GroupOfElement& goe);
+  GroupOfVertex(const GroupOfElement& goe, Mesh& mesh);
   virtual ~GroupOfVertex(void);
 
-  virtual int getNumber(void) const;
-  virtual int getType(void)   const;
+  virtual unsigned int getNumber(void) const;
+  virtual unsigned int getId(void) const;
+  virtual unsigned int getType(void)   const;
 
-  MVertex&                     get(int i) const;  
+  MVertex&                     get(unsigned int i) const;  
   const std::vector<MVertex*>& getAll(void) const;  
+  Mesh&                        getMesh(void) const;
 
   virtual std::string toString(void) const;
 };
@@ -41,21 +50,29 @@ class GroupOfVertex: public Group{
 // Inline Functions //
 //////////////////////
 
-inline int GroupOfVertex::getNumber(void) const{
+inline unsigned int GroupOfVertex::getNumber(void) const{
   return nVertex;
 }
 
-inline int GroupOfVertex::getType(void) const{
+inline unsigned int GroupOfVertex::getId(void) const{
+  return id;
+}
+
+inline unsigned int GroupOfVertex::getType(void) const{
   return 2;
 }
 
-inline MVertex& GroupOfVertex::get(int i) const{
+inline MVertex& GroupOfVertex::get(unsigned int i) const{
   return *((*vertex)[i]);
 }
 
 inline const std::vector<MVertex*>& 
 GroupOfVertex::getAll(void) const{
   return *vertex;
+}
+
+inline Mesh& GroupOfVertex::getMesh(void) const{
+  return *mesh;
 }
 
 #endif

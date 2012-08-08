@@ -29,30 +29,34 @@ class DofManager;
 
 class GroupOfDof: public Group{
  private:
+  static unsigned int nextId;
+  unsigned int            id;
+
   const MElement* element;
 
-  int nDof;
+  unsigned int nDof;
   std::vector<const Dof*>* dof;
   
-  int nextDof;
+  unsigned int nextDof;
   
   friend class DofManager;
 
  public:
-  virtual int getNumber(void) const;
-  virtual int getType(void)   const;
+  virtual unsigned int getNumber(void) const;
+  virtual unsigned int getId(void) const;
+  virtual unsigned int getType(void)   const;
   
-  const Dof&               get(int i) const; 
+  const Dof&               get(unsigned int i) const; 
   const std::vector<const Dof*>& getAll(void) const;
   
   const MElement&          getGeoElement(void) const;
 
-  int getOrientation(const int dofId) const;
+  int getOrientation(const unsigned int dofId) const;
 
   virtual std::string toString(void) const;
 
  private:
-   GroupOfDof(int numberOfDof, const MElement& geoElement);
+   GroupOfDof(unsigned int numberOfDof, const MElement& geoElement);
   ~GroupOfDof(void);
 
   void add(const Dof* dof);
@@ -68,7 +72,7 @@ class GroupOfDof: public Group{
    @fn GroupOfDof::getAll
    @return Returns all the elements of the Group
 
-   @fn int GroupOfDof::getOrientation(const int dofId) const;
+   @fn GroupOfDof::getOrientation
    @param dofId The @em local @c ID of a Dof in the GroupOfDof
    @return Returns the orientation of a Dof (indentified by its @em local @c ID)
 */
@@ -77,15 +81,19 @@ class GroupOfDof: public Group{
 // Inline Functions //
 //////////////////////
 
-inline int GroupOfDof::getNumber(void) const{
+inline unsigned int GroupOfDof::getNumber(void) const{
   return nDof;
 }
 
-inline int GroupOfDof::getType(void) const{
+inline unsigned int GroupOfDof::getId(void) const{
+  return id;
+}
+
+inline unsigned int GroupOfDof::getType(void) const{
   return 0;
 }
 
-inline const Dof& GroupOfDof::get(int i) const{
+inline const Dof& GroupOfDof::get(unsigned int i) const{
   return *((*dof)[i]);
 }
  

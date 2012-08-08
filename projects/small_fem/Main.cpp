@@ -19,19 +19,13 @@ int main(int argc, char** argv){
   
   // Get Mesh //
   Mesh msh(argv[1]);
+  //cout << msh.toString() << endl;
 
   FormulationLaplace laplace(*msh.getFromPhysical(7).at(0));
 
   System sysLaplace(laplace);
-  sysLaplace.fixBC(*msh.getFromPhysical(6).at(0), -1);
-  sysLaplace.fixBC(*msh.getFromPhysical(6).at(1), -1);
-  sysLaplace.fixBC(*msh.getFromPhysical(6).at(2), -1);
-  sysLaplace.fixBC(*msh.getFromPhysical(6).at(3), -1);
-
-  sysLaplace.fixBC(*msh.getFromPhysical(5).at(0),  2);
-  sysLaplace.fixBC(*msh.getFromPhysical(5).at(1),  2);
-  sysLaplace.fixBC(*msh.getFromPhysical(5).at(2),  2);
-  sysLaplace.fixBC(*msh.getFromPhysical(5).at(3),  2);
+  sysLaplace.fixBC(msh.getFromPhysical(6), -1);
+  sysLaplace.fixBC(msh.getFromPhysical(5),  2);
   
   sysLaplace.assemble();
 
@@ -42,7 +36,7 @@ int main(int argc, char** argv){
 
   //sysLaplace.getSol().print();
 
-  Solution solLaplace(sysLaplace);
+  Solution solLaplace(sysLaplace, msh);
 
   WriterMsh writer;  
   solLaplace.write("laplace", writer);

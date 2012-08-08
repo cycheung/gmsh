@@ -4,7 +4,13 @@
 
 using namespace std;
 
+unsigned int GroupOfEdge::nextId = 0;
+
 GroupOfEdge::GroupOfEdge(const GroupOfElement& goe){
+  // Set Id
+  id = nextId;
+  nextId++;
+
   /*
   // Init Set //
   set<MEdge*, MEdgeLessThanNum> e;
@@ -35,23 +41,13 @@ GroupOfEdge::~GroupOfEdge(void){
 
 string GroupOfEdge::toString(void) const{
   stringstream stream;
-  /*  
+    
   stream << "*********************************************"    
 	 << endl
-	 << "* Group Of Edge                          *"    
+	 << "* Group Of Edge #" << id   
 	 << endl
 	 << "*********************************************" 
-	 << endl << "*" 
-	 << endl
-	 << "* This group contains the following vertices: " << endl;
-
-  for(unsigned int i = 0; i < nEdge; i++){
-    stream << "*    -- ID: " 
-	   << (*edge)[i]->getNum() << endl;
-  }
-  
-  stream << "*********************************************" 
 	 << endl;
-  */
+    
   return stream.str();
 }

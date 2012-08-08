@@ -4,7 +4,10 @@
 
 using namespace std;
 
-Solution::Solution(const System& system){
+Solution::Solution(const System& system, Mesh& mesh){
+  // Get Mesh
+  this->mesh = &mesh;
+
   // Get FunctionSpace
   const FunctionSpace& fs = system.getFunctionSpace();
 
@@ -49,7 +52,7 @@ void Solution::interpolateScalar(void){
   nodalScalarValue = new vector<double>(nDof);
 
   for(int i = 0; i < nDof; i++){
-    (*nodalScalarValue)[dof[i]->getEntity() - 1] = 
+    (*nodalScalarValue)[mesh->getVertex(dof[i]->getEntity()).getNum() - 1] = 
       (*sol)(dofM->getGlobalId(*dof[i]));
   }
 }

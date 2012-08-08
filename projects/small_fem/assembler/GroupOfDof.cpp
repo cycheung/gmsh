@@ -1,7 +1,14 @@
 #include <sstream>
 #include "GroupOfDof.h"
 
-GroupOfDof::GroupOfDof(int numberOfDof, const MElement& geoElement){
+unsigned int GroupOfDof::nextId = 0;
+
+GroupOfDof::GroupOfDof(unsigned int numberOfDof, const MElement& geoElement){
+  // Set ID //
+  id = nextId;
+  nextId++;
+
+  // Set GroupOfDof //
   element = &geoElement;
   
   nDof = numberOfDof;
@@ -24,18 +31,15 @@ void GroupOfDof::add(const Dof* dof){
 std::string GroupOfDof::toString(void) const{
   std::stringstream stream;
   
-  stream << "******************* " << std::endl
-	 << "* Group Of Dof    * " << std::endl
-	 << "******************* " << std::endl
+  stream << "*************************** " << std::endl
+	 << "* Group Of Dof #" << id       << std::endl
+	 << "*************************** " << std::endl
 	 << "* Associated Dofs:  " << std::endl;
 
-  for(int i = 0; i < nDof; i++){
+  for(unsigned int i = 0; i < nDof; i++)
     stream << "*    -- " << get(i).toString() << std::endl;
-    stream << "*      Entity: " << const_cast<MElement*>(element)->getVertex(i)->getNum()
-	   << std::endl;
-  }
 
-  stream << "******************* " << std::endl;
+  stream << "*************************** " << std::endl;
 
   return stream.str();
 }

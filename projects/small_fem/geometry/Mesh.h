@@ -5,8 +5,15 @@
 #include <map>
 #include <string>
 
-#include "GroupOfElement.h"
 #include "GModel.h"
+#include "GroupOfElement.h"
+#include "GroupOfVertex.h"
+#include "GroupOfEdge.h"
+
+#include "MElement.h"
+#include "MVertex.h"
+#include "MEdge.h"
+#include "MFace.h"
 
 /**
    @class Mesh
@@ -21,7 +28,26 @@
    @c .msh file, wich discribes the mesh.@n
 */
 
+class GroupOfVertex;
+class GroupOfEdge;
+
 class Mesh{
+ private:
+  typedef struct{
+    unsigned int id;
+    int orientation;
+  } edge_data;
+
+  class MEdgeLessThanNum{
+  public:
+    bool operator()(const MEdge *e1, const MEdge *e2) const;
+  };
+
+  class MElementLessThanNum{
+  public:
+    bool operator()(const MElement *e1, const MElement *e2) const;
+  };
+
  private:
   GModel* model;
 
@@ -29,22 +55,52 @@ class Mesh{
   std::vector<GroupOfElement*>*        group;
   std::multimap<int, GroupOfElement*>* physToGroup;
 
+  std::map<GroupOfElement*, 
+           GroupOfVertex*, 
+           GroupComparator>* elementToVertex;
+
+  std::map<GroupOfElement*, 
+           GroupOfEdge*, 
+           GroupComparator>* elementToEdge;
+
+  std::map<MVertex*, unsigned int, MVertexLessThanNum>*   vertex;
+  std::map<MEdge*, edge_data, MEdgeLessThanNum>*          edge;
+  std::map<MElement*, unsigned int, MElementLessThanNum>* element;           
+
+  std::map<unsigned int, MVertex*>*   idVertex;
+  std::map<unsigned int, MEdge*>*       idEdge;
+  std::map<unsigned int, MElement*>* idElement;           
+
+  int nextEntityId;
+
  public:
    Mesh(const std::string fileName);
   ~Mesh(void);
 
-  unsigned int getGlobalId(const MVertex& vertex) const;
-  unsigned int getGlobalId(const MEdge& edge) const;
-  unsigned int getGlobalId(const MFace& face) const;
-  unsigned int getGlobalId(const MElement& element) const;
+  unsigned int getGlobalId(MElement& element) const;
+  unsigned int getGlobalId(MVertex& vertex) const;
+  unsigned int getGlobalId(MEdge& edge) const;
+  unsigned int getGlobalId(MFace& face) const;
+
+  MElement& getElement(unsigned int id) const;
+  MVertex&  getVertex(unsigned int id) const;
+  MEdge&    getEdge(unsigned int id) const;
+  MFace&    getFace(unsigned int id) const;
 
   int                                 getNbGroup(void) const;
   GroupOfElement&                     getGroup(int i) const;
   const std::vector<GroupOfElement*>& getAllGroups(void) const;
-  
   const std::vector<GroupOfElement*>  getFromPhysical(int physical) const;
 
+  GroupOfVertex& getGroupOfVertex(GroupOfElement& goe);
+  GroupOfEdge&   getGroupOfEdge(GroupOfElement& goe);
+  
   std::string toString(void) const;
+
+ private:
+  void extractElement(GEntity& entity, int i);
+  void extractVertex(GroupOfElement& goe);
+  void extractEdge(GroupOfElement& goe);
 };
 
 /**
@@ -74,14 +130,6 @@ class Mesh{
 // Inline Functions //
 //////////////////////
 
-inline unsigned int Mesh::getGlobalId(const MVertex& vertex) const{
-  return vertex.getNum();
-}
-
-inline unsigned int Mesh::getGlobalId(const MElement& element) const{
-  return element.getNum();
-}
-
 inline int Mesh::getNbGroup(void) const{
   return nEntity;
 }
@@ -93,6 +141,19 @@ inline GroupOfElement& Mesh::getGroup(int i) const{
 inline const std::vector<GroupOfElement*>&
 Mesh::getAllGroups(void) const{
   return *group;
+}
+
+inline bool Mesh::MEdgeLessThanNum::
+operator()(const MEdge *e1, const MEdge *e2) const{
+  if(e1->getMinVertex() < e2->getMinVertex()) return true;
+  if(e1->getMinVertex() > e2->getMinVertex()) return false;
+  if(e1->getMaxVertex() < e2->getMaxVertex()) return true;
+  return false;
+}
+
+inline bool Mesh::MElementLessThanNum::
+operator()(const MElement *e1, const MElement *e2) const{
+  return e1->getNum() < e2->getNum();
 }
 
 #endif

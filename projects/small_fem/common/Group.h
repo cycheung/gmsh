@@ -32,17 +32,30 @@
    Find a solution for return type issuses, template and doxygen !!
  */
 
+/**
+   @class GroupComparator
+   @brief A class to compare two Group%s
+
+   A class to compare two Group%s of the @em same type.
+*/
+
+
 class Group{
  public:
   virtual ~Group(void);
 
-  virtual int getNumber(void) const = 0;
-
-  virtual int getType(void) const = 0;
+  virtual unsigned int getNumber(void) const = 0;
+  virtual unsigned int getId(void) const = 0;
+  virtual unsigned int getType(void) const = 0;
 
   virtual std::string toString(void) const = 0;
 };
 
+class GroupComparator{
+ public:
+  bool operator()(const Group* a, 
+		  const Group* b) const;
+};
 
 /**
    @fn Group::~Group
@@ -51,12 +64,33 @@ class Group{
    @fn Group::getNumber
    @return Returns the number of elements in the Group
 
+   @fn Group::getId
+   @return Returns the (unique) @c ID of this Group
+   @note 
+   An @c ID is unique @em for @em a @em given @em type of Group 
+
    @fn Group::getType
    @return Returns the type of the elements 
 
    @fn Group::toString
    @return Returns a string discribing this Group
+
+   @fn bool GroupComparator::operator(Group* a, const Group* b) const
+   @param a A Group
+   @param b Another Group
+   @return operator() is:
+   @li @c true, if a is @em smaller than b  
+   @li @c false, otherwise
 */
 
+
+//////////////////////
+// Inline Functions //
+//////////////////////
+
+inline bool GroupComparator::operator()(const Group* a, 
+					const Group* b) const{
+  return a->getId() < b->getId();
+}
 
 #endif

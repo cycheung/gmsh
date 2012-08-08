@@ -4,8 +4,15 @@
 
 using namespace std;
 
-GroupOfVertex::GroupOfVertex(const GroupOfElement& goe){
-  // Init Set //
+unsigned int GroupOfVertex::nextId = 0;
+
+GroupOfVertex::GroupOfVertex(const GroupOfElement& goe, Mesh& mesh){
+  // Set Id //
+  id = nextId;
+  nextId++;
+
+  // Init //
+  this->mesh = &mesh;
   set<MVertex*, MVertexLessThanNum> v;
 
   // Get Elements //
@@ -36,17 +43,16 @@ string GroupOfVertex::toString(void) const{
   
   stream << "*********************************************"    
 	 << endl
-	 << "* Group Of Vertex                          *"    
+	 << "* Group Of Vertex #" << id   
 	 << endl
 	 << "*********************************************" 
 	 << endl << "*" 
 	 << endl
 	 << "* This group contains the following vertices: " << endl;
 
-  for(unsigned int i = 0; i < nVertex; i++){
+  for(unsigned int i = 0; i < nVertex; i++)
     stream << "*    -- ID: " 
-	   << (*vertex)[i]->getNum() << endl;
-  }
+	   << mesh->getGlobalId(*(*vertex)[i]) << endl;
   
   stream << "*********************************************" 
 	 << endl;

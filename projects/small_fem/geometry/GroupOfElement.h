@@ -6,6 +6,7 @@
 
 #include "Group.h"
 #include "GEntity.h"
+#include "Mesh.h"
 #include "MElement.h"
 
 #include "GroupOfVertex.h"
@@ -19,32 +20,40 @@
    This class is @em Group.
 */
 
+class Mesh;
 class GroupOfVertex;
 class GroupOfEdge;
 
 class GroupOfElement: public Group{
  private:
-  GEntity*                 entity;
+  Mesh*    mesh;
+  GEntity* entity;
+
+  static unsigned int nextId;
+  unsigned int        id;
 
   unsigned int            nElement;
   std::vector<MElement*>*  element;
 
-  mutable GroupOfVertex*   gov;
-  mutable GroupOfEdge*     goe;
+  GroupOfVertex*   gov;
+  GroupOfEdge*     goe;
 
  public:
-  GroupOfElement(GEntity& entity);
+  GroupOfElement(GEntity& entity, Mesh& mesh);
   virtual ~GroupOfElement(void);
 
-  virtual int getNumber(void) const;
-  virtual int getType(void)   const;
+  virtual unsigned int getNumber(void) const;
+  virtual unsigned int getId(void) const;
+  virtual unsigned int getType(void)   const;
 
-  MElement&                     get(int i) const;  
+  MElement&                     get(unsigned int i) const;  
   const std::vector<MElement*>& getAll(void) const;  
 
-  GEntity&       getEntity(void) const;
-  GroupOfVertex& getGroupOfVertex(void) const;
-  GroupOfEdge&   getGroupOfEdge(void) const;
+  GEntity& getEntity(void) const;
+  Mesh&    getMesh(void) const;
+
+  GroupOfVertex& getGroupOfVertex(void);
+  GroupOfEdge&   getGroupOfEdge(void);
 
   virtual std::string toString(void) const;
 };
@@ -78,15 +87,19 @@ class GroupOfElement: public Group{
 // Inline Functions //
 //////////////////////
 
-inline int GroupOfElement::getNumber(void) const{
+inline unsigned int GroupOfElement::getNumber(void) const{
   return nElement;
 }
 
-inline int GroupOfElement::getType(void) const{
+inline unsigned int GroupOfElement::getId(void) const{
+  return id;
+}
+
+inline unsigned int GroupOfElement::getType(void) const{
   return 1;
 }
 
-inline MElement& GroupOfElement::get(int i) const{
+inline MElement& GroupOfElement::get(unsigned int i) const{
   return *((*element)[i]);
 }
 
@@ -97,6 +110,10 @@ GroupOfElement::getAll(void) const{
 
 inline GEntity& GroupOfElement::getEntity(void) const{
   return *entity;
+}
+
+inline Mesh& GroupOfElement::getMesh(void) const{
+  return *mesh;
 }
 
 #endif

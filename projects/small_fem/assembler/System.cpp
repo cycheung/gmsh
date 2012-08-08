@@ -59,6 +59,13 @@ void System::fixBC(const GroupOfElement& goe, double value){
   }
 }
 
+void System::fixBC(const vector<GroupOfElement*>& goes, double value){
+  unsigned int size = goes.size();
+
+  for(unsigned int i = 0; i < size; i++)
+    fixBC(*goes[i], value);
+}
+
 void System::solve(void){
   // Is the System assembled ? //
   if(!isAssembled)

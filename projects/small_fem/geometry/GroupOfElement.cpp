@@ -5,10 +5,17 @@
 
 using namespace std;
 
-GroupOfElement::GroupOfElement(GEntity& entity){
-  // Save Entity //
-  this->entity = &entity;
+unsigned int GroupOfElement::nextId = 0;
+
+GroupOfElement::GroupOfElement(GEntity& entity, Mesh& mesh){
+  // Set ID //
+  id = nextId;
+  nextId++;
   
+  // Save Entity & Mesh//
+  this->entity = &entity;
+  this->mesh   = &mesh;
+
   // Get Number of Mesh Elements //
   nElement = entity.getNumMeshElements();
 
@@ -25,27 +32,19 @@ GroupOfElement::GroupOfElement(GEntity& entity){
 
 GroupOfElement::~GroupOfElement(void){
   delete element;
-  
-  if(gov)
-    delete gov;
 
   if(goe)
     delete goe;
-  /*
-    GroupOfElement is *NOT* reponsible for
-    deleting 'entity', niether the MElements of
-    'element' !!
-  */
 }
 
-GroupOfVertex& GroupOfElement::getGroupOfVertex(void) const{
+GroupOfVertex& GroupOfElement::getGroupOfVertex(void){
   if(!gov)
-    gov = new GroupOfVertex(*this);
+    gov = &(mesh->getGroupOfVertex(*this));
   
   return *gov;
 }
 
-GroupOfEdge& GroupOfElement::getGroupOfEdge(void) const{
+GroupOfEdge& GroupOfElement::getGroupOfEdge(void){
   if(!goe)
     goe = new GroupOfEdge(*this);
   
@@ -57,18 +56,17 @@ string GroupOfElement::toString(void) const{
   
   stream << "*********************************************"    
 	 << endl
-	 << "* Group Of Element                          *"    
+	 << "* Group Of Element #" << id    
 	 << endl
 	 << "*********************************************" 
 	 << endl << "*" 
 	 << endl
 	 << "* This group contains the following elements: " << endl;
 
-  for(unsigned int i = 0; i < nElement; i++){
+  for(unsigned int i = 0; i < nElement; i++)
     stream << "*    -- ID: " 
-	   << (*element)[i]->getNum() << endl;
-  }
-  
+	   << mesh->getGlobalId(*(*element)[i]) << endl;
+ 
   stream << "*********************************************" 
 	 << endl;
   
