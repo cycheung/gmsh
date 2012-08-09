@@ -31,12 +31,14 @@
    @c .msh file, wich discribes the mesh.@n
 */
 
+class GroupOfElement;
+
 class Mesh{
  private:
   GModel* model;
 
   std::map<const MElement*, unsigned int, ElementComparator>* element;           
-  std::map<const MVertex*, unsigned int, MVertexLessThanNum>* vertex;
+  std::map<const MVertex*, unsigned int, VertexComparator>*   vertex;
   std::map<const MEdge*, unsigned int, EdgeComparator>*       edge;
 
   std::map<unsigned int, const MVertex*>*  idVertex;
@@ -87,13 +89,5 @@ class Mesh{
 //////////////////////
 // Inline Functions //
 //////////////////////
-
-inline GroupOfElement Mesh::getFromPhysical(int physicalId) const{
-  const std::pair<std::multimap<int, const MElement*>::iterator, 
-                  std::multimap<int, const MElement*>::iterator> p = 
-    physical->equal_range(physicalId);
-  
-  return GroupOfElement(p.first, p.second);
-}
 
 #endif

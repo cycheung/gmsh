@@ -15,12 +15,6 @@
    They just @em define a Dof.
 */
 
-/**
-   @class DofComparator
-   @brief A class to compare two Dof%s
-
-   A class to compare two Dof%s.
-*/
 
 class Dof{
  private:
@@ -47,10 +41,6 @@ class Dof{
   std::string toString(void) const;
 };
 
-class DofComparator{
- public:
-  bool operator()(const Dof* a, const Dof* b) const;
-};
 
 /**
    @fn int Dof::getEntity(void) const
@@ -79,13 +69,6 @@ class DofComparator{
 
    @fn std::string Dof::toString(void) const
    @return Returns the Dof's string
-
-   @fn bool DofComparator::operator()(const Dof* a, const Dof* b) const
-   @param a A Dof
-   @param b Another Dof
-   @return operator() is:
-   @li @c true, if a is @em smaller than b  
-   @li @c false, otherwise
 */
 
 //////////////////////
@@ -125,10 +108,6 @@ inline bool Dof::operator>(const Dof& other) const{
 
 inline bool Dof::operator==(const Dof& other) const{
   return (entity == other.entity) && (type == other.type);
-}
-
-inline bool DofComparator::operator()(const Dof* a, const Dof* b) const{
-  return *a < *b;
 }
 
 #endif

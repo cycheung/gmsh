@@ -9,7 +9,8 @@ unsigned int GroupOfElement::nextId = 0;
 
 GroupOfElement::GroupOfElement
 (std::multimap<int, const MElement*>::iterator begin, 
- std::multimap<int, const MElement*>::iterator end){
+ std::multimap<int, const MElement*>::iterator end,
+ const Mesh& mesh){
   
   // Set ID //
   id = nextId;
@@ -22,8 +23,9 @@ GroupOfElement::GroupOfElement
     lst.push_back(begin->second);
 
   // Alloc //
-  nElement = lst.size();
-  element  = 
+  this->mesh = &mesh;
+  nElement   = lst.size();
+  element    = 
     new vector<const MElement*>(lst.begin(), lst.end());
 }
 

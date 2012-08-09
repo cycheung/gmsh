@@ -26,7 +26,7 @@ int main(int argc, char** argv){
   //cout << msh.getFromPhysical(7).toString() << endl;
 
   
-  FormulationLaplace laplace(goe, msh);
+  FormulationLaplace laplace(goe);
   
   System sysLaplace(laplace);
   

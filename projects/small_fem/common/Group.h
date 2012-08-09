@@ -32,13 +32,6 @@
    Find a solution for return type issuses, template and doxygen !!
  */
 
-/**
-   @class GroupComparator
-   @brief A class to compare two Group%s
-
-   A class to compare two Group%s of the @em same type.
-*/
-
 
 class Group{
  public:
@@ -69,13 +62,6 @@ class Group{
 
    @fn Group::toString
    @return Returns a string discribing this Group
-
-   @fn bool GroupComparator::operator(Group* a, const Group* b) const
-   @param a A Group
-   @param b Another Group
-   @return operator() is:
-   @li @c true, if a is @em smaller than b  
-   @li @c false, otherwise
 */
 
 

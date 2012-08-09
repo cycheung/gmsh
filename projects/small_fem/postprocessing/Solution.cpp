@@ -4,7 +4,7 @@
 
 using namespace std;
 
-Solution::Solution(const System& system, Mesh& mesh){
+Solution::Solution(const System& system, const Mesh& mesh){
   // Get Mesh
   this->mesh = &mesh;
 

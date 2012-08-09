@@ -8,7 +8,7 @@
 
 using namespace std;
 
-FormulationLaplace::FormulationLaplace(const GroupOfElement& goe, Mesh& mesh){
+FormulationLaplace::FormulationLaplace(const GroupOfElement& goe){
   // Gaussian Quadrature Data //
   gC = new fullMatrix<double>();
   gW = new fullVector<double>();
@@ -20,7 +20,7 @@ FormulationLaplace::FormulationLaplace(const GroupOfElement& goe, Mesh& mesh){
   G = gW->size(); // Nbr of Gauss points
 
   // Function Space //
-  fspace = new FunctionSpace(goe, mesh, 0, 1);
+  fspace = new FunctionSpace(goe, 0, 1);
 
   // Basis //
   // Get Basis

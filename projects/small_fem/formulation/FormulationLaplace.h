@@ -32,7 +32,7 @@ class FormulationLaplace: public Formulation{
   std::vector<Polynomial>* gradBasis;
 
  public:
-  FormulationLaplace(const GroupOfElement& goe, Mesh& mesh);
+  FormulationLaplace(const GroupOfElement& goe);
 
   virtual ~FormulationLaplace(void);
 

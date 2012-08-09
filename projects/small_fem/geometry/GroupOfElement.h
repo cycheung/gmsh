@@ -6,6 +6,7 @@
 #include <map>
 
 #include "Group.h"
+#include "Mesh.h"
 #include "MElement.h"
 
 
@@ -17,17 +18,21 @@
    This class is @em Group.
 */
 
+class Mesh;
+
 class GroupOfElement: public Group{
  private:
   static unsigned int nextId;
   unsigned int        id;
-
+  const Mesh*         mesh;
+  
   unsigned int                  nElement;
   std::vector<const MElement*>*  element;
 
  public:
   GroupOfElement(std::multimap<int, const MElement*>::iterator begin, 
-		 std::multimap<int, const MElement*>::iterator end); 
+		 std::multimap<int, const MElement*>::iterator end,
+		 const Mesh& mesh); 
  
   virtual ~GroupOfElement(void);
 
@@ -37,6 +42,7 @@ class GroupOfElement: public Group{
 
   const MElement&                     get(unsigned int i) const;  
   const std::vector<const MElement*>& getAll(void) const;  
+  const Mesh&                         getMesh(void) const;
 
   virtual std::string toString(void) const;
 };
@@ -89,6 +95,10 @@ inline const MElement& GroupOfElement::get(unsigned int i) const{
 inline const std::vector<const MElement*>& 
 GroupOfElement::getAll(void) const{
   return *element;
+}
+
+inline const Mesh& GroupOfElement::getMesh(void) const{
+  return *mesh;
 }
 
 #endif

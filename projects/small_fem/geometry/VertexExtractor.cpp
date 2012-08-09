@@ -9,14 +9,14 @@ VertexExtractor::VertexExtractor(void){
 VertexExtractor::~VertexExtractor(void){
 }
 
-map<const MVertex*, unsigned int, MVertexLessThanNum>*
+map<const MVertex*, unsigned int, VertexComparator>*
 
 VertexExtractor::extract(const map<const MElement*, 
 				   unsigned int, 
 				   ElementComparator>& element){
   // Init //
-  map<const MVertex*, unsigned int, MVertexLessThanNum>* 
-    vertex = new map<const MVertex*, unsigned int, MVertexLessThanNum>;
+  map<const MVertex*, unsigned int, VertexComparator>* 
+    vertex = new map<const MVertex*, unsigned int, VertexComparator>;
   
   // Get Vertices //
   const map<const MElement*, unsigned int, ElementComparator>::const_iterator

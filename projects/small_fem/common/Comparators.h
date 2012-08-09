@@ -1,9 +1,15 @@
 #ifndef _COMPARATORS_H_
 #define _COMPARATORS_H_
 
+#include "Dof.h"
 #include "Group.h"
 #include "MElement.h"
 #include "MEdge.h"
+
+class DofComparator{
+ public:
+  bool operator()(const Dof* a, const Dof* b) const;
+};
 
 class GroupComparator{
  public:
@@ -13,6 +19,11 @@ class GroupComparator{
 class ElementComparator{
  public:
   bool operator()(const MElement *e1, const MElement *e2) const;
+};
+
+class VertexComparator{
+ public:
+  bool operator()(const MVertex *v1, const MVertex *v2) const;
 };
 
 class EdgeComparator{
@@ -30,6 +41,11 @@ class OrientedEdgeComparator{
 // Inline Functions //
 //////////////////////
 
+inline bool DofComparator::
+operator()(const Dof* a, const Dof* b) const{
+  return *a < *b;
+}
+
 inline bool GroupComparator::
 operator()(const Group* a, const Group* b) const{
   return a->getId() < b->getId();
@@ -38,6 +54,11 @@ operator()(const Group* a, const Group* b) const{
 inline bool ElementComparator::
 operator()(const MElement *e1, const MElement *e2) const{
   return e1->getNum() < e2->getNum();
+}
+
+inline bool VertexComparator::
+operator()(const MVertex *v1, const MVertex *v2) const{
+  return v1->getNum() < v2->getNum();
 }
 
 inline bool EdgeComparator::

@@ -6,10 +6,12 @@
 #include <map>
 #include <vector>
 
-#include "Dof.h"
 #include "FunctionSpace.h"
 #include "MElement.h"
+
+#include "Dof.h"
 #include "GroupOfDof.h"
+#include "Comparators.h"
 
 /**
    @class DofManager

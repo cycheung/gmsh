@@ -20,7 +20,7 @@ class VertexExtractor{
    VertexExtractor(void);
   ~VertexExtractor(void);
 
-  static std::map<const MVertex*, unsigned int, MVertexLessThanNum>*
+  static std::map<const MVertex*, unsigned int, VertexComparator>*
     extract(const std::map<const MElement*, 
 	                   unsigned int, 
 	                   ElementComparator>& element);

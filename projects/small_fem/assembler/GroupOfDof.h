@@ -46,10 +46,9 @@ class GroupOfDof: public Group{
   virtual unsigned int getId(void) const;
   virtual unsigned int getType(void)   const;
   
-  const Dof&               get(unsigned int i) const; 
+  const Dof&                     get(unsigned int i) const; 
   const std::vector<const Dof*>& getAll(void) const;
-  
-  const MElement&          getGeoElement(void) const;
+  const MElement&                getGeoElement(void) const;
 
   int getOrientation(const unsigned int dofId) const;
 

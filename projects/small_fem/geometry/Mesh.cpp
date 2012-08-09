@@ -101,7 +101,7 @@ unsigned int Mesh::getGlobalId(const MElement& element) const{
 unsigned int Mesh::getGlobalId(const MVertex& vertex) const{
   map<const MVertex*, 
       unsigned int, 
-      MVertexLessThanNum>::iterator it = 
+      VertexComparator>::iterator it = 
     this->vertex->find(&vertex);
 
   if(it == this->vertex->end())
@@ -169,7 +169,7 @@ void Mesh::number(void){
   const map<const MElement*, unsigned int, ElementComparator>::iterator
     endEl = element->end();           
 
-  const map<const MVertex*, unsigned int, MVertexLessThanNum>::iterator
+  const map<const MVertex*, unsigned int, VertexComparator>::iterator
     endV = vertex->end();           
 
   const map<const MEdge*, unsigned int, ElementComparator>::iterator
@@ -178,7 +178,7 @@ void Mesh::number(void){
   map<const MElement*, unsigned int, ElementComparator>::iterator
     itEl = element->begin();
 
-  map<const MVertex*, unsigned int, MVertexLessThanNum>::iterator
+  map<const MVertex*, unsigned int, VertexComparator>::iterator
     itV = vertex->begin();           
   
   map<const MEdge*, unsigned int, ElementComparator>::iterator
@@ -215,12 +215,20 @@ void Mesh::number(void){
   }
 }
 
+GroupOfElement Mesh::getFromPhysical(int physicalId) const{
+  const std::pair<std::multimap<int, const MElement*>::iterator, 
+                  std::multimap<int, const MElement*>::iterator> p = 
+    physical->equal_range(physicalId);
+  
+  return GroupOfElement(p.first, p.second, *this);
+}
+
 string Mesh::toString(void) const{
   // Iterators //
   const map<const MElement*, unsigned int, ElementComparator>::iterator
     endEl = element->end();           
 
-  const map<const MVertex*, unsigned int, MVertexLessThanNum>::iterator
+  const map<const MVertex*, unsigned int, VertexComparator>::iterator
     endV = vertex->end();           
 
   const map<const MEdge*, unsigned int, ElementComparator>::iterator
@@ -229,7 +237,7 @@ string Mesh::toString(void) const{
   map<const MElement*, unsigned int, ElementComparator>::iterator
     itEl = element->begin();
 
-  map<const MVertex*, unsigned int, MVertexLessThanNum>::iterator
+  map<const MVertex*, unsigned int, VertexComparator>::iterator
     itV = vertex->begin();           
   
   map<const MEdge*, unsigned int, ElementComparator>::iterator
