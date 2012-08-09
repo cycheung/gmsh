@@ -17,8 +17,8 @@ class Writer{
   int  N;
   int  E;
 
-  const std::vector<MElement*>* element;
-  const std::vector<MVertex*>*    node;
+  const std::vector<const MElement*>* element;
+  const std::vector<MVertex*>*        node;
 
   std::vector<double>*              nodalScalarValue;
   std::vector<fullVector<double> >* nodalVectorValue;
@@ -32,7 +32,7 @@ class Writer{
 
   void setValues(std::vector<double>& value);
   void setValues(std::vector<fullVector<double> >& value);
-  void setDomain(const std::vector<MElement*>& element);
+  void setDomain(const std::vector<const MElement*>& element);
 };
 
 #endif

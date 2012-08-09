@@ -10,9 +10,9 @@ using namespace std;
 
 DofManager::DofManager(FunctionSpace& fs){
   // Get Support from FunctionSpace //
-  const GroupOfElement& support    = fs.getSupport();
-  int nElement                     = support.getNumber();
-  const vector<MElement*>& element = support.getAll();
+  const GroupOfElement& support          = fs.getSupport();
+  int nElement                           = support.getNumber();
+  const vector<const MElement*>& element = support.getAll();
 
   // Init Struct //
   dof      = new set<const Dof*, DofComparator>;         
@@ -37,6 +37,7 @@ DofManager::DofManager(FunctionSpace& fs){
     for(int j = 0; j < nDof; j++)
       insertDof(myDof[j], god);
   }
+
 }
 
 DofManager::~DofManager(void){
@@ -67,18 +68,6 @@ int DofManager::getGlobalId(const Dof& dof) const{
 
   else
     return it->second; 
-}
-
-inline const Dof& DofManager::search(const Dof& d) const{
-  const set<const Dof*, DofComparator>::iterator it = 
-    dof->find(&d);
-
-  if(it == dof->end())
-    throw 
-      Exception("Their is no Dof %s", d.toString().c_str());
-
-  else
-    return **it; 
 }
 
 void DofManager::insertDof(Dof& d, GroupOfDof* god){

@@ -3,14 +3,11 @@
 
 #include <string>
 #include <vector>
+#include <map>
 
 #include "Group.h"
-#include "GEntity.h"
-#include "Mesh.h"
 #include "MElement.h"
 
-#include "GroupOfVertex.h"
-#include "GroupOfEdge.h"
 
 /**
    @class GroupOfElement
@@ -20,40 +17,26 @@
    This class is @em Group.
 */
 
-class Mesh;
-class GroupOfVertex;
-class GroupOfEdge;
-
 class GroupOfElement: public Group{
  private:
-  Mesh*    mesh;
-  GEntity* entity;
-
   static unsigned int nextId;
   unsigned int        id;
 
-  unsigned int            nElement;
-  std::vector<MElement*>*  element;
-
-  GroupOfVertex*   gov;
-  GroupOfEdge*     goe;
+  unsigned int                  nElement;
+  std::vector<const MElement*>*  element;
 
  public:
-  GroupOfElement(GEntity& entity, Mesh& mesh);
+  GroupOfElement(std::multimap<int, const MElement*>::iterator begin, 
+		 std::multimap<int, const MElement*>::iterator end); 
+ 
   virtual ~GroupOfElement(void);
 
   virtual unsigned int getNumber(void) const;
   virtual unsigned int getId(void) const;
   virtual unsigned int getType(void)   const;
 
-  MElement&                     get(unsigned int i) const;  
-  const std::vector<MElement*>& getAll(void) const;  
-
-  GEntity& getEntity(void) const;
-  Mesh&    getMesh(void) const;
-
-  GroupOfVertex& getGroupOfVertex(void);
-  GroupOfEdge&   getGroupOfEdge(void);
+  const MElement&                     get(unsigned int i) const;  
+  const std::vector<const MElement*>& getAll(void) const;  
 
   virtual std::string toString(void) const;
 };
@@ -99,21 +82,13 @@ inline unsigned int GroupOfElement::getType(void) const{
   return 1;
 }
 
-inline MElement& GroupOfElement::get(unsigned int i) const{
+inline const MElement& GroupOfElement::get(unsigned int i) const{
   return *((*element)[i]);
 }
 
-inline const std::vector<MElement*>& 
+inline const std::vector<const MElement*>& 
 GroupOfElement::getAll(void) const{
   return *element;
-}
-
-inline GEntity& GroupOfElement::getEntity(void) const{
-  return *entity;
-}
-
-inline Mesh& GroupOfElement::getMesh(void) const{
-  return *mesh;
 }
 
 #endif

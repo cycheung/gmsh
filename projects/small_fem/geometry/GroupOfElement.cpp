@@ -1,54 +1,34 @@
-#include <set>
 #include <sstream>
-#include "MVertex.h"
+#include <list>
+
 #include "GroupOfElement.h"
 
 using namespace std;
 
 unsigned int GroupOfElement::nextId = 0;
 
-GroupOfElement::GroupOfElement(GEntity& entity, Mesh& mesh){
+GroupOfElement::GroupOfElement
+(std::multimap<int, const MElement*>::iterator begin, 
+ std::multimap<int, const MElement*>::iterator end){
+  
   // Set ID //
   id = nextId;
   nextId++;
   
-  // Save Entity & Mesh//
-  this->entity = &entity;
-  this->mesh   = &mesh;
+  // Get Element //
+  list<const MElement*> lst;
 
-  // Get Number of Mesh Elements //
-  nElement = entity.getNumMeshElements();
+  for(; begin != end; begin++)
+    lst.push_back(begin->second);
 
-  // Get Elements //
-  element = new vector<MElement*>(nElement);
-
-  for(unsigned int i = 0; i < nElement; i++)
-    (*element)[i] = entity.getMeshElement(i);
-
-  // Init Other Struct //
-  gov = NULL;
-  goe = NULL;
+  // Alloc //
+  nElement = lst.size();
+  element  = 
+    new vector<const MElement*>(lst.begin(), lst.end());
 }
 
 GroupOfElement::~GroupOfElement(void){
   delete element;
-
-  if(goe)
-    delete goe;
-}
-
-GroupOfVertex& GroupOfElement::getGroupOfVertex(void){
-  if(!gov)
-    gov = &(mesh->getGroupOfVertex(*this));
-  
-  return *gov;
-}
-
-GroupOfEdge& GroupOfElement::getGroupOfEdge(void){
-  if(!goe)
-    goe = &(mesh->getGroupOfEdge(*this));
-  
-  return *goe;
 }
 
 string GroupOfElement::toString(void) const{
@@ -61,13 +41,11 @@ string GroupOfElement::toString(void) const{
 	 << "*********************************************" 
 	 << endl << "*" 
 	 << endl
-	 << "* This group contains the following elements: " << endl;
-
-  for(unsigned int i = 0; i < nElement; i++)
-    stream << "*    -- ID: " 
-	   << mesh->getGlobalId(*(*element)[i]) << endl;
- 
-  stream << "*********************************************" 
+	 << "* This group contains "
+	 << nElement
+	 << " elements" 
+	 << endl
+	 << "*********************************************" 
 	 << endl;
   
   return stream.str();

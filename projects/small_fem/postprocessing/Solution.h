@@ -15,10 +15,10 @@ class Solution{
  private:
   fullVector<double>* sol;
 
-  Mesh*                           mesh;
-  const std::vector<MElement*>*   element;
-  const DofManager*               dofM;
-  int                             nDof;
+  Mesh*                               mesh;
+  const std::vector<const MElement*>* element;
+  const DofManager*                   dofM;
+  int                                 nDof;
 
   bool                              isScalar;
   std::vector<double>*              nodalScalarValue;

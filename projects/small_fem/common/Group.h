@@ -51,11 +51,6 @@ class Group{
   virtual std::string toString(void) const = 0;
 };
 
-class GroupComparator{
- public:
-  bool operator()(const Group* a, 
-		  const Group* b) const;
-};
 
 /**
    @fn Group::~Group
@@ -83,14 +78,5 @@ class GroupComparator{
    @li @c false, otherwise
 */
 
-
-//////////////////////
-// Inline Functions //
-//////////////////////
-
-inline bool GroupComparator::operator()(const Group* a, 
-					const Group* b) const{
-  return a->getId() < b->getId();
-}
 
 #endif

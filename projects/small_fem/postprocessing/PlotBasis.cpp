@@ -72,9 +72,11 @@ void PlotBasis::getGeometry(const GroupOfElement& group){
 
   for(int i = 0; i < E; i++){
     const int N = (*element)[i]->getNumVertices();
+    MElement* myElement = 
+      const_cast<MElement*>((*element)[i]);
     
     for(int j = 0; j < N; j++)
-      setVertex.insert((*element)[i]->getVertex(j));
+      setVertex.insert(myElement->getVertex(j));
   }
 
   // Serialize the set into a vector //

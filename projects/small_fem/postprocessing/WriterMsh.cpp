@@ -64,8 +64,11 @@ void WriterMsh::writeElements(void) const{
            // 2 Tags --> (1 physical entity, 1 elementary geometry) 
 
     const int M = (*element)[i]->getNumVertices();
+    MElement* myElement = 
+      const_cast<MElement*>((*element)[i]);
+
     for(int j = 0; j < M; j++)
-      *out << (*element)[i]->getVertex(j)->getNum() << " ";
+      *out << myElement->getVertex(j)->getNum() << " ";
     
     *out << endl;
   }
@@ -94,9 +97,11 @@ void WriterMsh::writeNodalValues(const string name) const{
 	 << (*element)[i]->getNumVertices() << " ";
     
     const int M = (*element)[i]->getNumVertices();
+    MElement* myElement = 
+      const_cast<MElement*>((*element)[i]);
 
     for(int j = 0; j < M; j++){
-      const int id = (*element)[i]->getVertex(j)->getNum() - 1;
+      const int id = myElement->getVertex(j)->getNum() - 1;
       // Note: getNum() ranges from *1* to MAX
       //   --> we need to substract 1 !!
 

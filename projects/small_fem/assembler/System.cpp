@@ -47,8 +47,8 @@ void System::assemble(void){
 }
 
 void System::fixBC(const GroupOfElement& goe, double value){
-  const vector<MElement*>&  element = goe.getAll();
-  unsigned int             nElement = goe.getNumber();
+  const vector<const MElement*>&  element = goe.getAll();
+  unsigned int                   nElement = goe.getNumber();
   
   for(unsigned int i = 0; i < nElement; i++){
     vector<Dof>   dof        = fs->getKeys(*element[i]);
@@ -57,13 +57,6 @@ void System::fixBC(const GroupOfElement& goe, double value){
     for(unsigned int j = 0; j < nDof; j++)
       dofM->fixValue(dof[j], value);
   }
-}
-
-void System::fixBC(const vector<GroupOfElement*>& goes, double value){
-  unsigned int size = goes.size();
-
-  for(unsigned int i = 0; i < size; i++)
-    fixBC(*goes[i], value);
 }
 
 void System::solve(void){

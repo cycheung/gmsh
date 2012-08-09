@@ -19,8 +19,8 @@ class PlotBasis{
   int N;
   int E;
 
-  const std::vector<MElement*>* element;
-  const std::vector<MVertex*>*    node;
+  const std::vector<const MElement*>* element;
+  const std::vector<MVertex*>*        node;
 
   std::vector<double>**              nodalScalarValue;
   std::vector<fullVector<double> >** nodalVectorValue;

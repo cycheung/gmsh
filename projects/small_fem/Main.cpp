@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+
 #include "Mesh.h"
 #include "fullMatrix.h"
 #include "FormulationLaplace.h"
@@ -19,13 +20,19 @@ int main(int argc, char** argv){
   
   // Get Mesh //
   Mesh msh(argv[1]);
+  GroupOfElement goe = msh.getFromPhysical(7);
   //cout << msh.toString() << endl;
+  
+  //cout << msh.getFromPhysical(7).toString() << endl;
 
-  FormulationLaplace laplace(*msh.getFromPhysical(7).at(0));
-
+  
+  FormulationLaplace laplace(goe, msh);
+  
   System sysLaplace(laplace);
+  
   sysLaplace.fixBC(msh.getFromPhysical(6), -1);
   sysLaplace.fixBC(msh.getFromPhysical(5),  2);
+
   
   sysLaplace.assemble();
 
@@ -40,7 +47,7 @@ int main(int argc, char** argv){
 
   WriterMsh writer;  
   solLaplace.write("laplace", writer);
-
+  
   // Stop Gmsh //
   GmshFinalize();
 

@@ -50,7 +50,6 @@ class System{
   const Formulation& getFormulation(void) const;
 
   void fixBC(const GroupOfElement& goe, double value);
-  void fixBC(const std::vector<GroupOfElement*>& goes, double value);
   void assemble(void);
   void solve(void);
 

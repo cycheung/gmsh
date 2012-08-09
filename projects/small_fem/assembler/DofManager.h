@@ -63,7 +63,6 @@ class DofManager{
   const std::vector<const Dof*>   getAllDofs(void) const;
   const std::vector<GroupOfDof*>& getAllGroups(void) const;
 
-  const Dof& search(const Dof& dof) const;
   int getGlobalId(const Dof& dof) const;
 
   bool isUnknown(const Dof& dof) const;
