@@ -6,10 +6,12 @@ using namespace std;
 Writer::Writer(void){
   hasValue  = false;
   hasDomain = false;
+  node      = NULL;
 }
 
 Writer::~Writer(void){
-  delete node;
+  if(node)
+    delete node;
 }
 
 void Writer::setValues(std::vector<double>& value){

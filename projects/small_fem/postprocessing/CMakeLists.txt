@@ -1,9 +1,4 @@
 set(src
-#  Interpolator.cpp
-#  InterpolatorScalar.cpp
-#  InterpolatorVector.cpp
-#  InterpolatorNode.cpp
-#  InterpolatorEdge.cpp
   Writer.cpp
   WriterMsh.cpp
 

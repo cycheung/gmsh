@@ -1,12 +1,16 @@
 #include "GaussIntegration.h"
-#include "FormulationProjection.h"
 #include "Mapper.h"
-#include "MElement.h"
+#include "BasisVector.h"
+
+#include "FunctionSpaceEdge.h"
+#include "FormulationProjection.h"
+
 #include <cmath>
 
 using namespace std;
 
-FormulationProjection::FormulationProjection(fullVector<double>& vectorToProject){
+FormulationProjection::FormulationProjection(const GroupOfElement& goe,
+					     const fullVector<double>& vectorToProject){
   // Vector to Project //
   f = &vectorToProject;
 
@@ -14,24 +18,27 @@ FormulationProjection::FormulationProjection(fullVector<double>& vectorToProject
   gC = new fullMatrix<double>();
   gW = new fullVector<double>();
 
-  gaussIntegration::getTriangle(2, *gC, *gW);
+  // Look for 1st element to get element type
+  // (We suppose only one type of Mesh !!)
+  gaussIntegration::get(goe.get(0).getType(), 2, *gC, *gW);
 
   G = gW->size(); // Nbr of Gauss points
 
-  // Basis //
-  baseGen   = new TriNedelecBasis;
-  basis     = &(baseGen->getBasis());
-  basisSize = baseGen->getSize(); 
+  // Function Space //
+  fspace = new FunctionSpaceEdge(goe, 0);
 
-  // Interpolator //
-  //interp = new InterpolatorEdge(*baseGen);
+  // Basis //
+  const BasisVector& base = 
+    static_cast<const BasisVector&>(fspace->getBasis(goe.get(0)));
+  basis = &(base.getBasis());
+
+  basisSize = base.getSize(); 
 }
 
 FormulationProjection::~FormulationProjection(void){
   delete gC;
   delete gW;
-  delete baseGen;
-  //delete interp;
+  delete fspace;
 }
 
 double FormulationProjection::weak(const int edgeI, const int edgeJ, 
@@ -39,6 +46,7 @@ double FormulationProjection::weak(const int edgeI, const int edgeJ,
 
   fullMatrix<double>  invJac(3, 3);        
   MElement& element = const_cast<MElement&>(god.getGeoElement());
+
   double integral   = 0;
   int orientation   = 
     god.getOrientation(edgeI) * 
@@ -74,7 +82,9 @@ double FormulationProjection::rhs(const int equationI,
 				  const GroupOfDof& god) const{
  
   fullMatrix<double>  invJac(3, 3);        
-  MElement& element = const_cast<MElement&>(god.getGeoElement());
+  MElement& element      = const_cast<MElement&>(god.getGeoElement());
+  fullVector<double>& ff = const_cast<fullVector<double>&>(*f);
+
   int orientation   = god.getOrientation(equationI);
   double integral   = 0;
 
@@ -92,7 +102,7 @@ double FormulationProjection::rhs(const int equationI,
 							  (*gC)(g, 2)),
 					   invJac);
  
-    integral += (*f) * phiI * fabs(det) * (*gW)(g) * orientation;
+    integral += ff * phiI * fabs(det) * (*gW)(g) * orientation;
   }
 
   return integral;

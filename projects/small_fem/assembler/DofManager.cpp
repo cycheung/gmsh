@@ -30,14 +30,14 @@ DofManager::DofManager(FunctionSpace& fs){
     int nDof          = myDof.size();
     
     // Create new GroupOfDof
-    GroupOfDof* god = new GroupOfDof(nDof, *(element[i])); 
-    
-    (*group)[i] = god;
+    GroupOfDof* god = new GroupOfDof(nDof, *(element[i]), 
+				     fs  , support.getMesh()); 
+    (*group)[i]     = god;
+
     // Add Dof
     for(int j = 0; j < nDof; j++)
       insertDof(myDof[j], god);
   }
-
 }
 
 DofManager::~DofManager(void){

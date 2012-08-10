@@ -106,10 +106,6 @@ class DofManager{
    @fn int DofManager::getGlobalId(Dof& dof) const
    @param dof The Dof from which we want the @em global @c ID
    @return Returns the @em global @em @c ID of the given Dof
- 
-   @fn Entity& DofManager::getEntity(Dof& dof) const
-   @param dof The Dof from which we want the @em entity
-   @return Returns the @em entity associated with the given Dof
 
    @fn std::string DofManager::toString(void) const
    @return Returns the DofManager's string

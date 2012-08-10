@@ -3,10 +3,15 @@
 
 #include <vector>
 #include "Group.h"
-#include "Dof.h"
-#include "Mapper.h"
-#include "MElement.h"
 #include "fullMatrix.h"
+#include "Dof.h"
+
+#include "FunctionSpace.h"
+#include "Mapper.h"
+#include "Mesh.h"
+
+#include "MElement.h"
+#include "MEdge.h"
 
 class DofManager;
 
@@ -32,7 +37,9 @@ class GroupOfDof: public Group{
   static unsigned int nextId;
   unsigned int            id;
 
-  const MElement* element;
+  const MElement*      element;
+  const FunctionSpace* fs;
+  const Mesh*          mesh;
 
   unsigned int nDof;
   std::vector<const Dof*>* dof;
@@ -50,15 +57,24 @@ class GroupOfDof: public Group{
   const std::vector<const Dof*>& getAll(void) const;
   const MElement&                getGeoElement(void) const;
 
-  int getOrientation(const unsigned int dofId) const;
+  int getOrientation(unsigned int dofId) const;
 
   virtual std::string toString(void) const;
 
  private:
-   GroupOfDof(unsigned int numberOfDof, const MElement& geoElement);
+   GroupOfDof(unsigned int numberOfDof, 
+	      const MElement& geoElement,
+	      const FunctionSpace& fs,
+	      const Mesh& mesh);
+
   ~GroupOfDof(void);
 
   void add(const Dof* dof);
+
+  static int orientation(const MElement& element, 
+			 const MEdge& edge);
+  
+  static bool equal(const MEdge& a, const MEdge& b);
 };
 
 
@@ -102,6 +118,12 @@ inline const std::vector<const Dof*>& GroupOfDof::getAll(void) const{
 
 inline const MElement& GroupOfDof::getGeoElement(void) const{
   return *element;
+}
+
+inline bool GroupOfDof::equal(const MEdge& a, const MEdge& b){
+  return 
+    (a.getVertex(0)->getNum() == b.getVertex(0)->getNum()) &&
+    (a.getVertex(1)->getNum() == b.getVertex(1)->getNum());
 }
 
 #endif

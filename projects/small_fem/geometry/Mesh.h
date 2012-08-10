@@ -64,7 +64,10 @@ class Mesh{
   const MEdge&    getEdge(unsigned int id) const;
   const MFace&    getFace(unsigned int id) const;
 
+  int getOrientation(const MEdge& edge) const;
+
   GroupOfElement getFromPhysical(int physicalId) const;
+  
   
   std::string toString(void) const;
  
@@ -85,9 +88,5 @@ class Mesh{
    @return Returns a description of this Mesh
 */
 
-
-//////////////////////
-// Inline Functions //
-//////////////////////
 
 #endif

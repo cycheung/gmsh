@@ -1,8 +1,10 @@
 #include "fullMatrix.h"
 #include "GaussIntegration.h"
-#include "FormulationLaplace.h"
 #include "BasisScalar.h"
 #include "Mapper.h"
+
+#include "FunctionSpaceNode.h"
+#include "FormulationLaplace.h"
 
 #include <cmath>
 
@@ -20,7 +22,7 @@ FormulationLaplace::FormulationLaplace(const GroupOfElement& goe){
   G = gW->size(); // Nbr of Gauss points
 
   // Function Space //
-  fspace = new FunctionSpace(goe, 0, 1);
+  fspace = new FunctionSpaceNode(goe, 1);
 
   // Basis //
   // Get Basis
@@ -42,7 +44,7 @@ FormulationLaplace::~FormulationLaplace(void){
   delete   fspace;
   delete[] gradBasis;
 }
-#include <cstdio>
+//#include <cstdio>
 double FormulationLaplace::weak(const int nodeI, const int nodeJ, 
 				const GroupOfDof& god) const{
 

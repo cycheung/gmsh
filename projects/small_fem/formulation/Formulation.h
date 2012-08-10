@@ -3,7 +3,6 @@
 
 #include "GroupOfDof.h"
 #include "FunctionSpace.h"
-//#include "Interpolator.h"
 
 /**
    @interface Formulation
@@ -14,9 +13,6 @@
    A Formulation is defined by a @em bilinear @em weak formulation,
    and a @em right @em hand @em side.@n
 
-   A Formulation shall also give an Interpolator, for
-   handling solutions of this Formulation.
-   
    @warning
    A formulation is defined @em only on @em GroupOfDof%s.
 
@@ -36,8 +32,6 @@ class Formulation{
 		     const GroupOfDof& god) const = 0;
 
   virtual FunctionSpace& fs(void) const = 0;
-  
-  //virtual Interpolator& interpolator(void) const = 0;
 };
 
 /**
@@ -52,17 +46,6 @@ class Formulation{
    @param god The @em GroupOfDof associated 
    with the @em ith  equation of the formulation
    @return The value of the @em ith equation Right Hand Side
-
-   @fn Formulation::interpolator
-   @return Returns the Interpolator associated with
-   this Formulation
 */
-
-//////////////////////
-// Inline Functions //
-//////////////////////
-
-inline Formulation::~Formulation(void){
-}
 
 #endif

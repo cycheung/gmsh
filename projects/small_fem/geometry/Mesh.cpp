@@ -215,6 +215,21 @@ void Mesh::number(void){
   }
 }
 
+int Mesh::getOrientation(const MEdge& edge) const{
+  // Look for Edge //
+  map<const MEdge*, 
+      int, 
+      OrientedEdgeComparator>::iterator it = 
+    orientation->find(&edge);
+
+  if(it == orientation->end()){
+    throw 
+      Exception("Edge not found");
+  }
+
+  return it->second; 
+}
+
 GroupOfElement Mesh::getFromPhysical(int physicalId) const{
   const std::pair<std::multimap<int, const MElement*>::iterator, 
                   std::multimap<int, const MElement*>::iterator> p = 

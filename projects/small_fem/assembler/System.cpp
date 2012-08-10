@@ -51,8 +51,8 @@ void System::fixBC(const GroupOfElement& goe, double value){
   unsigned int                   nElement = goe.getNumber();
   
   for(unsigned int i = 0; i < nElement; i++){
-    vector<Dof>   dof        = fs->getKeys(*element[i]);
-    const unsigned int nDof  = dof.size();
+    vector<Dof>         dof = fs->getKeys(*element[i]);
+    const unsigned int nDof = dof.size();
     
     for(unsigned int j = 0; j < nDof; j++)
       dofM->fixValue(dof[j], value);

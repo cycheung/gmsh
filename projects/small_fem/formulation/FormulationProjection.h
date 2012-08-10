@@ -3,41 +3,35 @@
 
 #include <vector>
 #include "Formulation.h"
-#include "fullMatrix.h"
+#include "Mesh.h"
 #include "Polynomial.h"
-#include "TriNedelecBasis.h"
-//#include "InterpolatorEdge.h"
+#include "fullMatrix.h"
 
 /**
    @class FormulationProjection
    @brief Formulation for the Projection problem
 
    Vectorial Formulation for the @em Projection problem.
-
-   @todo
-   Remove const_cast by correcting MElement constness
  */
 
 class FormulationProjection: public Formulation{
  private:
+  // Vector to Project //
+  const fullVector<double>* f;
+
   // Gaussian Quadrature Data //
   int G;
   fullMatrix<double>* gC;
   fullVector<double>* gW;
 
-  // Basis //
-  TriNedelecBasis*                             baseGen;
+  // Function Space //
+  FunctionSpace*                               fspace;
   const std::vector<std::vector<Polynomial> >* basis;
-  int                                          basisSize;
-
-  // Vector to Project //
-  fullVector<double>* f;
-
-  // Interpolator //
-  //InterpolatorEdge* interp;
+  unsigned int                                 basisSize;
 
  public:
-  FormulationProjection(fullVector<double>& vectorToProject);
+  FormulationProjection(const GroupOfElement& goe,
+			const fullVector<double>& vectorToProject);
   
   virtual ~FormulationProjection(void);
 
@@ -47,7 +41,7 @@ class FormulationProjection: public Formulation{
   virtual double rhs(const int equationI,
 		     const GroupOfDof& god) const;
 
-  //virtual Interpolator& interpolator(void) const;
+  virtual FunctionSpace& fs(void) const;
 };
 
 /**
@@ -60,13 +54,13 @@ class FormulationProjection: public Formulation{
    @return Deletes the this FormulationProjection
 */
 
+
 //////////////////////
 // Inline Functions //
 //////////////////////
-/*
-inline Interpolator& FormulationProjection::interpolator(void) const{
-  return *interp;
+
+inline FunctionSpace& FormulationProjection::fs(void) const{
+  return *fspace;
 }
-*/
 
 #endif

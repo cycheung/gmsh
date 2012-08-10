@@ -1,6 +1,7 @@
 set(src
+  Formulation.cpp
   FormulationLaplace.cpp
-#  FormulationProjection.cpp
+  FormulationProjection.cpp
 )
 
 

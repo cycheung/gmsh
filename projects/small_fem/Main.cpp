@@ -17,69 +17,51 @@ using namespace std;
 int main(int argc, char** argv){
   // Init Gmsh //
   GmshInitialize(argc, argv);
+  WriterMsh writer;  
   
   // Get Mesh //
   Mesh msh(argv[1]);
   GroupOfElement goe = msh.getFromPhysical(7);
-  //cout << msh.toString() << endl;
-  
+  //cout << msh.toString()                    << endl;
   //cout << msh.getFromPhysical(7).toString() << endl;
 
-  
+  /*
+  // Laplace //
   FormulationLaplace laplace(goe);
-  
   System sysLaplace(laplace);
   
   sysLaplace.fixBC(msh.getFromPhysical(6), -1);
   sysLaplace.fixBC(msh.getFromPhysical(5),  2);
 
-  
   sysLaplace.assemble();
-
   //sysLaplace.getMatrix().print();
   //sysLaplace.getRHS().print();
-
   sysLaplace.solve();
-
   //sysLaplace.getSol().print();
 
   Solution solLaplace(sysLaplace, msh);
-
-  WriterMsh writer;  
   solLaplace.write("laplace", writer);
-  
-  // Stop Gmsh //
-  GmshFinalize();
-
-  
-  /*  
-  // Laplace //
-  FormulationLaplace laplace;
-  System sysLaplace(msh.getAllNodeElements(), laplace);
-
-  sysLaplace.assemble();
-
-  sysLaplace.fixBC(5, -2);
-  sysLaplace.fixBC(6,  1);
-
-  sysLaplace.solve();
-
-  Solution solLaplace(msh, laplace);
-  solLaplace.write("laplace.pos", "laplace");
-
+  */
     
   // Projection //
   fullVector<double> f(2); 
-  f(0) = -1; f(1) = 1; // Vector to project
+  f(0) = 1; f(1) = -1; // Vector to project
   
-  FormulationProjection projection(f);
-  System sysProj(msh.getAllEdgeElements(), projection);
+  FormulationProjection projection(goe, f);
+  System sysProj(projection);
 
+  sysProj.assemble();
+  //sysProj.getMatrix().print();
+  //sysProj.getRHS().print();
   sysProj.solve();
+  //sysProj.getSol().print();
   
-  Solution solProj(msh, projection);
-  solProj.write("projection.pos", "projection");
-  */
+  Solution solProj(sysProj, msh);
+  solProj.write("projection", writer);
+  
+
+  // Stop Gmsh //
+  GmshFinalize();
   
   return 0;
 }

@@ -11,14 +11,19 @@
 #include "MElement.h"
 #include "DofManager.h"
 
+#include "FunctionSpace.h"
+#include "FunctionSpaceScalar.h"
+#include "FunctionSpaceVector.h"
+
 class Solution{
  private:
   fullVector<double>* sol;
 
   const Mesh*                         mesh;
   const std::vector<const MElement*>* element;
+  const std::vector<GroupOfDof*>*     god;
   const DofManager*                   dofM;
-  int                                 nDof;
+  const FunctionSpace*                fs;
 
   bool                              isScalar;
   std::vector<double>*              nodalScalarValue;
@@ -31,8 +36,8 @@ class Solution{
   void write(const std::string name, Writer& writer) const;
 
  private:
-  void interpolateScalar(void);
-  void interpolateVector(void);
+  void interpolateScalar(const FunctionSpaceScalar& fs);
+  void interpolateVector(const FunctionSpaceVector& fs);
 };
 
 #endif
