@@ -2,9 +2,9 @@
 #define _FORMULATIONLAPLACE_H_
 
 #include <vector>
-#include "Formulation.h"
-#include "Mesh.h"
+
 #include "Polynomial.h"
+#include "Formulation.h"
 
 /**
    @class FormulationLaplace
@@ -28,7 +28,6 @@ class FormulationLaplace: public Formulation{
   FunctionSpace* fspace;
 
   // Grad Field //
-  unsigned int             basisSize;
   std::vector<Polynomial>* gradBasis;
 
  public:
@@ -36,10 +35,10 @@ class FormulationLaplace: public Formulation{
 
   virtual ~FormulationLaplace(void);
 
-  virtual double weak(const int nodeI, const int nodeJ, 
+  virtual double weak(int nodeI, int nodeJ, 
 		      const GroupOfDof& god) const;
 
-  virtual double rhs(const int equationI,
+  virtual double rhs(int equationI,
 		     const GroupOfDof& god) const;
 
   virtual FunctionSpace& fs(void) const;
@@ -57,7 +56,7 @@ class FormulationLaplace: public Formulation{
 // Inline Functions //
 //////////////////////
 
-inline double FormulationLaplace::rhs(const int equationI,
+inline double FormulationLaplace::rhs(int equationI,
 				      const GroupOfDof& god) const{
   return 0;
 }

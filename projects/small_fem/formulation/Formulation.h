@@ -18,17 +18,16 @@
 
    @todo
    Add quadrature laws as a paramaeter of a Formulation@n
-   Remove dependance on GroupOfDof%s
  */
 
 class Formulation{
  public:
   virtual ~Formulation(void);
   
-  virtual double weak(const int entityI, const int entityJ,
+  virtual double weak(int entityI, int entityJ,
 		      const GroupOfDof& god) const = 0;
   
-  virtual double rhs(const int equationI,
+  virtual double rhs(int equationI, 
 		     const GroupOfDof& god) const = 0;
 
   virtual FunctionSpace& fs(void) const = 0;

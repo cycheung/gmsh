@@ -4,6 +4,7 @@
 #include "Dof.h"
 #include "Group.h"
 #include "MElement.h"
+#include "MVertex.h"
 #include "MEdge.h"
 
 class DofComparator{

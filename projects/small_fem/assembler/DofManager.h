@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "FunctionSpace.h"
-#include "MElement.h"
 
 #include "Dof.h"
 #include "GroupOfDof.h"
@@ -22,25 +21,16 @@
    It can map a Dof a @em global @c ID.@n
    Those @c IDs are handeld by the DofManager itself.@n
 
-   It can also map a given Dof to the corresponding @em Entity in the Mesh.@n
-
-   A DofManager can be instantiated from a list of @em Element%s.@n
-
    If a @em group of Dof got a special meaning 
    (@e e.g: members of the same element),@n
    a DofManager can instantiate (and map) GroupOfDof%s.
 
    @note
-   A DofManager is the @em only @em one allowed to instatiate a Dof.@n
-   It is also the @em only @em one allowed to instatiate a GroupOfDof.
+   A DofManager is the @em only @em one allowed to instatiate a GroupOfDof.
 
    @warning
    Up to know, a Dof @em can't be @em deleted.@n
    It is also @em impossible to create a @em non @em Mesh @em Related Dof.
-
-   @todo
-   A more @em general DofManager, with non Mesh Dof, etc@n
-   Allow hybrid mesh@n
 */
 
 class FunctionSpace;
@@ -56,7 +46,7 @@ class DofManager{
   int nextId;
   
  public:
-   DofManager(FunctionSpace& fs);
+   DofManager(const FunctionSpace& fs);
   ~DofManager(void);
 
   int dofNumber(void) const;
@@ -94,11 +84,6 @@ class DofManager{
 
    @fn const std::vector<Dof*>& DofManager::getAllDofs(void) const
    @return Returns all the Dof%s in the DofManager 
-
-   @fn const std::multimap<int, Dof*>& DofManager::getAllPhysicals(void) const
-   @return Returns a map between @e Physical @e @c IDs and Dof%s
-   @warning This should be replaced with a method @em hiding the multimap
-   @todo Replace with a method @em hiding the multimap
 
    @fn const std::vector<GroupOfDof*>& DofManager::getAllGroups(void) const
    @return Returns all the GroupOfDof%s in the DofManager

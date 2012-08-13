@@ -20,8 +20,8 @@ class Writer{
   const std::vector<const MElement*>* element;
   const std::vector<MVertex*>*        node;
 
-  std::vector<double>*              nodalScalarValue;
-  std::vector<fullVector<double> >* nodalVectorValue;
+  const std::vector<double>*              nodalScalarValue;
+  const std::vector<fullVector<double> >* nodalVectorValue;
 
  public:
   Writer(void);
@@ -30,8 +30,8 @@ class Writer{
 
   virtual void write(const std::string name) const = 0;
 
-  void setValues(std::vector<double>& value);
-  void setValues(std::vector<fullVector<double> >& value);
+  void setValues(const std::vector<double>& value);
+  void setValues(const std::vector<fullVector<double> >& value);
   void setDomain(const std::vector<const MElement*>& element);
 };
 

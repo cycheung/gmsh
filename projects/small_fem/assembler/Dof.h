@@ -11,8 +11,8 @@
    These are the terms that will be assembled in the system.
 
    A Dof is defined by a pair of to integers called (@c entity, @c type).@n
-   By themselfs, these integers have no meaning.@n
-   They just @em define a Dof.
+   By themselfs, these integers have no meaning,
+   they just @em define a Dof.
 */
 
 

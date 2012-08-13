@@ -28,16 +28,16 @@ class Exception: public std::exception{
 };
 
 /**
-   @fn Exception::Exception(const std::string cause)
+   @fn Exception::Exception
    @param format A @em formated string 
    of the @em cause of the exception
    @param ... The parameters of the formated string
    @return Instantiates a new Exception
 
-   @fn Exception::~Exception(void)
+   @fn Exception::~Exception
    @return Deletes the Exception
 
-   @fn const char* Exception::what(void) const
+   @fn const char* Exception::what
    @return Returns the @em cause of the exception
  */
 

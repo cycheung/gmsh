@@ -2,8 +2,8 @@
 #define _FORMULATIONPROJECTION_H_
 
 #include <vector>
+
 #include "Formulation.h"
-#include "Mesh.h"
 #include "Polynomial.h"
 #include "fullMatrix.h"
 
@@ -27,7 +27,6 @@ class FormulationProjection: public Formulation{
   // Function Space //
   FunctionSpace*                               fspace;
   const std::vector<std::vector<Polynomial> >* basis;
-  unsigned int                                 basisSize;
 
  public:
   FormulationProjection(const GroupOfElement& goe,
@@ -35,10 +34,10 @@ class FormulationProjection: public Formulation{
   
   virtual ~FormulationProjection(void);
 
-  virtual double weak(const int edgeI, const int edgeJ, 
+  virtual double weak(int edgeI, int edgeJ, 
 		      const GroupOfDof& god) const;
 
-  virtual double rhs(const int equationI,
+  virtual double rhs(int equationI,
 		     const GroupOfDof& god) const;
 
   virtual FunctionSpace& fs(void) const;

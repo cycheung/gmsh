@@ -57,5 +57,4 @@ ElementExtractor::extract(const vector<GEntity*>& entity){
     pair<map<const MElement*, unsigned int, ElementComparator>*,
 	 multimap<int, const MElement*>*>
   (element, physical);
-  
 }

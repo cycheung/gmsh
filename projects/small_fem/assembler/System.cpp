@@ -1,6 +1,4 @@
 #include "System.h"
-#include "Formulation.h"
-#include "Exception.h"
 #include "Solver.h"
 
 using namespace std;

@@ -95,7 +95,7 @@ void PlotBasis::interpolate(const BasisScalar& basis){
     nodalScalarValue[i] = new vector<double>(N);
 
   // Get Functions //
-  const vector<Polynomial>& fun = basis.getBasis();
+  const vector<Polynomial>& fun = basis.getFunctions();
   
   // Interpolate //
   for(int f = 0; f < nFunction; f++){
@@ -117,7 +117,7 @@ void PlotBasis::interpolate(const BasisVector& basis){
     nodalVectorValue[i] = new vector<fullVector<double> >(N);
 
   // Get Functions //
-  const vector<vector<Polynomial> >& fun = basis.getBasis();
+  const vector<vector<Polynomial> >& fun = basis.getFunctions();
   
   // Interpolate //
   for(int f = 0; f < nFunction; f++){

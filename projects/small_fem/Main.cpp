@@ -1,7 +1,3 @@
-#include <iostream>
-#include <string>
-#include <vector>
-
 #include "Mesh.h"
 #include "fullMatrix.h"
 #include "FormulationLaplace.h"
@@ -21,42 +17,36 @@ int main(int argc, char** argv){
   
   // Get Mesh //
   Mesh msh(argv[1]);
-  GroupOfElement goe = msh.getFromPhysical(7);
-  //cout << msh.toString()                    << endl;
-  //cout << msh.getFromPhysical(7).toString() << endl;
+  GroupOfElement domain = msh.getFromPhysical(7);
 
-  /*
+  
   // Laplace //
-  FormulationLaplace laplace(goe);
+  FormulationLaplace laplace(domain);
   System sysLaplace(laplace);
   
   sysLaplace.fixBC(msh.getFromPhysical(6), -1);
   sysLaplace.fixBC(msh.getFromPhysical(5),  2);
 
   sysLaplace.assemble();
-  //sysLaplace.getMatrix().print();
-  //sysLaplace.getRHS().print();
   sysLaplace.solve();
-  //sysLaplace.getSol().print();
 
-  Solution solLaplace(sysLaplace, msh);
+  Solution solLaplace(sysLaplace);
   solLaplace.write("laplace", writer);
-  */
+  
     
   // Projection //
-  fullVector<double> f(2); 
-  f(0) = 1; f(1) = -1; // Vector to project
-  
-  FormulationProjection projection(goe, f);
+  fullVector<double> f(3); 
+  f(0) =  0.5; 
+  f(1) = -1; 
+  f(2) =  0; // Vector to project
+
+  FormulationProjection projection(domain, f);
   System sysProj(projection);
 
   sysProj.assemble();
-  //sysProj.getMatrix().print();
-  //sysProj.getRHS().print();
   sysProj.solve();
-  //sysProj.getSol().print();
   
-  Solution solProj(sysProj, msh);
+  Solution solProj(sysProj);
   solProj.write("projection", writer);
   
 

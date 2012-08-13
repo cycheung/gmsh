@@ -1,7 +1,9 @@
-#include "Mesh.h"
-#include "Exception.h"
-
+#include <vector>
 #include <sstream>
+
+#include "Exception.h"
+#include "Mesh.h"
+
 
 using namespace std;
 

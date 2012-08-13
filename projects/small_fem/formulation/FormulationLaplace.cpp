@@ -1,3 +1,5 @@
+#include <cmath>
+
 #include "fullMatrix.h"
 #include "GaussIntegration.h"
 #include "BasisScalar.h"
@@ -5,8 +7,6 @@
 
 #include "FunctionSpaceNode.h"
 #include "FormulationLaplace.h"
-
-#include <cmath>
 
 using namespace std;
 
@@ -22,16 +22,17 @@ FormulationLaplace::FormulationLaplace(const GroupOfElement& goe){
   G = gW->size(); // Nbr of Gauss points
 
   // Function Space //
-  fspace = new FunctionSpaceNode(goe, 1);
+  FunctionSpaceNode* fspace = new FunctionSpaceNode(goe, 1);
+  this->fspace              = fspace;
 
   // Basis //
   // Get Basis
-  const BasisScalar& base = 
-    static_cast<const BasisScalar&>(fspace->getBasis(goe.get(0)));
-  const vector<Polynomial>& basis = base.getBasis();
+  const BasisScalar& base = fspace->getBasis(goe.get(0));
+  const vector<Polynomial>& basis = base.getFunctions();
 
   // Take gradient
-  basisSize = basis.size();
+  unsigned int basisSize = basis.size();
+
   gradBasis = new vector<Polynomial>[basisSize];
 
   for(unsigned int i = 0; i < basisSize; i++)
@@ -45,7 +46,7 @@ FormulationLaplace::~FormulationLaplace(void){
   delete[] gradBasis;
 }
 //#include <cstdio>
-double FormulationLaplace::weak(const int nodeI, const int nodeJ, 
+double FormulationLaplace::weak(int nodeI, int nodeJ, 
 				const GroupOfDof& god) const{
 
   fullMatrix<double>  invJac(3, 3);        
@@ -74,8 +75,9 @@ double FormulationLaplace::weak(const int nodeI, const int nodeJ,
 	   element.getVertex(3)->z());
  
     invJac.print();
+    
+    printf("(%lf\t%lf\t%lf)\n", (*gC)(g, 0), (*gC)(g, 1), (*gC)(g, 2));
     */
-    //printf("(%lf\t%lf\t%lf)\n", (*gC)(g, 0), (*gC)(g, 1), (*gC)(g, 2));
     invJac.invertInPlace();
 
     fullVector<double> phiI = Mapper::grad(Polynomial::at(gradBasis[nodeI], 

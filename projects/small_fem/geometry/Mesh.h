@@ -1,18 +1,17 @@
 #ifndef _MESH_H_
 #define _MESH_H_
 
-#include <vector>
 #include <map>
 #include <string>
 
 #include "Comparators.h"
-#include "GroupOfElement.h"
 #include "GModel.h"
 
 #include "ElementExtractor.h"
 #include "VertexExtractor.h"
 #include "EdgeExtractor.h"
 
+#include "GroupOfElement.h"
 #include "MElement.h"
 #include "MVertex.h"
 #include "MEdge.h"
@@ -23,8 +22,6 @@
    @brief Represents a mesh
    
    This class represents a mesh.@n
-
-   A Mesh is a collection of @em GroupOfElement%s 
 
    A Mesh is instantiated thanks to a 
    <a href="http://www.geuz.org/gmsh">gmsh</a>
@@ -64,6 +61,11 @@ class Mesh{
   const MEdge&    getEdge(unsigned int id) const;
   const MFace&    getFace(unsigned int id) const;
 
+  unsigned int getElementNumber(void) const;
+  unsigned int getVertexNumber(void) const;
+  unsigned int getEdgeNumber(void) const;
+  unsigned int getFaceNumber(void) const;
+
   int getOrientation(const MEdge& edge) const;
 
   GroupOfElement getFromPhysical(int physicalId) const;
@@ -88,5 +90,20 @@ class Mesh{
    @return Returns a description of this Mesh
 */
 
+//////////////////////
+// Inline Functions //
+//////////////////////
+
+inline unsigned int Mesh::getElementNumber(void) const{
+  return element->size();
+}
+
+inline unsigned int Mesh::getVertexNumber(void) const{
+  return vertex->size();
+}
+
+inline unsigned int Mesh::getEdgeNumber(void) const{
+  return edge->size();
+}
 
 #endif

@@ -3,15 +3,12 @@
 
 #include <vector>
 #include "Group.h"
-#include "fullMatrix.h"
 #include "Dof.h"
 
 #include "FunctionSpace.h"
-#include "Mapper.h"
 #include "Mesh.h"
 
 #include "MElement.h"
-#include "MEdge.h"
 
 class DofManager;
 

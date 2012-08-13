@@ -14,7 +14,7 @@ Writer::~Writer(void){
     delete node;
 }
 
-void Writer::setValues(std::vector<double>& value){
+void Writer::setValues(const std::vector<double>& value){
   hasValue = true;
   isScalar = true;
 
@@ -22,7 +22,7 @@ void Writer::setValues(std::vector<double>& value){
   nodalVectorValue = NULL;
 }
 
-void Writer::setValues(std::vector<fullVector<double> >& value){
+void Writer::setValues(const std::vector<fullVector<double> >& value){
   hasValue = true;
   isScalar = false;
 
@@ -31,12 +31,13 @@ void Writer::setValues(std::vector<fullVector<double> >& value){
 }
 
 void Writer::setDomain(const std::vector<const MElement*>& element){
+  // Erease Old Domain (if one) //
+  if(hasDomain)
+    delete node;
+
   // Get Elements //
   this->element = &element;
   this->E       = element.size();
-  
-  // Set hasDomain
-  hasDomain = true;
   
   // Get All Vertices //
   set<MVertex*, MVertexLessThanNum> setVertex;
@@ -54,4 +55,7 @@ void Writer::setDomain(const std::vector<const MElement*>& element){
   node = new vector<MVertex*>(setVertex.begin(), 
 			      setVertex.end());
   N    = node->size();
+
+  // Set hasDomain //
+  hasDomain = true;
 }

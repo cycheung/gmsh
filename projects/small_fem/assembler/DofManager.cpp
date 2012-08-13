@@ -1,14 +1,10 @@
 #include <sstream>
-#include "GroupOfElement.h"
-#include "MVertex.h"
-#include "MEdge.h"
-#include "MFace.h"
 #include "Exception.h"
 #include "DofManager.h"
 
 using namespace std;
 
-DofManager::DofManager(FunctionSpace& fs){
+DofManager::DofManager(const FunctionSpace& fs){
   // Get Support from FunctionSpace //
   const GroupOfElement& support          = fs.getSupport();
   int nElement                           = support.getNumber();
@@ -47,8 +43,8 @@ DofManager::~DofManager(void){
     delete (*group)[i];
   delete group;
 
+  const set<const Dof*>::iterator end = dof->end();
   set<const Dof*>::iterator it;
-  set<const Dof*>::iterator end = dof->end();
 
   for(it = dof->begin(); it != end; it++)
     delete *it;

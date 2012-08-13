@@ -1,11 +1,11 @@
+#include <cmath>
+
 #include "GaussIntegration.h"
 #include "Mapper.h"
 #include "BasisVector.h"
 
 #include "FunctionSpaceEdge.h"
 #include "FormulationProjection.h"
-
-#include <cmath>
 
 using namespace std;
 
@@ -25,14 +25,12 @@ FormulationProjection::FormulationProjection(const GroupOfElement& goe,
   G = gW->size(); // Nbr of Gauss points
 
   // Function Space //
-  fspace = new FunctionSpaceEdge(goe, 0);
+  FunctionSpaceEdge* fspace = new FunctionSpaceEdge(goe, 0);
+  this->fspace              = fspace;
 
   // Basis //
-  const BasisVector& base = 
-    static_cast<const BasisVector&>(fspace->getBasis(goe.get(0)));
-  basis = &(base.getBasis());
-
-  basisSize = base.getSize(); 
+  const BasisVector& base = fspace->getBasis(goe.get(0));
+  basis = &(base.getFunctions());
 }
 
 FormulationProjection::~FormulationProjection(void){
@@ -41,7 +39,7 @@ FormulationProjection::~FormulationProjection(void){
   delete fspace;
 }
 
-double FormulationProjection::weak(const int edgeI, const int edgeJ, 
+double FormulationProjection::weak(int edgeI, int edgeJ, 
 				   const GroupOfDof& god) const{
 
   fullMatrix<double>  invJac(3, 3);        
@@ -78,7 +76,7 @@ double FormulationProjection::weak(const int edgeI, const int edgeJ,
   return integral;
 }
 
-double FormulationProjection::rhs(const int equationI,
+double FormulationProjection::rhs(int equationI,
 				  const GroupOfDof& god) const{
  
   fullMatrix<double>  invJac(3, 3);        
