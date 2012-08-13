@@ -70,7 +70,7 @@ Resolution {
 PostProcessing {
   { Name ElectricScalar ; NameOfFormulation ElectricScalar ;
     Quantity {
-      { Name laplace ; Value { Local { [{v}] ; In OmegaE ; Jacobian JVol ; } } }
+      { Name laplaceRef ; Value { Local { [{v}] ; In OmegaE ; Jacobian JVol ; } } }
     }
   }
 }
@@ -79,7 +79,7 @@ PostProcessing {
 PostOperation {
   { Name ElectricScalar ; NameOfPostProcessing ElectricScalar ;
     Operation {
-      Print [ laplace, OnElementsOf OmegaE, File "laplaceSquare.pos" ] ;
+      Print [ laplaceRef, OnElementsOf OmegaE, File "laplaceSquare.pos" ] ;
     }
   }
 }
