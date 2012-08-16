@@ -5,7 +5,7 @@
 #include <vector>
 #include <map>
 
-#include "Group.h"
+#include "GroupTyped.h"
 #include "Mesh.h"
 #include "MElement.h"
 
@@ -20,7 +20,7 @@
 
 class Mesh;
 
-class GroupOfElement: public Group{
+class GroupOfElement: public GroupTyped<MElement>{
  private:
   static unsigned int nextId;
   unsigned int        id;
@@ -40,9 +40,10 @@ class GroupOfElement: public Group{
   virtual unsigned int getId(void) const;
   virtual unsigned int getType(void)   const;
 
-  const MElement&                     get(unsigned int i) const;  
-  const std::vector<const MElement*>& getAll(void) const;  
-  const Mesh&                         getMesh(void) const;
+  virtual const MElement&                     get(unsigned int i) const;  
+  virtual const std::vector<const MElement*>& getAll(void) const;  
+  
+  const Mesh& getMesh(void) const;
 
   virtual std::string toString(void) const;
 };
