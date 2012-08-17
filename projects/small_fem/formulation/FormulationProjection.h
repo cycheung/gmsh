@@ -11,7 +11,7 @@
    @class FormulationProjection
    @brief Formulation for the Projection problem
 
-   Vectorial Formulation for the @em Projection problem.
+   Vectorial Formulation for the @em L2 @em Projection problem.
  */
 
 class FormulationProjection: public Formulation{
@@ -40,17 +40,24 @@ class FormulationProjection: public Formulation{
   virtual double rhs(int equationI,
 		     const GroupOfDof& god) const;
 
-  virtual FunctionSpace& fs(void) const;
+  virtual const FunctionSpace& fs(void) const;
 };
 
 /**
    @fn FormulationProjection::FormulationProjection
+   @param goe A GroupOfElement
    @param vectorToProject A fullVector<double>
-   @return Returns a new FormulationProjection to project
-   the given Vector
- 
+   
+   Instantiates a new FormulationProjection to project
+   the given Vector@n
+
+   The given GroupOfElement will be used as the 
+   geomtrical @em domain
+   **
+
    @fn FormulationProjection::~FormulationProjection
-   @return Deletes the this FormulationProjection
+   Deletes the this FormulationProjection
+   **
 */
 
 
@@ -58,7 +65,7 @@ class FormulationProjection: public Formulation{
 // Inline Functions //
 //////////////////////
 
-inline FunctionSpace& FormulationProjection::fs(void) const{
+inline const FunctionSpace& FormulationProjection::fs(void) const{
   return *fspace;
 }
 

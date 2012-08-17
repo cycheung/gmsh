@@ -30,7 +30,9 @@ class Solver{
    ot the system to solve
    @param b The Vector with the    
    Right Hand Side of the system to solve
-   @returns Solves the linear System Ax = b
+   
+   Solves the linear System Ax = b
+   **
  */
 
 #endif

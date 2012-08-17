@@ -32,10 +32,13 @@ class Exception: public std::exception{
    @param format A @em formated string 
    of the @em cause of the exception
    @param ... The parameters of the formated string
-   @return Instantiates a new Exception
+   
+   Instantiates a new Exception
+   **
 
    @fn Exception::~Exception
-   @return Deletes the Exception
+   Deletes this Exception
+   **
 
    @fn const char* Exception::what
    @return Returns the @em cause of the exception

@@ -11,6 +11,8 @@
    This is the interface allowing @em full @em access 
    to a member of Group.@n
 
+   This mean we can access all the element of the the Group.@n
+
    @note
    Note that a GroupTyped is a Group
  */

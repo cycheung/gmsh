@@ -23,9 +23,16 @@
    
    This class represents a mesh.@n
 
+   This class is responsible of the handling mesh elements
+   (Such as Quads, Tets, Edges, Vertices, ...).@n
+
+   It is also responsible of the @em numbering of those
+   elements.@n
+   Indeed, each element shall be granted a @em unique @c ID.@n
+
    A Mesh is instantiated thanks to a 
    <a href="http://www.geuz.org/gmsh">gmsh</a>
-   @c .msh file, wich discribes the mesh.@n
+   .@c msh file, wich discribes the mesh.@n
 */
 
 class GroupOfElement;
@@ -70,7 +77,6 @@ class Mesh{
 
   GroupOfElement getFromPhysical(int physicalId) const;
   
-  
   std::string toString(void) const;
  
  private:
@@ -80,14 +86,105 @@ class Mesh{
 
 /**
    @fn Mesh::Mesh
-   Instanciate a new Mesh
    @param fileName The path to the @c .msh file discribing the Mesh
+
+   Instanciates a new Mesh
+   **
    
    @fn Mesh::~Mesh
    Deletes this Mesh
+   **
+
+   @fn unsigned int Mesh::getGlobalId(const MElement& element) const
+   @param element A MElement
+   @return Returns the @em global @em @c ID (in this Mesh) of the
+   given MElement
+   **
+
+   @fn unsigned int Mesh::getGlobalId(const MVertex& vertex) const
+   @param vertex A MVertex
+   @return Returns the @em global @em @c ID (in this Mesh) of the
+   given MVertex
+   **
+
+   @fn unsigned int Mesh::getGlobalId(const MEdge& edge) const
+   @param edge A MEdge
+   @return Returns the @em global @em @c ID (in this Mesh) of the
+   given MEdge
+   **
+
+   @fn unsigned int Mesh::getGlobalId(const MFace& face) const
+   @param face A MFace
+   @return Returns the @em global @em @c ID (in this Mesh) of the
+   given MFace
+   **
  
+   @fn Mesh::getElement
+   @param id A natural number
+   @return Returns the MElement with the given @em global @c ID
+   @note 
+   If no MElement has the given global @c ID, an Exception is thrown
+   **
+
+   @fn Mesh::getVertex
+   @param id A natural number
+   @return Returns the MVertex with the given @em global @c ID
+   @note 
+   If no MVertex has the given global @c ID, an Exception is thrown
+   **
+
+   @fn Mesh::getEdge
+   @param id A natural number
+   @return Returns the MEdge with the given @em global @c ID
+   @note 
+   If no MEdge has the given global @c ID, an Exception is thrown
+   **
+
+   @fn Mesh::getFace
+   @param id A natural number
+   @return Returns the MFace with the given @em global @c ID
+   @note 
+   If no MFace has the given global @c ID, an Exception is thrown
+   **
+   
+   @fn Mesh::getElementNumber
+   @return Returns the number of Element in this Mesh
+   @note By Element we mean Quads, Tets, etc@n
+   This excludes Vertices, Edges, Faces and Cells
+   **
+
+   @fn Mesh::getVertexNumber
+   @return Returns the number of MVertices in this Mesh
+   **
+
+   @fn Mesh::getEdgeNumber
+   @return Returns the number of MEdge%s in this Mesh
+   **
+
+   @fn Mesh::getFaceNumber
+   @return Returns the number of MFace%s in this Mesh
+   **
+   
+   @fn Mesh::getOrientation
+   @param edge A MEdge
+   @return Retruns:
+   @li  1, if the given MEdge got the @em good  orientation
+   @li -1, if the given MEdge got the @em wrong orientation
+   @note If the given MEdge is not found, an Exception is thrown
+   **
+
+   @fn Mesh::getFromPhysical
+   @param physicalId A physical @c ID 
+   (see <a href="http://www.geuz.org/gmsh">gmsh</a> 
+   documentation)
+
+   @return @em Instantiate a new GroupOfElement, containing
+   the MElements of the given physical @c ID
+   **
+
    @fn Mesh::toString
    @return Returns a description of this Mesh
+   **
 */
 
 //////////////////////

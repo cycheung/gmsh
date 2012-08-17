@@ -162,7 +162,6 @@ const MEdge& Mesh::getEdge(unsigned int id) const{
   if(it == idEdge->end())
     throw 
       Exception("No Edge with Global Id %d found", id);
-
   return *(it->second);   
 }
 

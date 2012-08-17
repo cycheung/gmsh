@@ -7,8 +7,16 @@
    @interface Group
    @brief A group of elements (with partial access)
 
-   This is the interface allowing @em partial @em access to a group
+   This is the interface allowing @em partial @em access to a collection
    of elements.@n
+
+   By @em partial access, it shall be understood: 
+   access to all data of the collection,
+   but the elements themself.@n
+
+   For a @em full access, use GroupTyped (with required template).@n
+   @em Full access gives a partial access, with an access to
+   the elements of the Group.
 
    Every Group has a particular type of element.@n
    Each type is represented by a number:
@@ -19,9 +27,6 @@
 
    A Group (for a  @em given @em type of element) 
    got also a @em unique @c ID.
-
-   For a @em full access, use GroupTyped (with required template).@n
-
 
    @note
    Note that a GroupTyped is a Group

@@ -13,7 +13,7 @@
    Formulation for the @em Laplace problem.
 
    @todo
-   Remove const_cast by correcting MElement constness@n
+   Remove ALL const_cast%S by correcting MElement constness@n
    Allow Hybrid Mesh
  */
 
@@ -41,15 +41,22 @@ class FormulationLaplace: public Formulation{
   virtual double rhs(int equationI,
 		     const GroupOfDof& god) const;
 
-  virtual FunctionSpace& fs(void) const;
+  virtual const FunctionSpace& fs(void) const;
 };
 
 /**
    @fn FormulationLaplace::FormulationLaplace
-   @return Returns a new FormulationLaplace
- 
+   @param goe A GroupOfElement
+
+   Instantiates a new FormulationLaplace@n
+
+   The given GroupOfElement will be used as the 
+   geomtrical @em domain
+   **
+
    @fn FormulationLaplace::~FormulationLaplace
-   @return Deletes this FormulationLaplace
+   Deletes this FormulationLaplace
+   **
 */
 
 //////////////////////
@@ -61,7 +68,7 @@ inline double FormulationLaplace::rhs(int equationI,
   return 0;
 }
 
-inline FunctionSpace& FormulationLaplace::fs(void) const{
+inline const FunctionSpace& FormulationLaplace::fs(void) const{
   return *fspace;
 }
 

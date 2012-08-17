@@ -7,15 +7,19 @@
    @class Mapper
    @brief Set of methods for mapping
 
-   This class provides a set of @em static methods
+   This class provides a set of @em class @em methods
    for handling mapping between physical 
    and reference spaces.@n
 
+   @note
+   Because this class got @em only @em class @em method,
+   it @em doesn't need to be instanciated.
+
    The @em pysical space is defined by the
-   @li @c X, @c Y and @c Z coordinates.@n
+   @c X, @c Y and @c Z coordinates.@n
 
    The @em reference space is defined by the
-   @li @c U, @c V and @c W coordinates.@n
+   @c U, @c V and @c W coordinates.@n
 */
 
 class Mapper{
@@ -37,13 +41,15 @@ class Mapper{
 
 /**
    @fn Mapper::Mapper
-   @return Returns a new Mapper
-   @note Mapper has @em only @em static
+   Instanciates a new Mapper
+   @note Mapper got @em only @em class
    methods (functions), so it is not requiered
-   to instanciate a Mapper.
+   to instanciate a Mapper
+   **
 
    @fn Mapper::~Mapper
-   @return Deletes this Mapper
+   Deletes this Mapper
+   **
 
    @fn Mapper::map
    @param UVW A @c 3D Vector with the coordinate 
@@ -61,7 +67,7 @@ class Mapper{
    @param originXYZ A @c 3D Vector with the coordinate 
    (in the Physical Space) of a the first vertex of 
    the mapped element
-   @param invJac The Invert Jacobian Matrix evaluated at @c UVW 
+   @param invJac The Invert Jacobian Matrix evaluated at @c XYZ 
    @returns Returns the coordiantes of the given point
    in the @em reference space
 

@@ -15,11 +15,14 @@
    @class System
    @brief This class assembles a linear system
 
-   This class assembles the linear system, that comes from a Formulation 
-   and a list of Element%s.@n
+   This class assembles the linear system, 
+   described by a Formulation 
   
    @warning
-   We can @em only assemble Dof related to an Element@n
+   We can @em only assemble Dof related to a MElement@n
+
+   @todo
+   Assembly of @em NON Element related Dof
  */
 
 class System{
@@ -32,9 +35,9 @@ class System{
 
   int size;
 
-  const Formulation* formulation;
-  FunctionSpace*     fs;
-  DofManager*        dofM;
+  const Formulation*   formulation;
+  const FunctionSpace* fs;
+  DofManager*          dofM;
 
  public:
    System(const Formulation& formulation);
@@ -46,7 +49,6 @@ class System{
 
   const FunctionSpace& getFunctionSpace(void) const;
   const DofManager&    getDofManager(void) const;
-  const Formulation&   getFormulation(void) const;
 
   void fixBC(const GroupOfElement& goe, double value);
   void assemble(void);
@@ -59,33 +61,52 @@ class System{
 
 /**
    @fn System::System
-   @param formulation A Formulation, giving the way to assemble the system
-   @return A new System
- 
+   @param formulation A Formulation, 
+   giving the way to assemble the system
+   
+   Instantiated a new System
+   ***
+
    @fn System::~System
-   @return Deletes the System
+   Deletes this System
+   **
 
-   @fn Matrix& System::getMatrix
+   @fn System::getMatrix
    @return Returns the matrix of the the linear system
+   **
 
-   @fn fullVector<double>& System::getRHS
+   @fn System::getRHS
    @return Returns the Right Hand Side of the the linear system
+   **
 
-   @fn fullVector<double>& System::getSol
+   @fn System::getSol
    @return Returns the solution of the the linear system
+   **
 
-   @fn void System::fixBC
-   @param goe The Grouf of Element on which the bondary condtion shall be imposed
+   @fn System::getFunctionSpace
+   @return Returns the FunctionSpace used by the System
+   **
+
+   @fn System::getDofManager
+   @return Returns the DofManager used by the System
+   **
+
+   @fn System::fixBC
+   @param goe The GroupOfElement on which the bondary condtion shall be imposed
    @param value The value of the bondary condition
-   @return Fix a Boundary Condition
+   
+   Fix the given Boundary Condition
+   **
 
-   @fn void System::assemble
-   @return Assembles the linear system
+   @fn System::assemble
+   Assembles the linear system
+   **
 
-   @fn void System::solve
-   @return Solves the linear system
+   @fn System::solve
+   Solves the linear system
    @note If the System is @em not @em assembled,@n
    the assembly method will be called
+   **
 */
 
 //////////////////////
@@ -110,10 +131,6 @@ inline const FunctionSpace& System::getFunctionSpace(void) const{
 
 inline const DofManager& System::getDofManager(void) const{
   return *dofM;
-}
-
-inline const Formulation& System::getFormulation(void) const{
-  return *formulation;
 }
 
 #endif

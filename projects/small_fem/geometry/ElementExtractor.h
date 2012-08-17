@@ -14,6 +14,9 @@
 
    This class allows @em Element (MElement) Extraction from 
    an Entity (GEntity).@n
+
+   It got @em only @em class @em methods, so it is @em not requiered
+   to instanciate a ElementExtractor.
 */
 
 class ElementExtractor{
@@ -27,5 +30,31 @@ class ElementExtractor{
     >
     extract(const std::vector<GEntity*>& entity);
 };
+
+
+/**
+   @fn ElementExtractor::ElementExtractor
+   Instantiates a new ElementExtractor
+   
+   @note
+   ElementExtractor got @em only @em class @em methods, 
+   so it is @em not requiered to instanciate it.
+   **
+
+   @fn ElementExtractor::~ElementExtractor
+   Deletes this ElementExtractor
+   **   
+
+   @fn ElementExtractor::extract
+   @param entity A vector of GEntity
+   @return Returns an std::pair with:
+   @li The first field containing a map with the MElement%s in
+   the given entities (the mapped values are set to @em zero)
+   @li The second field containing a multimap with the MElement%s
+   of the first field, and the @em physicals 
+   (see <a href="http://www.geuz.org/gmsh">gmsh</a> documentation) of
+   the MElement%s
+   **
+ */
 
 #endif

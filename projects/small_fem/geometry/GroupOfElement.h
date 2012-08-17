@@ -14,8 +14,10 @@
    @class GroupOfElement
    @brief A Group of MElement%s
 
-   This class is collection of @em discrete elements (MElement%s).@n
-   This class is @em Group.
+   This class is collection (a Group) of @em discrete elements (MElement%s).@n
+   
+   In addition to the properties of a Group (GroupTyped<MElement>),@n
+   a GroupOfElement can gives access the @em Mesh of its elements.
 */
 
 class Mesh;
@@ -51,25 +53,32 @@ class GroupOfElement: public GroupTyped<MElement>{
 
 /**
    @fn GroupOfElement::GroupOfElement
-   Instantiates a new GroupOfElement 
-   based on a given GEntity and with the unique ID '@c id' 
-   @param entity The GEntity that describes the Group
-   @param id A @em unique number 
+   @param begin An std::multimap @em Iterator
+   @param end   An other std::mutltimap @em Iterator
+   @param mesh  A Mesh
+
+   Instantiates a new GroupOfElement, associated to the given Mesh@n
+
+   The MElement%s of the Group are given by the two Iterators
+   **
 
    @fn GroupOfElement::~GroupOfElement
    Deletes this GroupOfElement
+   **
 
    @fn GroupOfElement::get
    @param i An interger ranging from 0 
    to GroupOfElement::getNumber() - 1
    @return Returns the ith element of the Group
+   **
 
    @fn GroupOfElement::getAll
    @return Returns all the elements of the Group
- 
-   @fn GroupOfElement::getEntity
-   @return Returns the Entity used to build 
-   this GroupOfElement
+   **
+
+   @fn GroupOfElement::getMesh
+   @return Returns the associated Mesh  
+   **
 */
 
 
