@@ -9,8 +9,8 @@
 
 using namespace std;
 
-PlotBasis::PlotBasis(const GroupOfElement& group, 
-		     const Basis& basis,
+PlotBasis::PlotBasis(const Basis& basis,
+		     const GroupOfElement& group, 
 		     Writer& writer){
 
   this->writer = &writer;
