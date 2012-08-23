@@ -1,5 +1,3 @@
-onelab.tags(OL.,#);
-
 # in a name.xxx.ol file onelab parameter definition lines must be enclosed 
 # between "OL.begin" and "OL.end" or start with "OL.line"
 OL.block
@@ -152,7 +150,7 @@ OL.if( OL.get(Parameters/Laser/LASERTYPE) == 3)
   # temperature controlled power density
   #Heat Source = Variable Qvolume, Time, Tsensor/Temperature
   Heat Source = Variable Qvolume, Time, Tsensor
-  Real MATC " if(tx(1)<=tlaser) { if(tx(2)<temp){tx(0)} else{tx(0)/6} } else {0} "
+  Real MATC " if(tx(1)<=tlaser) { if(tx(2)<temp){tx(0)} else{0} } else {0} "
 OL.endif
 End
 
@@ -167,7 +165,6 @@ Boundary Condition 2  ! "body temperature on external side and bottom"
   Target Boundaries(2) = OL.region(Side) OL.region(Bottom)
   Temperature = Real OL.get(Parameters/Skin/BODYTEMP)
 End
-
 
 OL.if( OL.get(Parameters/Laser/LASERTYPE) == 1) # imposed temperature
 # In this case, 2 boundary conditions:

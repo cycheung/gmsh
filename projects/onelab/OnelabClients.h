@@ -1,4 +1,4 @@
-// Gmsh - Copyright (C) 1997-2012 C. Geuzaine, J.-F. Remacle
+// ONELAB - Copyright (C) 2010-2012 C. Geuzaine, F. Henrotte
 //
 // See the LICENSE.txt file for license information. Please report all
 // bugs and problems to <gmsh@geuz.org>.
@@ -143,8 +143,7 @@ class localSolverClient : public onelab::localClient{
   virtual void client_sentence(const std::string &name, 
 			       const std::string &action, 
 			       const std::vector<std::string> &arguments);
-  void modify_tags(const std::string lab, 
-		   const std::string com, const std::string sep);
+  void modify_tags(const std::string lab, const std::string com);
   void parse_sentence(std::string line) ;
   void parse_oneline(std::string line, std::ifstream &infile) ;
   bool parse_block(std::ifstream &infile) ;
@@ -219,8 +218,8 @@ class MetaModel : public localSolverClient {
     modelNumberFromArgs = number;
     genericNameFromArgs = fname.size() ? fname : cmdl;
     openOnelabBlock();
-    parse_onefile( genericNameFromArgs + onelabExtension);
     parse_onefile( genericNameFromArgs + onelabExtension + ".save",false);
+    parse_onefile( genericNameFromArgs + onelabExtension);
     closeOnelabBlock();
   }
   ~MetaModel(){}

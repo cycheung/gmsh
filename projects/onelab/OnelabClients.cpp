@@ -582,7 +582,9 @@ std::string localSolverClient::toChar(){
 }
 
 bool localSolverClient::checkCommandLine(){
+  Msg::Info("Check command line for <%s>",getName().c_str());
   if(getCommandLine().empty()){
+    // look if one has a commandLine on server
     std::string commandLine = getString("CommandLine");
     if(!commandLine.empty()){
       setCommandLine(commandLine);
@@ -697,8 +699,9 @@ void localSolverClient::GmshMerge(std::vector<std::string> choices)
 
 //Metamodel::analyze and Metamodel::compute are defined in the file SOLVERS/onelab.cpp
 
-void MetaModel::saveCommandLines(const std::string fileName){ //save client command lines
-  std::string fileNameSave = getWorkingDir()+fileName + onelabExtension + ".save";
+void MetaModel::saveCommandLines(const std::string fileName){ 
+  //save client command lines
+  std::string fileNameSave = getWorkingDir()+fileName+onelabExtension+".save";
   std::ofstream outfile(fileNameSave.c_str()); 
 
   if (outfile.is_open())
@@ -745,7 +748,7 @@ void MetaModel::registerClient(const std::string &name, const std::string &type,
     else 
       Msg::Fatal("Unknown remote client type", type.c_str());
   }
-  _clients.push_back(c); 
+  _clients.push_back(c);
 }
 
 void MetaModel::simpleCheck()
@@ -757,7 +760,6 @@ void MetaModel::simpleCheck()
       //some clients must be run at the check phase
       if((*it)->getActive()==2) 
 	(*it)->compute();
-      //}
   }
 }
 

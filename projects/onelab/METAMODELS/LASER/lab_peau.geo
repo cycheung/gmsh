@@ -4,7 +4,7 @@
 
 DefineConstant[EPIDERMIS = {0.12, Path "Parameters/Skin/"}];
 DefineConstant[DERMIS = {1.5, Path "Parameters/Skin/"}];
-DefineConstant[BEAMRADIUS = {2, Path "Parameters/Laser/"}];
+DefineConstant[BEAMRADIUS = {3, Path "Parameters/Laser/"}];
 
 // Gmsh specific parameter
 DefineConstant[Nb1 = {8, Path "Gmsh/", ShortHelp "Elements on spot surface"}]; 
@@ -65,4 +65,4 @@ Transfinite Line {1, 7, 10} = Nb1*Ref;
 Transfinite Line {4, 6, 9} = Nb2*Ref;
 Transfinite Line {3, 5, 12} = Nb3*Ref Using Progression 0.85;//0.9
 Transfinite Line {-2, -8, -11} = Nb4*Ref Using Progression 0.7;
-Transfinite Surface {1,2,3,4};
+Transfinite Surface {1,2,3,4} Right;

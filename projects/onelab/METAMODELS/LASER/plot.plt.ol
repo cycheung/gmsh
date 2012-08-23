@@ -1,7 +1,9 @@
-#set terminal pdf font "Times-Roman,12" ; INTERACT = 0
 
-set terminal aqua; INTERACT=-1
-set terminal aqua 1
+INTERACT=-1
+
+if (INTERACT==-1) set terminal aqua enhanced
+if (INTERACT== 0) set terminal pdf enhanced font "Times-Roman,6"
+if (INTERACT== 0) set output "plot.pdf"
 
 set style data line
 set zeroaxis
@@ -10,14 +12,12 @@ set multiplot;
 set style function lines
 set size 1.0, 1.0
 set origin 0.0, 0.0
-
-set multiplot
 set grid
 
-set title "Maximum skin temperature at different depths"
+if (INTERACT==-1) set title "Maximum temperature at different depths"
 set size 0.5,0.5
 set origin 0.0,0.5
-set ylabel "Temperature [degC]"
+set ylabel "Temperature [{\260}C]";
 set xlabel "Time [s]"
 plot "temp.txt" u 1:($2)-273 t "",\
      "temp.txt" u 1:($9)-273 t "",\
@@ -26,17 +26,10 @@ plot "temp.txt" u 1:($2)-273 t "",\
      "temp.txt" u 1:($30)-273 t "", \
      320-273 w l  lt rgb "black" t "threshold "
 
-set title "Skin temperature (at t=Tlaser) at different depth "
+if (INTERACT==-1) set title "Temperature distribution at t_{laser} at different depths"
 set size 0.5,0.5
 set origin 0.5,0.5  
-set ylabel "Temperature [degC]"
-set xlabel "Radial coord [mm]"
-#plot "templaser0.txt" u ($5)*1000:($8)-273 w l t "",\
-#     "templaser1.txt" u ($5)*1000:($8)-273 w l t "",\
-#     "templaser2.txt" u ($5)*1000:($8)-273 w l t "",\
-#     "templaser3.txt" u ($5)*1000:($8)-273 w l t "",\
-#     "templaser4.txt" u ($5)*1000:($8)-273 w l t "", \
-#     320-273 w l  lt rgb "black" t "threshold "
+set xlabel "Radial coordinate [mm]"
 
 nbfiles= OL.get(PostPro/ZSURF,choices.size())
 filename(n) = sprintf("templaser%d.txt", n)
@@ -46,18 +39,18 @@ plot for [i=0:nbfiles-1] filename(i) u ($5)*1000:($8)-273 w l t "", \
 skinWidth = (OL.get(Parameters/Skin/EPIDERMIS)+OL.get(Parameters/Skin/DERMIS))/1000
 zsurf=OL.get(PostPro/ZSURF);
 
-set title "Maximum (in time) active surface"
+if (INTERACT==-1) set title "Maximum (over time) activated surface"
 set size 0.5,0.5
 set origin 0.0,0.0
-set xlabel "Skin Depth [mm]"
-set ylabel "Active surface [mm^2]"
+set xlabel "Depth [mm]"
+set ylabel "Activated surface A_{A{/Symbol d}} [mm^2]"
 plot "activeMax.txt" u (zsurf-($6))*1000:($8)*10**6 w lp t ""
 
-set title "Maximum (at x=0) duration at threshold "
+if (INTERACT==-1) set title "Maximum (on axis) duration at threshold "
 set size 0.5,0.5
 set origin 0.5,0.0
-set xlabel "Skin Depth [mm]"
-set ylabel "Duration [s]"
+set xlabel "Depth [mm]"
+set ylabel "Duration {/Symbol D} t_{A{/Symbol d}} [s]"
 plot [0:0.2] "duration.txt" u (skinWidth-($6))*1000:8 w lp t "" 
 
 unset multiplot

@@ -53,14 +53,19 @@ int main(int argc, char *argv[]){
 
   MetaModel *myModel = new MetaModel(commandLine, workingDir, clientName,
 				     fileName, modelNumber);
+
+  //if not all clients have valid commandlines -> exit metamodel
+  //commandlines will be entered by the user interactively
   if(!myModel->checkCommandLines()) 
-    //if all clients have valid commandlines and are initialized
     action.assign("exit");
+
+  //if the metamodel is not yet initialized by the loader -> initialize
   if(Msg::loader && !Msg::GetOnelabNumber(clientName + "/Initialized"))
     action.assign("initialize");
 
-  if(!action.compare("exit")){ // exit metamodel
-  } 
+  if(!action.compare("exit")){ 
+    // exit metamodel
+  }
   else if(!action.compare("initialize")){
     if(Msg::loader) myModel->initialize(); // initializes MetaModel 
   }

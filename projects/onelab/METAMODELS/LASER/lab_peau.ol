@@ -1,17 +1,22 @@
 onelab.tags(OL.,#);
+
 # Onelab commands start with "OL."
 # comment lines start with "#"
+# these are the default values so the above command is optional
+# and equivalent to:
+# onelab.tags(); onelab.tags(,);
 
-# "radioButton" represent a boolean parameter or a flag
-LOGFILES.radioButton(0,MetaModel/,"Output goes in .log files");
-LOGFILES.setVisible(0);
-
-# onelab numbers determining the SKIN model
-DERMIS.number(1.5,Parameters/Skin/,"Dermis thickness [mm]"); #.geo
-WCONTENT.number(0.65,Parameters/Skin/,"Water content []");
-BODYTEMP.number(310, Parameters/Skin/,"Body temperature [K]");
-OVERTEMP.number(320, Parameters/Skin/,"Thermal threshold fiber [K]");
-REFLECTIVITY.number(0.0078, Parameters/Skin/, "Skin reflectivity []");
+#-1)  Gmsh for meshing
+Mesher.register(encapsulated,gmsh);
+Mesher.in( OL.get(Arguments/FileName).geo );
+Mesher.args( OL.get(Arguments/FileName).geo);
+Mesher.out( OL.get(Arguments/FileName).msh );
+# Merge the mesh file if the metamodel is loaded by Gmsh
+Mesher.merge( OL.get(Arguments/FileName).msh);
+Mesher.check();
+# The latter optional command forces the client Mesher 
+# to be checked immediately 
+# so that parameters defined in the .geo file can be used in the sequel. 
 
 # Enumeration, i.e. a set of real values each associated with a label
 SKINTYPE.number(1, Parameters/Skin/1,"Skin type"); 
@@ -23,15 +28,28 @@ SKINTYPE.valueLabels(1,"hairy", 2,"hairless");
 # by the value of SKINTYPE, i.e. it is a depending variable.
 # In .ol files, depending variables are declared with no value 
 # (the value slot is left empty)
-EPIDERMIS.number(, Parameters/Skin/,"Epidermis thickness [mm]"); #.geo
-# ... and the incomplete declaratio nis completed by a "setValue" statement
+# ... and the incomplete declaration is completed by a "setValue" statement
 OL.if( OL.get(SKINTYPE) == 1)
-EPIDERMIS.setValue(0.05);
+EPIDERMIS.setValue(0.05,Parameters/Skin/);
 OL.endif
 OL.if( OL.get(SKINTYPE) == 2)
-EPIDERMIS.setValue(0.12);
+EPIDERMIS.setValue(0.12,Parameters/Skin/);
 OL.endif
 # The "setValue" statement overrules the value on server.
+
+
+# "radioButton" represent a boolean parameter or a flag
+LOGFILES.radioButton(0,MetaModel/,"Output goes in .log files");
+LOGFILES.setVisible(0);
+
+# onelab numbers determining the SKIN model
+
+WCONTENT.number(0.65,Parameters/Skin/,"Water content []");
+BODYTEMP.number(310, Parameters/Skin/,"Body temperature [K]");
+OVERTEMP.number(320, Parameters/Skin/,"Thermal threshold fiber [K]");
+REFLECTIVITY.number(0.0078, Parameters/Skin/, "Skin reflectivity []");
+
+
 
 # Flags to describe model features that are activated or not
 TENEUR.radioButton(1,Parameters/Skin/3,"Account for variable water content");
@@ -64,9 +82,8 @@ LASERSHAPE.valueLabels(1,"Gaussian", 2,"Flat-top");
 
 # Parameters describing the laser stimulator
 APPLICTIME.number(0.110, Parameters/Laser/, "Application time [s]");
-BEAMRADIUS.number(2, Parameters/Laser/, "Beam radius [mm]"); #.geo
 ABSORPTION.number(2e4, Parameters/Laser/, "Absorption coefficient [1/m]");
-LASERTEMP.number(323, Parameters/Laser/, "Laser temperature [K]");
+LASERTEMP.number(323, Parameters/Laser/, "Target temperature [K]");
 LASERPOWER.number(4, Parameters/Laser/, "Power [W]");
 
 # Visibility of the parameters in the onelab interactive window
@@ -91,10 +108,8 @@ ABSORPTION.setVisible(1);
 LASERSHAPE.setVisible(1);
 OL.endif
 
-
-
 ZSURF.number( , PostPro/,"Z coordinates");
-ZSURF.setValue(OL.eval( (OL.get( DERMIS)+OL.get(EPIDERMIS))* 1e-3)); 
+ZSURF.setValue(OL.eval( (OL.get(Parameters/Skin/DERMIS)+OL.get(Parameters/Skin/EPIDERMIS))* 1e-3)); 
 
 # "OL.get" return the value on server 
 # of a parameter of type onelab::number or onelab::string
@@ -130,13 +145,6 @@ ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.2000 * 1e-3) );
 # syntax for clients
 # OL.client name.Register([interf...|encaps...]{,cmdl{,wdir,{host{,rdir}}}}) ;
 
-#-1)  Gmsh for meshing
-Mesher.register(encapsulated);
-Mesher.in( OL.get(Arguments/FileName).geo );
-Mesher.args( OL.get(Arguments/FileName).geo);
-Mesher.out( OL.get(Arguments/FileName).msh );
-# Merge the mesh file if the metamodel is loaded by Gmsh
-Mesher.merge( OL.get(Arguments/FileName).msh);
 
 #-2) ElmerGrid converts the mesh for Elmer
 ElmerGrid.register(interfaced);
@@ -148,6 +156,7 @@ ElmerGrid.out( mesh/mesh.boundary );
 Elmer.register(interfaced);
 Elmer.in( ELMERSOLVER_STARTINFO.ol, OL.get(Arguments/FileName).sif.ol);
 Elmer.out( solution.pos, temp.txt );
+Elmer.merge(solution.pos)
 Elmer.active(1);
 
 #-4) Post-processing with Gmsh and a script
@@ -162,7 +171,7 @@ Display.register(interfaced);
 Display.in(solution.pos, script2.opt.ol, overheat.pos.opt.ol );
 Display.out(overheat.pos );
 Display.args( solution.pos script2.opt - );
-Display.merge(overheat.pos);
+#Display.merge(overheat.pos);
 
 #-6) Display solution curves with either gnuplot or matlab
 POSTPRO.number(2, PostPro/,"Plot results with");
