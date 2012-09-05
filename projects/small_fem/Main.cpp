@@ -35,10 +35,10 @@ int run(int argc, char** argv){
   // Get Mesh //
   Mesh msh(argv[1]);
   GroupOfElement domain = msh.getFromPhysical(7);
-
+  //cout << msh.toString() << endl;
 
   // Laplace //
-  FormulationLaplace laplace(domain, 2);
+  FormulationLaplace laplace(domain, 1);
   System sysLaplace(laplace);
 
   sysLaplace.fixBC(msh.getFromPhysical(6), -1);
@@ -50,7 +50,7 @@ int run(int argc, char** argv){
   Solution solLaplace(sysLaplace);
   solLaplace.write("laplace", mWriter);
     
-  /*
+  
   // Projection //
   fullVector<double> f(3); 
   f(0) =  0.5; 
@@ -65,7 +65,7 @@ int run(int argc, char** argv){
 
   Solution solProj(sysProj);
   solProj.write("projection", mWriter);  
-  */
+  
   // Stop Gmsh //
   GmshFinalize();
       

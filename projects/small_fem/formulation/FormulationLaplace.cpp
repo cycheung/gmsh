@@ -1,5 +1,6 @@
 #include <cmath>
 
+#include "Exception.h"
 #include "fullMatrix.h"
 #include "GaussIntegration.h"
 #include "BasisScalar.h"
@@ -12,13 +13,18 @@ using namespace std;
 
 FormulationLaplace::FormulationLaplace(const GroupOfElement& goe,
 				       unsigned int order){
+  // Can't have 0th order //
+  if(order == 0)
+    throw 
+      Exception("Can't have a Laplace formulation of order 0");
+
   // Gaussian Quadrature Data //
   gC = new fullMatrix<double>();
   gW = new fullVector<double>();
 
   // Look for 1st element to get element type
   // (We suppose only one type of Mesh !!)
-  gaussIntegration::get(goe.get(0).getType(), 10, *gC, *gW);
+  gaussIntegration::get(goe.get(0).getType(), order, *gC, *gW);
 
   G = gW->size(); // Nbr of Gauss points
 
