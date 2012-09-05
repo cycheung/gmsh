@@ -1,6 +1,7 @@
 set(src
   Writer.cpp
   WriterMsh.cpp
+  WriterVector.cpp
 
   Solution.cpp
   PlotBasis.cpp

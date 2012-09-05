@@ -65,7 +65,7 @@ void System::solve(void){
   // Get dof value //
   Solver::solve(*A, *x, *b);
 }
-			   
+
 void System::assemble(GroupOfDof& group){
   const vector<const Dof*>& dof = group.getAll();
   const int N = group.getNumber();
@@ -73,7 +73,7 @@ void System::assemble(GroupOfDof& group){
   for(int i = 0; i < N; i++){
     pair<bool, double> fixed = dofM->getValue(*(dof[i]));
     int dofI = dofM->getGlobalId(*(dof[i]));
-    
+
     if(fixed.first){
       // If fixed Dof
       (*A)(dofI, dofI) = 1;

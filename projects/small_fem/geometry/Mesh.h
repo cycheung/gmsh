@@ -203,4 +203,8 @@ inline unsigned int Mesh::getEdgeNumber(void) const{
   return edge->size();
 }
 
+inline unsigned int Mesh::getFaceNumber(void) const{
+  return 0;
+}
+
 #endif
