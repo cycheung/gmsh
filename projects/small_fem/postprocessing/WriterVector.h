@@ -42,7 +42,7 @@ class WriterVector: public Writer{
    Deletes this WriterVector
    **
 
-   @fn WriterVector::write
+   @fn void WriterVector::write(const std::string name) const
    @param name The name of the file to write into 
    (@em without extensions)
    

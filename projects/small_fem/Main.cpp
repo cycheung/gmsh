@@ -38,7 +38,7 @@ int run(int argc, char** argv){
 
 
   // Laplace //
-  FormulationLaplace laplace(domain);
+  FormulationLaplace laplace(domain, 2);
   System sysLaplace(laplace);
 
   sysLaplace.fixBC(msh.getFromPhysical(6), -1);

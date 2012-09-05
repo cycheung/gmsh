@@ -31,7 +31,7 @@ class FormulationLaplace: public Formulation{
   std::vector<Polynomial>* gradBasis;
 
  public:
-  FormulationLaplace(const GroupOfElement& goe);
+  FormulationLaplace(const GroupOfElement& goe, unsigned int order);
 
   virtual ~FormulationLaplace(void);
 
@@ -47,8 +47,9 @@ class FormulationLaplace: public Formulation{
 /**
    @fn FormulationLaplace::FormulationLaplace
    @param goe A GroupOfElement
+   @param order A natural number
 
-   Instantiates a new FormulationLaplace@n
+   Instantiates a new FormulationLaplace of the given order@n
 
    The given GroupOfElement will be used as the 
    geomtrical @em domain
