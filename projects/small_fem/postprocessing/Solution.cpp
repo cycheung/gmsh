@@ -3,13 +3,14 @@
 #include "FunctionSpaceScalar.h"
 #include "FunctionSpaceVector.h"
 
+#include "GModel.h"
 #include "MElement.h"
 #include "MVertex.h"
 #include "Dof.h"
 
 using namespace std;
 
-Solution::Solution(const System& system){
+void Solution::init(const System& system){
   // Save some data
   this->sol  = &(system.getSol());
   this->dofM = &(system.getDofManager());
@@ -36,9 +37,29 @@ Solution::Solution(const System& system){
     isScalar = false;
     break;
   }
+}
+
+Solution::Solution(const System& system){
+  // Init
+  init(system);
+
+  // Get Visu Domain
+  this->visuDomain = &(fs->getSupport());
 
   // Interpolate
-  interpolate(fs);
+  interpolate();
+}
+
+Solution::Solution(const System& system,
+		   const GroupOfElement& visu){
+  // Init
+  init(system);
+
+  // Get Visu Domain
+  this->visuDomain = &visu;
+
+  // Interpolate
+  interpolateOnVisu();
 }
 
 Solution::~Solution(void){
@@ -50,12 +71,8 @@ Solution::~Solution(void){
 }
 
 void Solution::write(const std::string name, Writer& writer) const{
-  // Get Domain
-  const std::vector<const MElement*>& element
-    = fs->getSupport().getAll();
-
   // Set Writer
-  writer.setDomain(element);
+  writer.setDomain(visuDomain->getAll());
 
   if(isScalar)
     writer.setValues(*nodalScalarValue);
@@ -67,7 +84,7 @@ void Solution::write(const std::string name, Writer& writer) const{
   writer.write(name);
 }
 
-void Solution::interpolate(const FunctionSpace* fs){
+void Solution::interpolate(void){
   // Init
   const unsigned int nTotVertex       = mesh->getVertexNumber();
   const std::vector<GroupOfDof*>& god = dofM->getAllGroups();
@@ -143,5 +160,72 @@ void Solution::interpolate(const FunctionSpace* fs){
 	isInterpolated[id] = true;
       }
     }
+  }
+}
+
+void Solution::interpolateOnVisu(void){
+  // Init
+  const Mesh& visuMesh              = visuDomain->getMesh();
+  const unsigned int nTotVertex     = visuMesh.getVertexNumber();
+  const vector<const MVertex*> node = visuMesh.getAllVertex(); 
+
+  // Scalar or Vector ?
+  const FunctionSpaceScalar* fsScalar = NULL;
+  const FunctionSpaceVector* fsVector = NULL;
+
+  if(isScalar){
+    nodalScalarValue = new vector<double>(nTotVertex);
+    fsScalar = static_cast<const FunctionSpaceScalar*>(fs);
+  }
+
+  else{
+    nodalVectorValue = new vector<fullVector<double> >(nTotVertex);
+    fsVector = static_cast<const FunctionSpaceVector*>(fs);
+  }
+    
+  // Get Model for Octrees
+  GModel& model = mesh->getModel();
+  const int dim = model.getDim();
+
+  // Iterate on *NODES*
+  for(unsigned int i = 0; i < nTotVertex; i++){
+    // Search element (in System Mesh) containg this 
+    // visu node
+    SPoint3   point   = node[i]->point();
+    MElement* element = model.getMeshElementByCoord(point, dim, true);
+   
+    // Get GroupOfDof related to this Element
+    const GroupOfDof& god = dofM->getGoDFromElement(*element);
+      
+    // Get Dof
+    const vector<const Dof*>& dof  = god.getAll();
+    const unsigned int        size = dof.size();
+
+    // Get Coef
+    vector<double> coef(size);
+    for(unsigned int k = 0; k < size; k++){
+      // Look in Solution
+      coef[k] = 
+	(*sol)(dofM->getGlobalId(*dof[k])); 
+	
+      // If Edge Space: Set Orientation
+      if(fsType == 1)
+	coef[k] *= god.getOrientation(k);
+    }
+	
+    // Get Node coordinate
+    fullVector<double> xyz(3);
+    xyz(0) = node[i]->x();
+    xyz(1) = node[i]->y();
+    xyz(2) = node[i]->z();
+
+    // Interpolate (AT LAST !!)
+    if(isScalar)
+      (*nodalScalarValue)[node[i]->getNum() - 1] = 
+	fsScalar->interpolate(*element, coef, xyz);
+    
+    else
+      (*nodalVectorValue)[node[i]->getNum() - 1] = 
+	fsVector->interpolate(*element, coef, xyz);
   }
 }

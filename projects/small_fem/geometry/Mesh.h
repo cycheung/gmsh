@@ -58,6 +58,8 @@ class Mesh{
    Mesh(const std::string fileName);
   ~Mesh(void);
 
+  GModel& getModel(void) const;
+
   unsigned int getGlobalId(const MElement& element) const;
   unsigned int getGlobalId(const MVertex& vertex) const;
   unsigned int getGlobalId(const MEdge& edge) const;
@@ -67,6 +69,8 @@ class Mesh{
   const MVertex&  getVertex(unsigned int id) const;
   const MEdge&    getEdge(unsigned int id) const;
   const MFace&    getFace(unsigned int id) const;
+
+  const std::vector<const MVertex*> getAllVertex(void) const;
 
   unsigned int getElementNumber(void) const;
   unsigned int getVertexNumber(void) const;
@@ -93,6 +97,10 @@ class Mesh{
    
    @fn Mesh::~Mesh
    Deletes this Mesh
+   **
+
+   @fn Mesh::getModel
+   @return Returns the Model used for generating this Mesh
    **
 
    @fn unsigned int Mesh::getGlobalId(const MElement& element) const
@@ -146,6 +154,10 @@ class Mesh{
    @note 
    If no MFace has the given global @c ID, an Exception is thrown
    **
+
+   @fn Mesh::getAllVertex
+   @return Returns all the Vertices of this Mesh
+   **
    
    @fn Mesh::getElementNumber
    @return Returns the number of Element in this Mesh
@@ -190,6 +202,10 @@ class Mesh{
 //////////////////////
 // Inline Functions //
 //////////////////////
+
+inline GModel& Mesh::getModel(void) const{
+  return *model;
+}
 
 inline unsigned int Mesh::getElementNumber(void) const{
   return element->size();

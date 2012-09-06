@@ -2,19 +2,23 @@
 
 #include "Mesh.h"
 #include "fullMatrix.h"
-#include "FormulationLaplace.h"
-#include "FormulationProjection.h"
 #include "System.h"
 #include "Solution.h"
 #include "WriterMsh.h"
 #include "WriterVector.h"
 
+#include "FormulationLaplace.h"
+#include "FormulationPoisson.h"
+#include "FormulationProjection.h"
+
 #include "BasisTest.h"
-#include "Gmsh.h"
 
 using namespace std;
 
 int run(int argc, char** argv);
+void fLaplace(Mesh& msh, Writer& mWriter);
+void fPoisson(Mesh& msh, Mesh& visu, Writer& mWriter);
+void fProjection(Mesh& msh, Writer& mWriter);
 
 int main(int argc, char** argv){
   int ret;
@@ -26,18 +30,28 @@ int main(int argc, char** argv){
 }
 
 int run(int argc, char** argv){
-  // Init Gmsh //
-  GmshInitialize(argc, argv);
+  // Writer //
   WriterMsh    mWriter;  
   WriterVector vWriter;
   
-
   // Get Mesh //
   Mesh msh(argv[1]);
-  GroupOfElement domain = msh.getFromPhysical(7);
   //cout << msh.toString() << endl;
+  
+  if(argc == 3){
+    Mesh visu(argv[2]);
+    fPoisson(msh, visu,  mWriter);
+  }
 
-  // Laplace //
+  //fLaplace(msh, mWriter);
+  //fProjection(msh, mWriter);
+
+  return 0;
+}
+
+void fLaplace(Mesh& msh, Writer& mWriter){
+  GroupOfElement domain = msh.getFromPhysical(7);
+  
   FormulationLaplace laplace(domain, 1);
   System sysLaplace(laplace);
 
@@ -49,9 +63,30 @@ int run(int argc, char** argv){
 
   Solution solLaplace(sysLaplace);
   solLaplace.write("laplace", mWriter);
-    
+}
+
+void fPoisson(Mesh& msh, Mesh& visu, Writer& mWriter){
+  GroupOfElement domain = msh.getFromPhysical(9);
+
+  FormulationPoisson poisson(domain, 2);
+  System sysPoisson(poisson);
   
-  // Projection //
+  sysPoisson.fixBC(msh.getFromPhysical(5), 0);
+  sysPoisson.fixBC(msh.getFromPhysical(6), 0);
+  sysPoisson.fixBC(msh.getFromPhysical(7), 0);
+  sysPoisson.fixBC(msh.getFromPhysical(8), 0);
+  
+  sysPoisson.assemble();
+  sysPoisson.solve();
+
+  GroupOfElement visuDomain = visu.getFromPhysical(9);
+  Solution solPoisson(sysPoisson, visuDomain);
+  solPoisson.write("poisson", mWriter);
+}
+
+void fProjection(Mesh& msh, Writer& mWriter){
+  GroupOfElement domain = msh.getFromPhysical(7);
+
   fullVector<double> f(3); 
   f(0) =  0.5; 
   f(1) = -1; 
@@ -64,10 +99,5 @@ int run(int argc, char** argv){
   sysProj.solve();
 
   Solution solProj(sysProj);
-  solProj.write("projection", mWriter);  
-  
-  // Stop Gmsh //
-  GmshFinalize();
-      
-  return 0;
+  solProj.write("projection", mWriter);
 }

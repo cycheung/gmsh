@@ -9,6 +9,7 @@
 #include "fullMatrix.h"
 
 #include "Mesh.h"
+#include "GroupOfElement.h"
 #include "DofManager.h"
 #include "FunctionSpace.h"
 
@@ -35,15 +36,19 @@ class Solution{
   bool                              isScalar;
   std::vector<double>*              nodalScalarValue;
   std::vector<fullVector<double> >* nodalVectorValue;
+  const GroupOfElement*             visuDomain;
 
  public:
    Solution(const System& system);
+   Solution(const System& system, const GroupOfElement& visu);
   ~Solution(void);
 
   void write(const std::string name, Writer& writer) const;
 
  private:
-  void interpolate(const FunctionSpace* fs);
+  void init(const System& system);
+  void interpolate(void);
+  void interpolateOnVisu(void); 
 };
 
 

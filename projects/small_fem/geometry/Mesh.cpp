@@ -165,6 +165,24 @@ const MEdge& Mesh::getEdge(unsigned int id) const{
   return *(it->second);   
 }
 
+const vector<const MVertex*> Mesh::getAllVertex(void) const{
+  // Init
+  const unsigned int size = vertex->size();
+
+  map<const MVertex*, unsigned int, VertexComparator>::iterator
+    itV = vertex->begin();
+
+  // Alloc
+  vector<const MVertex*> v(size);
+
+  // Fill Vector
+  for(unsigned int i = 0; i < size; i++, itV++)
+    v[i] = itV->first;
+
+  // Return 
+  return v;
+}
+
 void Mesh::number(void){
   // Get Iterators //
   const map<const MElement*, unsigned int, ElementComparator>::iterator

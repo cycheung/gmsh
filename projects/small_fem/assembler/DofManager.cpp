@@ -15,6 +15,7 @@ DofManager::DofManager(const FunctionSpace& fs){
   group    = new vector<GroupOfDof*>(nElement);
   globalId = new map<const Dof*, int, DofComparator>;
   fixedDof = new map<const Dof*, double, DofComparator>;
+  eToGod   = new map<const MElement*, const GroupOfDof*, ElementComparator>;
 
   // Create Dofs & Numbering//
   nextId = 0;
@@ -33,6 +34,10 @@ DofManager::DofManager(const FunctionSpace& fs){
     // Add Dof
     for(int j = 0; j < nDof; j++)
       insertDof(myDof[j], god);
+
+    // Map GOD
+    eToGod->insert(pair<const MElement*, const GroupOfDof*>
+		   (element[i], god));
   }
 }
 
@@ -52,6 +57,19 @@ DofManager::~DofManager(void){
 
   delete globalId;
   delete fixedDof;
+  delete eToGod;
+}
+
+const GroupOfDof& DofManager::getGoDFromElement(const MElement& element) const{
+  const map<const MElement*, const GroupOfDof*, ElementComparator>::iterator it = 
+    eToGod->find(&element);
+
+  if(it == eToGod->end())
+    throw 
+      Exception("Their is no GroupOfDof associated with the given MElement");
+
+  else
+    return *(it->second); 
 }
 
 int DofManager::getGlobalId(const Dof& dof) const{

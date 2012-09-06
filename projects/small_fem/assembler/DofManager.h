@@ -10,6 +10,7 @@
 
 #include "Dof.h"
 #include "GroupOfDof.h"
+#include "MElement.h"
 #include "Comparators.h"
 
 /**
@@ -45,6 +46,8 @@ class DofManager{
   std::map<const Dof*, int, DofComparator>*    globalId;
   std::map<const Dof*, double, DofComparator>* fixedDof;
 
+  std::map<const MElement*, const GroupOfDof*, ElementComparator>* eToGod; 
+
   int nextId;
   
  public:
@@ -56,6 +59,8 @@ class DofManager{
 
   const std::vector<const Dof*>   getAllDofs(void) const;
   const std::vector<GroupOfDof*>& getAllGroups(void) const;
+
+  const GroupOfDof& getGoDFromElement(const MElement& element) const;
 
   int getGlobalId(const Dof& dof) const;
 
@@ -101,6 +106,11 @@ class DofManager{
 
    @fn  DofManager::getAllGroups
    @return Returns all the GroupOfDof%s in the DofManager
+   **
+
+   @fn DofManager::getGoDFromElement
+   @param element A MElement
+   @return Returns the GroupOfDof associated to the given MElement
    **
 
    @fn DofManager::getGlobalId
