@@ -3,8 +3,6 @@
 
 using namespace std;
 
-#include <iostream>
-
 System::System(const Formulation& formulation){
   // Get Formulation //
   this->formulation = &formulation;
@@ -69,8 +67,6 @@ void System::solve(void){
 }
 
 void System::assemble(GroupOfDof& group){
-  cout << group.toString() << endl;
-
   const vector<const Dof*>& dof = group.getAll();
   const int N = group.getNumber();
 

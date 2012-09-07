@@ -9,6 +9,7 @@
 #include "FunctionSpaceNode.h"
 #include "FormulationPoisson.h"
 
+//#include <iostream>
 
 using namespace std;
 
@@ -67,6 +68,15 @@ double FormulationPoisson::weak(int nodeI, int nodeJ,
 				     (*gC)(g, 1), 
 				     (*gC)(g, 2), 
 				     invJac);
+    /*    
+    cout << "Element: " << element.getNum() << endl;
+    cout << "Origin : [" 
+	 << element.getVertex(0)->x() << ", "
+	 << element.getVertex(0)->y() << ", "
+	 << element.getVertex(0)->z() << "]" << endl;
+
+    invJac.print();
+    */
     invJac.invertInPlace();
 
     fullVector<double> phiI = Mapper::grad(Polynomial::at(gradBasis[nodeI], 
@@ -74,7 +84,7 @@ double FormulationPoisson::weak(int nodeI, int nodeJ,
 							  (*gC)(g, 1),
 							  (*gC)(g, 2)),
 					   invJac);
-				       
+
     fullVector<double> phiJ = Mapper::grad(Polynomial::at(gradBasis[nodeJ], 
 							  (*gC)(g, 0), 
 							  (*gC)(g, 1), 
