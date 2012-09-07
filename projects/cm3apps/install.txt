@@ -16,12 +16,13 @@ A) The packages needed to install gmsh are (gmsh has to be install to use cm3app
         - GLU (for openSUSE the package name is freeglut install freeglut_devel too)
 
         - blas (advanced you can install GotoBLAS see instruction later. It can be install after PETSc)
+          for openSUSE 12.2 or higher the package is blas-devel (and not blas)
 
-        - lapack
+        - lapack for openSUSE 12.2 or higher the package is lapack-devel (and not lapack)
 
         - openmpi (don't forget to select openmpi_devel)
 
-        - libpng and libjpeg (with devel)
+        - libpng and libjpeg (with devel and libpng-compat-devel)
 
         - PCRE (devel and tools) for swig (can be install directly by swig see later)
 
