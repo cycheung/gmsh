@@ -81,7 +81,7 @@ void System::assemble(GroupOfDof& group){
     if(fixed.first){
       // If fixed Dof
       (*A)(dofI, dofI) = 1;
-      (*b)(dofI)       = 0;
+      (*b)(dofI)       = fixed.second;
     }
        
     else{
