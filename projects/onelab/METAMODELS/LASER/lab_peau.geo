@@ -2,9 +2,9 @@
 // Parameters shared with onelab need be defined here for consistency:
 // EPIDERMIS = 0.12 mm (hairless) or 0.05 mm (hairy) 
 
-DefineConstant[EPIDERMIS = {0.12, Path "Parameters/Skin/"}];
-DefineConstant[DERMIS = {1.5, Path "Parameters/Skin/"}];
-DefineConstant[BEAMRADIUS = {3, Path "Parameters/Laser/"}];
+DefineConstant[EPIDERMIS = {0.12, Path "Parameters/Skin/", ShortHelp "Thickness of epidermis"}];
+DefineConstant[DERMIS = {1.5, Path "Parameters/Skin/", ShortHelp "Thickness of dermis"}];
+DefineConstant[BEAMRADIUS = {3, Path "Parameters/Laser/", ShortHelp "Radius of the beam"}];
 
 // Gmsh specific parameter
 DefineConstant[Nb1 = {8, Path "Gmsh/", ShortHelp "Elements on spot surface"}]; 

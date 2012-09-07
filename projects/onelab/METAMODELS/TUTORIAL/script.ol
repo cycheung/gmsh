@@ -1,13 +1,24 @@
 OL.block
-Khi.number(0.5, Parameters/,"Normalized hysteresis coefficient");
+# place here ONELAB definitions
+SATURATION.radioButton(1);
 OL.endblock
 
-Plugin(NewView).Run;
+# Read in a mesh
+Merge "circle.msh";
 
-/*
-Plugin(MathEval).Expression0= "Atanh(Sqrt(v0*v0+v2*v2))*Sqrt(v0*v0+v2*v2)+0.5*Log(1-v0*v0-v2*v2)-(OL.get(Fields/Hx))*v0-(OL.get(Fields/Hz))*v2+OL.get(Khi)*Sqrt( (v0-(OL.get(Fields/Jpx)))^2+(v2-(OL.get(Fields/Jpz)))^2 )";
-*/
-Plugin(MathEval).Expression0= "Atanh(Sqrt(x*x+z*z))*Sqrt(x*x+z*z)+0.5*Log(1-x*x-z*z)-(OL.get(Fields/Hx))*x-(OL.get(Fields/Hz))*z+OL.get(Khi)*Sqrt( (x-(OL.get(Fields/Jpx)))^2+(z-(OL.get(Fields/Jpz)))^2 )";
+# One could alternatively have the script generate the mesh with:
+# Merge "circle.geo";
+# Mesh 2;
+
+#Create a(n empty) View[0] so that MathEval can be invoked
+Plugin(NewView).Run; 
+
+# Algebraic expression of the Functional
+OL.iftrue(SATURATION)
+Plugin(MathEval).Expression0= "Atanh(Sqrt(x*x+z*z))*Sqrt(x*x+z*z)+0.5*Log(1-x*x-z*z)-(OL.get(Fields/Hx))*x-(OL.get(Fields/Hz))*z+OL.get(Parameters/Khi)*Sqrt( (x-(OL.get(Fields/Jpx)))^2+(z-(OL.get(Fields/Jpz)))^2 )";
+OL.else
+Plugin(MathEval).Expression0= "(x*x+z*z)-(OL.get(Fields/Hx))*x-(OL.get(Fields/Hz))*z+OL.get(Parameters/Khi)*Sqrt( (x-(OL.get(Fields/Jpx)))^2+(z-(OL.get(Fields/Jpz)))^2 )";
+OL.endif
 Plugin(MathEval).TimeStep=-1;
 Plugin(MathEval).View=0;
 Plugin(MathEval).OtherTimeStep=-1;

@@ -43,7 +43,7 @@ int enclosed(const std::string &in, std::vector<std::string> &arguments,
   do{
     if(in[pos]=='(') count++;
     else if(in[pos]==')') count--;
-    else if(in[pos]==',') {
+    else if(in[pos]==',' && (count==1)) {
       arguments.push_back(removeBlanks(in.substr(cursor,pos-cursor)));
       if(count!=1)
 	Msg::Fatal("Syntax error: mismatched parenthesis <%s>",in.c_str());
@@ -97,7 +97,7 @@ int extractLogic(const std::string &in, std::vector<std::string> &arguments){
   // count is 0 when the closing brace is found. 
 
   if(count)
-     Msg::Fatal("Syntax error: mismatched parenthesis in <%s>",in.c_str());
+    Msg::Fatal("Syntax error: mismatched parenthesis in <%s>",in.c_str());
   else
     arguments.push_back(removeBlanks(in.substr(cursor,pos-1-cursor)));
 
@@ -205,6 +205,12 @@ std::string localSolverClient::resolveGetVal(std::string line) {
 	  std::vector<double> choices=numbers[0].getChoices();
 	  if(!action.compare("size")) {
 	    buff.assign(ftoa(choices.size()));
+	  }
+	  else if(!action.compare("begin")) {
+	    buff.assign(ftoa(*choices.begin()));
+	  }
+	  else if(!action.compare("rbegin")) {
+	    buff.assign(ftoa(*choices.rbegin()));
 	  }
 	  else if(!action.compare("comp")) {
 	    int i=atoi(args[0].c_str());
@@ -1230,7 +1236,7 @@ void MetaModel::client_sentence(const std::string &name,
     }
   }
   else if(!action.compare(olkey::merge)){
-    if(arguments[0].size()){
+    //if(arguments[0].size()){
       strings.resize(1);
       strings[0].setName(name+"/Merge");
       strings[0].setValue(resolveGetVal(arguments[0]));
@@ -1241,7 +1247,7 @@ void MetaModel::client_sentence(const std::string &name,
 	choices.push_back(resolveGetVal(arguments[i]));
       strings[0].setChoices(choices);
       set(strings[0]);
-    }
+      //}
   }
   else if(!action.compare(olkey::redirect)){
     if(arguments[0].size()){

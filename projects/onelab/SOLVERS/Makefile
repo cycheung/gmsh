@@ -1,3 +1,4 @@
+
 SOLVERS=onelab
 SOURCES=OS StringUtils mathex OnelabClients OnelabMessage OnelabParser main
 
@@ -33,7 +34,10 @@ endif
 
 TARGETS=$(SOLVERS:=_client$(EXESUFFIX))
 all : $(TARGETS)
-
+ifndef GMSH_DIR
+	@echo '"The environment variable GMSH_DIR is not set."'
+	@exit
+endif
 
 CPPFLAGS+=-I$(COMMON_DIR) -I$(ONELAB_DIR) -I$(MATHEX_DIR) -g
 VPATH=$(ONELAB_DIR):$(COMMON_DIR):$(MATHEX_DIR):$(ONELAB_DIR)/SOLVERS

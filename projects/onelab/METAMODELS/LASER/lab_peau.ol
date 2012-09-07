@@ -2,7 +2,7 @@ onelab.tags(OL.,#);
 
 # Onelab commands start with "OL."
 # comment lines start with "#"
-# these are the default values so the above command is optional
+# these are the default values so the above command is useless
 # and equivalent to:
 # onelab.tags(); onelab.tags(,);
 
