@@ -1,7 +1,7 @@
 l = 1;
 
-msh = 10;
-cl  = 0.3;
+msh = 3;
+cl  = 5;
 
 Point(1) = {+l, -l, 0, cl};
 Point(2) = {+l, +l, 0, cl};

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 
 #include "Mesh.h"
 #include "fullMatrix.h"
@@ -17,7 +18,7 @@ using namespace std;
 
 int run(int argc, char** argv);
 void fLaplace(Mesh& msh, Writer& mWriter);
-void fPoisson(Mesh& msh, Mesh& visu, Writer& mWriter);
+void fPoisson(Mesh& msh, Mesh& visu, Writer& mWriter, int order);
 void fProjection(Mesh& msh, Writer& mWriter);
 
 int main(int argc, char** argv){
@@ -38,9 +39,12 @@ int run(int argc, char** argv){
   Mesh msh(argv[1]);
   //cout << msh.toString() << endl;
   
-  if(argc == 3){
+  if(argc == 4){
     Mesh visu(argv[2]);
-    fPoisson(msh, visu,  mWriter);
+    int maxOrder = atoi(argv[3]);
+
+    for(int i = 1; i <= maxOrder; i++)
+      fPoisson(msh, visu,  mWriter, i);
   }
 
   //fLaplace(msh, mWriter);
@@ -65,10 +69,10 @@ void fLaplace(Mesh& msh, Writer& mWriter){
   solLaplace.write("laplace", mWriter);
 }
 
-void fPoisson(Mesh& msh, Mesh& visu, Writer& mWriter){
+void fPoisson(Mesh& msh, Mesh& visu, Writer& mWriter, int order){
   GroupOfElement domain = msh.getFromPhysical(9);
 
-  FormulationPoisson poisson(domain, 2);
+  FormulationPoisson poisson(domain, order);
   System sysPoisson(poisson);
   
   sysPoisson.fixBC(msh.getFromPhysical(5), 0);
@@ -81,7 +85,11 @@ void fPoisson(Mesh& msh, Mesh& visu, Writer& mWriter){
 
   GroupOfElement visuDomain = visu.getFromPhysical(9);
   Solution solPoisson(sysPoisson, visuDomain);
-  solPoisson.write("poisson", mWriter);
+
+  stringstream stream;
+  stream << "poisson" << order;
+
+  solPoisson.write(stream.str(), mWriter);
 }
 
 void fProjection(Mesh& msh, Writer& mWriter){
