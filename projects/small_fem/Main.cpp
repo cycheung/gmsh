@@ -24,8 +24,8 @@ void fProjection(Mesh& msh, Writer& mWriter);
 int main(int argc, char** argv){
   int ret;
 
-  //ret = basisTest(argc, argv);
-  ret = run(argc, argv);
+  ret = basisTest(argc, argv);
+  //ret = run(argc, argv);
 
   return ret;
 }

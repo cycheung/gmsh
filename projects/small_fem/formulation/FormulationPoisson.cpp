@@ -45,7 +45,7 @@ FormulationPoisson::FormulationPoisson(const GroupOfElement& goe,
   gradBasis = new vector<Polynomial>[basisSize];
 
   for(unsigned int i = 0; i < basisSize; i++)
-    gradBasis[i] = (*basis)[i].gradient();
+    gradBasis[i] = (*basis)[i]->gradient();
 }
 
 FormulationPoisson::~FormulationPoisson(void){
@@ -112,9 +112,9 @@ double FormulationPoisson::rhs(int equationI,
 				     (*gC)(g, 2), 
 				     jac);
 
-    double phi = (*basis)[equationI].at((*gC)(g, 0), 
-					(*gC)(g, 1), 
-					(*gC)(g, 2));
+    double phi = (*basis)[equationI]->at((*gC)(g, 0), 
+					 (*gC)(g, 1), 
+					 (*gC)(g, 2));
 
     integral += 1 * phi * fabs(det) * (*gW)(g);
   }

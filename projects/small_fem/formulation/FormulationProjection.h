@@ -25,8 +25,8 @@ class FormulationProjection: public Formulation{
   fullVector<double>* gW;
 
   // Function Space //
-  FunctionSpace*                               fspace;
-  const std::vector<std::vector<Polynomial> >* basis;
+  FunctionSpace*                                     fspace;
+  const std::vector<const std::vector<Polynomial>*>* basis;
 
  public:
   FormulationProjection(const GroupOfElement& goe,

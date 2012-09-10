@@ -48,17 +48,42 @@ PlotBasis::~PlotBasis(void){
 }
 
 void PlotBasis::plot(const string name) const{
-  for(int i = 0; i < nFunction; i++){
+  // Compute '0' spoofing for file names// 
+  int dec   = nFunction;
+  int spoof = 0;
+
+  while(dec > 10){
+    spoof++;
+    dec /= 10;
+  }
+
+  // Plot //
+  for(int i = 0, j = 0; i < nFunction; i++, j++){
     stringstream nameCat; 
-    nameCat  << name << i + 1;
     
+    // Get name with right number of '0' 
+    nameCat << name;
+   
+    for(int k = 0; k < spoof; k++)
+      nameCat << "0";
+
+    nameCat << i + 1;
+   
+    // Set Values 
     if(isScalar)
       writer->setValues(*(nodalScalarValue[i]));
 
     else
       writer->setValues(*(nodalVectorValue[i]));
 
+    // Plot
     writer->write(nameCat.str());
+
+    // Go to higher decimal
+    if(j == 8){
+      j = 0;
+      spoof--;
+    }
   }
 }
 
@@ -95,15 +120,15 @@ void PlotBasis::interpolate(const BasisScalar& basis){
     nodalScalarValue[i] = new vector<double>(N);
 
   // Get Functions //
-  const vector<Polynomial>& fun = basis.getFunctions();
+  const vector<const Polynomial*>& fun = basis.getFunctions();
   
   // Interpolate //
   for(int f = 0; f < nFunction; f++){
     for(int n = 0; n < N; n++){
       (*nodalScalarValue[f])[n] = 
-	fun[f].at((*node)[n]->x(),
-		  (*node)[n]->y(),
-		  (*node)[n]->z());
+	fun[f]->at((*node)[n]->x(),
+		   (*node)[n]->y(),
+		   (*node)[n]->z());
     }
   }  
 }
@@ -117,13 +142,13 @@ void PlotBasis::interpolate(const BasisVector& basis){
     nodalVectorValue[i] = new vector<fullVector<double> >(N);
 
   // Get Functions //
-  const vector<vector<Polynomial> >& fun = basis.getFunctions();
+  const vector<const vector<Polynomial>*>& fun = basis.getFunctions();
   
   // Interpolate //
   for(int f = 0; f < nFunction; f++){
     for(int n = 0; n < N; n++){
       (*nodalVectorValue[f])[n] = 
-	Polynomial::at(fun[f], 
+	Polynomial::at(*fun[f], 
 		       (*node)[n]->x(),
 		       (*node)[n]->y(),
 		       (*node)[n]->z());

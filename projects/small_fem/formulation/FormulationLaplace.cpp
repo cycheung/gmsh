@@ -35,7 +35,7 @@ FormulationLaplace::FormulationLaplace(const GroupOfElement& goe,
   // Basis //
   // Get Basis
   const BasisScalar& base = fspace->getBasis(goe.get(0));
-  const vector<Polynomial>& basis = base.getFunctions();
+  const vector<const Polynomial*>& basis = base.getFunctions();
 
   // Take gradient
   unsigned int basisSize = basis.size();
@@ -43,7 +43,7 @@ FormulationLaplace::FormulationLaplace(const GroupOfElement& goe,
   gradBasis = new vector<Polynomial>[basisSize];
 
   for(unsigned int i = 0; i < basisSize; i++)
-    gradBasis[i] = basis[i].gradient();
+    gradBasis[i] = basis[i]->gradient();
 }
 
 FormulationLaplace::~FormulationLaplace(void){

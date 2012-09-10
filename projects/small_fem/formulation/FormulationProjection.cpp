@@ -58,13 +58,13 @@ double FormulationProjection::weak(int edgeI, int edgeJ,
 				     invJac);
     invJac.invertInPlace();
 
-    fullVector<double> phiI = Mapper::grad(Polynomial::at((*basis)[edgeI],
+    fullVector<double> phiI = Mapper::grad(Polynomial::at(*(*basis)[edgeI],
 							  (*gC)(g, 0), 
 							  (*gC)(g, 1),
 							  (*gC)(g, 2)),
 					   invJac);
     
-    fullVector<double> phiJ = Mapper::grad(Polynomial::at((*basis)[edgeJ],
+    fullVector<double> phiJ = Mapper::grad(Polynomial::at(*(*basis)[edgeJ],
 							  (*gC)(g, 0), 
 							  (*gC)(g, 1),
 							  (*gC)(g, 2)),
@@ -94,7 +94,7 @@ double FormulationProjection::rhs(int equationI,
 				     invJac);
     invJac.invertInPlace();
 
-    fullVector<double> phiI = Mapper::grad(Polynomial::at((*basis)[equationI],
+    fullVector<double> phiI = Mapper::grad(Polynomial::at(*(*basis)[equationI],
 							  (*gC)(g, 0), 
 							  (*gC)(g, 1),
 							  (*gC)(g, 2)),
