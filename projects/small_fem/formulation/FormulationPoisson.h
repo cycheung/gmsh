@@ -28,8 +28,10 @@ class FormulationPoisson: public Formulation{
   FunctionSpace* fspace;
 
   // Basis  //
-  const std::vector<const Polynomial*>* basis;
-  std::vector<Polynomial>*              gradBasis;
+  const std::vector<const Polynomial*>*    basis;
+  const std::vector<const Polynomial*>* revBasis;
+  std::vector<Polynomial>*                 gradBasis;
+  std::vector<Polynomial>*              revGradBasis;
 
  public:
   FormulationPoisson(const GroupOfElement& goe, unsigned int order);

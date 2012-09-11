@@ -37,15 +37,19 @@ FormulationPoisson::FormulationPoisson(const GroupOfElement& goe,
   // Basis //
   // Get Basis
   const BasisScalar& base = fspace->getBasis(goe.get(0));
-  basis = &(base.getFunctions());
+     basis = &(base.getFunctions(0));
+  revBasis = &(base.getFunctions(1));
 
   // Take gradient
   unsigned int basisSize = basis->size();
 
-  gradBasis = new vector<Polynomial>[basisSize];
+     gradBasis = new vector<Polynomial>[basisSize];
+  revGradBasis = new vector<Polynomial>[basisSize];
 
-  for(unsigned int i = 0; i < basisSize; i++)
-    gradBasis[i] = (*basis)[i]->gradient();
+  for(unsigned int i = 0; i < basisSize; i++){
+       gradBasis[i] = (*basis)[i]->gradient();
+       revGradBasis[i] = (*revBasis)[i]->gradient();
+  }
 }
 
 FormulationPoisson::~FormulationPoisson(void){
@@ -53,11 +57,14 @@ FormulationPoisson::~FormulationPoisson(void){
   delete   gW;
   delete   fspace;
   delete[] gradBasis;
+  delete[] revGradBasis;
 }
 
 double FormulationPoisson::weak(int nodeI, int nodeJ, 
 				const GroupOfDof& god) const{
 
+  fullVector<double> phiI(3);
+  fullVector<double> phiJ(3);
   fullMatrix<double>  invJac(3, 3);        
   MElement& element = const_cast<MElement&>(god.getGeoElement());
   double integral   = 0;
@@ -79,17 +86,34 @@ double FormulationPoisson::weak(int nodeI, int nodeJ,
     */
     invJac.invertInPlace();
 
-    fullVector<double> phiI = Mapper::grad(Polynomial::at(gradBasis[nodeI], 
-							  (*gC)(g, 0), 
-							  (*gC)(g, 1),
-							  (*gC)(g, 2)),
-					   invJac);
+    if(god.getOrientation(nodeI) == - 1)
+      phiI = Mapper::grad(Polynomial::at(revGradBasis[nodeI], 
+					 (*gC)(g, 0), 
+					 (*gC)(g, 1),
+					 (*gC)(g, 2)),
+			  invJac);
+    
+    else
+      phiI = Mapper::grad(Polynomial::at(gradBasis[nodeI], 
+					 (*gC)(g, 0), 
+					 (*gC)(g, 1),
+					 (*gC)(g, 2)),
+			  invJac);
 
-    fullVector<double> phiJ = Mapper::grad(Polynomial::at(gradBasis[nodeJ], 
-							  (*gC)(g, 0), 
-							  (*gC)(g, 1), 
-							  (*gC)(g, 2)),
-					   invJac);
+    
+    if(god.getOrientation(nodeJ) == - 1)
+      phiJ = Mapper::grad(Polynomial::at(revGradBasis[nodeJ], 
+					 (*gC)(g, 0), 
+					 (*gC)(g, 1), 
+					 (*gC)(g, 2)),
+			  invJac);
+	
+    else
+      phiJ = Mapper::grad(Polynomial::at(gradBasis[nodeJ], 
+					 (*gC)(g, 0), 
+					 (*gC)(g, 1), 
+					 (*gC)(g, 2)),
+			  invJac);
 
     integral += phiI * phiJ * fabs(det) * (*gW)(g);
   }
@@ -104,6 +128,7 @@ double FormulationPoisson::rhs(int equationI,
   fullMatrix<double>  jac(3, 3);        
   MElement& element = const_cast<MElement&>(god.getGeoElement());
   double integral   = 0;
+  double phi;
 
   // Loop over Integration Point //
   for(int g = 0; g < G; g++){
@@ -112,9 +137,16 @@ double FormulationPoisson::rhs(int equationI,
 				     (*gC)(g, 2), 
 				     jac);
 
-    double phi = (*basis)[equationI]->at((*gC)(g, 0), 
-					 (*gC)(g, 1), 
-					 (*gC)(g, 2));
+    if(god.getOrientation(equationI) == -1)
+      phi = (*revBasis)[equationI]->at((*gC)(g, 0), 
+				       (*gC)(g, 1), 
+				       (*gC)(g, 2));
+
+    else
+      phi = (*basis)[equationI]->at((*gC)(g, 0), 
+				    (*gC)(g, 1), 
+				    (*gC)(g, 2));    
+    
 
     integral += 1 * phi * fabs(det) * (*gW)(g);
   }
