@@ -504,44 +504,26 @@ void localSolverClient::parse_sentence(std::string line) {
 	  Msg::Fatal("The number <%s> does not exist",name.c_str());
       }
     }
-    /*
-    else if(!action.compare("addLabels")){
-      if(arguments.size()){
-	name.assign(longName(name));
-	get(numbers,name);
-	if(numbers.size()){ // parameter must exist
-	  std::vector<double> choices=numbers[0].getChoices();
-	  if(choices.size() != arguments.size())
-	    Msg::Fatal("Nb of labels does not match nb of choices for <%s>",
-		       name.c_str());
-	  std::vector<std::string> labels;
-	  for(unsigned int i = 0; i < arguments.size(); i++){
-	      labels.push_back(arguments[i]);
-	  }
-	  numbers[0].setChoiceLabels(labels);
-	  set(numbers[0]);
-	}
-	else
-	  Msg::Fatal("The number <%s> does not exist",name.c_str());
-      }
-    }
-    */
     else if(!action.compare("setValue")){ // force change on server
-      if(arguments[0].empty())
-	Msg::Fatal("Missing argument SetValue <%s>",name.c_str());
       if(arguments.size()>1){
-	name.assign(arguments[1] + name);
+	name.assign(arguments[1] + name); // prepend path
       }
       name.assign(longName(name));
       get(numbers,name); 
-      if(numbers.size()){ 
-	numbers[0].setValue(atof(resolveGetVal(arguments[0]).c_str()));
+      if(numbers.size()){
+	if(arguments[0].empty())
+	  numbers[0].setValue(0);
+	else
+	  numbers[0].setValue(atof(resolveGetVal(arguments[0]).c_str()));
 	set(numbers[0]);
       }
       else{
 	get(strings,name); 
 	if(strings.size()){
-	  strings[0].setValue(arguments[0]);
+	  if(arguments[0].empty())
+	    strings[0].setValue("");
+	  else
+	    strings[0].setValue(arguments[0]);
 	  set(strings[0]);
 	}
 	else{
@@ -1236,18 +1218,16 @@ void MetaModel::client_sentence(const std::string &name,
     }
   }
   else if(!action.compare(olkey::merge)){
-    //if(arguments[0].size()){
-      strings.resize(1);
-      strings[0].setName(name+"/Merge");
-      strings[0].setValue(resolveGetVal(arguments[0]));
-      strings[0].setKind("file");
-      strings[0].setVisible(false);
-      std::vector<std::string> choices;
-      for(unsigned int i = 0; i < arguments.size(); i++)
-	choices.push_back(resolveGetVal(arguments[i]));
-      strings[0].setChoices(choices);
-      set(strings[0]);
-      //}
+    strings.resize(1);
+    strings[0].setName(name+"/Merge");
+    strings[0].setValue(resolveGetVal(arguments[0]));
+    strings[0].setKind("file");
+    strings[0].setVisible(false);
+    std::vector<std::string> choices;
+    for(unsigned int i = 0; i < arguments.size(); i++)
+      choices.push_back(resolveGetVal(arguments[i]));
+    strings[0].setChoices(choices);
+    set(strings[0]);
   }
   else if(!action.compare(olkey::redirect)){
     if(arguments[0].size()){
