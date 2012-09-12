@@ -49,8 +49,6 @@ BODYTEMP.number(310, Parameters/Skin/,"Body temperature [K]");
 OVERTEMP.number(320, Parameters/Skin/,"Thermal threshold fiber [K]");
 REFLECTIVITY.number(0.0078, Parameters/Skin/, "Skin reflectivity []");
 
-
-
 # Flags to describe model features that are activated or not
 TENEUR.radioButton(1,Parameters/Skin/3,"Account for variable water content");
 OL.iftrue(TENEUR)
@@ -71,7 +69,7 @@ TAMBIANT.setVisible(0);
 OL.endif
 
 # Available LASER models, another enumeration
-LASERTYPE.number(3, Parameters/Laser/1,"Laser type");  
+LASERTYPE.number(2, Parameters/Laser/1,"Laser type");  
 LASERTYPE.valueLabels(
     1,"Imposed temperature", 
     2,"Imposed flux", 

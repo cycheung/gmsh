@@ -3,7 +3,7 @@
 #include <string>
 #include "onelab.h"
 
-// 1) Compile this solver: g++ solver.cpp
+// 1) Compile this solver: olmake.sh
 //
 // 2) Add it to Gmsh:
 //   - launch Gmsh and open Tools->OneLab 

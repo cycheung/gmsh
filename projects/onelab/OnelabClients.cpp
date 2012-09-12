@@ -179,8 +179,8 @@ bool localNetworkSolverClient::run()
       Msg::Error("Did not receive message header: stopping server");
       break;
     }
-    // else
-    //   std::cout << "FHF: Received header=" << type << std::endl;
+     // else
+     //   std::cout << "FHF: Received header=" << type << std::endl;
 
     std::string message(length, ' ');
     if(!server->ReceiveMessage(length, &message[0])){
@@ -203,6 +203,10 @@ bool localNetworkSolverClient::run()
       {
         std::string version, type, name;
         onelab::parameter::getInfoFromChar(message, version, type, name);
+        if(onelab::parameter::version() != version){
+          Msg::Error("OneLab version mismatch for %s (server: %s / client: %s)",
+	   message.c_str(), onelab::parameter::version().c_str(), version.c_str());
+        }
         if(type == "number"){
           onelab::number p; p.fromChar(message); set(p);
         }
@@ -225,8 +229,8 @@ bool localNetworkSolverClient::run()
         std::string version, type, name, reply;
         onelab::parameter::getInfoFromChar(message, version, type, name);
         if(onelab::parameter::version() != version){
-          Msg::Error("OneLab version mismatch (server: %s / client: %s)",
-                     onelab::parameter::version().c_str(), version.c_str());
+          Msg::Error("OneLab version mismatch for %s (server: %s / client: %s)",
+	   message.c_str(), onelab::parameter::version().c_str(), version.c_str());
         }
         else if(type == "number"){
           std::vector<onelab::number> par; get(par, name);
@@ -264,8 +268,8 @@ bool localNetworkSolverClient::run()
         std::vector<std::string> replies;
         onelab::parameter::getInfoFromChar(message, version, type, name);
 	if(onelab::parameter::version() != version){
-          Msg::Error("OneLab version mismatch (server: %s / client: %s)",
-                     onelab::parameter::version().c_str(), version.c_str());
+          Msg::Error("OneLab version mismatch for %s (server: %s / client: %s)",
+           message.c_str(), onelab::parameter::version().c_str(), version.c_str());
         }
 	else if(type == "number"){
 	  std::vector<onelab::number> numbers; get(numbers);
@@ -1009,13 +1013,12 @@ bool RemoteInterfacedClient::checkCommandLine(){
   return true;
 }
 
-
 void RemoteInterfacedClient::compute(){
   std::string cmd,rmcmd;
   std::vector<std::string> choices;
 
   convert();
-  Msg::SetOnelabString(getName() + "/Action","compute",false); // a titre indicatif
+  Msg::SetOnelabString(getName() + "/Action","compute",false); 
 
   if(getList("InputFiles",choices)){
     for(unsigned int i = 0; i < choices.size(); i++)
@@ -1044,7 +1047,7 @@ void RemoteInterfacedClient::compute(){
 
 std::string RemoteEncapsulatedClient::buildCommandLine(){
   std::string command;
-  command.assign("incomp_ssh "+getRemoteHost()+" 'cd "+getRemoteDir()+"; nohup "
+  command.assign("incomp_ssh -f "+getRemoteHost()+" 'cd "+getRemoteDir()+"; "
 	         +FixWindowsPath(getCommandLine())+" ");
   if(command.size()){
     std::vector<onelab::string> ps;
@@ -1098,12 +1101,25 @@ bool RemoteEncapsulatedClient::checkCommandLine(){
   return true;
 }
 
+void RemoteEncapsulatedClient::analyze(){
+  std::string cmd,rmcmd;
+  std::vector<std::string> choices;
+
+  Msg::SetOnelabString(getName() + "/Action","check",false);
+
+  if(getList("InputFiles",choices)){
+    for(unsigned int i = 0; i < choices.size(); i++)
+      syncInputFile(getWorkingDir(),choices[i]);
+  }
+  run();
+}
+
 
 void RemoteEncapsulatedClient::compute(){
   std::string cmd,rmcmd;
   std::vector<std::string> choices;
 
-  Msg::SetOnelabString(getName() + "/Action","compute",false); // a titre indicatif
+  Msg::SetOnelabString(getName() + "/Action","compute",false); 
 
   if(getList("InputFiles",choices)){
     for(unsigned int i = 0; i < choices.size(); i++)

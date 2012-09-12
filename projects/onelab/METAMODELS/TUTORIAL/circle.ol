@@ -1,13 +1,17 @@
+# This simple metamodel uses only gmsh 
 
 # radioButton parameters are used for on/off or yes/no options
-DISPLAY.radioButton(0,Options/,"Display functional at each step");
+DISPLAY.radioButton(0, Options/,"Display functional at each step");
 
 Khi.number(0.12, Parameters/,"Hysteresis coefficient");
 
-# The Fields/Hs parameter is given the default value 0.5
-# The list of choices, o, the other hand, is used when looping on Hx.
+# The Fields/Hx parameter is given the value 0
+
 Hx.number(0, Fields/,"Hx"); 
 
+# A list of choices, on the other hand, is used to loop over Fields/Hx.
+# There is a shorter list (14 items) when DISPLAY mode is on
+# and a longer list (29 items) when the DISPLAY mode is off.
 OL.iftrue(DISPLAY)
 Hx.addChoices( 0, 0.25, 0.5, 0.75, 1,
                0.76, 0.51, 0.26, 0.01, -0.25, -0.5, -0.75,
@@ -20,11 +24,14 @@ Hx.addChoices( 0, 0.25, 0.5, 0.75, 1, 1.25, 1.50, 1.75, 2,
 	      -1.26, -1.01, -0.76, -0.51, -0.26, 0.02);
 OL.endif
 
+# other parameters of the metamodel
+
 Hz.number(0, Fields/,"Hz");
 Jpx.number(0, Fields/,"Jpx");
 Jpz.number(0, Fields/,"Jpz");
 
-# Client 1: 
+# The metamodel has 3 cleints:
+# Client 1: Gmsh 
 
 Post.register (interfaced, gmsh);
 Post.in ( script.ol );
@@ -35,7 +42,8 @@ OL.iftrue(DISPLAY)
 OL.else
   Post.merge();
 OL.endif
-Post.up(minimum.txt,1,5,Fields/Jpx, minimum.txt,1,7,Fields/Jpz);
+Post.up(minimum.txt,1,5,Fields/Jpx, 
+        minimum.txt,1,7,Fields/Jpz);
 
 # Client 2:
 

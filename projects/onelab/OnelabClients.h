@@ -270,8 +270,8 @@ public:
    : localNetworkSolverClient(name,cmdl,wdir) {}
   ~EncapsulatedClient(){}
 
-  void analyze();
-  void compute() ;
+  virtual void analyze();
+  virtual void compute() ;
 };
 
 class RemoteInterfacedClient : public InterfacedClient, public remoteClient {
@@ -292,6 +292,7 @@ public:
 
   std::string buildCommandLine();
   bool checkCommandLine();
+  void analyze();
   void compute() ;
 };
 
