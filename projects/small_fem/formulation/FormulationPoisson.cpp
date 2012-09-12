@@ -6,7 +6,6 @@
 #include "BasisScalar.h"
 #include "Mapper.h"
 
-#include "FunctionSpaceNode.h"
 #include "FormulationPoisson.h"
 
 //#include <iostream>
@@ -33,48 +32,35 @@ FormulationPoisson::FormulationPoisson(const GroupOfElement& goe,
   // Function Space //
   FunctionSpaceNode* fspace = new FunctionSpaceNode(goe, order);
   this->fspace              = fspace;
-
-  // Basis //
-  // Get Basis
-  const BasisScalar& base = fspace->getBasis(goe.get(0));
-     basis = &(base.getFunctions(0));
-  revBasis = &(base.getFunctions(1));
-
-  // Take gradient
-  unsigned int basisSize = basis->size();
-
-     gradBasis = new vector<Polynomial>[basisSize];
-  revGradBasis = new vector<Polynomial>[basisSize];
-
-  for(unsigned int i = 0; i < basisSize; i++){
-       gradBasis[i] = (*basis)[i]->gradient();
-       revGradBasis[i] = (*revBasis)[i]->gradient();
-  }
 }
 
 FormulationPoisson::~FormulationPoisson(void){
   delete   gC;
   delete   gW;
   delete   fspace;
-  delete[] gradBasis;
-  delete[] revGradBasis;
 }
 
 double FormulationPoisson::weak(int nodeI, int nodeJ, 
 				const GroupOfDof& god) const{
 
+  // Init Some Stuff //
   fullVector<double> phiI(3);
   fullVector<double> phiJ(3);
-  fullMatrix<double>  invJac(3, 3);        
-  MElement& element = const_cast<MElement&>(god.getGeoElement());
+  fullMatrix<double> invJac(3, 3);        
   double integral   = 0;
+
+  // Get Element and Basis Functions //
+  const MElement& element = god.getGeoElement();
+  MElement&      celement = const_cast<MElement&>(element);
+  
+  const vector<const Polynomial*> fun = fspace->getLocalFunctions(element);
 
   // Loop over Integration Point //
   for(int g = 0; g < G; g++){
-    double det = element.getJacobian((*gC)(g, 0), 
-				     (*gC)(g, 1), 
-				     (*gC)(g, 2), 
-				     invJac);
+    double det = celement.getJacobian((*gC)(g, 0), 
+				      (*gC)(g, 1), 
+				      (*gC)(g, 2), 
+				      invJac);
     /*    
     cout << "Element: " << element.getNum() << endl;
     cout << "Origin : [" 
@@ -86,35 +72,18 @@ double FormulationPoisson::weak(int nodeI, int nodeJ,
     */
     invJac.invertInPlace();
 
-    if(god.getOrientation(nodeI) == - 1)
-      phiI = Mapper::grad(Polynomial::at(revGradBasis[nodeI], 
-					 (*gC)(g, 0), 
-					 (*gC)(g, 1),
-					 (*gC)(g, 2)),
-			  invJac);
-    
-    else
-      phiI = Mapper::grad(Polynomial::at(gradBasis[nodeI], 
-					 (*gC)(g, 0), 
-					 (*gC)(g, 1),
-					 (*gC)(g, 2)),
-			  invJac);
+    phiI = Mapper::grad(Polynomial::at(fun[nodeI]->gradient(), 
+				       (*gC)(g, 0), 
+				       (*gC)(g, 1),
+				       (*gC)(g, 2)),
+			invJac);
 
+    phiJ = Mapper::grad(Polynomial::at(fun[nodeJ]->gradient(), 
+				       (*gC)(g, 0), 
+				       (*gC)(g, 1), 
+				       (*gC)(g, 2)),
+			invJac);
     
-    if(god.getOrientation(nodeJ) == - 1)
-      phiJ = Mapper::grad(Polynomial::at(revGradBasis[nodeJ], 
-					 (*gC)(g, 0), 
-					 (*gC)(g, 1), 
-					 (*gC)(g, 2)),
-			  invJac);
-	
-    else
-      phiJ = Mapper::grad(Polynomial::at(gradBasis[nodeJ], 
-					 (*gC)(g, 0), 
-					 (*gC)(g, 1), 
-					 (*gC)(g, 2)),
-			  invJac);
-
     integral += phiI * phiJ * fabs(det) * (*gW)(g);
   }
 
@@ -123,30 +92,28 @@ double FormulationPoisson::weak(int nodeI, int nodeJ,
 
 double FormulationPoisson::rhs(int equationI,
 			       const GroupOfDof& god) const{
-    
-  // Init //
-  fullMatrix<double>  jac(3, 3);        
-  MElement& element = const_cast<MElement&>(god.getGeoElement());
-  double integral   = 0;
+
+  // Init Some Stuff //
+  fullMatrix<double> jac(3, 3);        
+  double integral = 0;
   double phi;
+
+  // Get Element and Basis Functions //
+  const MElement& element = god.getGeoElement();
+  MElement&      celement = const_cast<MElement&>(element);
+  
+  const vector<const Polynomial*> fun = fspace->getLocalFunctions(element);
 
   // Loop over Integration Point //
   for(int g = 0; g < G; g++){
-    double det = element.getJacobian((*gC)(g, 0), 
-				     (*gC)(g, 1), 
-				     (*gC)(g, 2), 
-				     jac);
+    double det = celement.getJacobian((*gC)(g, 0), 
+				      (*gC)(g, 1), 
+				      (*gC)(g, 2), 
+				      jac);
 
-    if(god.getOrientation(equationI) == -1)
-      phi = (*revBasis)[equationI]->at((*gC)(g, 0), 
-				       (*gC)(g, 1), 
-				       (*gC)(g, 2));
-
-    else
-      phi = (*basis)[equationI]->at((*gC)(g, 0), 
-				    (*gC)(g, 1), 
-				    (*gC)(g, 2));    
-    
+    phi = fun[equationI]->at((*gC)(g, 0), 
+			     (*gC)(g, 1), 
+			     (*gC)(g, 2));
 
     integral += 1 * phi * fabs(det) * (*gW)(g);
   }

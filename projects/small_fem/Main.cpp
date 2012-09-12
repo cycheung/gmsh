@@ -63,6 +63,7 @@ void fLaplace(Mesh& msh, Writer& mWriter){
   sysLaplace.fixBC(msh.getFromPhysical(5),  2);
 
   sysLaplace.assemble();
+  cout << "Laplace: " << sysLaplace.getSize() << endl;
   sysLaplace.solve();
 
   Solution solLaplace(sysLaplace);
@@ -81,6 +82,7 @@ void fPoisson(Mesh& msh, Mesh& visu, Writer& mWriter, int order){
   sysPoisson.fixBC(msh.getFromPhysical(8), 0);
   
   sysPoisson.assemble();
+  cout << "Poisson: " << sysPoisson.getSize() << endl;
   sysPoisson.solve();
 
   GroupOfElement visuDomain = visu.getFromPhysical(9);
@@ -104,6 +106,7 @@ void fProjection(Mesh& msh, Writer& mWriter){
   System sysProj(projection);
 
   sysProj.assemble();
+  cout << "Projection: " << sysProj.getSize() << endl;
   sysProj.solve();
 
   Solution solProj(sysProj);

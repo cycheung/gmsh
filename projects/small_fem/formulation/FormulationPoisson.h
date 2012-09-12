@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "Polynomial.h"
+#include "FunctionSpaceNode.h"
 #include "Formulation.h"
 
 /**
@@ -25,13 +26,7 @@ class FormulationPoisson: public Formulation{
   fullVector<double>* gW;
 
   // Function Space //
-  FunctionSpace* fspace;
-
-  // Basis  //
-  const std::vector<const Polynomial*>*    basis;
-  const std::vector<const Polynomial*>* revBasis;
-  std::vector<Polynomial>*                 gradBasis;
-  std::vector<Polynomial>*              revGradBasis;
+  FunctionSpaceNode* fspace;
 
  public:
   FormulationPoisson(const GroupOfElement& goe, unsigned int order);

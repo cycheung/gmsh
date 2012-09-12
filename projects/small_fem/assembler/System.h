@@ -47,6 +47,8 @@ class System{
   fullVector<double>& getRHS(void) const;
   fullVector<double>& getSol(void) const;
 
+  unsigned int getSize(void) const;
+
   const FunctionSpace& getFunctionSpace(void) const;
   const DofManager&    getDofManager(void) const;
 
@@ -123,6 +125,10 @@ inline fullVector<double>& System::getRHS(void) const{
 
 inline fullVector<double>& System::getSol(void) const{
   return *x;
+}
+
+inline unsigned int System::getSize(void) const{
+  return A->size1();
 }
 
 inline const FunctionSpace& System::getFunctionSpace(void) const{
