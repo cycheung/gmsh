@@ -93,7 +93,14 @@ A) The packages needed to install gmsh are (gmsh has to be install to use cm3app
   
         for 3.2 version on hmem (lapack is not install --> installed through petsc) and you have to submit a job (see 5b belo
 ./config/configure.py --with-debugging=0 --download-f-blas-lapack=1 --with-mpi-dir=/usr/local/openmpi/1.5.3-gcc-4.4.4/ --with-pic --with-shared-libraries=1 --with-clanguage=cxx --with-batch --known-mpi-shared-libraries
+         for 3.3 version on cm3011
+ ./config/configure.py --with-debugging=0 --with-blas-lapack-dir=/usr/lib64 --with-mpi-dir=/usr/lib64/ --with-pic --with-shared-libraries=1 --download-mumps=yes --download-scalapack=yes --download-blacs=yes --download-parmetis=yes --download-metis=yes --download-superlu_dist=yes
 
+           If you have the following error Cannot run executables created with FC add (openSuSE 12.2 petsc3.3p3)
+             --with-fc=0
+
+        My last config (with superlu and mumps)
+./config/configure.py --with-debugging=0 --with-blas-lapack-dir=/usr/lib64 --with-mpi-dir=/usr/lib64/ --with-pic --with-shared-libraries=1 --download-mumps=yes --download-scalapack=yes --download-blacs=yes --with-batch --known-mpi-shared-libraries=0 --download-parmetis=yes --download-metis=yes --download-superlu_dist=yes
 
            put --with-debugging=1 for debug
            for more petsc configure options type: ./configure/configure.py -help
@@ -113,7 +120,10 @@ Then wait until the job end (the last line of the created file "petsc-install.ou
         8) Go to your home folder. Create a file ".petscrc" which allow to give some options to petsc add the two lines:
                 -ksp_type preonly
                 -pc_type lu
-           If these options are set before test this one can failed (MPI on 2 cpu) but everything is OK ??
+           If these options are set before test this one can failed (MPI on 2 cpu) but everything is OK (seems OK for petsc3.3)
+
+         8b) To perform // computation with a direct solver add the line in your .petscrc
+                -pc_factor_mat_solver_package mumps
 
         9) Unfortunately (with version 3.1-p7 and openSUSE 11.3) there is a problem with library libmpi_f77.so.0 . To fix it copy the library of openmpi installation in $PETSC_DIR/$PETSC_ARCH/lib . Assume openSUSE installation type the command
            sudo cp /usr/lib64/mpi/gcc/openmpi/lib64/libmpi_f77.so.0 <absolute path to petsc installation folder/linux-gnu-c-opt/lib>  
