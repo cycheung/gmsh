@@ -323,7 +323,7 @@ bool localSolverClient::resolveLogicExpr(std::vector<std::string> arguments) {
 }
 
 void localSolverClient::parse_sentence(std::string line) { 
-  int pos,cursor;
+  int pos,cursor,NumArg;
   std::string name,action,path;
   std::vector<std::string> arguments;
   std::vector<onelab::number> numbers;
@@ -337,9 +337,7 @@ void localSolverClient::parse_sentence(std::string line) {
     if(!action.compare("number")) { 
       double val;
       // syntax: paramName.number(val,path,help,range(optional))
-      if(arguments.size()>1){
-	name.assign(arguments[1] + name);
-      }
+      if(arguments.size()>1) name.assign(arguments[1] + name);
       _parameters.insert(name);
       Msg::recordFullName(name);
       get(numbers, name);
@@ -353,14 +351,13 @@ void localSolverClient::parse_sentence(std::string line) {
 	numbers[0].setValue(val);
       }
       // parameters defined with no value are ReadOnly
-      if(arguments[0].empty())
-	numbers[0].setReadOnly(1);
+      if(arguments[0].empty()) numbers[0].setReadOnly(1);
 
       // choices and valueLabels are reset
-      std::vector<double> choices;
-      numbers[0].setChoices(choices);
-      std::map<double, std::string> valuelabels;
-      numbers[0].setValueLabels(valuelabels);
+      // std::vector<double> choices;
+      // numbers[0].setChoices(choices);
+      // std::map<double, std::string> valuelabels;
+      // numbers[0].setValueLabels(valuelabels);
 
       if(arguments.size()>2)
 	numbers[0].setLabel(arguments[2]);
@@ -375,7 +372,7 @@ void localSolverClient::parse_sentence(std::string line) {
       set(numbers[0]);
     }
     else if(!action.compare("string")) { 
-      // paramName.string(val,path,help)
+      // syntax: paramName.string(val,path,help)
       if(arguments.size()>1)
 	name.assign(arguments[1] + name); // append path
       _parameters.insert(name);
@@ -388,15 +385,14 @@ void localSolverClient::parse_sentence(std::string line) {
 	strings[0].setValue(val);
       }
 
-     if(arguments[0].empty())
-	strings[0].setReadOnly(1);
+      // parameters defined with no value are ReadOnly
+      if(arguments[0].empty()) strings[0].setReadOnly(1);
 
       // choices list is reset
-     std::vector<std::string> choices;
+      std::vector<std::string> choices;
       strings[0].setChoices(choices);
 
-      if(arguments.size()>2)
-	strings[0].setLabel(arguments[2]);
+      if(arguments.size()>2) strings[0].setLabel(arguments[2]);
       set(strings[0]);
     }
     else if(!action.compare("radioButton")) { 
@@ -404,9 +400,7 @@ void localSolverClient::parse_sentence(std::string line) {
       if(arguments[0].empty())
 	Msg::Fatal("No value given for param <%s>",name.c_str());
       double val=atof(arguments[0].c_str());
-      if(arguments.size()>1){
-	name.assign(arguments[1] + name);
-      }
+      if(arguments.size()>1) name.assign(arguments[1] + name);
       _parameters.insert(name);
       Msg::recordFullName(name);
       get(numbers, name);
@@ -428,6 +422,7 @@ void localSolverClient::parse_sentence(std::string line) {
     }
     else if(!action.compare("range")){ 
       // set the range of an existing number
+      // syntax: paramName.range({a:b:c|a:b#n|min,max,step})
       if(arguments[0].empty())
 	Msg::Fatal("No argument given for MinMax <%s>",name.c_str());
       name.assign(longName(name));
@@ -447,9 +442,34 @@ void localSolverClient::parse_sentence(std::string line) {
 	  numbers[0].setStep(atof(arguments[2].c_str()));
 	}
 	else
-	  Msg::Fatal("Wrong argument number for MinMax <%s>",name.c_str());
+	  Msg::Fatal("Wrong number of arguments for MinMax <%s>",name.c_str());
       }
       set(numbers[0]);
+    }
+    else if(!action.compare("resetChoices")){
+      if(arguments.size()){
+	name.assign(longName(name));
+	get(numbers,name);
+
+	if(numbers.size()){ // parameter must exist
+	  std::vector<double> choices;
+	  numbers[0].setChoices(choices);
+	  std::map<double, std::string> valuelabels;
+	  numbers[0].setValueLabels(valuelabels);
+	  set(numbers[0]);
+	}
+	else{
+	  get(strings,name);
+	  if(strings.size()){
+	    std::vector<std::string> choices;
+	    strings[0].setChoices(choices);
+	    set(strings[0]);
+	  }
+	  else{
+	    Msg::Fatal("The parameter <%s> does not exist",name.c_str());
+	  }
+	}
+      }
     }
     else if(!action.compare("addChoices")){
       if(arguments.size()){
@@ -459,7 +479,7 @@ void localSolverClient::parse_sentence(std::string line) {
 	  std::vector<double> choices=numbers[0].getChoices();
 	  for(unsigned int i = 0; i < arguments.size(); i++){
 	    double val=atof(resolveGetVal(arguments[i]).c_str());
-	    if(std::find(choices.begin(),choices.end(),val)==choices.end())
+	    //if(std::find(choices.begin(),choices.end(),val)==choices.end())
 	      choices.push_back(val);
 	  }
 	  numbers[0].setChoices(choices);
@@ -505,9 +525,9 @@ void localSolverClient::parse_sentence(std::string line) {
       }
     }
     else if(!action.compare("setValue")){ // force change on server
-      if(arguments.size()>1){
-	name.assign(arguments[1] + name); // prepend path
-      }
+      // if(arguments.size()>1){
+      // 	name.assign(arguments[1] + name); // prepend path
+      // }
       name.assign(longName(name));
       get(numbers,name); 
       if(numbers.size()){
@@ -534,6 +554,9 @@ void localSolverClient::parse_sentence(std::string line) {
     else if(!action.compare("setVisible")){
       if(arguments[0].empty())
 	Msg::Fatal("Missing argument SetVisible <%s>",name.c_str());
+      // if(arguments.size()>1){
+      // 	name.assign(arguments[1] + name); // prepend path
+      // }
       name.assign(longName(name));
       get(numbers,name); 
       if(numbers.size()){ 
@@ -554,6 +577,9 @@ void localSolverClient::parse_sentence(std::string line) {
     else if(!action.compare("setReadOnly")){
       if(arguments[0].empty())
 	Msg::Fatal("Missing argument SetReadOnly <%s>",name.c_str());
+      // if(arguments.size()>1){
+      // 	name.assign(arguments[1] + name); // prepend path
+      // }
       name.assign(longName(name));
       get(numbers,name); 
       if(numbers.size()){ 
@@ -564,6 +590,30 @@ void localSolverClient::parse_sentence(std::string line) {
 	get(strings,name); 
 	if(strings.size()){
 	  strings[0].setReadOnly(atof(resolveGetVal(arguments[0]).c_str()));
+	  set(strings[0]);
+	}
+	else{
+	  Msg::Fatal("The parameter <%s> does not exist",name.c_str());
+	}
+      }
+    }
+    else if(!action.compare("setAttribute")){
+      if(arguments.size() !=2 )
+	Msg::Fatal("SetAttribute <%s> needs two arguments %d", name.c_str(), arguments.size());
+      // if(arguments.size()>2){
+      // 	name.assign(arguments[2] + name); // prepend path
+      // }
+      name.assign(longName(name));
+      get(numbers,name); 
+      if(numbers.size()){ 
+	numbers[0].setAttribute(arguments[0].c_str(),
+				resolveGetVal(arguments[1]).c_str());
+	set(numbers[0]);
+      }
+      else{
+	get(strings,name); 
+	if(strings.size()){
+	  strings[0].setAttribute(arguments[0].c_str(),arguments[1].c_str());
 	  set(strings[0]);
 	}
 	else{

@@ -1,26 +1,38 @@
-Installation de ONELAB
+Installation of ONELAB
+
+$> export GMSH_DIR=/path/to/your/gmsh/directory
+$> cd $GMSH_DIR/projects/onelab/SOLVERS
+$> make
+
+The executable $GMSH_DIR/projects/onelab/SOLVERS/onelab_client
+should now have been created. It will be used as an external solver by gmsh.
 
 
->> export OL_DIR= $GMSH_DIR/gmsh/projects/onelab
->> cd $OL_DIR
->> olbuild.sh
+##### A fist example
+Let see now how onelab all works with the following tutorial example:
 
-Le répertoire SOLVERS contient l'interface onelab:
+$> cd $GMSH_DIR/projects/onelab/METAMODELS/LASER
+$> gmsh lab_peau.geo -s
 
-'$OL_DIR/SOLVERS/onelab_client'
+In the gmsh menu,
+- click on "Tools/Onelab"
+- click on the "gear" symbol
+- click on "Add new client"
+Enter a display name for the external solver (e.g. onelab) and then browse 
+the the "onelab_client" executable.
 
-1. Utilisation en ligne de commande:
+One last setting:
+- click on the "gear" symbol again 
+- untick "Hide new views"
+Now you are ready to interactively exploit the model.
+A good first step is to simply click on "Compute". 
 
->> cd METAMODELS/CRYO
->> ../../SOLVERS/onelab_client cryo
 
+### A more involved example with ElmerSolver
 
-2. Utilisation avec gmsh comme loader:
+If you have ElmerSolver and gnuplot or matlab installed on your system,
+you may also take a look to this example:
 
-Gmsh gui:
->> gmsh cryo.geo
-Click  Menu->Tools->Onelab
-Enter 'Client Name'=onelab 
-Browse for the location $OL_DIR/SOLVERS/getdp
-Click on 'onelab_client'
+$> cd $GMSH_DIR/projects/onelab/METAMODELS/LASER
+$> gmsh lab_peau.geo -s
 

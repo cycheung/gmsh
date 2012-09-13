@@ -1,10 +1,11 @@
-onelab.tags(OL.,#);
 
-# Onelab commands start with "OL."
-# comment lines start with "#"
-# these are the default values so the above command is useless
-# and equivalent to:
-# onelab.tags(); onelab.tags(,);
+
+# Onelab commands start with "OL.", comment lines start with "#".
+# These are the default values.
+# Tags can be modified to accomodate various client syntaxes.
+# This is done with e.g.: onelab.tags(/,//);
+# Defaults are restored with
+# onelab.tags(); onelab.tags(,); or onelab.tags(OL.,#);
 
 #-1)  Gmsh for meshing
 Mesher.register(encapsulated,gmsh);
@@ -16,34 +17,33 @@ Mesher.merge( OL.get(Arguments/FileName).msh);
 Mesher.check();
 # The latter optional command forces the client Mesher 
 # to be checked immediately 
-# so that parameters defined in the .geo file can be used in the sequel. 
+# so that parameters defined in the .geo file can be used 
+# below in this file. 
 
 # Enumeration, i.e. a set of real values each associated with a label
 SKINTYPE.number(1, Parameters/Skin/1,"Skin type"); 
 SKINTYPE.valueLabels(1,"hairy", 2,"hairless");
-# Numbers inserted in pathes allow to sort parameters in the onelab window.
-# SKINTYPE will be the 1 paralemeter in the subtree /Parameters/Skin
+# Numbers in pathes allow to sort parameters in the onelab window.
+# SKINTYPE will be the 1 paraemeter in the subtree /Parameters/Skin
 
 # The thickness of epidermis (parameter EPIDERMIS) is determined 
 # by the value of SKINTYPE, i.e. it is a depending variable.
 # In .ol files, depending variables are declared with no value 
 # (the value slot is left empty)
-# ... and the incomplete declaration is completed by a "setValue" statement
+# and the incomplete declaration is completed by a "setValue" statement
+# In this case, EPIDERMIS was defined in lab_peau.geo
+
+
 OL.if( OL.get(SKINTYPE) == 1)
-EPIDERMIS.setValue(0.05,Parameters/Skin/);
+Parameters/Skin/EPIDERMIS.setValue(0.05);
 OL.endif
 OL.if( OL.get(SKINTYPE) == 2)
-EPIDERMIS.setValue(0.12,Parameters/Skin/);
+Parameters/Skin/EPIDERMIS.setValue(0.12);
 OL.endif
 # The "setValue" statement overrules the value on server.
+Parameters/Skin/EPIDERMIS.setReadOnly(1);
 
-
-# "radioButton" represent a boolean parameter or a flag
-LOGFILES.radioButton(0,MetaModel/,"Output goes in .log files");
-LOGFILES.setVisible(0);
-
-# onelab numbers determining the SKIN model
-
+# other parameters of the model
 WCONTENT.number(0.65,Parameters/Skin/,"Water content []");
 BODYTEMP.number(310, Parameters/Skin/,"Body temperature [K]");
 OVERTEMP.number(320, Parameters/Skin/,"Thermal threshold fiber [K]");
