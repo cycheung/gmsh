@@ -11,8 +11,8 @@ should now have been created. It will be used as an external solver by gmsh.
 ##### A fist example
 Let see now how onelab all works with the following tutorial example:
 
-$> cd $GMSH_DIR/projects/onelab/METAMODELS/LASER
-$> gmsh lab_peau.geo -s
+$> cd $GMSH_DIR/projects/onelab/METAMODELS/TUTORIAL
+$> gmsh circle.geo -s
 
 In the gmsh menu,
 - click on "Tools/Onelab"
