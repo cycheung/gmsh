@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "Polynomial.h"
+#include "FunctionSpaceNode.h"
 #include "Formulation.h"
 
 /**
@@ -25,10 +26,7 @@ class FormulationLaplace: public Formulation{
   fullVector<double>* gW;
 
   // Function Space //
-  FunctionSpace* fspace;
-
-  // Grad Field //
-  std::vector<Polynomial>* gradBasis;
+  FunctionSpaceNode* fspace;
 
  public:
   FormulationLaplace(const GroupOfElement& goe, unsigned int order);

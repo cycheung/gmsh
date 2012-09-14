@@ -44,11 +44,11 @@ int run(int argc, char** argv){
     int maxOrder = atoi(argv[3]);
 
     for(int i = 1; i <= maxOrder; i++)
-      fPoisson(msh, visu,  mWriter, i);
+      ;//fPoisson(msh, visu,  mWriter, i);
   }
 
-  //fLaplace(msh, mWriter);
-  //fProjection(msh, mWriter);
+  fLaplace(msh, mWriter);
+  fProjection(msh, mWriter);
 
   return 0;
 }
@@ -82,7 +82,7 @@ void fPoisson(Mesh& msh, Mesh& visu, Writer& mWriter, int order){
   sysPoisson.fixBC(msh.getFromPhysical(8), 0);
   
   sysPoisson.assemble();
-  cout << "Poisson: " << sysPoisson.getSize() << endl;
+  cout << "Poisson (" << order << "): " << sysPoisson.getSize() << endl;
   sysPoisson.solve();
 
   GroupOfElement visuDomain = visu.getFromPhysical(9);

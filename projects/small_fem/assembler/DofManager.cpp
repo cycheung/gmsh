@@ -27,8 +27,7 @@ DofManager::DofManager(const FunctionSpace& fs){
     int nDof          = myDof.size();
     
     // Create new GroupOfDof
-    GroupOfDof* god = new GroupOfDof(nDof, *(element[i]), 
-				     fs  , support.getMesh()); 
+    GroupOfDof* god = new GroupOfDof(nDof, *(element[i])); 
     (*group)[i]     = god;
 
     // Add Dof

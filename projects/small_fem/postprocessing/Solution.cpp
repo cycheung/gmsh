@@ -132,16 +132,11 @@ void Solution::interpolate(void){
 
 	// Get Coef
 	vector<double> coef(size);
-	for(unsigned int k = 0; k < size; k++){
+	for(unsigned int k = 0; k < size; k++)
 	  // Look in Solution
 	  coef[k] = 
 	    (*sol)(dofM->getGlobalId(*dof[k])); 
-	
-	  // If Edge Space: Set Orientation
-	  if(fsType == 1)
-	    coef[k] *= god[i]->getOrientation(k);
-	}
-	
+
 	// Get Node coordinate
 	fullVector<double> xyz(3);
 	xyz(0) = node[j]->x();
@@ -203,15 +198,10 @@ void Solution::interpolateOnVisu(void){
 
     // Get Coef
     vector<double> coef(size);
-    for(unsigned int k = 0; k < size; k++){
+    for(unsigned int k = 0; k < size; k++)
       // Look in Solution
       coef[k] = 
 	(*sol)(dofM->getGlobalId(*dof[k])); 
-	
-      // If Edge Space: Set Orientation
-      if(fsType == 1)
-	coef[k] *= god.getOrientation(k);
-    }
 	
     // Get Node coordinate
     fullVector<double> xyz(3);

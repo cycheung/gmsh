@@ -4,7 +4,6 @@
 #include "Mapper.h"
 #include "BasisVector.h"
 
-#include "FunctionSpaceEdge.h"
 #include "FormulationProjection.h"
 
 using namespace std;
@@ -20,17 +19,12 @@ FormulationProjection::FormulationProjection(const GroupOfElement& goe,
 
   // Look for 1st element to get element type
   // (We suppose only one type of Mesh !!)
-  gaussIntegration::get(goe.get(0).getType(), 2, *gC, *gW);
+  gaussIntegration::get(goe.get(0).getType(), 6, *gC, *gW);
 
   G = gW->size(); // Nbr of Gauss points
 
   // Function Space //
-  FunctionSpaceEdge* fspace = new FunctionSpaceEdge(goe, 0);
-  this->fspace              = fspace;
-
-  // Basis //
-  const BasisVector& base = fspace->getBasis(goe.get(0));
-  basis = &(base.getFunctions());
+  fspace = new FunctionSpaceEdge(goe, 3);
 }
 
 FormulationProjection::~FormulationProjection(void){
@@ -41,36 +35,40 @@ FormulationProjection::~FormulationProjection(void){
 
 double FormulationProjection::weak(int edgeI, int edgeJ, 
 				   const GroupOfDof& god) const{
+  // Init //
+  fullVector<double> phiI(3);
+  fullVector<double> phiJ(3);
+  fullMatrix<double> invJac(3, 3);       
+  double integral = 0;
 
-  fullMatrix<double>  invJac(3, 3);        
-  MElement& element = const_cast<MElement&>(god.getGeoElement());
-
-  double integral   = 0;
-  int orientation   = 
-    god.getOrientation(edgeI) * 
-    god.getOrientation(edgeJ);
+  // Get Element and Basis Functions //
+  const MElement& element = god.getGeoElement();
+  MElement&      celement = const_cast<MElement&>(element);
   
+  const vector<const vector<Polynomial>*> fun = 
+    fspace->getLocalFunctions(element);
+
   // Loop over Integration Point //
   for(int g = 0; g < G; g++){
-    double det = element.getJacobian((*gC)(g, 0), 
-				     (*gC)(g, 1), 
-				     (*gC)(g, 2), 
-				     invJac);
+    double det = celement.getJacobian((*gC)(g, 0), 
+				      (*gC)(g, 1), 
+				      (*gC)(g, 2), 
+				      invJac);
     invJac.invertInPlace();
 
-    fullVector<double> phiI = Mapper::grad(Polynomial::at(*(*basis)[edgeI],
-							  (*gC)(g, 0), 
-							  (*gC)(g, 1),
-							  (*gC)(g, 2)),
-					   invJac);
+    phiI = Mapper::grad(Polynomial::at(*fun[edgeI],
+				       (*gC)(g, 0), 
+				       (*gC)(g, 1),
+				       (*gC)(g, 2)),
+			invJac);
     
-    fullVector<double> phiJ = Mapper::grad(Polynomial::at(*(*basis)[edgeJ],
-							  (*gC)(g, 0), 
-							  (*gC)(g, 1),
-							  (*gC)(g, 2)),
-					   invJac);
+    phiJ = Mapper::grad(Polynomial::at(*fun[edgeJ],
+				       (*gC)(g, 0), 
+				       (*gC)(g, 1),
+				       (*gC)(g, 2)),
+			invJac);
 
-    integral += phiI * phiJ * fabs(det) * (*gW)(g) * orientation;
+    integral += phiI * phiJ * fabs(det) * (*gW)(g);
   }
 
   return integral;
@@ -78,29 +76,34 @@ double FormulationProjection::weak(int edgeI, int edgeJ,
 
 double FormulationProjection::rhs(int equationI,
 				  const GroupOfDof& god) const{
- 
+  // Init //
   fullMatrix<double>  invJac(3, 3);        
-  MElement& element      = const_cast<MElement&>(god.getGeoElement());
+  fullVector<double>  phi(3);
   fullVector<double>& ff = const_cast<fullVector<double>&>(*f);
+  double integral        = 0;
 
-  int orientation   = god.getOrientation(equationI);
-  double integral   = 0;
+  // Get Element and Basis Functions //
+  const MElement& element = god.getGeoElement();
+  MElement&      celement = const_cast<MElement&>(element);
+  
+  const vector<const vector<Polynomial>*> fun = 
+    fspace->getLocalFunctions(element);  
 
   // Loop over Integration Point //
   for(int g = 0; g < G; g++){  
-    double det = element.getJacobian((*gC)(g, 0), 
-				     (*gC)(g, 1), 
-				     (*gC)(g, 2), 
-				     invJac);
+    double det = celement.getJacobian((*gC)(g, 0), 
+				      (*gC)(g, 1), 
+				      (*gC)(g, 2), 
+				      invJac);
     invJac.invertInPlace();
 
-    fullVector<double> phiI = Mapper::grad(Polynomial::at(*(*basis)[equationI],
-							  (*gC)(g, 0), 
-							  (*gC)(g, 1),
-							  (*gC)(g, 2)),
-					   invJac);
+    phi = Mapper::grad(Polynomial::at(*fun[equationI],
+				      (*gC)(g, 0), 
+				      (*gC)(g, 1),
+				      (*gC)(g, 2)),
+		       invJac);
  
-    integral += ff * phiI * fabs(det) * (*gW)(g) * orientation;
+    integral += ff * phi * fabs(det) * (*gW)(g);
   }
 
   return integral;

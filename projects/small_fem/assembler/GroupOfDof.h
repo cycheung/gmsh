@@ -19,9 +19,7 @@ class DofManager;
    This class handles a Group of Dof%s with a @em geometrical meaning 
    (@e e.g: Dof%s that belongs to the same (finite) element).@n
 
-   It also gives acces to:
-   @li The underlying Geometrical Element
-   @li The orientation of a given Dof
+   It also gives acces to the underlying Geometrical Element.
 
    @note
    Note that a user @em can't instantiate a GroupOfDof.@n
@@ -54,24 +52,15 @@ class GroupOfDof: public GroupTyped<Dof>{
   
   const MElement& getGeoElement(void) const;
 
-  int getOrientation(unsigned int dofId) const;
-
   virtual std::string toString(void) const;
 
  private:
    GroupOfDof(unsigned int numberOfDof, 
-	      const MElement& geoElement,
-	      const FunctionSpace& fs,
-	      const Mesh& mesh);
+	      const MElement& geoElement);
 
   ~GroupOfDof(void);
 
   void add(const Dof* dof);
-
-  static int orientation(const MElement& element, 
-			 const MEdge& edge);
-  
-  static bool equal(const MEdge& a, const MEdge& b);
 };
 
 
@@ -88,11 +77,6 @@ class GroupOfDof: public GroupTyped<Dof>{
 
    @fn GroupOfDof::getGeoElement
    @return Returns the underlying Geometrical Element
-   **
-
-   @fn GroupOfDof::getOrientation
-   @param dofId The @em local @c ID of a Dof in the GroupOfDof
-   @return Returns the orientation of a Dof (indentified by its @em local @c ID)
    **
 */
 
@@ -122,12 +106,6 @@ inline const std::vector<const Dof*>& GroupOfDof::getAll(void) const{
 
 inline const MElement& GroupOfDof::getGeoElement(void) const{
   return *element;
-}
-
-inline bool GroupOfDof::equal(const MEdge& a, const MEdge& b){
-  return 
-    (a.getVertex(0)->getNum() == b.getVertex(0)->getNum()) &&
-    (a.getVertex(1)->getNum() == b.getVertex(1)->getNum());
 }
 
 #endif

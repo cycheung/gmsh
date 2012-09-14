@@ -5,6 +5,7 @@
 
 #include "Formulation.h"
 #include "Polynomial.h"
+#include "FunctionSpaceEdge.h"
 #include "fullMatrix.h"
 
 /**
@@ -25,9 +26,8 @@ class FormulationProjection: public Formulation{
   fullVector<double>* gW;
 
   // Function Space //
-  FunctionSpace*                                     fspace;
-  const std::vector<const std::vector<Polynomial>*>* basis;
-
+  FunctionSpaceEdge* fspace;
+  
  public:
   FormulationProjection(const GroupOfElement& goe,
 			const fullVector<double>& vectorToProject);
