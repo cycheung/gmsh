@@ -44,7 +44,7 @@ int run(int argc, char** argv){
     int maxOrder = atoi(argv[3]);
 
     for(int i = 1; i <= maxOrder; i++)
-      ;//fPoisson(msh, visu,  mWriter, i);
+      fPoisson(msh, visu,  mWriter, i);
   }
 
   fLaplace(msh, mWriter);
