@@ -1,9 +1,8 @@
-
-OL.parameter Tcold.number(77,Parameters/Elmer/2,"Applied temperature",50:100:10);
-OL.iftrue(TRANSIENT)
-	OL.parameter NumStep.number(50,Elmer/3,Number of time steps);
-	OL.parameter TimeStep.number(0.1,Elmer/3,Time step);
-OL.endif
+OL.block
+Tcold.number(77,Parameters/Elmer/2,"Applied temperature",50:100:10);
+NumStep.number(50,Elmer/3,Number of time steps);
+TimeStep.number(0.1,Elmer/3,Time step);
+OL.endblock
 
 Header
   Mesh DB "." "mesh"
@@ -11,19 +10,13 @@ End
 
 Simulation
   Coordinate System =  Axi Symmetric
-OL.iftrue(TRANSIENT)
   Simulation Type = Transient 
-  Timestep sizes = OL.getValue(TimeStep)
-  Timestep Intervals = OL.getValue(NumStep)
+  Timestep sizes = OL.get(TimeStep)
+  Timestep Intervals = OL.get(NumStep)
   Timestepping Method = BDF
   BDF Order = 2
-OL.else
-  Simulation Type = Steady State 
-  Steady State Max Iterations = 1
-OL.endif
   Output Intervals = 1
-  !Solver Input File = "cryo.sif"
-  Solver Input File = "OL.getValue(Arguments/FileName).sif"
+  Solver Input File = "OL.get(Arguments/FileName).sif"
 End
 
 
@@ -83,11 +76,7 @@ Solver 1
 End
 
 Solver 2
-OL.iftrue(TRANSIENT)
    Exec solver = "After timestep"
-OL.else
-   Exec solver = "Always"
-OL.endif
    Equation = String "ResultOutput"
    Procedure = File "ResultOutputSolve" "ResultOutputSolver"
    Output File Name = String "solution.pos"
@@ -97,18 +86,14 @@ OL.endif
 End
 
 Solver 3 !ElmerModelsManuel page 187
-OL.iftrue(TRANSIENT)
    Exec solver = "After saving"
-OL.else
-   Exec solver = "After All"
-OL.endif
    Equation = SaveScalars
    Variable 1 = Temperature
    Variable 2 = Time
    Procedure = "SaveData" "SaveScalars"
    Save Coordinates(1,2) = 0.0015 0.003
 !These parameters were defined in the cryo.geo file
-   Save Coordinates(1,2) = OL.getValue(Parameters/1Geometry/Xloc) OL.getValue(Parameters/1Geometry/Yloc)
+   Save Coordinates(1,2) = OL.get(Parameters/1Geometry/Xloc) OL.get(Parameters/1Geometry/Yloc)
    Filename = "tempevol.txt"
 End
 
@@ -192,7 +177,7 @@ Boundary Condition 1
   Target Boundaries(1) = 15
   Heat Flux BC = Logical True
   Heat Transfer Coefficient = Real 5000. !Initial heat flux
-  External Temperature = Real OL.getValue(Tcold)
+  External Temperature = Real OL.get(Tcold)
 End
 
 Boundary Condition 2
