@@ -59,8 +59,8 @@ void fLaplace(Mesh& msh, Writer& mWriter){
   FormulationLaplace laplace(domain, 1);
   System sysLaplace(laplace);
 
-  sysLaplace.fixBC(msh.getFromPhysical(6), -1);
-  sysLaplace.fixBC(msh.getFromPhysical(5),  2);
+  sysLaplace.fixDof(msh.getFromPhysical(6), -1);
+  sysLaplace.fixDof(msh.getFromPhysical(5),  2);
 
   sysLaplace.assemble();
   cout << "Laplace: " << sysLaplace.getSize() << endl;
@@ -76,10 +76,10 @@ void fPoisson(Mesh& msh, Mesh& visu, Writer& mWriter, int order){
   FormulationPoisson poisson(domain, order);
   System sysPoisson(poisson);
   
-  sysPoisson.fixBC(msh.getFromPhysical(5), 0);
-  sysPoisson.fixBC(msh.getFromPhysical(6), 0);
-  sysPoisson.fixBC(msh.getFromPhysical(7), 0);
-  sysPoisson.fixBC(msh.getFromPhysical(8), 0);
+  sysPoisson.fixDof(msh.getFromPhysical(5), 0);
+  sysPoisson.fixDof(msh.getFromPhysical(6), 0);
+  sysPoisson.fixDof(msh.getFromPhysical(7), 0);
+  sysPoisson.fixDof(msh.getFromPhysical(8), 0);
   
   sysPoisson.assemble();
   cout << "Poisson (" << order << "): " << sysPoisson.getSize() << endl;

@@ -3,10 +3,9 @@
 
 #include <vector>
 
-#include "Formulation.h"
-#include "Polynomial.h"
 #include "FunctionSpaceEdge.h"
 #include "fullMatrix.h"
+#include "Formulation.h"
 
 /**
    @class FormulationProjection

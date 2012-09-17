@@ -52,7 +52,7 @@ class System{
   const FunctionSpace& getFunctionSpace(void) const;
   const DofManager&    getDofManager(void) const;
 
-  void fixBC(const GroupOfElement& goe, double value);
+  void fixDof(const GroupOfElement& goe, double value);
   void assemble(void);
   void solve(void);
 
@@ -93,11 +93,12 @@ class System{
    @return Returns the DofManager used by the System
    **
 
-   @fn System::fixBC
-   @param goe The GroupOfElement on which the bondary condtion shall be imposed
-   @param value The value of the bondary condition
+   @fn System::fixDof
+   @param goe A GroupOfElement 
+   @param value A real value
    
-   Fix the given Boundary Condition
+   Fixes the Dof%s associated the the given 
+   GroupOfElement to the given value
    **
 
    @fn System::assemble

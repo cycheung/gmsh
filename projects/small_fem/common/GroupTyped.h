@@ -26,7 +26,7 @@ class GroupTyped: public Group{
   virtual const std::vector<const T*>& getAll(void) const = 0;
 };
 
-/** 
+/**
    @fn GroupTyped::~GroupTyped
    Deletes this GroupTyped
    **

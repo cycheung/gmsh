@@ -3,7 +3,7 @@
 #include "Exception.h"
 #include "fullMatrix.h"
 #include "GaussIntegration.h"
-#include "BasisScalar.h"
+#include "Polynomial.h"
 #include "Mapper.h"
 
 #include "FormulationLaplace.h"
@@ -75,34 +75,4 @@ double FormulationLaplace::weak(int nodeI, int nodeJ,
   }
 
   return integral;
-  /*
-  fullMatrix<double>  invJac(3, 3);        
-  MElement& element = const_cast<MElement&>(god.getGeoElement());
-  double integral   = 0;
-
-  // Loop over Integration Point //
-  for(int g = 0; g < G; g++){
-    double det = element.getJacobian((*gC)(g, 0), 
-				     (*gC)(g, 1), 
-				     (*gC)(g, 2), 
-				     invJac);
-    invJac.invertInPlace();
-
-    fullVector<double> phiI = Mapper::grad(Polynomial::at(gradBasis[nodeI], 
-							  (*gC)(g, 0), 
-							  (*gC)(g, 1),
-							  (*gC)(g, 2)),
-					   invJac);
-				       
-    fullVector<double> phiJ = Mapper::grad(Polynomial::at(gradBasis[nodeJ], 
-							  (*gC)(g, 0), 
-							  (*gC)(g, 1), 
-							  (*gC)(g, 2)),
-					   invJac);
-
-    integral += phiI * phiJ * fabs(det) * (*gW)(g);
-  }
-			
-  return integral;
-  */
 }

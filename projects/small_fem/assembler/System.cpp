@@ -44,7 +44,7 @@ void System::assemble(void){
   isAssembled = true;  
 }
 
-void System::fixBC(const GroupOfElement& goe, double value){
+void System::fixDof(const GroupOfElement& goe, double value){
   const vector<const MElement*>&  element = goe.getAll();
   unsigned int                   nElement = goe.getNumber();
   

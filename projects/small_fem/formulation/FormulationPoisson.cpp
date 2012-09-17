@@ -3,7 +3,7 @@
 #include "Exception.h"
 #include "fullMatrix.h"
 #include "GaussIntegration.h"
-#include "BasisScalar.h"
+#include "Polynomial.h"
 #include "Mapper.h"
 
 #include "FormulationPoisson.h"

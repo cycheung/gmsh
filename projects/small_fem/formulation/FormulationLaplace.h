@@ -3,7 +3,6 @@
 
 #include <vector>
 
-#include "Polynomial.h"
 #include "FunctionSpaceNode.h"
 #include "Formulation.h"
 

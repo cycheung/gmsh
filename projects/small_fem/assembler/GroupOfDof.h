@@ -32,8 +32,6 @@ class GroupOfDof: public GroupTyped<Dof>{
   unsigned int            id;
 
   const MElement*      element;
-  const FunctionSpace* fs;
-  const Mesh*          mesh;
 
   unsigned int nDof;
   std::vector<const Dof*>* dof;
@@ -64,7 +62,7 @@ class GroupOfDof: public GroupTyped<Dof>{
 };
 
 
-/** 
+/**
    @fn GroupOfDof::get
    @param i An interger ranging from 0 
    to GroupOfDof::getNumber() - 1

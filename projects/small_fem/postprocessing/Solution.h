@@ -57,6 +57,20 @@ class Solution{
    @param system The System to use
 
    Instanciate a new Solution, based on the given System
+
+   @note
+   The interpolation will be done on the  @em support of the
+   FunctionSpace.
+   **
+
+   @fn Solution::Solution
+   @param system The System to use
+   @param visu The GroupOfElement to use for interpolation
+
+   Instanciate a new Solution, based on the given System
+
+   @note
+   The interpolation will be done on the given GroupOfElement
    **
 
    @fn Solution::~Solution

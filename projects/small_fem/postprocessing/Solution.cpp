@@ -46,7 +46,9 @@ Solution::Solution(const System& system){
   // Get Visu Domain
   this->visuDomain = &(fs->getSupport());
 
-  // Interpolate
+  // Interpolate 
+  // NB: interpolate() is faster than 
+  // interpolateOnVisu() (no Octree)
   interpolate();
 }
 
@@ -59,6 +61,9 @@ Solution::Solution(const System& system,
   this->visuDomain = &visu;
 
   // Interpolate
+  // NB: Can't use interpolate(), because
+  // we don't have to *all* nodes (visu mesh) 
+  // with Dofs
   interpolateOnVisu();
 }
 

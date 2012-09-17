@@ -2,7 +2,7 @@
 
 #include "GaussIntegration.h"
 #include "Mapper.h"
-#include "BasisVector.h"
+#include "Polynomial.h"
 
 #include "FormulationProjection.h"
 
