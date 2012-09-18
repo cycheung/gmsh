@@ -12,6 +12,8 @@
 #include "FormulationPoisson.h"
 #include "FormulationProjection.h"
 
+#include "PoissonSquare.h"
+
 #include "BasisTest.h"
 
 using namespace std;
@@ -19,6 +21,7 @@ using namespace std;
 int run(int argc, char** argv);
 void fLaplace(Mesh& msh, Writer& mWriter);
 void fPoisson(Mesh& msh, Mesh& visu, Writer& mWriter, int order);
+void aPoisson(Mesh& msh, Writer& mWriter);
 void fProjection(Mesh& msh, Writer& mWriter);
 
 int main(int argc, char** argv){
@@ -45,10 +48,12 @@ int run(int argc, char** argv){
 
     for(int i = 1; i <= maxOrder; i++)
       fPoisson(msh, visu,  mWriter, i);
+
+    aPoisson(visu, mWriter);
   }
 
-  fLaplace(msh, mWriter);
-  fProjection(msh, mWriter);
+  //fLaplace(msh, mWriter);
+  //fProjection(msh, mWriter);
 
   return 0;
 }
@@ -71,6 +76,7 @@ void fLaplace(Mesh& msh, Writer& mWriter){
 }
 
 void fPoisson(Mesh& msh, Mesh& visu, Writer& mWriter, int order){
+  // FEM Solution
   GroupOfElement domain = msh.getFromPhysical(9);
 
   FormulationPoisson poisson(domain, order);
@@ -83,6 +89,7 @@ void fPoisson(Mesh& msh, Mesh& visu, Writer& mWriter, int order){
   
   sysPoisson.assemble();
   cout << "Poisson (" << order << "): " << sysPoisson.getSize() << endl;
+  //cout << "Function Space:" << endl << poisson.fs().toString() << endl;
   sysPoisson.solve();
 
   GroupOfElement visuDomain = visu.getFromPhysical(9);
@@ -92,6 +99,15 @@ void fPoisson(Mesh& msh, Mesh& visu, Writer& mWriter, int order){
   stream << "poisson" << order;
 
   solPoisson.write(stream.str(), mWriter);
+}
+
+void aPoisson(Mesh& msh, Writer& mWriter){
+  // Analytical Solution
+  GroupOfElement domain = msh.getFromPhysical(9);
+
+  cout << "Poisson (Ref)" << endl;
+  PoissonSquare poisson(domain);
+  poisson.write("poissonRef", mWriter);
 }
 
 void fProjection(Mesh& msh, Writer& mWriter){

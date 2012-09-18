@@ -61,9 +61,9 @@ void generate2dEdgeClosure(std::vector<std::vector<int> > &closure, int order, i
 int main(void){
   std::vector<std::vector<int> > closure;
   std::vector<std::vector<int> > closureFull;
-std::vector<int> closureRef;
+  std::vector<int> closureRef;
 
-  int order = 3;
+  int order = 1;
   int nNode = 3;
 
   generate2dEdgeClosureFull(closureFull, closureRef, order, nNode, false);

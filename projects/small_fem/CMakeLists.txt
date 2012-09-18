@@ -34,6 +34,7 @@ add_subdirectory(formulation)
 add_subdirectory(geometry)
 add_subdirectory(postprocessing)
 add_subdirectory(solver)
+add_subdirectory(exactSolution)
 
 ## TO BE REMOVED !!!
 ####################
@@ -52,6 +53,7 @@ include_directories(
   geometry
   postprocessing
   solver
+  exactSolution
 )
 
 ## Include Path for gmsh

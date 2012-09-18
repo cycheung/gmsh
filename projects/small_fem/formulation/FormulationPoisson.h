@@ -19,10 +19,15 @@
 
 class FormulationPoisson: public Formulation{
  private:
-  // Gaussian Quadrature Data //
-  int G;
-  fullMatrix<double>* gC;
-  fullVector<double>* gW;
+  // Gaussian Quadrature Data (LHS) //
+  int GL;
+  fullMatrix<double>* gCL;
+  fullVector<double>* gWL;
+
+  // Gaussian Quadrature Data (RHS) //
+  int GR;
+  fullMatrix<double>* gCR;
+  fullVector<double>* gWR;
 
   // Function Space //
   FunctionSpaceNode* fspace;
