@@ -3,6 +3,7 @@
 #include "FunctionSpaceScalar.h"
 #include "FunctionSpaceVector.h"
 
+#include "Exception.h"
 #include "GModel.h"
 #include "MElement.h"
 #include "MVertex.h"
@@ -29,12 +30,12 @@ void Solution::init(const System& system){
   switch(fsType){
   case 0:
   case 3:
-    isScalar = true;
+    scalar = true;
     break;
 
   case 1:
   case 2:
-    isScalar = false;
+    scalar = false;
     break;
   }
 }
@@ -68,7 +69,7 @@ Solution::Solution(const System& system,
 }
 
 Solution::~Solution(void){
-  if(isScalar)
+  if(scalar)
     delete nodalScalarValue;
 
   else
@@ -79,7 +80,7 @@ void Solution::write(const std::string name, Writer& writer) const{
   // Set Writer
   writer.setDomain(visuDomain->getAll());
 
-  if(isScalar)
+  if(scalar)
     writer.setValues(*nodalScalarValue);
 
   else
@@ -103,7 +104,7 @@ void Solution::interpolate(void){
   const FunctionSpaceScalar* fsScalar = NULL;
   const FunctionSpaceVector* fsVector = NULL;
 
-  if(isScalar){
+  if(scalar){
     nodalScalarValue = new vector<double>(nTotVertex);
     fsScalar = static_cast<const FunctionSpaceScalar*>(fs);
   }
@@ -149,7 +150,7 @@ void Solution::interpolate(void){
 	xyz(2) = node[j]->z();
 
 	// Interpolate (AT LAST !!)
-	if(isScalar)
+	if(scalar)
 	  (*nodalScalarValue)[id] = 
 	    fsScalar->interpolate(element, coef, xyz);
 
@@ -173,7 +174,7 @@ void Solution::interpolateOnVisu(void){
   const FunctionSpaceScalar* fsScalar = NULL;
   const FunctionSpaceVector* fsVector = NULL;
 
-  if(isScalar){
+  if(scalar){
     nodalScalarValue = new vector<double>(nTotVertex);
     fsScalar = static_cast<const FunctionSpaceScalar*>(fs);
   }
@@ -215,7 +216,7 @@ void Solution::interpolateOnVisu(void){
     xyz(2) = node[i]->z();
 
     // Interpolate (AT LAST !!)
-    if(isScalar)
+    if(scalar)
       (*nodalScalarValue)[node[i]->getNum() - 1] = 
 	fsScalar->interpolate(*element, coef, xyz);
     
@@ -223,4 +224,20 @@ void Solution::interpolateOnVisu(void){
       (*nodalVectorValue)[node[i]->getNum() - 1] = 
 	fsVector->interpolate(*element, coef, xyz);
   }
+}
+
+vector<double>& Solution::getNodalScalarValue(void) const{
+  if(!scalar)
+    throw Exception("Solution: try to get Scalar value in a Vectorial Solution");
+
+  else
+    return *nodalScalarValue;
+}
+
+vector<fullVector<double> >& Solution::getNodalVectorValue(void) const{
+  if(scalar)
+    throw Exception("Solution: try to get Vectorial value in a Scalar Solution");
+
+  else
+    return *nodalVectorValue;  
 }

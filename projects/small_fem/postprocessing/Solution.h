@@ -33,7 +33,7 @@ class Solution{
 
   int fsType;
   
-  bool                              isScalar;
+  bool                              scalar;
   std::vector<double>*              nodalScalarValue;
   std::vector<fullVector<double> >* nodalVectorValue;
   const GroupOfElement*             visuDomain;
@@ -44,6 +44,10 @@ class Solution{
   ~Solution(void);
 
   void write(const std::string name, Writer& writer) const;
+  bool isScalar(void) const;
+  
+  std::vector<double>&              getNodalScalarValue(void) const;
+  std::vector<fullVector<double> >& getNodalVectorValue(void) const;
 
  private:
   void init(const System& system);
@@ -87,5 +91,13 @@ class Solution{
    The file format is given by the Writer
    **
  */
+
+//////////////////////
+// Inline Functions //
+//////////////////////
+
+inline bool Solution::isScalar(void) const{
+  return scalar;
+}
 
 #endif

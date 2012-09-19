@@ -1,4 +1,5 @@
 #include "ExactSolution.h"
+#include "Exception.h"
 
 ExactSolution::ExactSolution(void){
   nodalScalarValue = NULL;
@@ -6,7 +7,7 @@ ExactSolution::ExactSolution(void){
 }
 
 ExactSolution::~ExactSolution(void){
-  if(isScalar)
+  if(scalar)
     delete nodalScalarValue;
 
   else
@@ -17,7 +18,7 @@ void ExactSolution::write(const std::string name, Writer& writer) const{
   // Set Writer
   writer.setDomain(domain->getAll());
 
-  if(isScalar)
+  if(scalar)
     writer.setValues(*nodalScalarValue);
   
   else
@@ -34,7 +35,7 @@ void ExactSolution::compute(void){
   const std::vector<const MVertex*> node = mesh.getAllVertex(); 
 
   // Scalar or Vector ?
-  if(isScalar)
+  if(scalar)
     nodalScalarValue = new std::vector<double>(nTotVertex);
 
   else
@@ -48,7 +49,7 @@ void ExactSolution::compute(void){
     double z = node[i]->z();
 
     // Compute f (Scalar Or Vector)
-    if(isScalar)
+    if(scalar)
       (*nodalScalarValue)[node[i]->getNum() - 1] = 
 	fScalar(x, y, z);
     
@@ -70,4 +71,20 @@ fullVector<double> ExactSolution::fVector(double x, double y, double z){
   v(2) = 42;
 
   return v;
+}
+
+std::vector<double>& ExactSolution::getNodalScalarValue(void) const{
+  if(!scalar)
+    throw Exception("Solution: try to get Scalar value in a Vectorial Solution");
+
+  else
+    return *nodalScalarValue;
+}
+
+std::vector<fullVector<double> >& ExactSolution::getNodalVectorValue(void) const{
+  if(scalar)
+    throw Exception("Solution: try to get Vectorial value in a Scalar Solution");
+
+  else
+    return *nodalVectorValue;  
 }

@@ -23,7 +23,7 @@
 
 class ExactSolution{
  protected:
-  bool isScalar;
+  bool scalar;
   
   const GroupOfElement* domain;
 
@@ -34,6 +34,11 @@ class ExactSolution{
   virtual ~ExactSolution(void);
   
   void write(const std::string name, Writer& writer) const;
+  bool isScalar(void) const;
+  
+  std::vector<double>&              getNodalScalarValue(void) const;
+  std::vector<fullVector<double> >& getNodalVectorValue(void) const;
+
 
  protected:
   ExactSolution(void);
@@ -67,5 +72,13 @@ class ExactSolution{
    The file format is given by the Writer
    **
 */
+
+//////////////////////
+// Inline Functions //
+//////////////////////
+
+inline bool ExactSolution::isScalar(void) const{
+  return scalar;
+}
 
 #endif

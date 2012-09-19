@@ -1,5 +1,7 @@
 #include <iostream>
+#include <vector>
 #include <sstream>
+#include <cmath>
 
 #include "Mesh.h"
 #include "fullMatrix.h"
@@ -20,9 +22,11 @@ using namespace std;
 
 int run(int argc, char** argv);
 void fLaplace(Mesh& msh, Writer& mWriter);
-void fPoisson(Mesh& msh, Mesh& visu, Writer& mWriter, int order);
-void aPoisson(Mesh& msh, Writer& mWriter);
+vector<double> fPoisson(Mesh& msh, Mesh& visu, Writer& mWriter, int order);
+vector<double> aPoisson(Mesh& msh, Writer& mWriter);
 void fProjection(Mesh& msh, Writer& mWriter);
+
+vector<double> l2(vector<vector<double> >& v);
 
 int main(int argc, char** argv){
   int ret;
@@ -46,10 +50,17 @@ int run(int argc, char** argv){
     Mesh visu(argv[2]);
     int maxOrder = atoi(argv[3]);
 
-    for(int i = 1; i <= maxOrder; i++)
-      fPoisson(msh, visu,  mWriter, i);
+    vector<vector<double> > sol(maxOrder + 1);
 
-    aPoisson(visu, mWriter);
+    for(int i = 1; i <= maxOrder; i++)
+      sol[i - 1] = fPoisson(msh, visu,  vWriter, i);
+
+    sol[maxOrder] = aPoisson(visu, vWriter);
+
+    vector<double> l2Error = l2(sol);
+
+    for(unsigned int i = 0; i < l2Error.size(); i++)
+      cout << i + 1 << ": " << l2Error[i] << endl;
   }
 
   //fLaplace(msh, mWriter);
@@ -75,7 +86,7 @@ void fLaplace(Mesh& msh, Writer& mWriter){
   solLaplace.write("laplace", mWriter);
 }
 
-void fPoisson(Mesh& msh, Mesh& visu, Writer& mWriter, int order){
+vector<double> fPoisson(Mesh& msh, Mesh& visu, Writer& mWriter, int order){
   // FEM Solution
   GroupOfElement domain = msh.getFromPhysical(9);
 
@@ -99,15 +110,19 @@ void fPoisson(Mesh& msh, Mesh& visu, Writer& mWriter, int order){
   stream << "poisson" << order;
 
   solPoisson.write(stream.str(), mWriter);
+
+  return solPoisson.getNodalScalarValue();
 }
 
-void aPoisson(Mesh& msh, Writer& mWriter){
+vector<double> aPoisson(Mesh& msh, Writer& mWriter){
   // Analytical Solution
   GroupOfElement domain = msh.getFromPhysical(9);
 
   cout << "Poisson (Ref)" << endl;
   PoissonSquare poisson(domain);
   poisson.write("poissonRef", mWriter);
+
+  return poisson.getNodalScalarValue();
 }
 
 void fProjection(Mesh& msh, Writer& mWriter){
@@ -127,4 +142,21 @@ void fProjection(Mesh& msh, Writer& mWriter){
 
   Solution solProj(sysProj);
   solProj.write("projection", mWriter);
+}
+
+vector<double> l2(vector<vector<double> >& v){
+  unsigned int size      = v.size();
+  unsigned int sizeMinus = size - 1;
+  unsigned int node      = v[0].size();
+
+  vector<double> res(sizeMinus, 0);
+
+  for(unsigned int i = 0; i < size; i++){
+    for(unsigned int j = 0; j < node; j++)
+      res[i] += (v[i][j] - v[sizeMinus][j]) * (v[i][j] - v[sizeMinus][j]);
+    
+    res[i] = sqrt(res[i]);
+  }
+
+  return res;
 }
