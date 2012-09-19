@@ -84,8 +84,11 @@ class onelabMetaModelServer : public GmshServer{
 };
 
 std::string localNetworkSolverClient::buildCommandLine(){
-  std::string command("cd " + getWorkingDir() + cmdSep
-		      + FixWindowsPath(getCommandLine()));
+  std::string command;
+  command.assign("");
+  if(!getWorkingDir().empty()) 
+    command.append("cd " + getWorkingDir() + cmdSep);
+  command.append(FixWindowsPath(getCommandLine()));
   if(command.size()){
     std::vector<onelab::string> ps;
     get(ps, getName() + "/Action");
@@ -643,11 +646,15 @@ const bool localSolverClient::getList(const std::string type, std::vector<std::s
 bool localSolverClient::buildRmCommand(std::string &cmd){
   std::vector<std::string> choices;
 
+  cmd.assign("");
+  if(!getWorkingDir().empty()) 
+    cmd.append("cd " + getWorkingDir() + cmdSep);
+
   if(getList("OutputFiles",choices)){
 #if defined(WIN32)
-    cmd.assign("del ");
+    cmd.append("del ");
 #else
-    cmd.assign("rm -rf ");
+    cmd.append("rm -rf ");
 #endif
     for(unsigned int i = 0; i < choices.size(); i++)
       cmd.append(choices[i]+" ");
@@ -672,22 +679,6 @@ void localSolverClient::PostArray(std::vector<std::string> choices)
     nb++;
   }
 }
-
-// void localSolverClient::GmshMerge(std::vector<std::string> choices)
-// {
-//   if(choices.empty()) return;
-//   std::string cmd=Msg::GetOnelabString("Gmsh/CommandLine")+" ";
-//   for(unsigned int i = 0; i < choices.size(); i++){
-//     std::string fileName=getWorkingDir()+choices[i];
-//     cmd.append(fileName+" ");
-//     if(Msg::hasGmsh){
-//       Msg::loader->sendMergeFileRequest(fileName);
-//       Msg::Info("Send merge request <%s>",fileName.c_str());
-//     }
-//   }
-//   cmd.append(" &");
-//   if(!Msg::hasGmsh) system(cmd.c_str());
-// }
 
 void localSolverClient::GmshMerge(std::vector<std::string> choices)
 {
@@ -733,22 +724,23 @@ void MetaModel::initialize()
   Msg::SetOnelabNumber(clientName + "/Initialized",1,false);
 }
 
-void MetaModel::registerClient(const std::string &name, const std::string &type, const std::string &cmdl, const std::string &dir, const std::string &host, const std::string &rdir) {
+void MetaModel::registerClient(const std::string &name, const std::string &type, const std::string &cmdl, const std::string &host, const std::string &rdir) {
   localSolverClient *c;
-
-  if(host.empty()){ //local client
+  // Clients are assigned by default the same working dir as the MetaModel
+  // i.e. the working dir from args
+  if(host.empty() || rdir.empty()){ //local client
     if(!type.compare(0,6,"interf"))
-      c= new InterfacedClient(name,cmdl,dir);
+      c= new InterfacedClient(name,cmdl,getWorkingDir());
     else if(!type.compare(0,6,"encaps"))
-      c= new EncapsulatedClient(name,cmdl,dir);
+      c= new EncapsulatedClient(name,cmdl,getWorkingDir());
     else 
       Msg::Fatal("Unknown client type", type.c_str());
   }
   else{ // remote client
     if(!type.compare(0,6,"interf"))
-      c= new RemoteInterfacedClient(name,cmdl,dir,host,rdir);
+      c= new RemoteInterfacedClient(name,cmdl,getWorkingDir(),host,rdir);
     else if(!type.compare(0,6,"encaps"))
-      c= new RemoteEncapsulatedClient(name,cmdl,dir,host,rdir);
+      c= new RemoteEncapsulatedClient(name,cmdl,getWorkingDir(),host,rdir);
     else 
       Msg::Fatal("Unknown remote client type", type.c_str());
   }
@@ -850,9 +842,12 @@ void InterfacedClient::compute(){
 
   if(getActive())
     if(buildRmCommand(cmd))
-      SystemCall("cd "+getWorkingDir()+cmdSep+cmd,true);
+      SystemCall(cmd,true); //blocking
 
-  cmd = "cd "+getWorkingDir()+cmdSep+FixWindowsPath(getCommandLine() + " ") ;
+  cmd.assign("");
+  if(!getWorkingDir().empty())
+    cmd.append("cd " + getWorkingDir() + cmdSep);
+  cmd.append(FixWindowsPath(getCommandLine() + " "));
   cmd.append(getString("Arguments"));
 
   SystemCall(cmd.c_str(),true); //blocking
@@ -883,9 +878,10 @@ void EncapsulatedClient::compute() {
   std::string cmd;
   std::vector<std::string> choices;
 
-  Msg::SetOnelabString(getName() + "/Action","compute",false); 
-  if(buildRmCommand(cmd))
-    SystemCall("cd "+getWorkingDir()+cmdSep+cmd,true);
+  Msg::SetOnelabString(getName() + "/Action","compute",false);
+  if(getActive())
+    if(buildRmCommand(cmd))
+      SystemCall(cmd,true);
 
   if(getList("InputFiles",choices)){
     for(unsigned int i = 0; i < choices.size(); i++){
@@ -910,7 +906,7 @@ void EncapsulatedClient::compute() {
 // REMOTE CLIENT
 
 int mySystem(std::string commandLine){
-  std::cout << "mySystem<" << commandLine << ">" << std::endl;
+  //std::cout << "mySystem<" << commandLine << ">" << std::endl;
   return SystemCall(commandLine.c_str(), true);
 }
 
@@ -921,14 +917,14 @@ bool remoteClient::checkIfPresentRemote(const std::string &fileName){
   FILE *fp;
 
   cmd.assign("ssh "+_remoteHost+" 'cd "+_remoteDir+"; ls "+fileName+" 2>/dev/null'");
-  std::cout << "check remote<" << cmd << ">" << std::endl;
+  //std::cout << "check remote<" << cmd << ">" << std::endl;
   fp = popen(cmd.c_str(), "r");
   if(fgets(cbuf, 1024, fp) == NULL){
-    std::cout << "le fichier " << fileName << " n'existe pas" << std::endl;
+    Msg::Fatal("The file <%s> is not present", fileName.c_str());
     pclose(fp);
     return false;
   }
-  std::cout << "le fichier " << fileName << " existe" << std::endl;
+  Msg::Info("The file <%s> is present", fileName.c_str());
   pclose(fp);
   return true;
 }
@@ -936,8 +932,10 @@ bool remoteClient::checkIfPresentRemote(const std::string &fileName){
 bool remoteClient::syncInputFile(const std::string &wdir, const std::string &fileName){
   int pos;
   std::string cmd;
-  if((pos=fileName.find(onelabExtension)) != std::string::npos){ // .ol file => local
-    std::string trueName = fileName.substr(fileName.find_first_not_of(" "),pos); // remove ext .ol
+  if((pos=fileName.find(onelabExtension)) != std::string::npos){ 
+    // .ol file => local
+    std::string trueName = 
+      fileName.substr(fileName.find_first_not_of(" "),pos); // remove ext .ol
     std::string fullName = wdir+trueName;
     if(checkIfPresent(fullName)){
       cmd.assign("rsync -e ssh -auv "+fullName+" "+_remoteHost+":"+_remoteDir+"/"+trueName);
@@ -976,7 +974,6 @@ bool remoteClient::syncOutputFile(const std::string &wdir, const std::string &fi
 
   if(checkIfPresentRemote(fileName)){
     int pos=fileName.find_first_not_of(" ");
-    std::cout << "sync output" << std::endl;
     if(!fileName.compare(pos,1,".")){ // the file must be copied back locally
       cmd.assign("rsync -e ssh -auv "+_remoteHost+":"+_remoteDir+dirSep
 		 +fileName.substr(pos,std::string::npos)+" "+wdir);
@@ -1003,11 +1000,11 @@ bool RemoteInterfacedClient::checkCommandLine(){
   cmd.assign("ssh "+getRemoteHost()+" 'which "+getCommandLine()+"'");
   fp = popen(cmd.c_str(), "r");
   if(fgets(cbuf, 1024, fp) == NULL){
-    std::cout << "l'executable " << getCommandLine() << " n'existe pas" << std::endl;
+    Msg::Warning("The executable <%s> does not exist", getCommandLine().c_str());
     pclose(fp);
     return false;
   }
-  std::cout << "l'executable " << getCommandLine() << " existe" << std::endl;
+  Msg::Info("The executable <%s> exists", getCommandLine().c_str());
   pclose(fp);
 
   return true;
@@ -1070,7 +1067,7 @@ std::string RemoteEncapsulatedClient::buildCommandLine(){
       //FIXME redirect?
     }
     else
-      Msg::Fatal("remoteEncapsulatedClient::run: Unknown: Unknown Action <%s>", action.c_str());
+      Msg::Fatal("remoteEncapsulatedClient::run: Unknown Action <%s>", action.c_str());
   }
   return command;
 }
@@ -1088,11 +1085,11 @@ bool RemoteEncapsulatedClient::checkCommandLine(){
   cmd.assign("ssh "+getRemoteHost()+" 'which "+getCommandLine()+"'");
   fp = popen(cmd.c_str(), "r");
   if(fgets(cbuf, 1024, fp) == NULL){
-    std::cout << "l'executable " << getCommandLine() << " n'existe pas" << std::endl;
+    Msg::Warning("The executable <%s> does not exist", getCommandLine().c_str());
     pclose(fp);
     return false;
   }
-  std::cout << "l'executable " << getCommandLine() << " existe" << std::endl;
+  Msg::Info("The executable <%s> exists", getCommandLine().c_str());
   pclose(fp);
 
   Msg::SetOnelabString(getName() + "/Action","initialize",false);
@@ -1143,7 +1140,6 @@ void RemoteEncapsulatedClient::compute(){
 }
 
 // ONELAB additional TOOLS (no access to server in tools)
-
 // options for 'onelab_client'
 
 int getOptions(int argc, char *argv[], std::string &action, std::string &commandLine, std::string &caseName, std::string &clientName, std::string &sockName, int &modelNumber){
@@ -1214,7 +1210,7 @@ bool checkIfPresent(std::string fileName){
   if (!stat(fileName.c_str(), &buf))
     return true;
   else{
-    Msg::Fatal("The file <%s> is not present...",fileName.c_str());
+    Msg::Fatal("The file <%s> is not present.",fileName.c_str());
     return false;
   }
 }
@@ -1256,6 +1252,13 @@ std::string removeBlanks(const std::string &in)
   else
     return "";
 }
+bool isPath(const std::string &in)
+{
+  int pos=in.find_last_not_of(" 0123456789");
+  if(in.compare(pos,1,dirSep))
+    Msg::Fatal("The argument <%s> is not a valid path.",in.c_str());
+  return true;
+}
 
 void GmshDisplay(onelab::remoteNetworkClient *loader, std::string fileName, std::vector<std::string> choices){
   if(choices.empty()) return;
@@ -1274,18 +1277,6 @@ void GmshDisplay(onelab::remoteNetworkClient *loader, std::string fileName, std:
     }
   }
   if(!Msg::hasGmsh) system(cmd.c_str());
-}
-
-
-void appendOption(std::string &str, const std::string &what, const int val){
-  if(val){ // assumes val=0 is the default
-    std::stringstream Num;
-    Num << val;
-    str.append( what + " " + Num.str() + " ");
-  }
-}
-void appendOption(std::string &str, const std::string &what){
-  str.append( what + " ");
 }
 
 std::vector <double> extract_column(const int col, array data){
@@ -1318,14 +1309,12 @@ array read_array(std::string filename, char sep){
   while (infile){
     std::string s;
     if (!getline( infile, s )) break;
-    //std::cout << "line=<" << s << ">" << std::endl;
     std::vector <double> record;
     end=0;
     while ( (deb=s.find_first_not_of(" \t\n", end)) != std::string::npos ) {
       end=s.find_first_of(" \t\n",deb);
       temp=atof( s.substr(deb,end).c_str() );
       record.push_back( temp );
-      //std::cout << "Read=<" << temp << ">" << std::endl;
     }
     array.push_back( record );
   }

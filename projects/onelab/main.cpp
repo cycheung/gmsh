@@ -7,7 +7,7 @@ onelab::server *onelab::server::_server = 0;
 onelab::remoteNetworkClient *Msg::loader = 0;
 
 int main(int argc, char *argv[]){
-  std::string action="", commandLine="", caseName="", clientName="", sockName = "";
+  std::string action="", commandLine="", caseName="", clientName="", sockName="";
   int modelNumber=0;
 
   getOptions(argc, argv, action, commandLine, caseName, clientName, sockName, modelNumber);
@@ -41,7 +41,7 @@ int main(int argc, char *argv[]){
   if(caseName.size()){
      fileName.assign(SplitFileName(caseName)[1]);
      workingDir.assign(SplitFileName(caseName)[0]);
-     if(workingDir.empty()) workingDir.assign("."+dirSep);
+     //if(workingDir.empty()) workingDir.assign("."+dirSep);
   }
   else
     Msg::Fatal("No valid input filename.");

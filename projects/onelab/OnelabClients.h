@@ -30,14 +30,12 @@ static std::string cmdSep(" ; ");
 int getOptions(int argc, char *argv[], std::string &action, std::string &commandLine, std::string &caseName, std::string &clientName, std::string &sockName, int &modelNumber);
 std::string itoa(const int i);
 std::string ftoa(const double x);
-void appendOption(std::string &str, const std::string &what, const int val);
-void appendOption(std::string &str, const std::string &what);
 void GmshDisplay(onelab::remoteNetworkClient *loader, std::string fileName, std::vector<std::string> choices);
 std::string getCurrentWorkdir();
 std::string getUserHomedir();
-//static std::string getNextToken(const std::string &msg,std::string::size_type &first);
 std::string sanitize(const std::string &in);
 std::string removeBlanks(const std::string &in);
+bool isPath(const std::string &in);
 int enclosed(const std::string &in, std::vector<std::string> &arguments);
 int extract(const std::string &in, std::string &paramName, std::string &action, std::vector<std::string> &arguments);
 bool extractRange(const std::string &in, std::vector<double> &arguments);
@@ -217,6 +215,7 @@ class MetaModel : public localSolverClient {
     clientName = cname;
     modelNumberFromArgs = number;
     genericNameFromArgs = fname.size() ? fname : cmdl;
+    setWorkingDir(wdir); // wdir from args
     openOnelabBlock();
     parse_onefile( genericNameFromArgs + onelabExtension + ".save",false);
     parse_onefile( genericNameFromArgs + onelabExtension);
@@ -229,8 +228,8 @@ class MetaModel : public localSolverClient {
   int getNumClients() { return _clients.size(); };
 
   void registerClient(const std::string &name, const std::string &type, 
-		      const std::string &cmdl, const std::string &wdir, 
-		      const std::string &host, const std::string &rdir);
+		      const std::string &cmdl, const std::string &host, 
+		      const std::string &rdir);
   bool checkCommandLines();
   void saveCommandLines(const std::string fileName);
   localSolverClient *findClientByName(std::string name){
