@@ -684,9 +684,11 @@ void localSolverClient::GmshMerge(std::vector<std::string> choices)
 {
   if(!Msg::hasGmsh || choices.empty()) return;
   for(unsigned int i = 0; i < choices.size(); i++){
-    std::string fileName=getWorkingDir()+choices[i];
-    Msg::loader->sendMergeFileRequest(fileName);
-    Msg::Info("Send merge request <%s>",fileName.c_str());
+    if(!choices[i].empty()){
+      std::string fileName=getWorkingDir()+choices[i];
+      Msg::loader->sendMergeFileRequest(fileName);
+      Msg::Info("Send merge request <%s>",fileName.c_str());
+    }
   }
 }
 
