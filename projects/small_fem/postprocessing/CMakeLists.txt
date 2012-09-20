@@ -1,5 +1,6 @@
 set(src
   Writer.cpp
+  WriterDummy.cpp
   WriterMsh.cpp
   WriterVector.cpp
 

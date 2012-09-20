@@ -8,19 +8,20 @@
 #include "System.h"
 #include "Solution.h"
 #include "WriterMsh.h"
+#include "WriterDummy.h"
 
 #include "FormulationPoisson.h"
 #include "PoissonSquare.h"
 
 using namespace std;
 
-vector<double> fPoisson(Mesh& msh, Mesh& visu, Writer& writer, int order);
+vector<double> fPoisson(Mesh& msh, Mesh& visu, Writer& writer, int order, string suffix);
 vector<double> aPoisson(Mesh& msh, Writer& writer);
 vector<double> l2(vector<vector<double> >& v);
 
 int main(int argc, char** argv){
   // Writer //
-  WriterMsh writer; 
+  WriterDummy writer; 
   
   // Get Mesh //
   Mesh msh(argv[1]);
@@ -31,7 +32,7 @@ int main(int argc, char** argv){
   vector<vector<double> > sol(maxOrder + 1);
 
   for(int i = 1; i <= maxOrder; i++)
-    sol[i - 1] = fPoisson(msh, visu,  writer, i);
+    sol[i - 1] = fPoisson(msh, visu,  writer, i, argv[4]);
 
   // Compute Analytical //
   sol[maxOrder] = aPoisson(visu, writer);
@@ -39,7 +40,7 @@ int main(int argc, char** argv){
   // L2 Error //
   vector<double> l2Error = l2(sol);
 
-  cout << "l2 = [";
+  cout << "Mesh" << argv[4] << "_l2 = [";
   for(unsigned int i = 0; i < l2Error.size(); i++)
     cout << l2Error[i] << ";";
   
@@ -48,7 +49,7 @@ int main(int argc, char** argv){
   return 0;
 }
 
-vector<double> fPoisson(Mesh& msh, Mesh& visu, Writer& writer, int order){
+vector<double> fPoisson(Mesh& msh, Mesh& visu, Writer& writer, int order, string suffix){
   // FEM Solution
   GroupOfElement domain = msh.getFromPhysical(9);
 
@@ -69,7 +70,7 @@ vector<double> fPoisson(Mesh& msh, Mesh& visu, Writer& writer, int order){
   Solution solPoisson(sysPoisson, visuDomain);
 
   stringstream stream;
-  stream << "poisson" << order;
+  stream << "poisson_Mesh" << suffix << "_Order" << order;
 
   solPoisson.write(stream.str(), writer);
 
