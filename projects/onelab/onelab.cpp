@@ -73,7 +73,6 @@ int main(int argc, char *argv[]){
       myModel->analyze();
   }
   else if(!action.compare("compute")){
-      myModel->analyze();
       myModel->compute();
   }
   else

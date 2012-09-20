@@ -277,6 +277,7 @@ std::string localSolverClient::resolveGetVal(std::string line) {
     if(enclosed(line.substr(cursor),arguments,pos) != 1)
       Msg::Fatal("Misformed %s statement: <%s>",
 		 olkey::mathex.c_str(),line.c_str());
+    //std::cout << "MathEx evaluates now <"<< arguments[0]<< "> " << std::endl;
     smlib::mathex* mathExp = new smlib::mathex();
     mathExp->expression(arguments[0]); 
     double val=mathExp->eval();

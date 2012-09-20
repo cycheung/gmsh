@@ -749,8 +749,9 @@ void MetaModel::registerClient(const std::string &name, const std::string &type,
   _clients.push_back(c);
 }
 
-void MetaModel::simpleCheck()
+void MetaModel::analyze()
 {
+  Msg::Info("\nMetamodel: now ANALYSING");
   for(citer it = _clients.begin(); it != _clients.end(); it++){
     //if((*it)->isActive()){ // also inactive clients are checked
       Msg::SetOnelabString((*it)->getName() + "/Action","check",false);
@@ -761,8 +762,9 @@ void MetaModel::simpleCheck()
   }
 }
 
-void MetaModel::simpleCompute()
+void MetaModel::compute()
 {
+  Msg::Info("\nMetamodel: now COMPUTING");
   for(citer it = _clients.begin(); it != _clients.end(); it++){
     if(Msg::GetOnelabString("MetaModel/STATUS").compare("STOP")){
       if((*it)->isActive()){
@@ -807,7 +809,7 @@ void InterfacedClient::analyze() {
       parse_onefile(choices[i]);
     }
   }
-  convert(); // FIXME only for debug
+  convert(); // only for debug
 }
 
 void InterfacedClient::convert() {
@@ -832,7 +834,7 @@ void InterfacedClient::convert() {
 void InterfacedClient::compute(){
   std::string cmd;
   std::vector<std::string> choices;
-
+  analyze();
   convert(); 
   Msg::SetOnelabString(getName() + "/Action","compute",false);
   if(getList("InputFiles",choices)){

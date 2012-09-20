@@ -247,6 +247,7 @@ class MetaModel : public localSolverClient {
   void simpleCheck();
   void simpleCompute();
   void analyze();
+  void convert();
   void compute();
 };
 
