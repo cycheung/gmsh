@@ -980,7 +980,9 @@ bool remoteClient::syncOutputFile(const std::string &wdir, const std::string &fi
     int pos=fileName.find_first_not_of(" ");
     if(!fileName.compare(pos,1,".")){ // the file must be copied back locally
       cmd.assign("rsync -e ssh -auv "+_remoteHost+":"+_remoteDir+dirSep
-		 +fileName.substr(pos,std::string::npos)+" "+wdir);
+		 +fileName.substr(pos,std::string::npos)+" .");
+      if(!wdir.empty()) 
+	cmd.append(dirSep+wdir);
       return mySystem(cmd);
     }
   }
