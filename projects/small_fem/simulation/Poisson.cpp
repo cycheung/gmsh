@@ -39,8 +39,11 @@ int main(int argc, char** argv){
   // L2 Error //
   vector<double> l2Error = l2(sol);
 
+  cout << "l2 = [";
   for(unsigned int i = 0; i < l2Error.size(); i++)
-    cout << i + 1 << ": " << l2Error[i] << endl;
+    cout << l2Error[i] << ";";
+  
+  cout << "];" << endl;
 
   return 0;
 }

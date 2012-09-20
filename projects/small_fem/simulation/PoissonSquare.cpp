@@ -1,8 +1,8 @@
 #include <cmath>
 #include "PoissonSquare.h"
 
-unsigned int PoissonSquare::max = 21
-;
+unsigned int PoissonSquare::max = 225;
+
 double PoissonSquare::pi =
   3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342117067982;
 
