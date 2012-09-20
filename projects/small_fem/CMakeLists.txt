@@ -34,16 +34,13 @@ add_subdirectory(formulation)
 add_subdirectory(geometry)
 add_subdirectory(postprocessing)
 add_subdirectory(solver)
-add_subdirectory(exactSolution)
+add_subdirectory(simulation)
 
 ## TO BE REMOVED !!!
 ####################
 add_subdirectory(../../FunctionSpace 
   "${CMAKE_CURRENT_BINARY_DIR}/FunctionSpace")
 ####################
-
-## Add Main
-list(APPEND sources Main.cpp)
 
 ## Include Path
 include_directories(
@@ -53,7 +50,6 @@ include_directories(
   geometry
   postprocessing
   solver
-  exactSolution
 )
 
 ## Include Path for gmsh
@@ -67,7 +63,13 @@ include_directories(
 
 ## Build
 add_definitions(-pedantic -Wall -g)
-add_executable(sf ${sources}) 
+add_executable(laplace ${sources} simulation/Laplace.cpp) 
+add_executable(poisson ${sources} simulation/Poisson.cpp) 
+add_executable(project ${sources} simulation/Projection.cpp) 
+add_executable(btest   ${sources} simulation/BasisTest.cpp) 
 
 ## Link (Note: 'lib' is gmsh static library)
-target_link_libraries(sf cblas lapack lib)
+target_link_libraries(laplace cblas lapack lib)
+target_link_libraries(poisson cblas lapack lib)
+target_link_libraries(project cblas lapack lib)
+target_link_libraries(btest   cblas lapack lib)

@@ -3,4 +3,4 @@ set(src
   PoissonSquare.cpp
 )
 
-add_sources(exactSolution "${src}")
+add_sources(simulation "${src}")
