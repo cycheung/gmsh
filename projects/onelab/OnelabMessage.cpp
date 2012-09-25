@@ -614,6 +614,7 @@ int Msg::Synchronize_Down(){
 	it != numbers.end(); it++){
       pn=new onelab::number;
       pn->fromChar((*it).toChar());
+      std::cout << "FHF d " <<(*it).getName() << "=" << (*it).getChanged() << std::endl;
       Msg::SetOnelabNumber(*pn);
       Msg::recordFullName(pn->getName());
       delete pn;
@@ -658,6 +659,7 @@ int Msg::Synchronize_Up(){
       pn = new(onelab::number);
       pn->fromChar((*it).toChar());
       loader->set(*pn);
+      std::cout << "FHF u " << pn->getName() << "=" << pn->getChanged() << std::endl;
       delete pn;
     }
   }

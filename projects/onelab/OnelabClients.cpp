@@ -128,9 +128,12 @@ bool localNetworkSolverClient::run()
 #if defined(WIN32)
   std::string socketName = ":";
 #else
-  std::string socketName = getUserHomedir() + ".gmshsock";
+  std::string socketName;
+  if(getRemote())
+    socketName = ":";
+  else
+    socketName = getUserHomedir() + ".gmshsock";
 #endif
-  socketName = ":";
 
   std::string sockname;
   std::ostringstream tmp;
@@ -167,7 +170,7 @@ bool localNetworkSolverClient::run()
     return false;
   }
 
-  Msg::StatusBar(2, true, "Now running client '%s'...", _name.c_str());
+  Msg::StatusBar(2, true, "Now running client <%s>", _name.c_str());
 
   while(1) {
     if(_pid < 0) break;
@@ -755,10 +758,13 @@ void MetaModel::analyze()
   for(citer it = _clients.begin(); it != _clients.end(); it++){
     //if((*it)->isActive()){ // also inactive clients are checked
       Msg::SetOnelabString((*it)->getName() + "/Action","check",false);
+      Msg::Info("%d <%s>", 
+		onelab::server::instance()->getChanged((*it)->getName()),
+		(*it)->getName().c_str());
       (*it)->analyze();
+
       //some clients must be run at the check phase
-      if((*it)->getActive()==2) 
-	(*it)->compute();
+      if((*it)->getActive()==2) (*it)->compute();
   }
 }
 
@@ -769,15 +775,18 @@ void MetaModel::compute()
     if(Msg::GetOnelabString("MetaModel/STATUS").compare("STOP")){
       if((*it)->isActive()){
 	Msg::SetOnelabString((*it)->getName() + "/Action","compute",false);
-	if(Msg::GetOnelabNumber("LOGFILES")){
-	  freopen((*it)->getName().append(".log").c_str(),"w",stdout);
-	  //freopen((*it)->getName().append(".err").c_str(),"w",stderr);
-	}
+	// if(Msg::GetOnelabNumber("LOGFILES")){
+	//   freopen((*it)->getName().append(".log").c_str(),"w",stdout);
+	//   freopen((*it)->getName().append(".err").c_str(),"w",stderr);
+	// }
 	(*it)->compute();
 	Msg::SetOnelabString((*it)->getName() + "/Action","alldone",false);
       }
     }
   }
+  // resets all parameters to 'unchanged'
+  std::cout << "FHF sets all param unchanged" << std::endl;
+  onelab::server::instance()->setChanged(false);
 }
 
 void MetaModel::PostArray(std::vector<std::string> choices)
@@ -1262,7 +1271,7 @@ bool isPath(const std::string &in)
 {
   int pos=in.find_last_not_of(" 0123456789");
   if(in.compare(pos,1,dirSep))
-    Msg::Fatal("The argument <%s> is not a valid path.",in.c_str());
+    Msg::Fatal("The argument <%s> is not a valid path (must end with '/')",in.c_str());
   return true;
 }
 

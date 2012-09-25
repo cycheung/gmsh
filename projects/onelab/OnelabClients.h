@@ -166,10 +166,12 @@ class localNetworkSolverClient : public localSolverClient{
   int _pid;
   // underlying GmshServer
   GmshServer *_gmshServer;
+  // flag indicating if the client is a remote one
+  bool _remote;
  public:
  localNetworkSolverClient(const std::string &name, const std::string &cmdl, const std::string &wdir)
    : localSolverClient(name,cmdl,wdir), _socketSwitch("-onelab"),
-    _pid(-1), _gmshServer(0) {}
+    _pid(-1), _gmshServer(0), _remote(false) {}
   virtual ~localNetworkSolverClient(){}
   virtual bool isNetworkClient(){ return true; }
   const std::string &getSocketSwitch(){ return _socketSwitch; }
@@ -178,6 +180,8 @@ class localNetworkSolverClient : public localSolverClient{
   void setPid(int pid){ _pid = pid; }
   GmshServer *getGmshServer(){ return _gmshServer; }
   void setGmshServer(GmshServer *server){ _gmshServer = server; }
+  int getRemote(){ return _remote; }
+  void setRemote(bool rem){ _remote = rem; }
 
   virtual std::string buildCommandLine();
   virtual bool run();
@@ -209,6 +213,7 @@ class remoteClient {
 class MetaModel : public localSolverClient {
  private:
   std::vector<localSolverClient *> _clients;
+  std::string _action;
  public:
  MetaModel(const std::string &cmdl, const std::string &wdir, const std::string &cname, const std::string &fname, const int number) 
    : localSolverClient(cname,cmdl,wdir){
@@ -223,6 +228,8 @@ class MetaModel : public localSolverClient {
   }
   ~MetaModel(){}
   typedef std::vector<localSolverClient*>::iterator citer;
+  void setAction(const std::string s) { _action.assign(s); }
+  bool isAction(const std::string s) { return !_action.compare(s);}
   citer firstClient(){ return _clients.begin(); }
   citer lastClient(){ return _clients.end(); }
   int getNumClients() { return _clients.size(); };
@@ -244,8 +251,6 @@ class MetaModel : public localSolverClient {
   std::string toChar(){}
   void PostArray(std::vector<std::string> choices);
   void initialize();
-  void simpleCheck();
-  void simpleCompute();
   void analyze();
   void convert();
   void compute();
@@ -287,7 +292,9 @@ public:
 class RemoteEncapsulatedClient : public EncapsulatedClient, public remoteClient {
 public:
  RemoteEncapsulatedClient(const std::string &name, const std::string &cmdl, const std::string &wdir, const std::string &host, const std::string &rdir) 
-   : EncapsulatedClient(name,cmdl,wdir), remoteClient(host,rdir) {}
+   : EncapsulatedClient(name,cmdl,wdir), remoteClient(host,rdir) {
+    setRemote(true);
+  }
   ~RemoteEncapsulatedClient(){}
 
   std::string buildCommandLine();

@@ -8,6 +8,11 @@ Khi.number(0.12, Parameters/,"Hysteresis coefficient",0:0.5:0.1);
 DISPLAY.radioButton(1, Options/,"Display functional at each step");
 
 
+Mesh.register(encapsulated, gmsh);
+Mesh.in( circle.geo);
+Mesh.out(circle.msh);
+Mesh.args(circle.geo);
+
 # In this metamodel, the only client is the postprocessor of gmsh
 # running (non interactively, see the "-" argument) a script called "script"
 Post.register (interfaced, gmsh);

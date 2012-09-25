@@ -1,4 +1,4 @@
-lc=0.03;
+DefineConstant[lc = {0.03, Path "Geometry/", ShortHelp "Mesh size"}] ;
 r =0.99;
 
 Point(1) = { 0, 0, 0, lc};

@@ -526,6 +526,7 @@ void localSolverClient::parse_sentence(std::string line) {
 	  numbers[0].setValue(0);
 	else
 	  numbers[0].setValue(atof(resolveGetVal(arguments[0]).c_str()));
+	numbers[0].setReadOnly(1);
 	set(numbers[0]);
       }
       else{
@@ -870,7 +871,7 @@ void localSolverClient::parse_onefile(std::string fileName, bool mandatory) {
   std::string fullName=getWorkingDir()+fileName;
   std::ifstream infile(fullName.c_str());
   if (infile.is_open()){
-    Msg::Info("Parse file <%s>",fullName.c_str());
+    Msg::Info("   Parse file <%s>",fullName.c_str());
     while (infile.good()){
       std::string line;
       getline(infile,line);
@@ -1090,7 +1091,7 @@ void localSolverClient::convert_onefile(std::string fileName, std::ofstream &out
   std::string fullName=getWorkingDir()+fileName;
   std::ifstream infile(fullName.c_str());
   if (infile.is_open()){
-    Msg::Info("Convert file <%s>",fullName.c_str());
+    Msg::Info("   Convert file <%s>",fullName.c_str());
     while ( infile.good() ) {
       std::string line;
       getline (infile,line);

@@ -53,6 +53,7 @@ int main(int argc, char *argv[]){
 
   MetaModel *myModel = new MetaModel(commandLine, workingDir, clientName,
 				     fileName, modelNumber);
+  myModel->setAction(action);
 
   //if not all clients have valid commandlines -> exit metamodel
   //commandlines will be entered by the user interactively
