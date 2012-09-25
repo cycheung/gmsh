@@ -8,6 +8,7 @@
 #include "System.h"
 #include "Solution.h"
 #include "WriterMsh.h"
+#include "WriterDummy.h"
 
 #include "FormulationPoisson.h"
 #include "PoissonSquare.h"
@@ -20,7 +21,7 @@ fullMatrix<double> l2(fullMatrix<vector<double> >& fem, vector<double>& ana);
 
 int main(int argc, char** argv){
   // Writer //
-  WriterMsh writer; 
+  WriterDummy writer; 
 
   // Get Data //
   const unsigned int M        = argc - 3; // Mesh number (without visu)
@@ -47,8 +48,25 @@ int main(int argc, char** argv){
   
   // L2 Error //
   fullMatrix<double> l2Error = l2(sol, ana);
+  
+  const unsigned int l2Row      = l2Error.size1();
+  const unsigned int l2ColMinus = l2Error.size2() - 1;
 
-  l2Error.print();
+  cout << "l2 = ..." << endl
+       << "    [..." << endl;
+  
+  for(unsigned int i = 0; i < l2Row; i++){
+    cout << "        ";
+
+    for(unsigned int j = 0; j < l2ColMinus; j++)
+      cout << scientific << showpos 
+	   << l2Error(i, j) << " , ";
+    
+    cout << scientific << showpos 
+	 << l2Error(i, l2ColMinus) << " ; ..." << endl;
+  }
+
+  cout << "    ];" << endl;
   
   return 0;
 }
@@ -65,9 +83,9 @@ vector<double> fPoisson(Mesh& msh, GroupOfElement& visuDomain, Writer& writer, i
   sysPoisson.fixDof(msh.getFromPhysical(7), 0);
   sysPoisson.fixDof(msh.getFromPhysical(8), 0);
   
-  sysPoisson.assemble();
   cout << "Poisson (" << order << "): " << sysPoisson.getSize() << endl;
-  //cout << "Function Space:" << endl << poisson.fs().toString() << endl;
+
+  sysPoisson.assemble();
   sysPoisson.solve();
 
   Solution solPoisson(sysPoisson, visuDomain);
@@ -83,6 +101,7 @@ vector<double> fPoisson(Mesh& msh, GroupOfElement& visuDomain, Writer& writer, i
 vector<double> aPoisson(GroupOfElement& domain, Writer& writer){
   // Analytical Solution
   cout << "Poisson (Ref)" << endl;
+
   PoissonSquare poisson(domain);
   poisson.write("poissonRef", writer);
 
@@ -90,6 +109,7 @@ vector<double> aPoisson(GroupOfElement& domain, Writer& writer){
 }
 
 fullMatrix<double> l2(fullMatrix<vector<double> >& fem, vector<double>& ana){
+  // Init //
   const unsigned int nOrder = fem.size1();
   const unsigned int nMesh  = fem.size2();
   const unsigned int nNode  = ana.size();
@@ -100,12 +120,20 @@ fullMatrix<double> l2(fullMatrix<vector<double> >& fem, vector<double>& ana){
     for(unsigned int j = 0; j < nMesh; j++)
       res(i , j) = 0;
 
+  // Norm of Analytic Solution //
+  double anaNorm = 0;
+  for(unsigned int k = 0; k < nNode; k++)
+    anaNorm += ana[k] * ana[k];
+  
+  anaNorm = sqrt(anaNorm);
+  
+  // Norm of FEM Error //
   for(unsigned int i = 0; i < nOrder; i++){
     for(unsigned int j = 0; j < nMesh; j++){
       for(unsigned int k = 0; k < nNode; k++)
 	res(i, j) += (ana[k] - fem(i, j)[k]) * (ana[k] - fem(i, j)[k]);
       
-      res(i, j) = sqrt(res(i, j));
+      res(i, j) = sqrt(res(i, j)) / anaNorm;
     }
   }
 
