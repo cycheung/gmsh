@@ -21,7 +21,7 @@ fullMatrix<double> l2(fullMatrix<vector<double> >& fem, vector<double>& ana);
 
 int main(int argc, char** argv){
   // Writer //
-  WriterDummy writer; 
+  WriterMsh writer; 
 
   // Get Data //
   const unsigned int M        = argc - 3; // Mesh number (without visu)
@@ -123,17 +123,17 @@ fullMatrix<double> l2(fullMatrix<vector<double> >& fem, vector<double>& ana){
   // Norm of Analytic Solution //
   double anaNorm = 0;
   for(unsigned int k = 0; k < nNode; k++)
-    anaNorm += ana[k] * ana[k];
+    anaNorm += ana[k];// * ana[k];
   
-  anaNorm = sqrt(anaNorm);
+  //anaNorm = sqrt(anaNorm);
   
   // Norm of FEM Error //
   for(unsigned int i = 0; i < nOrder; i++){
     for(unsigned int j = 0; j < nMesh; j++){
       for(unsigned int k = 0; k < nNode; k++)
-	res(i, j) += (ana[k] - fem(i, j)[k]) * (ana[k] - fem(i, j)[k]);
+	res(i, j) += (ana[k] - fem(i, j)[k]);// * (ana[k] - fem(i, j)[k]);
       
-      res(i, j) = sqrt(res(i, j)) / anaNorm;
+      res(i, j) = res(i, j) / anaNorm;//sqrt(res(i, j)) / anaNorm;
     }
   }
 
