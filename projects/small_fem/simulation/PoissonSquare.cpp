@@ -30,5 +30,5 @@ double PoissonSquare::fScalar(double x, double y, double z){
   }
   
 
-  return res;
+  return -res;
 }

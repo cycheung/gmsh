@@ -103,7 +103,7 @@ vector<double> aPoisson(GroupOfElement& domain, Writer& writer){
   // Analytical Solution
   cout << "Poisson (Ref)" << endl;
 
-  PoissonCircle poisson(domain);
+  PoissonSquare poisson(domain);
   poisson.write("poissonRef", writer);
 
   return poisson.getNodalScalarValue();
