@@ -5,12 +5,12 @@
 #include "GroupTyped.h"
 #include "Dof.h"
 
-#include "FunctionSpace.h"
 #include "Mesh.h"
 
 #include "MElement.h"
 
 class DofManager;
+class FunctionSpace;
 
 /**
    @class GroupOfDof
@@ -39,6 +39,7 @@ class GroupOfDof: public GroupTyped<Dof>{
   unsigned int nextDof;
   
   friend class DofManager;
+  friend class FunctionSpace;
 
  public:
   virtual unsigned int getNumber(void) const;

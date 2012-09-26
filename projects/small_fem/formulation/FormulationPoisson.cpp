@@ -121,7 +121,7 @@ double FormulationPoisson::rhs(int equationI,
 			     (*gCR)(g, 1), 
 			     (*gCR)(g, 2));
 
-    integral += 1 * phi * fabs(det) * (*gWR)(g);
+    integral += -1 * phi * fabs(det) * (*gWR)(g);
   }
 
   return integral;

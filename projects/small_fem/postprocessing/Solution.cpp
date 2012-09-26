@@ -193,7 +193,7 @@ void Solution::interpolateOnVisu(void){
     // Search element (in System Mesh) containg this 
     // visu node
     SPoint3   point   = node[i]->point();
-    MElement* element = model.getMeshElementByCoord(point, dim, true);
+    MElement* element = model.getMeshElementByCoord(point, dim, false);
    
     // Get GroupOfDof related to this Element
     const GroupOfDof& god = dofM->getGoDFromElement(*element);

@@ -12,6 +12,7 @@
 
 #include "FormulationPoisson.h"
 #include "PoissonSquare.h"
+#include "PoissonCircle.h"
 
 using namespace std;
 
@@ -102,7 +103,7 @@ vector<double> aPoisson(GroupOfElement& domain, Writer& writer){
   // Analytical Solution
   cout << "Poisson (Ref)" << endl;
 
-  PoissonSquare poisson(domain);
+  PoissonCircle poisson(domain);
   poisson.write("poissonRef", writer);
 
   return poisson.getNodalScalarValue();
