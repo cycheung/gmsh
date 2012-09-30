@@ -31,7 +31,7 @@ public:
 };
 
 // a class to manage messages
-class Msg {
+class OLMsg {
  private:
   // current cpu number and total number of cpus
   static int _commRank, _commSize;
@@ -55,7 +55,7 @@ class Msg {
   // dictionnary for parameter names
   static std::set<std::string, fullNameLessThan> _fullNameDict;
  public:
-  Msg() {}
+  OLMsg() {}
   static void Init(int argc, char **argv);
   static void Exit(int level);
   static int GetCommRank(){ return _commRank; }
@@ -97,11 +97,9 @@ class Msg {
   static void InitializeOnelab(const std::string &name, 
 			       const std::string &sockname);
   static void SetOnelabNumber(std::string name, double val, bool visible=true);
-  static void SetOnelabNumber(onelab::number s);
   static void GetOnelabNumber(std::string name, double *val);
   static double GetOnelabNumber(std::string name);
   static void SetOnelabString(std::string name, std::string val, bool visible=true);
-  static void SetOnelabString(onelab::string s);
   static std::string GetOnelabString(std::string name); 
   static void SetOnelabAttributeString(std::string name,
 				       std::string attrib,std::string val);
@@ -110,7 +108,6 @@ class Msg {
 					      std::string attrib);
   //static std::vector<std::string> GetOnelabChoices(std::string name);
   static bool GetOnelabChoices(std::string name, std::vector<std::string> &choices);
-  static void SetOnelabRegion(onelab::region r);
   static void ExchangeOnelabParameter(const std::string &key,
 				      std::vector<double> &val,
 				      std::map<std::string, 
@@ -120,6 +117,8 @@ class Msg {
   static void AddOnelabNumberChoice(std::string name, double val);
   static void AddOnelabStringChoice(std::string name, 
 				    std::string kind,std::string value);
+  /* static std::string GetAction(const std::string &name); */
+  /* static void SetAction(const std::string &name, const std::string &action); */
 
   // communication with loader
   static onelab::remoteNetworkClient *loader;
@@ -130,5 +129,15 @@ class Msg {
   static void recordFullName(const std::string &name);
   static std::string obtainFullName(const std::string &name);
 };
+
+/* class Msg { */
+/*   Msg() {} */
+/*   static void Error(const char *fmt, ...){ */
+/*     OLMsg::Error(fmt, ...); */
+/*   } */
+/*   static void Info(const char *fmt, ...){ */
+/*     OLMsg::Info(fmt, ...); */
+/*   } */
+/* }; */
 
 #endif

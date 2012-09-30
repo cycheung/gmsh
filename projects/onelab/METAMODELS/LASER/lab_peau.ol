@@ -10,11 +10,11 @@
 #-1)  Gmsh for meshing
 Mesher.register(encapsulated,gmsh);
 Mesher.in( OL.get(Arguments/FileName).geo );
-Mesher.args( OL.get(Arguments/FileName).geo);
+Mesher.run( OL.get(Arguments/FileName).geo);
 Mesher.out( OL.get(Arguments/FileName).msh );
 # Merge the mesh file if the metamodel is loaded by Gmsh
 Mesher.merge( OL.get(Arguments/FileName).msh);
-Mesher.check();
+#Mesher.check();
 # The latter optional command forces the client Mesher 
 # to be checked immediately 
 # so that parameters defined in the .geo file can be used 
@@ -147,28 +147,29 @@ ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.2000 * 1e-3) );
 #-2) ElmerGrid converts the mesh for Elmer
 ElmerGrid.register(interfaced);
 ElmerGrid.in( OL.get(Arguments/FileName).msh);
-ElmerGrid.args(14 2 OL.get(Arguments/FileName).msh -out mesh);
 ElmerGrid.out( mesh/mesh.boundary );
+ElmerGrid.run(14 2 OL.get(Arguments/FileName).msh -out mesh);
 
 #-3) ElmerSolver computes the thermal problem
 Elmer.register(interfaced);
 Elmer.in( ELMERSOLVER_STARTINFO.ol, OL.get(Arguments/FileName).sif.ol);
 Elmer.out( solution.pos, temp.txt );
-Elmer.merge(solution.pos)
-Elmer.active(1);
+Elmer.run();
+Elmer.merge(solution.pos);
+
 
 #-4) Post-processing with Gmsh and a script
 Post.register(interfaced);
-Post.in(solution.pos , script.opt.ol ); 
-Post.args(solution.pos script.opt -);
+Post.in(solution.pos , script.opt.ol );
 Post.out(tempmin.txt, tempmax.txt, temp0.txt, activeMax.txt);
+Post.run(solution.pos script.opt -);
 Post.up( tempmin.txt,-1,8,Solution/Tmin, tempmax.txt,-1,8,Solution/Tmax);
 
 #-5) Display solution with a client Gmsh
 Display.register(interfaced);
 Display.in(solution.pos, script2.opt.ol, overheat.pos.opt.ol );
 Display.out(overheat.pos );
-Display.args( solution.pos script2.opt - );
+Display.run( solution.pos script2.opt - );
 #Display.merge(overheat.pos);
 
 #-6) Display solution curves with either gnuplot or matlab
@@ -178,10 +179,10 @@ POSTPRO.setVisible(0);
 
 OL.if( OL.get(POSTPRO) == 1)
 Matlab.register(interfaced); 
-Matlab.args(-nosplash -desktop -r plotMatlab);
+Matlab.run(-nosplash -desktop -r plotMatlab);
 OL.endif
 OL.if( OL.get(POSTPRO) == 2)
 Gnuplot.register(interfaced);
 Gnuplot.in(temp.txt, plot.plt.ol);
-Gnuplot.args(plot.plt );
+Gnuplot.run(plot.plt );
 OL.endif

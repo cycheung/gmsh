@@ -14,21 +14,21 @@
 
 #define ALWAYS_TRUE 1
 
-int Msg::_commRank = 0;
-int Msg::_commSize = 1;
-int Msg::_verbosity = 4;
-int Msg::_progressMeterStep = 10;
-int Msg::_progressMeterCurrent = 0;
-std::map<std::string, double> Msg::_timers;
-int Msg::_warningCount = 0;
-int Msg::_errorCount = 0;
-GmshMessage *Msg::_callback = 0;
-std::string Msg::_commandLine;
-std::string Msg::_launchDate;
-GmshClient *Msg::_client = 0;
-onelab::client *Msg::_onelabClient = 0;
-bool Msg::hasGmsh=false;
-std::set<std::string, fullNameLessThan> Msg::_fullNameDict;
+int OLMsg::_commRank = 0;
+int OLMsg::_commSize = 1;
+int OLMsg::_verbosity = 4;
+int OLMsg::_progressMeterStep = 10;
+int OLMsg::_progressMeterCurrent = 0;
+std::map<std::string, double> OLMsg::_timers;
+int OLMsg::_warningCount = 0;
+int OLMsg::_errorCount = 0;
+GmshMessage *OLMsg::_callback = 0;
+std::string OLMsg::_commandLine;
+std::string OLMsg::_launchDate;
+GmshClient *OLMsg::_client = 0;
+onelab::client *OLMsg::_onelabClient = 0;
+bool OLMsg::hasGmsh=false;
+std::set<std::string, fullNameLessThan> OLMsg::_fullNameDict;
 
 #if defined(HAVE_NO_VSNPRINTF)
 static int vsnprintf(char *str, size_t size, const char *fmt, va_list ap)
@@ -46,7 +46,7 @@ static int vsnprintf(char *str, size_t size, const char *fmt, va_list ap)
 #define vsnprintf _vsnprintf
 #endif
 
-void Msg::Init(int argc, char **argv)
+void OLMsg::Init(int argc, char **argv)
 {
   time_t now;
   time(&now);
@@ -59,7 +59,7 @@ void Msg::Init(int argc, char **argv)
   }
 }
 
-void Msg::Exit(int level)
+void OLMsg::Exit(int level)
 {
   if(level){
     exit(level);
@@ -67,7 +67,7 @@ void Msg::Exit(int level)
   exit(_errorCount);
 }
 
-void Msg::Fatal(const char *fmt, ...)
+void OLMsg::Fatal(const char *fmt, ...)
 {
   _errorCount++;
 
@@ -88,14 +88,14 @@ void Msg::Fatal(const char *fmt, ...)
    fflush(stderr);
   }
 
-  Msg::SetOnelabString("MetaModel/STATUS","STOP");
+  OLMsg::SetOnelabString("MetaModel/STATUS","STOP");
   FinalizeClient();
   FinalizeOnelab();
   delete loader;
   Exit(1);
 }
 
-void Msg::Error(const char *fmt, ...)
+void OLMsg::Error(const char *fmt, ...)
 {
   _errorCount++;
 
@@ -119,7 +119,7 @@ void Msg::Error(const char *fmt, ...)
   }
 }
 
-void Msg::Warning(const char *fmt, ...)
+void OLMsg::Warning(const char *fmt, ...)
 {
   _warningCount++;
 
@@ -140,7 +140,7 @@ void Msg::Warning(const char *fmt, ...)
   }
 }
 
-void Msg::Info(const char *fmt, ...)
+void OLMsg::Info(const char *fmt, ...)
 {
   if(_commRank || _verbosity < 3) return;
 
@@ -154,12 +154,12 @@ void Msg::Info(const char *fmt, ...)
   if(_client) _client->Info(str);
 
   if(ALWAYS_TRUE){
-    fprintf(stdout, "Info    : %s\n", str);
+    fprintf(stdout, "Onelab  : %s\n", str);
     fflush(stdout);
   }
 }
 
-void Msg::Direct(const char *fmt, ...)
+void OLMsg::Direct(const char *fmt, ...)
 {
   if(_commRank || _verbosity < 3) return;
 
@@ -172,7 +172,7 @@ void Msg::Direct(const char *fmt, ...)
   Direct(3, str);
 }
 
-void Msg::Direct(int level, const char *fmt, ...)
+void OLMsg::Direct(int level, const char *fmt, ...)
 {
   if(_commRank || _verbosity < level) return;
 
@@ -191,7 +191,7 @@ void Msg::Direct(int level, const char *fmt, ...)
   }
 }
 
-void Msg::StatusBar(int num, bool log, const char *fmt, ...)
+void OLMsg::StatusBar(int num, bool log, const char *fmt, ...)
 {
   if(_commRank || _verbosity < 3) return;
   if(num < 1 || num > 3) return;
@@ -211,7 +211,7 @@ void Msg::StatusBar(int num, bool log, const char *fmt, ...)
   }
 }
 
-void Msg::Debug(const char *fmt, ...)
+void OLMsg::Debug(const char *fmt, ...)
 {
   if(_verbosity < 99) return;
 
@@ -233,7 +233,7 @@ void Msg::Debug(const char *fmt, ...)
   }
 }
 
-void Msg::ProgressMeter(int n, int N, const char *fmt, ...)
+void OLMsg::ProgressMeter(int n, int N, const char *fmt, ...)
 {
   if(_commRank || _verbosity < 3) return;
 
@@ -273,7 +273,7 @@ void Msg::ProgressMeter(int n, int N, const char *fmt, ...)
   }
 }
 
-void Msg::PrintTimers()
+void OLMsg::PrintTimers()
 {
   // do a single stdio call!
   std::string str;
@@ -295,7 +295,7 @@ void Msg::PrintTimers()
   }
 }
 
-void Msg::PrintErrorCounter(const char *title)
+void OLMsg::PrintErrorCounter(const char *title)
 {
   if(_commRank || _verbosity < 1) return;
   if(!_warningCount && !_errorCount) return;
@@ -316,7 +316,7 @@ void Msg::PrintErrorCounter(const char *title)
   }
 }
 
-double Msg::GetValue(const char *text, double defaultval)
+double OLMsg::GetValue(const char *text, double defaultval)
 {
   printf("%s (default=%.16g): ", text, defaultval);
   char str[256];
@@ -327,7 +327,7 @@ double Msg::GetValue(const char *text, double defaultval)
     return atof(str);
 }
 
-std::string Msg::GetString(const char *text, std::string defaultval)
+std::string OLMsg::GetString(const char *text, std::string defaultval)
 {
   printf("%s (default=%s): ", text, defaultval.c_str());
   char str[256];
@@ -338,7 +338,7 @@ std::string Msg::GetString(const char *text, std::string defaultval)
     return std::string(str);
 }
 
-int Msg::GetAnswer(const char *question, int defaultval, const char *zero,
+int OLMsg::GetAnswer(const char *question, int defaultval, const char *zero,
                    const char *one, const char *two)
 {
   if(two)
@@ -355,12 +355,12 @@ int Msg::GetAnswer(const char *question, int defaultval, const char *zero,
     return atoi(ret);
 }
 
-void Msg::InitClient(std::string sockname)
+void OLMsg::InitClient(std::string sockname)
 {
   if(_client) delete _client;
   _client = new GmshClient();
   if(_client->Connect(sockname.c_str()) < 0){
-    Msg::Error("Unable to connect to server on %s", sockname.c_str());
+    OLMsg::Error("Unable to connect to server on %s", sockname.c_str());
     delete _client;
     _client = 0;
   }
@@ -368,7 +368,7 @@ void Msg::InitClient(std::string sockname)
     _client->Start();
 }
 
-void Msg::FinalizeClient()
+void OLMsg::FinalizeClient()
 {
   if(_client){
     _client->Stop();
@@ -378,23 +378,24 @@ void Msg::FinalizeClient()
   _client = 0;
 }
 
-void Msg::Barrier()
+void OLMsg::Barrier()
 {
 }
 
-void Msg::InitializeOnelab(const std::string &name, const std::string &sockname)
+void OLMsg::InitializeOnelab(const std::string &name, const std::string &sockname)
 {
   if(_onelabClient) delete _onelabClient;
   if (sockname.empty())
     _onelabClient = new onelab::localClient(name);
   else{
-    onelab::remoteNetworkClient *c = new onelab::remoteNetworkClient(name, sockname);
+    onelab::remoteNetworkClient *c = 
+      new onelab::remoteNetworkClient(name, sockname);
     _onelabClient = c;
     _client = c->getGmshClient();
   }
 }
 
-double Msg::GetOnelabNumber(std::string name)
+double OLMsg::GetOnelabNumber(std::string name)
 {
   if(_onelabClient){
     std::vector<onelab::number> ps;
@@ -405,7 +406,7 @@ double Msg::GetOnelabNumber(std::string name)
   return 0;
 }
 
-void Msg::GetOnelabNumber(std::string name, double *val)
+void OLMsg::GetOnelabNumber(std::string name, double *val)
 {
   if(_onelabClient){
     std::vector<onelab::number> ps;
@@ -418,23 +419,22 @@ void Msg::GetOnelabNumber(std::string name, double *val)
   *val = 0;
 }
 
-void Msg::SetOnelabNumber(std::string name, double val, bool visible)
+void OLMsg::SetOnelabNumber(std::string name, double val, bool visible)
 {
   if(_onelabClient){
-    onelab::number o(name, val);
-    o.setVisible(visible);
-    _onelabClient->set(o);
+    std::vector<onelab::number> numbers;
+    _onelabClient->get(numbers, name);
+    if(numbers.empty()){
+      numbers.resize(1);
+      numbers[0].setName(name);
+    }
+    numbers[0].setValue(val);
+    numbers[0].setVisible(visible);
+    _onelabClient->set(numbers[0]);
   }
 }
 
-void Msg::SetOnelabNumber(onelab::number s)
-{
-  if(_onelabClient){
-    _onelabClient->set(s);
-  }
-}
-
-std::string Msg::GetOnelabString(std::string name)
+std::string OLMsg::GetOnelabString(std::string name)
 {
   std::string str="";
   if(_onelabClient){
@@ -446,7 +446,7 @@ std::string Msg::GetOnelabString(std::string name)
   return str;
 }
 
-bool Msg::GetOnelabChoices(std::string name, std::vector<std::string> &choices){
+bool OLMsg::GetOnelabChoices(std::string name, std::vector<std::string> &choices){
   if(_onelabClient){
     std::vector<onelab::string> ps;
     _onelabClient->get(ps, name);
@@ -458,30 +458,22 @@ bool Msg::GetOnelabChoices(std::string name, std::vector<std::string> &choices){
   return false;
 }
 
-void Msg::SetOnelabString(std::string name, std::string val, bool visible)
+void OLMsg::SetOnelabString(std::string name, std::string val, bool visible)
 {
   if(_onelabClient){
-    onelab::string o(name, val);
-    o.setVisible(visible);
-    _onelabClient->set(o);
-  }
-  else
-    std::cout << "Pas de client" << std::endl;
-}
-
-void Msg::SetOnelabString(onelab::string s){
-  if(_onelabClient){
-    _onelabClient->set(s);
+    std::vector<onelab::string> strings;
+    _onelabClient->get(strings, name);
+    if(strings.empty()){
+      strings.resize(1);
+      strings[0].setName(name);
+    }
+    strings[0].setValue(val);
+    strings[0].setVisible(visible);
+    _onelabClient->set(strings[0]);
   }
 }
 
-void Msg::SetOnelabRegion(onelab::region r){
-  if(_onelabClient){
-    _onelabClient->set(r);
-  }
-}
-
-void Msg::SetOnelabAttributeString(std::string name,
+void OLMsg::SetOnelabAttributeString(std::string name,
 				   std::string attrib,std::string val){
   if(_onelabClient){
     std::vector<onelab::string> ps;
@@ -491,7 +483,7 @@ void Msg::SetOnelabAttributeString(std::string name,
     }
   }
 }
-std::string Msg::GetOnelabAttributeString(std::string name,std::string attrib){
+std::string OLMsg::GetOnelabAttributeString(std::string name,std::string attrib){
   std::string str="";
   if(_onelabClient){
     std::vector<onelab::string> ps;
@@ -501,7 +493,7 @@ std::string Msg::GetOnelabAttributeString(std::string name,std::string attrib){
   }
   return str;
 }
-std::string Msg::GetOnelabAttributeNumber(std::string name,std::string attrib){
+std::string OLMsg::GetOnelabAttributeNumber(std::string name,std::string attrib){
   std::string str="";
   if(_onelabClient){
     std::vector<onelab::number> ps;
@@ -512,7 +504,7 @@ std::string Msg::GetOnelabAttributeNumber(std::string name,std::string attrib){
   return str;
 }
 
-void Msg::AddOnelabNumberChoice(std::string name, double val)
+void OLMsg::AddOnelabNumberChoice(std::string name, double val)
 {
   if(_onelabClient){
     std::vector<double> choices;
@@ -535,7 +527,7 @@ void Msg::AddOnelabNumberChoice(std::string name, double val)
   }
 }
 
-void Msg::AddOnelabStringChoice(std::string name, std::string kind,
+void OLMsg::AddOnelabStringChoice(std::string name, std::string kind,
                                     std::string value)
 {
   if(_onelabClient){
@@ -582,21 +574,21 @@ int fullNameLessThan::compareFullNames(const std::string a, const std::string b)
   }
   return *ita < *itb ;
 }
-void Msg::recordFullName(const std::string &name){
-  Msg::_fullNameDict.insert(name);
+void OLMsg::recordFullName(const std::string &name){
+  OLMsg::_fullNameDict.insert(name);
 }
-std::string Msg::obtainFullName(const std::string &name){
+std::string OLMsg::obtainFullName(const std::string &name){
   std::set<std::string, fullNameLessThan>::iterator it;
 
   // fullNameLessThan* comp=new fullNameLessThan;
-  // std::cout << "Dict=" << Msg::_fullNameDict.size() << std::endl;
+  // std::cout << "Dict=" << OLMsg::_fullNameDict.size() << std::endl;
   // std::cout << "Looking for " << name << std::endl;
-  // for ( it=Msg::_fullNameDict.begin() ; it != Msg::_fullNameDict.end(); it++ )
+  // for ( it=OLMsg::_fullNameDict.begin() ; it != OLMsg::_fullNameDict.end(); it++ )
   //   std::cout << *it << " <" << comp->operator()(*it,name) << ">" << std::endl;
   // std::cout << std::endl;
 
-  it = Msg::_fullNameDict.find(name);
-  if(it == Msg::_fullNameDict.end()){
+  it = OLMsg::_fullNameDict.find(name);
+  if(it == OLMsg::_fullNameDict.end()){
     return name;
   }
   else{
@@ -604,143 +596,89 @@ std::string Msg::obtainFullName(const std::string &name){
   }
 }
 
-int Msg::Synchronize_Down(){
-  Msg::_fullNameDict.clear();
+// void OLMsg::SetAction(const std::string &name, const std::string &action){
+//   OLMsg::SetOnelabString(name + "/Action", action, false);
+//   if(_onelabClient){
+//     std::vector<onelab::string> strings;
+//     _onelabClient->get(strings, name);
+//     if(strings.size()){
+//       strings[0].setChanged(changed);
+//       _onelabClient->set(strings[0]);
+//     }
+//   }
+// }
+// std::string OLMsg::GetAction(const std::string &name){
+//   return OLMsg::GetOnelabString(name + "/Action");
+// }
+
+int OLMsg::Synchronize_Down(){
+  OLMsg::_fullNameDict.clear();
   std::vector<onelab::number> numbers;
-  onelab::number *pn;
   loader->get(numbers,"");
   if(numbers.size()){
     for(std::vector<onelab::number>::const_iterator it = numbers.begin();
 	it != numbers.end(); it++){
-      pn=new onelab::number;
-      pn->fromChar((*it).toChar());
-      std::cout << "FHF d " <<(*it).getName() << "=" << (*it).getChanged() << std::endl;
-      Msg::SetOnelabNumber(*pn);
-      Msg::recordFullName(pn->getName());
-      delete pn;
+      if(_onelabClient) _onelabClient->set(*it);
+      OLMsg::recordFullName((*it).getName());
+      //std::cout << "FHF d " << (*it).getName() << "=" << (*it).getChanged() << std::endl;
     }
   }
   std::vector<onelab::string> strings;
-  onelab::string *ps;
   loader->get(strings,"");
   if(strings.size()){
     for(std::vector<onelab::string>::const_iterator it = strings.begin();
   	it != strings.end(); it++){
-      ps=new onelab::string;
-      ps->fromChar((*it).toChar());
-      Msg::SetOnelabString(*ps);
-      Msg::recordFullName(ps->getName());
-      delete ps;
+      if(_onelabClient) _onelabClient->set(*it);
+      OLMsg::recordFullName((*it).getName());
+      //std::cout << "FHF d " << (*it).getName() << "=" << (*it).getChanged() << std::endl;
     }
   }
   std::vector<onelab::region> regions;
-  onelab::region *pr;
   loader->get(regions,"");
   if(regions.size()){
     for(std::vector<onelab::region>::const_iterator it = regions.begin();
   	it != regions.end(); it++){
-      pr=new onelab::region;
-      pr->fromChar((*it).toChar());
-      Msg::SetOnelabRegion(*pr);
-      Msg::recordFullName(pr->getName());
-      delete pr;
+      if(_onelabClient) _onelabClient->set(*it);
+      OLMsg::recordFullName((*it).getName());
     }
   }
   return(numbers.size()+strings.size()+regions.size());
 }
 
-int Msg::Synchronize_Up(){
+int OLMsg::Synchronize_Up(){
   std::vector<onelab::number> numbers;
-  onelab::number *pn;
   _onelabClient->get(numbers,"");
   if(numbers.size()){
     for(std::vector<onelab::number>::const_iterator it = numbers.begin();
   	it != numbers.end(); it++){
-      pn = new(onelab::number);
-      pn->fromChar((*it).toChar());
-      loader->set(*pn);
-      std::cout << "FHF u " << pn->getName() << "=" << pn->getChanged() << std::endl;
-      delete pn;
+      loader->set(*it);
+      //std::cout << "FHF u " << (*it).getName() << "=" << (*it).getChanged() << std::endl; 
     }
   }
   std::vector<onelab::string> strings;
-  onelab::string *ps;
   _onelabClient->get(strings,"");
   if(strings.size()){
     for(std::vector<onelab::string>::const_iterator it = strings.begin();
 	it != strings.end(); it++){
-      ps=new onelab::string;
-      ps->fromChar((*it).toChar());
-      loader->set(*ps);
-      delete ps;
+      loader->set(*it);
+      //std::cout << "FHF u " << (*it).getName() << "=" << (*it).getChanged() << std::endl; 
     }
   }
   std::vector<onelab::region> regions;
-  onelab::region *pr;
   _onelabClient->get(regions,"");
   if(regions.size()){
     for(std::vector<onelab::region>::const_iterator it = regions.begin();
 	it != regions.end(); it++){
-      pr=new onelab::region;
-      pr->fromChar((*it).toChar());
-      loader->set(*pr);
-      delete pr;
+      loader->set(*it);
     }
   }
   return(numbers.size()+strings.size()+regions.size());
 }
 
-void Msg::FinalizeOnelab(){
+void OLMsg::FinalizeOnelab(){
   if(_onelabClient){
     delete _onelabClient;
     _onelabClient = 0;
     _client = 0;
   }
 }
-
-/* not used 
-void Msg::ExchangeOnelabParameter(const std::string &key,
-                                  std::vector<double> &val,
-                                  std::map<std::string, std::vector<double> > &fopt,
-                                  std::map<std::string, std::vector<std::string> > &copt)
-{
-  if(!_onelabClient || val.empty()) return;
-
-  std::string name(key);
-  if(copt.count("Path")){
-    std::string path = copt["Path"][0];
-    // if path ends with a number, assume it's for ordering purposes
-    if(path.size() && path[path.size() - 1] >= '0' && path[path.size() - 1] <= '9')
-      name = path + name;
-    else if(path.size() && path[path.size() - 1] == '/')
-      name = path + name;
-    else
-      name = path + "/" + name;
-  }
-  std::vector<onelab::number> ps;
-  _onelabClient->get(ps, name);
-  if(ps.size()){ // use value from server
-    val[0] = ps[0].getValue();
-  }
-  else{ // send value to server
-    onelab::number o(name, val[0]);
-    if(fopt.count("Range") && fopt["Range"].size() == 2){
-      o.setMin(fopt["Range"][0]); o.setMax(fopt["Range"][1]);
-    }
-    else if(fopt.count("Min") && fopt.count("Max")){
-      o.setMin(fopt["Min"][0]); o.setMax(fopt["Max"][0]);
-    }
-    else if(fopt.count("Min")){
-      o.setMin(fopt["Min"][0]); o.setMax(1.e200);
-    }
-    else if(fopt.count("Max")){
-      o.setMax(fopt["Max"][0]); o.setMin(-1.e200);
-    }
-    if(fopt.count("Step")) o.setStep(fopt["Step"][0]);
-    if(fopt.count("Choices")) o.setChoices(fopt["Choices"]);
-    if(copt.count("Help")) o.setHelp(copt["Help"][0]);
-    if(copt.count("Label")) o.setLabel(copt["Label"][0]);
-    _onelabClient->set(o);
-  }
-}
-*/

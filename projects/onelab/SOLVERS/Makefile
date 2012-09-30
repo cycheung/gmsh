@@ -1,5 +1,5 @@
 SOLVERS=onelab
-SOURCES=OS StringUtils mathex OnelabClients OnelabMessage OnelabParser
+SOURCES=myOS StringUtils mathex OnelabClients OnelabMessage OnelabParser
 
 COMMON_DIR=$(GMSH_DIR)/Common
 ONELAB_DIR=$(GMSH_DIR)/projects/onelab

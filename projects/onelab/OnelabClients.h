@@ -17,6 +17,8 @@
 
 // Onelab file extension
 static std::string onelabExtension(".ol");
+// Possible actions for clients
+enum parseMode {INITIALIZE, REGISTER, ANALYZE, COMPUTE, EXIT, STOP};
 
 static char charSep() { return '\0'; }
 #if defined(WIN32)
@@ -27,23 +29,28 @@ static std::string dirSep("/");
 static std::string cmdSep(" ; ");
 #endif
 
-int getOptions(int argc, char *argv[], std::string &action, std::string &commandLine, std::string &caseName, std::string &clientName, std::string &sockName, int &modelNumber);
+// TOOLS 
+int getOptions(int argc, char *argv[], parseMode &todo, std::string &commandLine, std::string &caseName, std::string &clientName, std::string &sockName);
 std::string itoa(const int i);
 std::string ftoa(const double x);
+bool checkIfPresent(std::string fileName);
+int mySystem(std::string commandLine);
 void GmshDisplay(onelab::remoteNetworkClient *loader, std::string fileName, std::vector<std::string> choices);
 std::string getCurrentWorkdir();
 std::string getUserHomedir();
 std::string sanitize(const std::string &in);
 std::string removeBlanks(const std::string &in);
 bool isPath(const std::string &in);
+
+// Parser TOOLS 
 int enclosed(const std::string &in, std::vector<std::string> &arguments);
 int extract(const std::string &in, std::string &paramName, std::string &action, std::vector<std::string> &arguments);
 bool extractRange(const std::string &in, std::vector<double> &arguments);
 std::string extractExpandPattern(const std::string& str);
-bool checkIfPresent(std::string filename);
+
 
 typedef std::vector <std::vector <double> > array;
-array read_array(std::string filename, char sep);
+array read_array(std::string fileName, char sep);
 double find_in_array(int i, int j, const std::vector <std::vector <double> > &data);
 std::vector<double> extract_column(const int j, array data);
 
@@ -65,7 +72,7 @@ public:
   std::string showParamSpace();
   std::string showClientStatus();
   void statusClients();
-  bool menu(std::string commandLine, std::string workingDir, std::string fileName, int modelNumber);
+  bool menu(std::string commandLine, std::string workingDir, std::string fileName);
 };
 
 static std::string getShortName(const std::string &name) {
@@ -91,13 +98,32 @@ class ShortNameLessThan{
 /*
 VIRTUAL and BASE CLASSES
 
-localSolverClient est la classe de base pour tous les clients des métamodèles
-Elle a les méthodes (virtuelles) analyze() et compute() 
-(que la classe 'localClient' n'a pas)
-qui sont les deux modes d'exécution du métamodèle.
-Seule _commandLine et _workingDir sont stockées dans la classe
-Les autres données décrivant le client 
-(input et output files, arguments) sont stockées sur le serveur... 
+"localSolverClient" is the base class 
+for all onelab clients called from a metamodel.
+It inherits from the "LocalClient" class of "onelab.h" 
+and has the additional metamodel specific functions: 
+analyze(), compute(), checkIfPresent(), checkCommandLine(),
+inputFile(), outputFile()
+
+The subclass "localSolverNetworkClient" of "localSolverClient"
+is for native clients (Gmsh and getDP so far)
+that communicate with the server through sockets. 
+It has a GmshServer member,
+uses localNetworkSolverClient::run instead of onelab::client::run().
+
+Both "localSolverNetworkClient" and "localSolverClient" are pure virtual.
+
+The combination of two alternatives native/interfaced and local/remote
+yields 4 clients: 
+InterfacedClient, RemoteInterfacesClient
+NativeClient, RemoteINterfacedClient
+
+
+The base class "remoteClient" is a base class 
+for clients running on a remote host.
+It provides appropriate versions of checkIfPresent() and checkCommandLine().
+Remote clients have hence double inheritance
+(http://www.nawouak.net/?doc=course.cpp+ch=inheritance+lang=fr).
 */
 class localSolverClient : public onelab::localClient{
  private:
@@ -120,38 +146,42 @@ class localSolverClient : public onelab::localClient{
   virtual void setCommandLine(const std::string &s){ _commandLine = s; }
   virtual void setWorkingDir(const std::string &s){ _workingDir = s; }
 
+  void setAction(const std::string action);
   const std::string getString(const std::string what);
   const bool getList(const std::string type, 
 		     std::vector<std::string> &choices);
   const bool isActive() { return (bool)_active; }
   const void setActive(int val) { _active=val; }
   int getActive() { return _active; }
+  virtual std::string toChar();
+
+  // parser
+  void modify_tags(const std::string lab, const std::string com);
   const bool isOnelabBlock() { return _onelabBlock; }
   const void openOnelabBlock() { _onelabBlock=true; }
   const void closeOnelabBlock() { _onelabBlock=false; }
+  std::string resolveGetVal(std::string line);
+  bool resolveLogicExpr(std::vector<std::string> arguments);
+  void parse_sentence(std::string line) ;
+  void parse_oneline(std::string line, std::ifstream &infile) ;
+  bool parse_block(std::ifstream &infile) ;
+  bool parse_ifstatement(std::ifstream &infile, bool condition) ;
+  void parse_onefile(std::string ifileName, bool mandatory=true);
+  void convert_oneline(std::string line, std::ifstream &infile, 
+		       std::ofstream &outfile);
+  bool convert_ifstatement(std::ifstream &infile, 
+			   std::ofstream &outfile, bool condition) ;
+  void convert_onefile(std::string ifileName, std::ofstream &outfile);
+  virtual void client_sentence(const std::string &name, 
+			       const std::string &action, 
+			       const std::vector<std::string> &arguments);
+
+  // execution
   bool buildRmCommand(std::string &cmd);
   bool checkIfPresentLocal(const std::string &fileName){
     return checkIfPresent(getWorkingDir()+fileName);
   }
   virtual bool checkCommandLine();
-  virtual std::string toChar();
-
-  std::string resolveGetVal(std::string line);
-  bool resolveLogicExpr(std::vector<std::string> arguments);
-  virtual void client_sentence(const std::string &name, 
-			       const std::string &action, 
-			       const std::vector<std::string> &arguments);
-  void modify_tags(const std::string lab, const std::string com);
-  void parse_sentence(std::string line) ;
-  void parse_oneline(std::string line, std::ifstream &infile) ;
-  bool parse_block(std::ifstream &infile) ;
-  bool parse_ifstatement(std::ifstream &infile, bool condition) ;
-  void parse_onefile(std::string ifilename, bool mandatory=true);
-  void convert_oneline(std::string line, std::ifstream &infile, 
-		       std::ofstream &outfile);
-  bool convert_ifstatement(std::ifstream &infile, 
-			   std::ofstream &outfile, bool condition) ;
-  void convert_onefile(std::string ifilename, std::ofstream &outfile);
   virtual void analyze() =0;
   virtual void compute() =0;
   void PostArray(std::vector<std::string> choices);
@@ -184,6 +214,7 @@ class localNetworkSolverClient : public localSolverClient{
   void setRemote(bool rem){ _remote = rem; }
 
   virtual std::string buildCommandLine();
+  std::string appendArguments();
   virtual bool run();
   virtual bool kill();
 
@@ -203,6 +234,7 @@ class remoteClient {
   const std::string &getRemoteHost() const { return _remoteHost; }
   const std::string &getRemoteDir() const { return _remoteDir; }
 
+  bool checkCommandLine(const std::string &commandLine);
   bool checkIfPresentRemote(const std::string &fileName);
   bool syncInputFile(const std::string &wdir, const std::string &fileName);
   bool syncOutputFile(const std::string &wdir, const std::string &fileName);
@@ -213,23 +245,24 @@ class remoteClient {
 class MetaModel : public localSolverClient {
  private:
   std::vector<localSolverClient *> _clients;
-  std::string _action;
+  parseMode _todo;
  public:
- MetaModel(const std::string &cmdl, const std::string &wdir, const std::string &cname, const std::string &fname, const int number) 
+ MetaModel(const std::string &cmdl, const std::string &wdir, const std::string &cname, const std::string &fname) 
    : localSolverClient(cname,cmdl,wdir){
     clientName = cname;
-    modelNumberFromArgs = number;
     genericNameFromArgs = fname.size() ? fname : cmdl;
     setWorkingDir(wdir); // wdir from args
     openOnelabBlock();
+    _todo=REGISTER;
     parse_onefile( genericNameFromArgs + onelabExtension + ".save",false);
     parse_onefile( genericNameFromArgs + onelabExtension);
     closeOnelabBlock();
   }
   ~MetaModel(){}
   typedef std::vector<localSolverClient*>::iterator citer;
-  void setAction(const std::string s) { _action.assign(s); }
-  bool isAction(const std::string s) { return !_action.compare(s);}
+  void setTodo(const parseMode x) { _todo=x; }
+  parseMode getTodo() { return _todo; }
+  bool isTodo(const parseMode x) { return (_todo==x);}
   citer firstClient(){ return _clients.begin(); }
   citer lastClient(){ return _clients.end(); }
   int getNumClients() { return _clients.size(); };
@@ -245,14 +278,12 @@ class MetaModel : public localSolverClient {
     return 0;
   }
   std::string genericNameFromArgs, clientName;
-  int modelNumberFromArgs;
   void client_sentence(const std::string &name, const std::string &action, 
 		       const std::vector<std::string> &arguments);
   std::string toChar(){}
   void PostArray(std::vector<std::string> choices);
   void initialize();
   void analyze();
-  void convert();
   void compute();
 };
 
@@ -268,13 +299,14 @@ class InterfacedClient : public localSolverClient {
   virtual void compute();
 };
 
-class EncapsulatedClient : public localNetworkSolverClient { 
+class NativeClient : public localNetworkSolverClient { 
   // utilise localNetworkClient::run
 public:
- EncapsulatedClient(const std::string &name, const std::string &cmdl, const std::string &wdir) 
+ NativeClient(const std::string &name, const std::string &cmdl, const std::string &wdir) 
    : localNetworkSolverClient(name,cmdl,wdir) {}
-  ~EncapsulatedClient(){}
+  ~NativeClient(){}
 
+  //uses localNetworkSolver::buildCommandLine();
   virtual void analyze();
   virtual void compute() ;
 };
@@ -286,16 +318,17 @@ public:
   ~RemoteInterfacedClient(){}
 
   bool checkCommandLine();
+  // uses InterfacedClient::analyze()
   void compute() ;
 };
 
-class RemoteEncapsulatedClient : public EncapsulatedClient, public remoteClient {
+class RemoteNativeClient : public NativeClient, public remoteClient {
 public:
- RemoteEncapsulatedClient(const std::string &name, const std::string &cmdl, const std::string &wdir, const std::string &host, const std::string &rdir) 
-   : EncapsulatedClient(name,cmdl,wdir), remoteClient(host,rdir) {
+ RemoteNativeClient(const std::string &name, const std::string &cmdl, const std::string &wdir, const std::string &host, const std::string &rdir) 
+   : NativeClient(name,cmdl,wdir), remoteClient(host,rdir) {
     setRemote(true);
   }
-  ~RemoteEncapsulatedClient(){}
+  ~RemoteNativeClient(){}
 
   std::string buildCommandLine();
   bool checkCommandLine();

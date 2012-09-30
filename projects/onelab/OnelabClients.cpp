@@ -19,7 +19,7 @@ class onelabMetaModelServer : public GmshServer{
     memset(&suInfo, 0, sizeof(suInfo));
     suInfo.cb = sizeof(suInfo);
     std::string cmd(command);
-    Msg::Info("Calling <%s>", cmd.c_str());
+    OLMsg::Info("Calling <%s>", cmd.c_str());
     // DETACHED_PROCESS removes the console (useful if the program to launch is
     // a console-mode exe)
     CreateProcess(NULL,(char *)cmd.c_str(), NULL, NULL, FALSE,
@@ -28,7 +28,7 @@ class onelabMetaModelServer : public GmshServer{
     return 0;
 #else
     if(!system(NULL)) {
-      Msg::Error("Could not find /bin/sh: aborting system call");
+      OLMsg::Error("Could not find /bin/sh: aborting system call");
       return 1;
     }
     std::string cmd(command);
@@ -40,7 +40,7 @@ class onelabMetaModelServer : public GmshServer{
     else 
       cmd.append(" & ");
 
-    Msg::Info("Calling <%s>", cmd.c_str());
+    OLMsg::Info("Calling <%s>", cmd.c_str());
     return system(cmd.c_str());
 #endif
   }// non blocking 
@@ -89,31 +89,29 @@ std::string localNetworkSolverClient::buildCommandLine(){
   if(!getWorkingDir().empty()) 
     command.append("cd " + getWorkingDir() + cmdSep);
   command.append(FixWindowsPath(getCommandLine()));
-  if(command.size()){
-    std::vector<onelab::string> ps;
-    get(ps, getName() + "/Action");
-    std::string action = (ps.empty() ? "" : ps[0].getValue());
-    get(ps, getName() + "/9CheckCommand");
-    std::string checkCommand = (ps.empty() ? "" : ps[0].getValue());
-    get(ps, getName() + "/9ComputeCommand");
-    std::string computeCommand = (ps.empty() ? "" : ps[0].getValue());
+  return command;
+}
 
-    if(action == "initialize"){
-      command.append(" " + getSocketSwitch() + " " + getName() + " %s"); 
-    }
-    else if(action == "check") {
-      command.append(" " + getString("Arguments") + " " + checkCommand) ;
-      command.append(" " + getSocketSwitch() + " " + getName() + " %s"); 
-    }
-    else if(action == "compute"){
-      command.append(" " + getString("Arguments") + " " + computeCommand);
-      command.append(" " + getSocketSwitch() + " " + getName() + " %s"); 
-      command.append(" " + getString("Redirect"));
-      //does not quite work. Maybe using fork instead of system would help...
-    }
-    else
-      Msg::Fatal("localNetworkSolverClient::buildCommandLine: Unknown Action <%s> %s", action.c_str(), getName().c_str());
+std::string localNetworkSolverClient::appendArguments(){
+
+  std::string action = getString("Action");
+  std::string checkCommand = getString("9CheckCommand");
+  std::string computeCommand = getString("9ComputeCommand");
+
+  std::string command;
+  if(action == "initialize"){
+    command.assign(" " + getSocketSwitch() + " " + getName() + " %s"); 
   }
+  else if(action == "check") {
+    command.assign(" " + getString("Arguments") + " " + checkCommand) ;
+    command.append(" " + getSocketSwitch() + " " + getName() + " %s"); 
+  }
+  else if(action == "compute"){
+    command.assign(" " + getString("Arguments") + " " + computeCommand);
+    command.append(" " + getSocketSwitch() + " " + getName() + " %s"); 
+  }
+  else
+    OLMsg::Fatal("buildCommandLine: Unknown Action <%s>", action.c_str());
   return command;
 }
 
@@ -152,6 +150,8 @@ bool localNetworkSolverClient::run()
   }
 
   std::string command = buildCommandLine();
+  if(command.size()) command.append(appendArguments());
+
   // std::cout << "sockname=<" << sockname << ">" << std::endl;
   // std::cout << "command=<" << command << ">" << std::endl;
 
@@ -160,7 +160,7 @@ bool localNetworkSolverClient::run()
     sock = server->Start(command.c_str(), sockname.c_str(), 10);
   }
   catch(const char *err){
-    Msg::Error("%s (on socket '%s')", err, sockname.c_str());
+    OLMsg::Error("%s (on socket '%s')", err, sockname.c_str());
     sock = -1;
   }
 
@@ -170,19 +170,19 @@ bool localNetworkSolverClient::run()
     return false;
   }
 
-  Msg::StatusBar(2, true, "Now running client <%s>", _name.c_str());
+  OLMsg::StatusBar(2, true, "Now running client <%s>", _name.c_str());
 
   while(1) {
     if(_pid < 0) break;
     
     int stop = server->NonBlockingWait(sock, 0.1, 0.);
     if(stop || _pid < 0) {
-      Msg::Info("Stop=%d _pid=%d",stop, _pid);
+      OLMsg::Info("Stop=%d _pid=%d",stop, _pid);
       break;
     }
     int type, length, swap;
     if(!server->ReceiveHeader(&type, &length, &swap)){
-      Msg::Error("Did not receive message header: stopping server");
+      OLMsg::Error("Did not receive message header: stopping server");
       break;
     }
      // else
@@ -190,7 +190,7 @@ bool localNetworkSolverClient::run()
 
     std::string message(length, ' ');
     if(!server->ReceiveMessage(length, &message[0])){
-      Msg::Error("Did not receive message body: stopping server");
+      OLMsg::Error("Did not receive message body: stopping server");
       break;
     }
     // else
@@ -210,7 +210,7 @@ bool localNetworkSolverClient::run()
         std::string version, type, name;
         onelab::parameter::getInfoFromChar(message, version, type, name);
         if(onelab::parameter::version() != version){
-          Msg::Error("OneLab version mismatch for %s (server: %s / client: %s)",
+          OLMsg::Error("OneLab version mismatch for %s (server: %s / client: %s)",
 	   message.c_str(), onelab::parameter::version().c_str(), version.c_str());
         }
         if(type == "number"){
@@ -226,7 +226,7 @@ bool localNetworkSolverClient::run()
           onelab::function p; p.fromChar(message); set(p);
         }
         else
-          Msg::Fatal("FIXME query not done for this parameter type: <%s>",
+          OLMsg::Fatal("FIXME query not done for this parameter type: <%s>",
 		     message.c_str());
       }
       break;
@@ -235,7 +235,7 @@ bool localNetworkSolverClient::run()
         std::string version, type, name, reply;
         onelab::parameter::getInfoFromChar(message, version, type, name);
         if(onelab::parameter::version() != version){
-          Msg::Error("OneLab version mismatch for %s (server: %s / client: %s)",
+          OLMsg::Error("OneLab version mismatch for %s (server: %s / client: %s)",
 	   message.c_str(), onelab::parameter::version().c_str(), version.c_str());
         }
         else if(type == "number"){
@@ -255,7 +255,7 @@ bool localNetworkSolverClient::run()
           if(par.size() == 1) reply = par[0].toChar();
         }
         else
-          Msg::Error("Unknown OneLab parameter type in query: %s",
+          OLMsg::Error("Unknown OneLab parameter type in query: %s",
 		     type.c_str());
 
         if(reply.size()){
@@ -274,7 +274,7 @@ bool localNetworkSolverClient::run()
         std::vector<std::string> replies;
         onelab::parameter::getInfoFromChar(message, version, type, name);
 	if(onelab::parameter::version() != version){
-          Msg::Error("OneLab version mismatch for %s (server: %s / client: %s)",
+          OLMsg::Error("OneLab version mismatch for %s (server: %s / client: %s)",
            message.c_str(), onelab::parameter::version().c_str(), version.c_str());
         }
 	else if(type == "number"){
@@ -298,7 +298,7 @@ bool localNetworkSolverClient::run()
               it != functions.end(); it++) replies.push_back((*it).toChar());
         }
         else
-          Msg::Error("Unknown OneLab parameter type in query: %s",
+          OLMsg::Error("Unknown OneLab parameter type in query: %s",
 		     type.c_str());
 
         for(unsigned int i = 0; i < replies.size(); i++)
@@ -310,32 +310,32 @@ bool localNetworkSolverClient::run()
       }
       break;
     case GmshSocket::GMSH_PROGRESS:
-      Msg::StatusBar(2, false, "%s %s", _name.c_str(), message.c_str());
+      OLMsg::StatusBar(2, false, "%s %s", _name.c_str(), message.c_str());
       break;
     case GmshSocket::GMSH_INFO:
-      Msg::Direct("%-8.8s: %s", _name.c_str(), message.c_str());
+      OLMsg::Direct("%-8.8s: %s", _name.c_str(), message.c_str());
       break;
     case GmshSocket::GMSH_WARNING:
-      Msg::Direct(2, "%-8.8s: %s", _name.c_str(), message.c_str());
+      OLMsg::Direct(2, "%-8.8s: %s", _name.c_str(), message.c_str());
       break;
     case GmshSocket::GMSH_ERROR:
-      //Msg::Direct(1, "%-8.8s: %s", _name.c_str(), message.c_str());
-      Msg::Fatal("%-8.8s: %s", _name.c_str(), message.c_str());
+      //OLMsg::Direct(1, "%-8.8s: %s", _name.c_str(), message.c_str());
+      OLMsg::Fatal("%-8.8s: %s", _name.c_str(), message.c_str());
       break;
     case GmshSocket::GMSH_MERGE_FILE:
-      Msg::Info("Merge Post-Processing File %s",message.c_str());
+      OLMsg::Info("Merge Post-Processing File %s",message.c_str());
       SystemCall("gmsh "+ message);
       //implémentation pour le cas du loader en mode console.
       break;
     default:
-      Msg::Warning("Received unknown message type (%d)", type);
+      OLMsg::Warning("Received unknown message type (%d)", type);
       break;
     }
   }
 
   server->Shutdown();
   delete server;
-  Msg::StatusBar(2, true, "Done running '%s'", _name.c_str());
+  OLMsg::StatusBar(2, true, "Done running '%s'", _name.c_str());
   return true;
 }
 
@@ -343,7 +343,7 @@ bool localNetworkSolverClient::kill()
 {
   if(_pid > 0) {
     if(KillProcess(_pid)){
-      Msg::Info("Killed '%s' (pid %d)", _name.c_str(), _pid);
+      OLMsg::Info("Killed '%s' (pid %d)", _name.c_str(), _pid);
       _pid = -1;
       return true; 
     }
@@ -400,7 +400,7 @@ double PromptUser::getNumber(const std::string paramName){
   if (numbers.size())
     return numbers[0].getValue();
   else
-    Msg::Fatal("Unknown parameter %s",paramName.c_str());
+    OLMsg::Fatal("Unknown parameter %s",paramName.c_str());
 }
 bool PromptUser::existNumber(const std::string paramName){
   std::vector<onelab::number> numbers;
@@ -420,7 +420,7 @@ std::string PromptUser::getString(const std::string paramName){
   if (strings.size())
     return strings[0].getValue();
   else
-    Msg::Fatal("Unknown parameter %s",paramName.c_str());
+    OLMsg::Fatal("Unknown parameter %s",paramName.c_str());
 }
 bool PromptUser::existString(const std::string paramName){
   std::vector<onelab::string> strings;
@@ -490,7 +490,7 @@ std::string PromptUser::showClientStatus(){
   return sstream.str();
 }
 
-bool PromptUser::menu(std::string commandLine, std::string workingDir, std::string fileName, int modelNumber) { 
+bool PromptUser::menu(std::string commandLine, std::string workingDir, std::string fileName) { 
   int choice, counter1=0, counter2=0;
   std::string answ;
   std::string name;
@@ -500,7 +500,7 @@ bool PromptUser::menu(std::string commandLine, std::string workingDir, std::stri
   std::vector<onelab::string> strings;
 
   std::string clientName="loadedMetaModel";
-  EncapsulatedClient *loadedSolver = new  EncapsulatedClient(clientName,commandLine,workingDir);
+  NativeClient *loadedSolver = new  NativeClient(clientName,commandLine,workingDir);
   //setString("Arguments/FileName",fileName);
   addStringChoice(clientName + "/CaseName", workingDir+fileName);
 
@@ -591,27 +591,62 @@ std::string localSolverClient::toChar(){
   return sstream.str();
 }
 
-bool localSolverClient::checkCommandLine(){
-  Msg::Info("Check command line for <%s>",getName().c_str());
-  if(getCommandLine().empty()){
-    // look if one has a commandLine on server
-    std::string commandLine = getString("CommandLine");
-    if(!commandLine.empty()){
-      setCommandLine(commandLine);
-    }
+void localSolverClient::setAction(const std::string action){
+  std::string name=getName() + "/Action";
+  onelab::string s(name, action);
+  set(s);
+  std::vector<onelab::string> strings;
+  get(strings,name);
+  if(strings.size()){
+    strings[0].setChanged(false);
+    strings[0].setVisible(false);
+    set(strings[0]);
   }
+}
+
+const std::string localSolverClient::getString(const std::string what){
+  std::vector<onelab::string> strings;
+  get(strings, getName() + "/" + what);
+  if(strings.size())
+    return strings[0].getValue();
+  else
+    return "";
+}
+
+const bool localSolverClient::getList(const std::string type, std::vector<std::string> &choices){
+  std::vector<onelab::string> strings;
+  get(strings, getName() + "/" + type);
+  if(strings.size()){
+    choices= strings[0].getChoices();
+    return true;
+  }
+  else
+    return false;
+}
+
+bool localSolverClient::checkCommandLine(){
+  OLMsg::Info("Check command line for <%s>",getName().c_str());
+  // if(getCommandLine().empty()){
+  //   // look if one has a commandLine on server
+  //   std::string commandLine = getString("CommandLine");
+
+  if(getCommandLine().empty())
+    OLMsg::Fatal("No commandline for client <%s>", getName().c_str());
 
   if(!isActive()) return true;
 
   if(!getCommandLine().empty()){
-    Msg::SetOnelabString(getName() + "/Action","initialize",false);
+    setAction("initialize");
+    std::cout << "FHF run for intialize" << std::endl;
     run();
   }
   else{
-    if(Msg::hasGmsh) {
+    if(OLMsg::hasGmsh) {
       // exits metamodel and restores control to the onelab window
-      Msg::Error("The command line of client <%s> is undefined.", getName().c_str());
-      std::cout << "\n\nBrowse for executable in the ONELAB window.\n\n" << std::endl;
+      OLMsg::Error("The command line of client <%s> is undefined.",
+		 getName().c_str());
+      std::cout << "\n\nBrowse for executable in the ONELAB window.\n\n" 
+		<< std::endl;
       return false;
     }
     else{ // asks the user in console mode
@@ -623,27 +658,6 @@ bool localSolverClient::checkCommandLine(){
     }
   }
   return true;
-}
-
-const std::string localSolverClient::getString(const std::string what){
-  std::vector<onelab::string> strings;
-  std::string paramName(getName()+"/"+what);
-  get(strings,paramName);
-  if(strings.size())
-    return strings[0].getValue();
-  else
-    return "";
-}
-
-const bool localSolverClient::getList(const std::string type, std::vector<std::string> &choices){
-  std::vector<onelab::string> strings;
-  get(strings,getName()+"/"+type);
-  if(strings.size()){
-    choices= strings[0].getChoices();
-    return true;
-  }
-  else
-    return false;
 }
 
 bool localSolverClient::buildRmCommand(std::string &cmd){
@@ -670,257 +684,57 @@ bool localSolverClient::buildRmCommand(std::string &cmd){
 void localSolverClient::PostArray(std::vector<std::string> choices)
 {
   int nb=0;
-  onelab::number o;
   while( 4*(nb+1) <= choices.size()){
     //std::cout << "Nb Choices" << choices.size() << std::endl;
     int lin= atof(choices[4*nb+1].c_str());
     int col= atof(choices[4*nb+2].c_str());
     std::string fileName = getWorkingDir()+choices[4*nb];
+      //checkIfPresent or make available locally
     double val=find_in_array(lin,col,read_array(fileName,' '));
-    Msg::AddOnelabNumberChoice(choices[4*nb+3],val);
-    Msg::Info("Upload parameter <%s>=%e from file <%s>", choices[4*nb+3].c_str(),val,fileName.c_str());
+    OLMsg::AddOnelabNumberChoice(choices[4*nb+3],val);
+    OLMsg::Info("Upload parameter <%s>=%e from file <%s>",
+		choices[4*nb+3].c_str(),val,fileName.c_str());
     nb++;
   }
 }
 
 void localSolverClient::GmshMerge(std::vector<std::string> choices)
 {
-  if(!Msg::hasGmsh || choices.empty()) return;
+  if(!OLMsg::hasGmsh || choices.empty()) return;
   for(unsigned int i = 0; i < choices.size(); i++){
     if(!choices[i].empty()){
       std::string fileName=getWorkingDir()+choices[i];
-      Msg::loader->sendMergeFileRequest(fileName);
-      Msg::Info("Send merge request <%s>",fileName.c_str());
+      //checkIfPresent or make available locally
+      OLMsg::loader->sendMergeFileRequest(fileName);
+      OLMsg::Info("Send merge request <%s>",fileName.c_str());
     }
   }
 }
 
-// client METAMODEL
-
-//Metamodel::analyze and Metamodel::compute are defined in the file SOLVERS/onelab.cpp
-
-void MetaModel::saveCommandLines(const std::string fileName){ 
-  //save client command lines
-  std::string fileNameSave = getWorkingDir()+fileName+onelabExtension+".save";
-  std::ofstream outfile(fileNameSave.c_str()); 
-
-  if (outfile.is_open())
-    for(citer it = _clients.begin(); it != _clients.end(); it++)
-      outfile << (*it)->toChar();
-  else
-    Msg::Fatal("The file <%s> cannot be opened",fileNameSave.c_str());
-  outfile.close();
-}
-
-bool MetaModel::checkCommandLines(){
-  bool allDefined=true;
-  for(citer it = _clients.begin(); it != _clients.end(); it++){
-    allDefined = allDefined && (*it)->checkCommandLine();
-  }
-  saveCommandLines(genericNameFromArgs);
-  return allDefined;
-}
-
-void MetaModel::initialize()
-{
-  Msg::Info("Initialize Metamodel by the loader");
-  Msg::SetOnelabString(clientName + "/9CheckCommand","-a",false);
-  Msg::SetOnelabNumber(clientName + "/UseCommandLine",1,false);
-  Msg::SetOnelabNumber(clientName + "/Initialized",1,false);
-}
-
-void MetaModel::registerClient(const std::string &name, const std::string &type, const std::string &cmdl, const std::string &host, const std::string &rdir) {
-  localSolverClient *c;
-  // Clients are assigned by default the same working dir as the MetaModel
-  // i.e. the working dir from args
-  if(host.empty() || rdir.empty()){ //local client
-    if(!type.compare(0,6,"interf"))
-      c= new InterfacedClient(name,cmdl,getWorkingDir());
-    else if(!type.compare(0,6,"encaps"))
-      c= new EncapsulatedClient(name,cmdl,getWorkingDir());
-    else 
-      Msg::Fatal("Unknown client type", type.c_str());
-  }
-  else{ // remote client
-    if(!type.compare(0,6,"interf"))
-      c= new RemoteInterfacedClient(name,cmdl,getWorkingDir(),host,rdir);
-    else if(!type.compare(0,6,"encaps"))
-      c= new RemoteEncapsulatedClient(name,cmdl,getWorkingDir(),host,rdir);
-    else 
-      Msg::Fatal("Unknown remote client type", type.c_str());
-  }
-  _clients.push_back(c);
-}
-
-void MetaModel::analyze()
-{
-  Msg::Info("\nMetamodel: now ANALYSING");
-  for(citer it = _clients.begin(); it != _clients.end(); it++){
-    //if((*it)->isActive()){ // also inactive clients are checked
-      Msg::SetOnelabString((*it)->getName() + "/Action","check",false);
-      Msg::Info("%d <%s>", 
-		onelab::server::instance()->getChanged((*it)->getName()),
-		(*it)->getName().c_str());
-      (*it)->analyze();
-
-      //some clients must be run at the check phase
-      if((*it)->getActive()==2) (*it)->compute();
-  }
-}
-
-void MetaModel::compute()
-{
-  Msg::Info("\nMetamodel: now COMPUTING");
-  for(citer it = _clients.begin(); it != _clients.end(); it++){
-    if(Msg::GetOnelabString("MetaModel/STATUS").compare("STOP")){
-      if((*it)->isActive()){
-	Msg::SetOnelabString((*it)->getName() + "/Action","compute",false);
-	// if(Msg::GetOnelabNumber("LOGFILES")){
-	//   freopen((*it)->getName().append(".log").c_str(),"w",stdout);
-	//   freopen((*it)->getName().append(".err").c_str(),"w",stderr);
-	// }
-	(*it)->compute();
-	Msg::SetOnelabString((*it)->getName() + "/Action","alldone",false);
-      }
-    }
-  }
-  // resets all parameters to 'unchanged'
-  std::cout << "FHF sets all param unchanged" << std::endl;
-  onelab::server::instance()->setChanged(false);
-}
-
-void MetaModel::PostArray(std::vector<std::string> choices)
-{
-  int nb=0;
-  onelab::number o;
-  while( 4*(nb+1) <= choices.size()){
-    int lin= atof(choices[4*nb+1].c_str());
-    int col= atof(choices[4*nb+2].c_str());
-    std::string filename = Msg::GetOnelabString("Arguments/WorkingDir")+choices[4*nb];
-    double val=find_in_array(lin,col,read_array(filename,' '));
-    Msg::AddOnelabNumberChoice(choices[4*nb+3],val);
-    Msg::Info("PostArray <%s>=%e",choices[4*nb+3].c_str(),val);
-    nb++;
-  }
-}
-
-// INTERFACED client
-
-void InterfacedClient::analyze() {
-  int pos;
-  std::vector<std::string> choices;
-  Msg::SetOnelabString(getName() + "/Action","check",false);
-  getList("InputFiles", choices);
-  for(unsigned int i = 0; i < choices.size(); i++){
-    if((pos=choices[i].find(onelabExtension)) != std::string::npos){
-      // if .ol file
-      checkIfPresentLocal(choices[i]);
-      parse_onefile(choices[i]);
-    }
-  }
-  convert(); // only for debug
-}
-
-void InterfacedClient::convert() {
-  int pos;
-  std::vector<std::string> choices;
-  getList("InputFiles", choices);
-  for(unsigned int i = 0; i < choices.size(); i++){
-    if((pos=choices[i].find(onelabExtension)) != std::string::npos){
-      checkIfPresentLocal(choices[i]);
-      // remove .ol extension
-      std::string ofilename = getWorkingDir() + choices[i].substr(0,pos);
-      std::ofstream outfile(ofilename.c_str());
-      if (outfile.is_open())
-	convert_onefile(choices[i],outfile);
-      else
-	Msg::Fatal("The file <%s> cannot be opened",ofilename.c_str());
-      outfile.close();
-    }
-  }
-}
-
-void InterfacedClient::compute(){
-  std::string cmd;
-  std::vector<std::string> choices;
-  analyze();
-  convert(); 
-  Msg::SetOnelabString(getName() + "/Action","compute",false);
-  if(getList("InputFiles",choices)){
-    for(unsigned int i = 0; i < choices.size(); i++){
-     //remove .ol ext
-     checkIfPresentLocal(choices[i].substr(0,choices[i].find(onelabExtension)));
-    }
-  }
-
-  if(getActive())
-    if(buildRmCommand(cmd))
-      SystemCall(cmd,true); //blocking
-
-  cmd.assign("");
-  if(!getWorkingDir().empty())
-    cmd.append("cd " + getWorkingDir() + cmdSep);
-  cmd.append(FixWindowsPath(getCommandLine() + " "));
-  cmd.append(getString("Arguments"));
-
-  SystemCall(cmd.c_str(),true); //blocking
-
-  if(getList("OutputFiles",choices)){
-    for(unsigned int i = 0; i < choices.size(); i++){
-      checkIfPresentLocal(choices[i]);
-    }
-  }
-
-  if(getList("PostArray",choices))
-    PostArray(choices);
-
-  if(getList("Merge",choices))
-    GmshMerge(choices);
-
-  Msg::Info("Client %s completed",_name.c_str());
-}
-
-// ENCAPSULATED Client
-
-void EncapsulatedClient::analyze() {
-  Msg::SetOnelabString(getName() + "/Action","check",false);
-  run();
-}
-
-void EncapsulatedClient::compute() {
-  std::string cmd;
-  std::vector<std::string> choices;
-
-  Msg::SetOnelabString(getName() + "/Action","compute",false);
-  if(getActive())
-    if(buildRmCommand(cmd))
-      SystemCall(cmd,true);
-
-  if(getList("InputFiles",choices)){
-    for(unsigned int i = 0; i < choices.size(); i++){
-      checkIfPresentLocal(choices[i]);
-    }
-  }
-  run();
-
-  if(getList("OutputFiles",choices)){
-    for(unsigned int i = 0; i < choices.size(); i++){
-      checkIfPresentLocal(choices[i]);
-    }
-  }
-
-  if(getList("PostArray",choices))
-    PostArray(choices);
-
-  if(getList("Merge",choices))
-    GmshMerge(choices);
-}
 
 // REMOTE CLIENT
 
-int mySystem(std::string commandLine){
-  //std::cout << "mySystem<" << commandLine << ">" << std::endl;
-  return SystemCall(commandLine.c_str(), true);
+bool remoteClient::checkCommandLine(const std::string &commandLine){
+  struct stat buf;
+  std::string cmd;
+  char cbuf [1024];
+  FILE *fp;
+
+  cmd.assign("ssh "+getRemoteHost()+" 'mkdir -p "+getRemoteDir()+"'");
+  mySystem(cmd);
+
+  cmd.assign("ssh "+getRemoteHost()+" 'which "+commandLine+"'");
+  fp = popen(cmd.c_str(), "r");
+  if(fgets(cbuf, 1024, fp) == NULL){
+    OLMsg::Warning("The executable <%s> does not exist",
+		 commandLine.c_str());
+    pclose(fp);
+    return false;
+  }
+  OLMsg::Info("The executable <%s> exists", commandLine.c_str());
+  pclose(fp);
+
+  return true;
 }
 
 bool remoteClient::checkIfPresentRemote(const std::string &fileName){
@@ -933,11 +747,11 @@ bool remoteClient::checkIfPresentRemote(const std::string &fileName){
   //std::cout << "check remote<" << cmd << ">" << std::endl;
   fp = popen(cmd.c_str(), "r");
   if(fgets(cbuf, 1024, fp) == NULL){
-    Msg::Fatal("The file <%s> is not present", fileName.c_str());
+    OLMsg::Fatal("The file <%s> is not present", fileName.c_str());
     pclose(fp);
     return false;
   }
-  Msg::Info("The file <%s> is present", fileName.c_str());
+  OLMsg::Info("The file <%s> is present", fileName.c_str());
   pclose(fp);
   return true;
 }
@@ -947,33 +761,35 @@ bool remoteClient::syncInputFile(const std::string &wdir, const std::string &fil
   std::string cmd;
   if((pos=fileName.find(onelabExtension)) != std::string::npos){ 
     // .ol file => local
+    // remove ext .ol
     std::string trueName = 
-      fileName.substr(fileName.find_first_not_of(" "),pos); // remove ext .ol
+      fileName.substr(fileName.find_first_not_of(" "),pos); 
     std::string fullName = wdir+trueName;
     if(checkIfPresent(fullName)){
       cmd.assign("rsync -e ssh -auv "+fullName+" "+_remoteHost+":"+_remoteDir+"/"+trueName);
       return mySystem(cmd);
     }
     else{
-      Msg::Fatal("The input file <%s> is not present", fullName.c_str());
+      OLMsg::Fatal("The input file <%s> is not present", fullName.c_str());
       return false;
     }
   }
   else { // not a .ol file, apply the . rule
-    if(!fileName.compare(fileName.find_first_not_of(" "),1,".")){ //should be found local
+    if(!fileName.compare(fileName.find_first_not_of(" "),1,".")){ 
+      //should be found local
       std::string fullName = wdir+fileName;
       if(checkIfPresent(fullName)){
 	cmd.assign("rsync -e ssh -auv "+fullName+" "+_remoteHost+":"+_remoteDir+"/"+fileName);
 	return mySystem(cmd);
       }
       else{
-	Msg::Fatal("The input file <%s> is not present", fullName.c_str());
+	OLMsg::Fatal("The input file <%s> is not present", fullName.c_str());
 	return false;
       }
     }
     else { //should be found remote
       if(!checkIfPresentRemote(fileName)){
-	Msg::Fatal("The input file <%s> is not present", fileName.c_str());
+	OLMsg::Fatal("The input file <%s> is not present", fileName.c_str());
 	return false;
       }
       else
@@ -999,125 +815,269 @@ bool remoteClient::syncOutputFile(const std::string &wdir, const std::string &fi
     return false;
 }
 
+// client METAMODEL
+
+//Metamodel::analyze and Metamodel::compute are defined in the file SOLVERS/onelab.cpp
+
+void MetaModel::saveCommandLines(const std::string fileName){ 
+  //save client command lines
+  std::string fileNameSave = getWorkingDir()+fileName+onelabExtension+".save";
+  std::ofstream outfile(fileNameSave.c_str()); 
+
+  if (outfile.is_open())
+    for(citer it = _clients.begin(); it != _clients.end(); it++)
+      outfile << (*it)->toChar();
+  else
+    OLMsg::Fatal("The file <%s> cannot be opened",fileNameSave.c_str());
+  outfile.close();
+}
+
+bool MetaModel::checkCommandLines(){
+  bool allDefined=true;
+  for(citer it = _clients.begin(); it != _clients.end(); it++){
+    allDefined = allDefined && (*it)->checkCommandLine();
+  }
+  saveCommandLines(genericNameFromArgs);
+  return allDefined;
+}
+
+void MetaModel::initialize()
+{
+  OLMsg::Info("Initialize Metamodel by the loader");
+  OLMsg::SetOnelabString(clientName + "/9CheckCommand","-a",false);
+  OLMsg::SetOnelabNumber(clientName + "/UseCommandLine",1,false);
+  OLMsg::SetOnelabNumber(clientName + "/Initialized",1,false);
+}
+
+void MetaModel::analyze() {
+  std::string fileName = genericNameFromArgs + onelabExtension;
+  OLMsg::Info("Metamodel now ANALYZING",fileName.c_str());
+  openOnelabBlock();
+  parse_onefile(fileName);
+  closeOnelabBlock();
+}
+
+
+void MetaModel::compute() {
+  std::string fileName = genericNameFromArgs + onelabExtension;
+  OLMsg::Info("Metamodel now COMPUTING",fileName.c_str());
+  openOnelabBlock();
+  parse_onefile(fileName);
+  closeOnelabBlock();
+  onelab::server::instance()->setChanged(false);
+}
+
+void MetaModel::registerClient(const std::string &name, const std::string &type, const std::string &cmdl, const std::string &host, const std::string &rdir) {
+  localSolverClient *c;
+  // Clients are assigned by default the same working dir as the MetaModel
+  // i.e. the working dir from args
+  if(host.empty() || rdir.empty()){ //local client
+    if(!type.compare(0,6,"interf"))
+      c= new InterfacedClient(name,cmdl,getWorkingDir());
+    else if(!type.compare(0,6,"encaps"))
+      c= new NativeClient(name,cmdl,getWorkingDir());
+    else 
+      OLMsg::Fatal("Unknown client type", type.c_str());
+  }
+  else{ // remote client
+    if(!type.compare(0,6,"interf"))
+      c= new RemoteInterfacedClient(name,cmdl,getWorkingDir(),host,rdir);
+    else if(!type.compare(0,6,"encaps"))
+      c= new RemoteNativeClient(name,cmdl,getWorkingDir(),host,rdir);
+    else 
+      OLMsg::Fatal("Unknown remote client type", type.c_str());
+  }
+  _clients.push_back(c);
+}
+
+void MetaModel::PostArray(std::vector<std::string> choices)
+{
+  int nb=0;
+  onelab::number o;
+  while( 4*(nb+1) <= choices.size()){
+    int lin= atof(choices[4*nb+1].c_str());
+    int col= atof(choices[4*nb+2].c_str());
+    std::string fileName = OLMsg::GetOnelabString("Arguments/WorkingDir")+choices[4*nb];
+    double val=find_in_array(lin,col,read_array(fileName,' '));
+    OLMsg::AddOnelabNumberChoice(choices[4*nb+3],val);
+    OLMsg::Info("PostArray <%s>=%e",choices[4*nb+3].c_str(),val);
+    nb++;
+  }
+}
+
+// INTERFACED client
+
+void InterfacedClient::analyze() {
+  int pos;
+  std::vector<std::string> choices;
+
+  setAction("check");
+  OLMsg::Info("Analyses <%s> changed=%d", getName().c_str(),
+	      onelab::server::instance()->getChanged(getName()));
+  getList("InputFiles", choices);
+  for(unsigned int i = 0; i < choices.size(); i++){
+    if((pos=choices[i].find(onelabExtension)) != std::string::npos){
+      // if .ol file
+      checkIfPresentLocal(choices[i]);
+      parse_onefile(choices[i]);
+    }
+  }
+  convert();
+}
+
+void InterfacedClient::convert() {
+  int pos;
+  std::vector<std::string> choices;
+  getList("InputFiles", choices);
+  for(unsigned int i = 0; i < choices.size(); i++){
+    if((pos=choices[i].find(onelabExtension)) != std::string::npos){
+      checkIfPresentLocal(choices[i]);
+      // remove .ol extension
+      std::string ofileName = getWorkingDir() + choices[i].substr(0,pos);
+      std::ofstream outfile(ofileName.c_str());
+      if (outfile.is_open())
+	convert_onefile(choices[i],outfile);
+      else
+	OLMsg::Fatal("The file <%s> cannot be opened",ofileName.c_str());
+      outfile.close();
+    }
+  }
+}
+
+void InterfacedClient::compute(){
+  std::string cmd;
+  std::vector<std::string> choices;
+
+  setAction("compute");
+  OLMsg::Info("Computes <%s> changed=%d", getName().c_str(),
+	      onelab::server::instance()->getChanged(getName()));
+
+  if(getActive() && onelab::server::instance()->getChanged(getName())){
+    analyze();
+    //convert();
+    if(getList("InputFiles",choices)){
+      for(unsigned int i = 0; i < choices.size(); i++){
+	//remove .ol ext
+	checkIfPresentLocal(
+	     choices[i].substr(0,choices[i].find(onelabExtension)));
+      }
+    }
+
+    if(buildRmCommand(cmd))
+      SystemCall(cmd,true); //blocking
+
+    cmd.assign("");
+    if(!getWorkingDir().empty())
+      cmd.append("cd " + getWorkingDir() + cmdSep);
+    cmd.append(FixWindowsPath(getCommandLine() + " "));
+    cmd.append(getString("Arguments"));
+
+    SystemCall(cmd.c_str(),true); //blocking
+
+    if(getList("OutputFiles",choices)){
+      for(unsigned int i = 0; i < choices.size(); i++){
+	checkIfPresentLocal(choices[i]);
+      }
+    }
+  }
+  OLMsg::Info("Client %s completed",_name.c_str());
+}
+
+// NATIVE Client
+
+void NativeClient::analyze() {
+  setAction("check");
+  OLMsg::Info("Analyses <%s> changed=%d", getName().c_str(),
+	      onelab::server::instance()->getChanged(getName()));
+  run();
+}
+
+void NativeClient::compute() {
+  std::string cmd;
+  std::vector<std::string> choices;
+
+  setAction("compute");
+  OLMsg::Info("Computes <%s> changed=%d", getName().c_str(),
+	      onelab::server::instance()->getChanged(getName()));
+  if(getActive() && onelab::server::instance()->getChanged(getName())){
+    if(buildRmCommand(cmd))
+      SystemCall(cmd,true);
+
+    if(getList("InputFiles",choices)){
+      for(unsigned int i = 0; i < choices.size(); i++){
+	checkIfPresentLocal(choices[i]);
+      }
+    }
+    run();
+
+    if(getList("OutputFiles",choices)){
+      for(unsigned int i = 0; i < choices.size(); i++){
+	checkIfPresentLocal(choices[i]);
+      }
+    }
+  }
+}
 
 // REMOTE INTERFACED Client
 
 bool RemoteInterfacedClient::checkCommandLine(){
-  struct stat buf;
-  std::string cmd;
-  char cbuf [1024];
-  FILE *fp;
-
-  if(!isActive()) return true;
-  cmd.assign("ssh "+getRemoteHost()+" 'mkdir -p "+getRemoteDir()+"'");
-  mySystem(cmd);
-
-  cmd.assign("ssh "+getRemoteHost()+" 'which "+getCommandLine()+"'");
-  fp = popen(cmd.c_str(), "r");
-  if(fgets(cbuf, 1024, fp) == NULL){
-    Msg::Warning("The executable <%s> does not exist", getCommandLine().c_str());
-    pclose(fp);
-    return false;
-  }
-  Msg::Info("The executable <%s> exists", getCommandLine().c_str());
-  pclose(fp);
-
-  return true;
+  return remoteClient::checkCommandLine(getCommandLine());
 }
 
 void RemoteInterfacedClient::compute(){
   std::string cmd,rmcmd;
   std::vector<std::string> choices;
 
-  convert();
-  Msg::SetOnelabString(getName() + "/Action","compute",false); 
+  setAction("compute");
+  OLMsg::Info("Computes <%s> changed=%d", getName().c_str(),
+	      onelab::server::instance()->getChanged(getName()));
 
-  if(getList("InputFiles",choices)){
-    for(unsigned int i = 0; i < choices.size(); i++)
-      syncInputFile(getWorkingDir(),choices[i]);
-  }
+  if(getActive() && onelab::server::instance()->getChanged(getName())){
+    if(getList("InputFiles",choices)){
+      for(unsigned int i = 0; i < choices.size(); i++)
+	syncInputFile(getWorkingDir(),choices[i]);
+    }
 
-  if(buildRmCommand(rmcmd)){
-    cmd.assign("ssh "+getRemoteHost()+" 'cd "+getRemoteDir()+"; "+rmcmd+"'");
+    if(buildRmCommand(rmcmd)){
+      cmd.assign("ssh "+getRemoteHost()+" 'cd "+getRemoteDir()+"; "+rmcmd+"'");
+      mySystem(cmd);
+    }
+
+    cmd.assign("ssh "+getRemoteHost()+" 'cd "+getRemoteDir()+"; "
+	       +getCommandLine()+" "+getString("Arguments")+"'");
     mySystem(cmd);
+
+    if(getList("OutputFiles",choices)){
+      for(unsigned int i = 0; i < choices.size(); i++)
+	syncOutputFile(getWorkingDir(),choices[i]);
+    }
+
+    if(getList("PostArray",choices))
+      PostArray(choices);
   }
-
-  cmd.assign("ssh "+getRemoteHost()+" 'cd "+getRemoteDir()+"; "
-	     +getCommandLine()+" "+getString("Arguments")+"'");
-  mySystem(cmd);
-
-  if(getList("OutputFiles",choices)){
-    for(unsigned int i = 0; i < choices.size(); i++)
-      syncOutputFile(getWorkingDir(),choices[i]);
-  }
-
-  if(getList("PostArray",choices))
-    PostArray(choices);
 }
 
-// REMOTE ENCAPSULATED Client
+// REMOTE NATIVE Client
 
-std::string RemoteEncapsulatedClient::buildCommandLine(){
+std::string RemoteNativeClient::buildCommandLine(){
   std::string command;
-  command.assign("incomp_ssh -f "+getRemoteHost()+" 'cd "+getRemoteDir()+"; "
-	         +FixWindowsPath(getCommandLine())+" ");
-  if(command.size()){
-    std::vector<onelab::string> ps;
-    get(ps, getName() + "/Action");
-    std::string action = (ps.empty() ? "" : ps[0].getValue());
-    get(ps, getName() + "/9CheckCommand");
-    std::string checkCommand = (ps.empty() ? "" : ps[0].getValue());
-    get(ps, getName() + "/9ComputeCommand");
-    std::string computeCommand = (ps.empty() ? "" : ps[0].getValue());
-
-    if(action == "initialize")
-      command.append(" " + getSocketSwitch() + " " + getName() + " %s");
-    else if(action == "check"){
-      command.append(" " + getString("Arguments") + " " + checkCommand + " ");
-      command.append(" " + getSocketSwitch() + " " + getName() + " %s");
-    }
-    else if(action == "compute"){
-      command.append(" " + getString("Arguments") + " " + computeCommand + " ");
-      command.append(" " + getSocketSwitch() + " " + getName() + " %s");
-      //FIXME redirect?
-    }
-    else
-      Msg::Fatal("remoteEncapsulatedClient::run: Unknown Action <%s>", action.c_str());
-  }
+  command.assign("incomp_ssh -f "+getRemoteHost());
+  command.append(" 'cd "+getRemoteDir()+"; ");
+  command.append(FixWindowsPath(getCommandLine())+" ");
   return command;
 }
 
-bool RemoteEncapsulatedClient::checkCommandLine(){
-  struct stat buf;
-  std::string cmd;
-  char cbuf [1024];
-  FILE *fp;
-
-  if(!isActive()) return true;
-  cmd.assign("ssh "+getRemoteHost()+" 'mkdir -p "+getRemoteDir()+"'");
-  mySystem(cmd);
-
-  cmd.assign("ssh "+getRemoteHost()+" 'which "+getCommandLine()+"'");
-  fp = popen(cmd.c_str(), "r");
-  if(fgets(cbuf, 1024, fp) == NULL){
-    Msg::Warning("The executable <%s> does not exist", getCommandLine().c_str());
-    pclose(fp);
-    return false;
-  }
-  Msg::Info("The executable <%s> exists", getCommandLine().c_str());
-  pclose(fp);
-
-  Msg::SetOnelabString(getName() + "/Action","initialize",false);
-  run();
-
-  return true;
+bool RemoteNativeClient::checkCommandLine(){
+  return remoteClient::checkCommandLine(getCommandLine());
 }
 
-void RemoteEncapsulatedClient::analyze(){
+void RemoteNativeClient::analyze(){
   std::string cmd,rmcmd;
   std::vector<std::string> choices;
 
-  Msg::SetOnelabString(getName() + "/Action","check",false);
+  setAction("check");
+  OLMsg::Info("Analyses <%s> changed=%d", getName().c_str(),
+	      onelab::server::instance()->getChanged(getName()));
 
   if(getList("InputFiles",choices)){
     for(unsigned int i = 0; i < choices.size(); i++)
@@ -1127,50 +1087,49 @@ void RemoteEncapsulatedClient::analyze(){
 }
 
 
-void RemoteEncapsulatedClient::compute(){
+void RemoteNativeClient::compute(){
   std::string cmd,rmcmd;
   std::vector<std::string> choices;
 
-  Msg::SetOnelabString(getName() + "/Action","compute",false); 
+  setAction("compute");
+  OLMsg::Info("Analyses <%s> changed=%d", getName().c_str(),
+	      onelab::server::instance()->getChanged(getName()));
 
-  if(getList("InputFiles",choices)){
-    for(unsigned int i = 0; i < choices.size(); i++)
-      syncInputFile(getWorkingDir(),choices[i]);
+  if(getActive() && onelab::server::instance()->getChanged(getName())){
+    if(getList("InputFiles",choices)){
+      for(unsigned int i = 0; i < choices.size(); i++)
+	syncInputFile(getWorkingDir(),choices[i]);
+    }
+
+    if(buildRmCommand(rmcmd)){
+      cmd.assign("ssh "+getRemoteHost()+" 'cd "+getRemoteDir()+"; "+rmcmd+"'");
+      mySystem(cmd);
+    }
+
+    run();
+
+    if(getList("OutputFiles",choices)){
+      for(unsigned int i = 0; i < choices.size(); i++)
+	syncOutputFile(getWorkingDir(),choices[i]);
+    }
+
+    if(getList("PostArray",choices))
+      PostArray(choices);
   }
-
-  if(buildRmCommand(rmcmd)){
-    cmd.assign("ssh "+getRemoteHost()+" 'cd "+getRemoteDir()+"; "+rmcmd+"'");
-    mySystem(cmd);
-  }
-
-  run();
-
-  if(getList("OutputFiles",choices)){
-    for(unsigned int i = 0; i < choices.size(); i++)
-      syncOutputFile(getWorkingDir(),choices[i]);
-  }
-
-  if(getList("PostArray",choices))
-    PostArray(choices);
 }
 
 // ONELAB additional TOOLS (no access to server in tools)
 // options for 'onelab_client'
 
-int getOptions(int argc, char *argv[], std::string &action, std::string &commandLine, std::string &caseName, std::string &clientName, std::string &sockName, int &modelNumber){
+int getOptions(int argc, char *argv[], parseMode &todo, std::string &commandLine, std::string &caseName, std::string &clientName, std::string &sockName){
 
   commandLine=argv[0];
-  action="compute";
+  todo=COMPUTE;
   caseName="untitled";
   int i= 1;
   while(i < argc) {
     if(argv[i][0] == '-') {
-      if(!strcmp(argv[i] + 1, "m")) {
-	i++;
-	modelNumber = (atoi(argv[i]));
-        i++;
-      }
-      else if(!strcmp(argv[i] + 1, "onelab")) {
+      if(!strcmp(argv[i] + 1, "onelab")) {
 	i++;
 	clientName = argv[i];
         i++;
@@ -1179,17 +1138,19 @@ int getOptions(int argc, char *argv[], std::string &action, std::string &command
       }
       else if(!strcmp(argv[i] + 1, "a")) {
 	i++;
-	action="check";
+	todo=ANALYZE;
       }
       else if(!strcmp(argv[i] + 1, "c")) {
 	i++;
-	std::cout << "\nONELAB: Present state of the onelab clients\n" << std::endl;
-	for(onelab::server::citer it = onelab::server::instance()->firstClient();
+	std::cout << "\nONELAB: Present state of the onelab clients\n" 
+		  << std::endl;
+	for(onelab::server::citer it=onelab::server::instance()->firstClient();
 	    it != onelab::server::instance()->lastClient(); it++){
 	  std::string name= it->second->getName();
-	  std::cout << "<" << onelab::server::instance()->getChanged(name) << "> " << name << std::endl;
+	  std::cout << "<" << onelab::server::instance()->getChanged(name) 
+		    << "> " << name << std::endl;
 	}
-	action="check";
+	todo=ANALYZE;
       }
       else {
 	i++;
@@ -1218,6 +1179,11 @@ std::string ftoa(const double x){
   return Num.str();
 }
 
+int mySystem(std::string commandLine){
+  //std::cout << "mySystem<" << commandLine << ">" << std::endl;
+  return SystemCall(commandLine.c_str(), true);
+}
+
 #include <sys/stat.h>		
 #include <ctime>
 bool checkIfPresent(std::string fileName){
@@ -1225,7 +1191,7 @@ bool checkIfPresent(std::string fileName){
   if (!stat(fileName.c_str(), &buf))
     return true;
   else{
-    Msg::Fatal("The file <%s> is not present.",fileName.c_str());
+    OLMsg::Fatal("The file <%s> is not present.",fileName.c_str());
     return false;
   }
 }
@@ -1271,7 +1237,7 @@ bool isPath(const std::string &in)
 {
   int pos=in.find_last_not_of(" 0123456789");
   if(in.compare(pos,1,dirSep))
-    Msg::Fatal("The argument <%s> is not a valid path (must end with '/')",in.c_str());
+    OLMsg::Fatal("The argument <%s> is not a valid path (must end with '/')",in.c_str());
   return true;
 }
 
@@ -1284,14 +1250,14 @@ void GmshDisplay(onelab::remoteNetworkClient *loader, std::string fileName, std:
 #endif
   cmd.append( fileName + ".geo ");
   for(unsigned int i = 0; i < choices.size(); i++){
-    std::string fileName=Msg::GetOnelabString("Arguments/WorkingDir")+choices[i];
+    std::string fileName=OLMsg::GetOnelabString("Arguments/WorkingDir")+choices[i];
     cmd.append(fileName+" ");
-    if(Msg::hasGmsh){
+    if(OLMsg::hasGmsh){
       loader->sendMergeFileRequest(fileName);
-      Msg::Info("Send merge request <%s>",fileName.c_str());
+      OLMsg::Info("Send merge request <%s>",fileName.c_str());
     }
   }
-  if(!Msg::hasGmsh) system(cmd.c_str());
+  if(!OLMsg::hasGmsh) system(cmd.c_str());
 }
 
 std::vector <double> extract_column(const int col, array data){
@@ -1300,7 +1266,7 @@ std::vector <double> extract_column(const int col, array data){
     if (  col>0 && col<=data[i].size())
       column.push_back(data[i][col-1]);
     else
-      Msg::Fatal("Column number (%d) out of range.",col);
+      OLMsg::Fatal("Column number (%d) out of range.",col);
   return column;
 }
 
@@ -1312,11 +1278,11 @@ double find_in_array(int lin, int col, const std::vector <std::vector <double> >
     if ( col>=1 && col<=data[lin-1].size() )
       return data[lin-1][col-1];
   }
-  Msg::Fatal("The value has not been calculated: (%d,%d) out of range",lin,col);
+  OLMsg::Fatal("The value has not been calculated: (%d,%d) out of range",lin,col);
 }
 
-array read_array(std::string filename, char sep){
-  std::ifstream infile(sanitize(filename).c_str());
+array read_array(std::string fileName, char sep){
+  std::ifstream infile(sanitize(fileName).c_str());
   std::vector <std::vector <double> > array;
 
   int deb,end;
@@ -1338,5 +1304,3 @@ array read_array(std::string filename, char sep){
   }
   return array;
 }
-
-  

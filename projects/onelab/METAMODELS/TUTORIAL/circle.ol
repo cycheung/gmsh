@@ -1,36 +1,16 @@
 
 # Declaration of the ONELAB parameters of the metamodel:
-Hx.number(0, Fields/,"Hx");
+Hx.number(0.3, Fields/,"Hx");
 Hz.number(0, Fields/,"Hz");
 Jpx.number(0, Fields/,"Jpx");
 Jpz.number(0, Fields/,"Jpz");
 Khi.number(0.12, Parameters/,"Hysteresis coefficient",0:0.5:0.1);
+
+# radioButton parameters are used for 'Y/N' or 'on/off' features
 DISPLAY.radioButton(1, Options/,"Display functional at each step");
-
-
-Mesh.register(encapsulated, gmsh);
-Mesh.in( circle.geo);
-Mesh.out(circle.msh);
-Mesh.args(circle.geo);
-
-# In this metamodel, the only client is the postprocessor of gmsh
-# running (non interactively, see the "-" argument) a script called "script"
-Post.register (interfaced, gmsh);
-Post.in ( script.ol );
-Post.args( script -);
-Post.out( minimum.txt );
-OL.iftrue(DISPLAY)
-  Post.merge(Functional.pos);
-OL.else
-  Post.merge();
-OL.endif
-# The postprocessing scripts generates a result file "minimum.txt".
-# Relevant info is extracted from the file by ONELAB 
-# and transmitted to the server:
-Post.up(minimum.txt,1,5,Fields/Jpx, 
-        minimum.txt,1,7,Fields/Jpz);
-
 LOOP.radioButton(1, Options/,"Loop on Hx");
+
+# Loops can be done on the 'list of Choices' of a ONELAB number
 Hx.setAttribute(Loop,OL.get(LOOP));
 Hx.resetChoices();
 OL.iftrue(DISPLAY)
@@ -50,11 +30,44 @@ OL.endif
 # i.e. Hx and Fields/Hx are synonymous in this file. 
 
 # One ensures the list of choices of Jpx is reset at the beginning of the loop
-# in case the loop would be run several time. 
+# in case the loop would be run several times. 
 OL.if( OL.get(Fields/Hx) == OL.get(Fields/Hx,choices.begin()) )
   Jpx.resetChoices();
 OL.endif
 
 # Gmsh can also display on-the-fly graphs of ONELAB variables 
-Hx.setAttribute(Graph,1000);
-Jpx.setAttribute(Graph,0100);
+OL.iftrue(LOOP)
+  Hx.setAttribute(Graph,1000);
+  Jpx.setAttribute(Graph,0100);
+OL.else
+  Hx.setAttribute(Graph,0);
+  Jpx.setAttribute(Graph,0);
+OL.endif
+
+# Metamodel description
+Mesh.register(encapsulated, gmsh);
+Mesh.in( circle.geo);
+Mesh.out(circle.msh);
+Mesh.run(circle.geo);
+
+OL.show(Hx);
+OL.show(Jpx);
+
+# In this metamodel, the only client is the postprocessor of gmsh
+# running (non interactively, see the "-" argument) a script called "script"
+Post.register (interfaced, gmsh);
+Post.in ( script.ol );
+Post.out( minimum.txt );
+Post.run( script -);
+OL.iftrue(DISPLAY)
+  Post.merge(Functional.pos);
+OL.else
+  Post.merge();
+OL.endif
+# The postprocessing scripts generates a result file "minimum.txt".
+# Relevant info is extracted from the file by ONELAB 
+# and transmitted to the server:
+Post.up(minimum.txt,1,5,Fields/Jpx, 
+        minimum.txt,1,7,Fields/Jpz);
+
+OL.dump(zzz);

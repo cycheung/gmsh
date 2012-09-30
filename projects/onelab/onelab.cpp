@@ -4,37 +4,38 @@
 #include "OnelabClients.h"
 
 onelab::server *onelab::server::_server = 0;
-onelab::remoteNetworkClient *Msg::loader = 0;
+onelab::remoteNetworkClient *OLMsg::loader = 0;
 
 int main(int argc, char *argv[]){
-  std::string action="", commandLine="", caseName="", clientName="", sockName="";
-  int modelNumber=0;
+  std::string commandLine="", caseName="", clientName="", sockName="";
+  parseMode todo;
 
-  getOptions(argc, argv, action, commandLine, caseName, clientName, sockName, modelNumber);
+  getOptions(argc, argv, todo, commandLine, caseName, clientName, sockName);
   
-  // Msg::_onelabclient is a onelab:LocalClient independent of MetaModel
-  Msg::InitializeOnelab("metamodel","");
+  // OLMsg::_onelabclient is a onelab:LocalClient independent of MetaModel
+  OLMsg::InitializeOnelab("meta","");
 
   if (sockName.size()){
-    Msg::loader = new onelab::remoteNetworkClient(clientName, sockName);
-    Msg::hasGmsh = clientName.compare("loadedMetaModel");
+    OLMsg::loader = new onelab::remoteNetworkClient(clientName, sockName);
+    OLMsg::hasGmsh = clientName.compare("loadedMetaModel");
   }
   else
-    Msg::hasGmsh=false;
+    OLMsg::hasGmsh=false;
 
-  Msg::SetOnelabNumber("HasGmsh",Msg::hasGmsh,false);
+  OLMsg::SetOnelabNumber("HasGmsh",OLMsg::hasGmsh,false);
 
-  if(Msg::loader)
-    std::cout << "ONELAB: " << Msg::Synchronize_Down() << " parameters downloaded" << std::endl;
+  if(OLMsg::loader)
+    std::cout << "ONELAB: " << OLMsg::Synchronize_Down() 
+	      << " parameters downloaded" << std::endl;
 
   std::string fileName="", workingDir="";
   if(!caseName.compare("untitled")){
     // no casename was given in calling the metamodel 
     // this means it was called by a loader
     // obtain the caseName from the loader
-    caseName= Msg::GetOnelabString("Gmsh/MshFileName");
+    caseName= OLMsg::GetOnelabString("Gmsh/MshFileName");
     if(caseName.empty()){
-      caseName= Msg::GetOnelabString("loadedMetaModel/CaseName");
+      caseName= OLMsg::GetOnelabString("loadedMetaModel/CaseName");
     }
   }
 
@@ -44,48 +45,48 @@ int main(int argc, char *argv[]){
      //if(workingDir.empty()) workingDir.assign("."+dirSep);
   }
   else
-    Msg::Fatal("No valid input filename.");
+    OLMsg::Fatal("No valid input filename.");
 
-  Msg::Info("Filename <%s> and working dir <%s>",fileName.c_str(),
+  OLMsg::Info("Filename <%s> and working dir <%s>",fileName.c_str(),
 	    workingDir.c_str());
-  Msg::SetOnelabString("Arguments/FileName",fileName,false);
-  Msg::SetOnelabString("Arguments/WorkingDir",workingDir,false);
+  OLMsg::SetOnelabString("Arguments/FileName",fileName,false);
+  OLMsg::SetOnelabString("Arguments/WorkingDir",workingDir,false);
 
   MetaModel *myModel = new MetaModel(commandLine, workingDir, clientName,
-				     fileName, modelNumber);
-  myModel->setAction(action);
+				     fileName);
+  myModel->setTodo(todo);
 
   //if not all clients have valid commandlines -> exit metamodel
   //commandlines will be entered by the user interactively
-  if(!myModel->checkCommandLines()) 
-    action.assign("exit");
-
+  if(!myModel->checkCommandLines()) myModel->setTodo(EXIT);
+  
   //if the metamodel is not yet initialized by the loader -> initialize
-  if(Msg::loader && !Msg::GetOnelabNumber(clientName + "/Initialized"))
-    action.assign("initialize");
+  if(OLMsg::loader && !OLMsg::GetOnelabNumber(clientName + "/Initialized"))
+     myModel->setTodo(INITIALIZE);
 
-  if(!action.compare("exit")){ 
+  if( myModel->isTodo(EXIT)){ 
     // exit metamodel
   }
-  else if(!action.compare("initialize")){
-    if(Msg::loader) myModel->initialize(); // initializes MetaModel 
+  else if( myModel->isTodo(INITIALIZE)){
+    myModel->initialize(); 
   }
-  else if(!action.compare("check")){
-      myModel->analyze();
+  else if( myModel->isTodo(ANALYZE)){
+    myModel->analyze(); 
   }
-  else if(!action.compare("compute")){
-      myModel->compute();
+  else if( myModel->isTodo(COMPUTE)){
+    myModel->compute(); 
   }
   else
-    Msg::Fatal("Main: Unknown Action <%s>", action.c_str());
+    OLMsg::Fatal("Main: Unknown Action <%d>", todo);
 
-  if (Msg::loader){
-    std::cout << "ONELAB: " << Msg::Synchronize_Up() << " parameters uploaded" << std::endl;
-    delete Msg::loader;
+  if (OLMsg::loader){
+    std::cout << "ONELAB: " << OLMsg::Synchronize_Up() 
+	      << " parameters uploaded" << std::endl;
+    delete OLMsg::loader;
   }
-  Msg::FinalizeOnelab();
+  OLMsg::FinalizeOnelab();
   delete myModel;
 
-  Msg::Info("Leave metamodel");
+  OLMsg::Info("Leave metamodel");
 }
 
