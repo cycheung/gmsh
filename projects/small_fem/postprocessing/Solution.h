@@ -31,6 +31,8 @@ class Solution{
   const DofManager*    dofM;
   const FunctionSpace* fs;
 
+  double (*fScalar)(fullVector<double>& xyz);
+
   int fsType;
   
   bool                              scalar;
@@ -41,6 +43,7 @@ class Solution{
  public:
    Solution(const System& system);
    Solution(const System& system, const GroupOfElement& visu);
+   Solution(double (*f)(fullVector<double>& xyz), const GroupOfElement& visu);
   ~Solution(void);
 
   void write(const std::string name, Writer& writer) const;
@@ -53,6 +56,7 @@ class Solution{
   void init(const System& system);
   void interpolate(void);
   void interpolateOnVisu(void); 
+  void evaluateF(void);
 };
 
 

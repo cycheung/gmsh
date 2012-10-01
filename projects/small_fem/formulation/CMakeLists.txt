@@ -2,7 +2,8 @@ set(src
   Formulation.cpp
   FormulationLaplace.cpp
   FormulationPoisson.cpp
-  FormulationProjection.cpp
+  FormulationProjectionVector.cpp
+  FormulationProjectionScalar.cpp
 )
 
 

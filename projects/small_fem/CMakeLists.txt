@@ -65,7 +65,9 @@ include_directories(
 add_definitions(-pedantic -Wall -g)
 add_executable(laplace ${sources} simulation/Laplace.cpp) 
 add_executable(poisson ${sources} simulation/Poisson.cpp) 
-add_executable(project ${sources} simulation/Projection.cpp) 
+
+add_executable(projvect ${sources} simulation/ProjectionVector.cpp) 
+add_executable(projscal ${sources} simulation/ProjectionScalar.cpp) 
 
 add_executable(btest ${sources} simulation/BasisTest.cpp) 
 add_executable(conv  ${sources} simulation/ConvPoisson.cpp) 
@@ -73,7 +75,9 @@ add_executable(conv  ${sources} simulation/ConvPoisson.cpp)
 ## Link (Note: 'lib' is gmsh static library)
 target_link_libraries(laplace cblas lapack lib)
 target_link_libraries(poisson cblas lapack lib)
-target_link_libraries(project cblas lapack lib)
+
+target_link_libraries(projvect cblas lapack lib)
+target_link_libraries(projscal cblas lapack lib)
 
 target_link_libraries(btest cblas lapack lib)
 target_link_libraries(conv  cblas lapack lib)

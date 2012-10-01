@@ -68,6 +68,24 @@ Solution::Solution(const System& system,
   interpolateOnVisu();
 }
 
+Solution::Solution(double (*f)(fullVector<double>& xyz), 
+		   const GroupOfElement& visu){
+  // Init
+  scalar = true;
+  nodalScalarValue = NULL;
+  nodalVectorValue = NULL;
+
+  // Get Visu Domain
+  this->visuDomain = &visu;
+
+  // Get Function
+  fScalar = f;
+
+  // Evaluate f on visu
+  evaluateF();
+}
+
+
 Solution::~Solution(void){
   if(scalar)
     delete nodalScalarValue;
@@ -223,6 +241,40 @@ void Solution::interpolateOnVisu(void){
     else
       (*nodalVectorValue)[node[i]->getNum() - 1] = 
 	fsVector->interpolate(*element, coef, xyz);
+  }
+}
+
+void Solution::evaluateF(void){
+  // Init
+  const Mesh& visuMesh              = visuDomain->getMesh();
+  const unsigned int nTotVertex     = visuMesh.getVertexNumber();
+  const vector<const MVertex*> node = visuMesh.getAllVertex(); 
+
+  // Scalar or Vector ?
+  if(scalar)
+    nodalScalarValue = new vector<double>(nTotVertex);
+
+  else
+    nodalVectorValue = new vector<fullVector<double> >(nTotVertex);
+    
+  // Iterate on *NODES*
+  for(unsigned int i = 0; i < nTotVertex; i++){
+    // Get Node coordinate
+    fullVector<double> xyz(3);
+    xyz(0) = node[i]->x();
+    xyz(1) = node[i]->y();
+    xyz(2) = node[i]->z();
+
+    // Evaluate (AT LAST !!)
+    if(scalar)
+      (*nodalScalarValue)[node[i]->getNum() - 1] = 
+	fScalar(xyz);
+    
+    else
+      ;/*
+      (*nodalVectorValue)[node[i]->getNum() - 1] = 
+	f(xyz);
+       */
   }
 }
 
