@@ -72,3 +72,5 @@ Post.up(minimum.txt,1,5,Fields/Jpx,
 
 # Ask ONELAB to dump the complete database in a file called 'onelab.db'
 #OL.dump(onelab.db);
+
+OL.dump(zzz);

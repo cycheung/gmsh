@@ -231,6 +231,10 @@ std::string localSolverClient::resolveGetVal(std::string line) {
 	    }
 	    buff.append(1,pattern[2]);	  
 	  }
+	  else if(!action.compare("index")) {
+	    Num << numbers[0].getIndex();
+	    buff.assign(Num.str());
+	  }
 	  else
 	    OLMsg::Fatal("Unknown action <%s> in %s statement",
 		       action.c_str(),olkey::getValue.c_str());

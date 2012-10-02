@@ -54,27 +54,6 @@ array read_array(std::string fileName, char sep);
 double find_in_array(int i, int j, const std::vector <std::vector <double> > &data);
 std::vector<double> extract_column(const int j, array data);
 
-class PromptUser : public onelab::localClient {
-public:
- PromptUser(const std::string &name) : onelab::localClient(name) {}
-  ~PromptUser(){}
-  /* int  getVerbosity(); */
-  /* void setVerbosity(const int ival); */
-  void setNumber(const std::string paramName, const double val, const std::string &help="");
-  double getNumber(const std::string paramName);
-  bool existNumber(const std::string paramName);
-  void setString(const std::string paramName, const std::string &val, const std::string &help="");
-  std::string getString(const std::string paramName);
-  bool existString(const std::string paramName);
-  void addNumberChoice(std::string name, double val);
-  void addStringChoice(std::string name, std::string str);
-  std::string stateToChar();  
-  std::string showParamSpace();
-  std::string showClientStatus();
-  void statusClients();
-  bool menu(std::string commandLine, std::string workingDir, std::string fileName);
-};
-
 static std::string getShortName(const std::string &name) {
   std::string s = name;
   // remove path
@@ -118,12 +97,9 @@ yields 4 clients:
 InterfacedClient, RemoteInterfacesClient
 NativeClient, RemoteINterfacedClient
 
-
 The base class "remoteClient" is a base class 
 for clients running on a remote host.
 It provides appropriate versions of checkIfPresent() and checkCommandLine().
-Remote clients have hence double inheritance
-(http://www.nawouak.net/?doc=course.cpp+ch=inheritance+lang=fr).
 */
 class localSolverClient : public onelab::localClient{
  private:
@@ -133,7 +109,6 @@ class localSolverClient : public onelab::localClient{
   bool _onelabBlock;
   std::set<std::string, ShortNameLessThan> _parameters;
   std::string longName(const std::string name);
-  //std::string evaluateGetVal(std::string line);
  public:
  localSolverClient(const std::string &name, const std::string &cmdl, 
 		   const std::string &wdir) 

@@ -652,9 +652,19 @@ int OLMsg::Synchronize_Up(){
     for(std::vector<onelab::number>::const_iterator it = numbers.begin();
   	it != numbers.end(); it++){
       loader->set(*it);
-      //std::cout << "FHF u " << (*it).getName() << "=" << (*it).getChanged() << std::endl; 
+      //std::cout << "FHF u " << (*it).getName() << "=" 
+      //<< (*it).getChanged() << std::endl; 
     }
   }
+  loader->get(numbers,"");
+  if(numbers.size()){
+    for(std::vector<onelab::number>::const_iterator it = numbers.begin();
+  	it != numbers.end(); it++){
+      //std::cout << "FHF control " << (*it).getName() << "=" 
+      //<< (*it).getChanged() << std::endl; 
+    }
+  }
+
   std::vector<onelab::string> strings;
   _onelabClient->get(strings,"");
   if(strings.size()){
