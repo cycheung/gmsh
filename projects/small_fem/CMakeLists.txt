@@ -66,8 +66,9 @@ add_definitions(-pedantic -Wall -g)
 add_executable(laplace ${sources} simulation/Laplace.cpp) 
 add_executable(poisson ${sources} simulation/Poisson.cpp) 
 
-add_executable(projvect ${sources} simulation/ProjectionVector.cpp) 
-add_executable(projscal ${sources} simulation/ProjectionScalar.cpp) 
+add_executable(projvect    ${sources} simulation/ProjectionVector.cpp) 
+add_executable(projscalpow ${sources} simulation/ProjectionScalarPower.cpp) 
+add_executable(projscalsin ${sources} simulation/ProjectionScalarSin.cpp) 
 
 add_executable(btest ${sources} simulation/BasisTest.cpp) 
 add_executable(conv  ${sources} simulation/ConvPoisson.cpp) 
@@ -76,8 +77,9 @@ add_executable(conv  ${sources} simulation/ConvPoisson.cpp)
 target_link_libraries(laplace cblas lapack lib)
 target_link_libraries(poisson cblas lapack lib)
 
-target_link_libraries(projvect cblas lapack lib)
-target_link_libraries(projscal cblas lapack lib)
+target_link_libraries(projvect    cblas lapack lib)
+target_link_libraries(projscalpow cblas lapack lib)
+target_link_libraries(projscalsin cblas lapack lib)
 
 target_link_libraries(btest cblas lapack lib)
 target_link_libraries(conv  cblas lapack lib)
