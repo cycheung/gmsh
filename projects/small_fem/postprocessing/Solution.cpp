@@ -111,7 +111,7 @@ void Solution::write(const std::string name, Writer& writer) const{
 void Solution::interpolate(void){
   // Init
   const unsigned int nTotVertex       = mesh->getVertexNumber();
-  const std::vector<GroupOfDof*>& god = dofM->getAllGroups();
+  const std::vector<GroupOfDof*>& god = fs->getAllGroups();
   const unsigned int nGod             = god.size();
 
   vector<bool> isInterpolated(nTotVertex, false);
@@ -214,7 +214,7 @@ void Solution::interpolateOnVisu(void){
     MElement* element = model.getMeshElementByCoord(point, dim, false);
    
     // Get GroupOfDof related to this Element
-    const GroupOfDof& god = dofM->getGoDFromElement(*element);
+    const GroupOfDof& god = fs->getGoDFromElement(*element);
       
     // Get Dof
     const vector<const Dof*>& dof  = god.getAll();

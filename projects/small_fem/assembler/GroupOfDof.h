@@ -9,7 +9,6 @@
 
 #include "MElement.h"
 
-class DofManager;
 class FunctionSpace;
 
 /**
@@ -37,8 +36,7 @@ class GroupOfDof: public GroupTyped<Dof>{
   std::vector<const Dof*>* dof;
   
   unsigned int nextDof;
-  
-  friend class DofManager;
+
   friend class FunctionSpace;
 
  public:

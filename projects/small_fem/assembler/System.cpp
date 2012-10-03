@@ -9,10 +9,11 @@ System::System(const Formulation& formulation){
   this->fs          = &(formulation.fs());
 
   // Get Dof Manager //
-  dofM = new DofManager(*fs);
+  dofM = new DofManager();
+  dofM->addDof(*fs);
 
   // Get DofManager Data //
-  size = dofM->dofNumber();
+  size = fs->dofNumber();
   
   // Create System //
   A = new fullMatrix<double>(size, size);
@@ -33,8 +34,8 @@ System::~System(void){
 
 void System::assemble(void){
   // Get GroupOfDofs //
-  const std::vector<GroupOfDof*>& group = dofM->getAllGroups();
-  const int E = dofM->groupNumber();
+  const std::vector<GroupOfDof*>& group = fs->getAllGroups();
+  const int E = fs->groupNumber();
 
   // Assemble System //
   for(int i = 0; i < E; i++)
