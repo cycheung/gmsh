@@ -1125,7 +1125,7 @@ void localSolverClient::convert_onefile(std::string fileName, std::ofstream &out
   std::string fullName=getWorkingDir()+fileName;
   std::ifstream infile(fullName.c_str());
   if (infile.is_open()){
-    OLMsg::Info("   Convert file <%s>",fullName.c_str());
+    OLMsg::Info("Convert file <%s>",fullName.c_str());
     while ( infile.good() ) {
       std::string line;
       getline (infile,line);
@@ -1280,7 +1280,10 @@ void MetaModel::client_sentence(const std::string &name,
     }
     else if(isTodo(COMPUTE)){
       localSolverClient *c;
-      if(c=findClientByName(name)) c->compute();
+      if(c=findClientByName(name)){
+	c->analyze();
+	c->compute();
+      }
     }
   }
   else if(!action.compare("check")){

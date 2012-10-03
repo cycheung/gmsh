@@ -1,3 +1,4 @@
+#LOGFILES.radioButton(0); LOGFILES.setVisible(0);
 
 # Declaration of the ONELAB parameters of the metamodel:
 Hx.number(0.3, Fields/,"Hx");
@@ -9,6 +10,7 @@ Khi.number(0.12, Parameters/,"Hysteresis coefficient",0:0.5:0.1);
 # radioButton parameters are used for 'Y/N' or 'on/off' features
 DISPLAY.radioButton(1, Options/,"Display functional at each step");
 LOOP.radioButton(1, Options/,"Loop on Hx");
+
 
 # Loops can be done on the 'list of Choices' of a ONELAB number
 Hx.setAttribute(Loop,OL.get(LOOP));
@@ -32,7 +34,7 @@ OL.endif
 # One ensures the list of choices of Jpx is reset at the beginning of the loop
 # in case the loop would be run several times. 
 OL.if( OL.get(Fields/Hx, choices.index()) == 1 )
-  Jpx.resetChoices();
+#  Jpx.resetChoices();
 OL.endif
 
 # Gmsh can also display on-the-fly graphs of ONELAB variables 
@@ -68,9 +70,8 @@ Post.up(minimum.txt,1,5,Fields/Jpx,
         minimum.txt,1,7,Fields/Jpz);
 
 # Ask ONELAB to display the server info about the parameter Hx
-#OL.show(Hx);
+OL.show(Hx);
+OL.show(Jpx);
 
 # Ask ONELAB to dump the complete database in a file called 'onelab.db'
 #OL.dump(onelab.db);
-
-OL.dump(zzz);

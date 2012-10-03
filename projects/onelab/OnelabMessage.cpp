@@ -17,9 +17,9 @@
 int OLMsg::_commRank = 0;
 int OLMsg::_commSize = 1;
 int OLMsg::_verbosity = 4;
-int OLMsg::_progressMeterStep = 10;
-int OLMsg::_progressMeterCurrent = 0;
-std::map<std::string, double> OLMsg::_timers;
+// int OLMsg::_progressMeterStep = 10;
+// int OLMsg::_progressMeterCurrent = 0;
+// std::map<std::string, double> OLMsg::_timers;
 int OLMsg::_warningCount = 0;
 int OLMsg::_errorCount = 0;
 GmshMessage *OLMsg::_callback = 0;
@@ -140,6 +140,8 @@ void OLMsg::Warning(const char *fmt, ...)
   }
 }
 
+
+
 void OLMsg::Info(const char *fmt, ...)
 {
   if(_commRank || _verbosity < 3) return;
@@ -211,6 +213,7 @@ void OLMsg::StatusBar(int num, bool log, const char *fmt, ...)
   }
 }
 
+/*
 void OLMsg::Debug(const char *fmt, ...)
 {
   if(_verbosity < 99) return;
@@ -368,6 +371,10 @@ void OLMsg::InitClient(std::string sockname)
     _client->Start();
 }
 
+void OLMsg::Barrier()
+{
+}
+*/
 void OLMsg::FinalizeClient()
 {
   if(_client){
@@ -376,10 +383,6 @@ void OLMsg::FinalizeClient()
     delete _client;
   }
   _client = 0;
-}
-
-void OLMsg::Barrier()
-{
 }
 
 void OLMsg::InitializeOnelab(const std::string &name, const std::string &sockname)
@@ -516,36 +519,12 @@ void OLMsg::AddOnelabNumberChoice(std::string name, double val)
     else{
       ps.resize(1);
       ps[0].setName(name);
+      ps[0].setAttribute("Highlight","Coral"); // only used by PostArray
+      ps[0].setReadOnly(false);
+      ps[0].setVisible(true);
     }
     ps[0].setValue(val);
     choices.push_back(val);
-    ps[0].setChoices(choices);
-    ps[0].setAttribute("Highlight","Coral"); // only used by PostArray
-    ps[0].setReadOnly(false);
-    ps[0].setVisible(true);
-    _onelabClient->set(ps[0]);
-  }
-}
-
-void OLMsg::AddOnelabStringChoice(std::string name, std::string kind,
-                                    std::string value)
-{
-  if(_onelabClient){
-    std::vector<std::string> choices;
-    std::vector<onelab::string> ps;
-    _onelabClient->get(ps, name);
-    if(ps.size()){
-      choices = ps[0].getChoices();
-      if(std::find(choices.begin(), choices.end(), value) == choices.end())
-        choices.push_back(value);
-    }
-    else{
-      ps.resize(1);
-      ps[0].setName(name);
-      ps[0].setKind(kind);
-      choices.push_back(value);
-    }
-    ps[0].setValue(value);
     ps[0].setChoices(choices);
     _onelabClient->set(ps[0]);
   }
@@ -595,21 +574,6 @@ std::string OLMsg::obtainFullName(const std::string &name){
     return *it;
   }
 }
-
-// void OLMsg::SetAction(const std::string &name, const std::string &action){
-//   OLMsg::SetOnelabString(name + "/Action", action, false);
-//   if(_onelabClient){
-//     std::vector<onelab::string> strings;
-//     _onelabClient->get(strings, name);
-//     if(strings.size()){
-//       strings[0].setChanged(changed);
-//       _onelabClient->set(strings[0]);
-//     }
-//   }
-// }
-// std::string OLMsg::GetAction(const std::string &name){
-//   return OLMsg::GetOnelabString(name + "/Action");
-// }
 
 int OLMsg::Synchronize_Down(){
   OLMsg::_fullNameDict.clear();

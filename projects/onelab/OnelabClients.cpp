@@ -368,13 +368,6 @@ void localSolverClient::setAction(const std::string action){
   std::string name=getName() + "/Action";
   onelab::string s(name, action);
   set(s);
-  std::vector<onelab::string> strings;
-  get(strings,name);
-  if(strings.size()){
-    strings[0].setChanged(false);
-    strings[0].setVisible(false);
-    set(strings[0]);
-  }
 }
 
 const std::string localSolverClient::getString(const std::string what){
@@ -663,11 +656,12 @@ void MetaModel::registerClient(const std::string &name, const std::string &type,
 void MetaModel::PostArray(std::vector<std::string> choices)
 {
   int nb=0;
-  onelab::number o;
+  //onelab::number o;
   while( 4*(nb+1) <= choices.size()){
     int lin= atof(choices[4*nb+1].c_str());
     int col= atof(choices[4*nb+2].c_str());
-    std::string fileName = OLMsg::GetOnelabString("Arguments/WorkingDir")+choices[4*nb];
+    std::string fileName =
+      OLMsg::GetOnelabString("Arguments/WorkingDir")+choices[4*nb];
     double val=find_in_array(lin,col,read_array(fileName,' '));
     OLMsg::AddOnelabNumberChoice(choices[4*nb+3],val);
     OLMsg::Info("PostArray <%s>=%e",choices[4*nb+3].c_str(),val);

@@ -58,19 +58,19 @@ class OLMsg {
   OLMsg() {}
   static void Init(int argc, char **argv);
   static void Exit(int level);
-  static int GetCommRank(){ return _commRank; }
-  static int GetCommSize(){ return _commSize; }
-  static void SetCommRank(int val){ _commRank = val; }
-  static void SetCommSize(int val){ _commSize = val; }
-  static void SetCallback(GmshMessage *callback){ _callback = callback; }
-  static void Barrier();
-  static int GetNumThreads();
-  static int GetMaxThreads();
-  static int GetThreadNum();
-  static void SetVerbosity(int val){ _verbosity = val; }
-  static int GetVerbosity(){ return _verbosity; }
-  static std::string GetLaunchDate(){ return _launchDate; }
-  static std::string GetCommandLineArgs(){ return _commandLine; }
+  /* static int GetCommRank(){ return _commRank; } */
+  /* static int GetCommSize(){ return _commSize; } */
+  /* static void SetCommRank(int val){ _commRank = val; } */
+  /* static void SetCommSize(int val){ _commSize = val; } */
+  /* static void SetCallback(GmshMessage *callback){ _callback = callback; } */
+  /* static void Barrier(); */
+  /* static int GetNumThreads(); */
+  /* static int GetMaxThreads(); */
+  /* static int GetThreadNum(); */
+  /* static void SetVerbosity(int val){ _verbosity = val; } */
+  /* static int GetVerbosity(){ return _verbosity; } */
+  /* static std::string GetLaunchDate(){ return _launchDate; } */
+  /* static std::string GetCommandLineArgs(){ return _commandLine; } */
   static void Fatal(const char *fmt, ...);
   static void Error(const char *fmt, ...);
   static void Warning(const char *fmt, ...);
@@ -115,10 +115,6 @@ class OLMsg {
 				      std::map<std::string,
 				      std::vector<std::string> > &copt);
   static void AddOnelabNumberChoice(std::string name, double val);
-  static void AddOnelabStringChoice(std::string name, 
-				    std::string kind,std::string value);
-  /* static std::string GetAction(const std::string &name); */
-  /* static void SetAction(const std::string &name, const std::string &action); */
 
   // communication with loader
   static onelab::remoteNetworkClient *loader;
@@ -129,15 +125,5 @@ class OLMsg {
   static void recordFullName(const std::string &name);
   static std::string obtainFullName(const std::string &name);
 };
-
-/* class Msg { */
-/*   Msg() {} */
-/*   static void Error(const char *fmt, ...){ */
-/*     OLMsg::Error(fmt, ...); */
-/*   } */
-/*   static void Info(const char *fmt, ...){ */
-/*     OLMsg::Info(fmt, ...); */
-/*   } */
-/* }; */
 
 #endif

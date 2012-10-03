@@ -56,6 +56,11 @@ int main(int argc, char *argv[]){
 				     fileName);
   myModel->setTodo(todo);
 
+  if(OLMsg::GetOnelabNumber("LOGFILES")){
+    freopen("stdout.txt","w",stdout);
+    freopen("stderr.txt","w",stderr);
+  }
+
   //if not all clients have valid commandlines -> exit metamodel
   //commandlines will be entered by the user interactively
   if(!myModel->checkCommandLines()) myModel->setTodo(EXIT);
