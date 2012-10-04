@@ -9,6 +9,8 @@
 #include "FunctionSpace.h"
 #include "Formulation.h"
 
+#include "linearSystemPETSc.h"
+
 #include <string>
 
 /**
@@ -29,6 +31,8 @@ class System{
  private:
   bool isAssembled;
 
+  linearSystemPETSc<double>* linSys;
+
   fullMatrix<double>* A;
   fullVector<double>* b;
   fullVector<double>* x;
@@ -43,8 +47,8 @@ class System{
    System(const Formulation& formulation);
   ~System(void);
 
-  fullMatrix<double>& getMatrix(void) const;
-  fullVector<double>& getRHS(void) const;
+  //fullMatrix<double>& getMatrix(void) const;
+  //fullVector<double>& getRHS(void) const;
   fullVector<double>& getSol(void) const;
 
   unsigned int getSize(void) const;
@@ -115,7 +119,7 @@ class System{
 //////////////////////
 // Inline Functions //
 //////////////////////
-
+/*
 inline fullMatrix<double>& System::getMatrix(void) const{
   return *A;
 }
@@ -123,7 +127,7 @@ inline fullMatrix<double>& System::getMatrix(void) const{
 inline fullVector<double>& System::getRHS(void) const{
   return *b;
 }
-
+*/
 inline fullVector<double>& System::getSol(void) const{
   return *x;
 }

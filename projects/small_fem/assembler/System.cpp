@@ -1,5 +1,6 @@
 #include "System.h"
 #include "Solver.h"
+#include <cstdio>
 
 using namespace std;
 
@@ -20,6 +21,14 @@ System::System(const Formulation& formulation){
   b = new fullVector<double>(size);
   x = new fullVector<double>(size);
 
+  printf("Pif\n");
+
+  linSys = new linearSystemPETSc<double>();
+  printf("Pouf\n");
+  linSys->allocate(size);
+  
+  printf("Paf\n");
+
   // The system is not assembled //
   isAssembled = false;
 }
@@ -28,6 +37,8 @@ System::~System(void){
   delete A;
   delete b;
   delete x;
+  
+  delete linSys;
   delete dofM;
   // System is not responsible for deleting 'Formulations'
 }
@@ -65,6 +76,15 @@ void System::solve(void){
 
   // Get dof value //
   Solver::solve(*A, *x, *b);
+  linSys->systemSolve();
+
+  // Write Sol
+  double xi;
+
+  for(int i = 0; i < size; i++){
+    linSys->getFromSolution(i, xi);
+    (*x)(i) = xi;
+  }
 }
 
 void System::assemble(GroupOfDof& group){
@@ -79,18 +99,25 @@ void System::assemble(GroupOfDof& group){
       // If fixed Dof
       (*A)(dofI, dofI) = 1;
       (*b)(dofI)       = fixed.second;
+      linSys->addToMatrix(dofI, dofI, 1);
+      linSys->addToRightHandSide(dofI, fixed.second); 
     }
        
     else{
       // If unknown Dof
       for(int j = 0; j < N; j++){
 	int dofJ = dofM->getGlobalId(*(dof[j]));
-	
+
 	(*A)(dofI, dofJ) += 
 	  formulation->weak(i, j, group);
+
+	linSys->addToMatrix(dofI, dofJ, 
+			    formulation->weak(i, j, group));
       }
       
       (*b)(dofI) += formulation->rhs(i, group);
+      linSys->addToRightHandSide(dofI, 
+				 formulation->rhs(i, group)); 
     }
   } 
 }

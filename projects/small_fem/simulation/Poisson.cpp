@@ -8,11 +8,15 @@
 
 #include "FormulationPoisson.h"
 
+#include "Gmsh.h"
+
 using namespace std;
 
 void fPoisson(Mesh& msh, Mesh& visu, Writer& writer, int order);
 
 int main(int argc, char** argv){
+  GmshInitialize();
+
   // Writer //
   WriterMsh writer; 
   

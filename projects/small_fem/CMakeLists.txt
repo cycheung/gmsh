@@ -59,27 +59,35 @@ include_directories(
   ../../FunctionSpace
   ../../Numeric
   ../../Geo
+  ../../Solver
+  ${GMSH_EXTERNAL_INCLUDE_DIRS}
 )
 
-## Build
+## Compiler Flags
 add_definitions(-pedantic -Wall -g)
-add_executable(laplace ${sources} simulation/Laplace.cpp) 
-add_executable(poisson ${sources} simulation/Poisson.cpp) 
 
-add_executable(projvect    ${sources} simulation/ProjectionVector.cpp) 
-add_executable(projscalpow ${sources} simulation/ProjectionScalarPower.cpp) 
-add_executable(projscalsin ${sources} simulation/ProjectionScalarSin.cpp) 
+## Build SmallFEM Library
+add_library(sf STATIC ${sources})
+set_target_properties(sf PROPERTIES LINKER_LANGUAGE CXX)
 
-add_executable(btest ${sources} simulation/BasisTest.cpp) 
-add_executable(conv  ${sources} simulation/ConvPoisson.cpp) 
+## Build Simulations
+add_executable(laplace simulation/Laplace.cpp) 
+add_executable(poisson simulation/Poisson.cpp) 
+
+add_executable(projvect    simulation/ProjectionVector.cpp) 
+add_executable(projscalpow simulation/ProjectionScalarPower.cpp) 
+add_executable(projscalsin simulation/ProjectionScalarSin.cpp) 
+
+add_executable(btest simulation/BasisTest.cpp) 
+add_executable(conv  simulation/ConvPoisson.cpp) 
 
 ## Link (Note: 'lib' is gmsh static library)
-target_link_libraries(laplace cblas lapack lib)
-target_link_libraries(poisson cblas lapack lib)
+target_link_libraries(laplace sf cblas lapack lib ${GMSH_EXTERNAL_LIBRARIES})
+target_link_libraries(poisson sf cblas lapack lib ${GMSH_EXTERNAL_LIBRARIES})
 
-target_link_libraries(projvect    cblas lapack lib)
-target_link_libraries(projscalpow cblas lapack lib)
-target_link_libraries(projscalsin cblas lapack lib)
+target_link_libraries(projvect    sf cblas lapack lib ${GMSH_EXTERNAL_LIBRARIES})
+target_link_libraries(projscalpow sf cblas lapack lib ${GMSH_EXTERNAL_LIBRARIES})
+target_link_libraries(projscalsin sf cblas lapack lib ${GMSH_EXTERNAL_LIBRARIES})
 
-target_link_libraries(btest cblas lapack lib)
-target_link_libraries(conv  cblas lapack lib)
+target_link_libraries(btest sf cblas lapack lib ${GMSH_EXTERNAL_LIBRARIES})
+target_link_libraries(conv  sf cblas lapack lib ${GMSH_EXTERNAL_LIBRARIES})
