@@ -15,7 +15,7 @@ using namespace std;
 void fPoisson(Mesh& msh, Mesh& visu, Writer& writer, int order);
 
 int main(int argc, char** argv){
-  GmshInitialize();
+  GmshInitialize(argc, argv);
 
   // Writer //
   WriterMsh writer; 
@@ -31,6 +31,7 @@ int main(int argc, char** argv){
   unsigned int order = atoi(argv[3]);
   fPoisson(msh, visu,  writer, order);
 
+  GmshFinalize();
   return 0;
 }
 

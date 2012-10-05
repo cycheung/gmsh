@@ -12,6 +12,8 @@
 
 #include "FormulationProjectionScalar.h"
 
+#include "Gmsh.h"
+
 using namespace std;
 
 double f(fullVector<double>& xyz);
@@ -32,6 +34,8 @@ double f(fullVector<double>& xyz){
 }
 
 int main(int argc, char** argv){
+  GmshInitialize(argc, argv);
+
   // Writer //
   WriterDummy writer;  
 
@@ -84,7 +88,8 @@ int main(int argc, char** argv){
   }
 
   cout << "    ];" << endl;
-  
+
+  GmshFinalize();
   return 0;
 }
 

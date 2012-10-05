@@ -7,9 +7,13 @@
 
 #include "FormulationLaplace.h"
 
+#include "Gmsh.h"
+
 using namespace std;
 
 int main(int argc, char** argv){
+  GmshInitialize(argc, argv);
+
   // Writer //
   WriterMsh writer;
   
@@ -33,5 +37,6 @@ int main(int argc, char** argv){
   Solution solLaplace(sysLaplace);
   solLaplace.write("laplace", writer);
 
+  GmshFinalize();
   return 0;
 }

@@ -8,9 +8,13 @@
 
 #include "FormulationProjectionVector.h"
 
+#include "Gmsh.h"
+
 using namespace std;
 
 int main(int argc, char** argv){
+  GmshInitialize(argc, argv);
+
   // Writer //
   WriterMsh writer;  
   
@@ -36,4 +40,7 @@ int main(int argc, char** argv){
 
   Solution solProj(sysProj);
   solProj.write("projection", writer);
+
+  GmshFinalize();
+  return 0;
 }

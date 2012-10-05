@@ -1,5 +1,4 @@
 #include "System.h"
-#include "Solver.h"
 #include <cstdio>
 
 using namespace std;
@@ -17,36 +16,32 @@ System::System(const Formulation& formulation){
   size = fs->dofNumber();
   
   // Create System //
-  A = new fullMatrix<double>(size, size);
-  b = new fullVector<double>(size);
-  x = new fullVector<double>(size);
-
-  printf("Pif\n");
-
+  x      = new fullVector<double>(size);
   linSys = new linearSystemPETSc<double>();
-  printf("Pouf\n");
   linSys->allocate(size);
-  
-  printf("Paf\n");
 
   // The system is not assembled //
   isAssembled = false;
 }
 
 System::~System(void){
-  delete A;
-  delete b;
   delete x;
-  
   delete linSys;
   delete dofM;
   // System is not responsible for deleting 'Formulations'
 }
 
 void System::assemble(void){
+  printf("I'm assembling ...");
   // Get GroupOfDofs //
   const std::vector<GroupOfDof*>& group = fs->getAllGroups();
   const int E = fs->groupNumber();
+
+  // Get Sparcity Pattern & PreAllocate//
+  for(int i = 0; i < E; i++)
+    sparcity(*(group[i]));  
+
+  linSys->preAllocateEntries();
 
   // Assemble System //
   for(int i = 0; i < E; i++)
@@ -54,6 +49,8 @@ void System::assemble(void){
 
   // The system is assembled //
   isAssembled = true;  
+
+  printf(" Done!\n");
 }
 
 void System::fixDof(const GroupOfElement& goe, double value){
@@ -75,8 +72,9 @@ void System::solve(void){
     assemble();
 
   // Get dof value //
-  Solver::solve(*A, *x, *b);
+  printf("I'm Solving ...");
   linSys->systemSolve();
+  printf(" Done!\n");
 
   // Write Sol
   double xi;
@@ -97,8 +95,6 @@ void System::assemble(GroupOfDof& group){
 
     if(fixed.first){
       // If fixed Dof
-      (*A)(dofI, dofI) = 1;
-      (*b)(dofI)       = fixed.second;
       linSys->addToMatrix(dofI, dofI, 1);
       linSys->addToRightHandSide(dofI, fixed.second); 
     }
@@ -108,16 +104,36 @@ void System::assemble(GroupOfDof& group){
       for(int j = 0; j < N; j++){
 	int dofJ = dofM->getGlobalId(*(dof[j]));
 
-	(*A)(dofI, dofJ) += 
-	  formulation->weak(i, j, group);
-
 	linSys->addToMatrix(dofI, dofJ, 
 			    formulation->weak(i, j, group));
       }
       
-      (*b)(dofI) += formulation->rhs(i, group);
       linSys->addToRightHandSide(dofI, 
 				 formulation->rhs(i, group)); 
+    }
+  } 
+}
+
+void System::sparcity(GroupOfDof& group){
+  const vector<const Dof*>& dof = group.getAll();
+  const int N = group.getNumber();
+
+  for(int i = 0; i < N; i++){
+    pair<bool, double> fixed = dofM->getValue(*(dof[i]));
+    int dofI = dofM->getGlobalId(*(dof[i]));
+
+    if(fixed.first){
+      // If fixed Dof
+      linSys->insertInSparsityPattern(dofI, dofI);
+    }
+
+    else{
+      // If unknown Dof
+      for(int j = 0; j < N; j++){
+	int dofJ = dofM->getGlobalId(*(dof[j]));
+
+	linSys->insertInSparsityPattern(dofI, dofJ);
+      } 
     }
   } 
 }

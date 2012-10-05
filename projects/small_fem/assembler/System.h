@@ -32,11 +32,7 @@ class System{
   bool isAssembled;
 
   linearSystemPETSc<double>* linSys;
-
-  fullMatrix<double>* A;
-  fullVector<double>* b;
-  fullVector<double>* x;
-
+  fullVector<double>*        x;
   int size;
 
   const Formulation*   formulation;
@@ -47,11 +43,8 @@ class System{
    System(const Formulation& formulation);
   ~System(void);
 
-  //fullMatrix<double>& getMatrix(void) const;
-  //fullVector<double>& getRHS(void) const;
+  unsigned int        getSize(void) const;
   fullVector<double>& getSol(void) const;
-
-  unsigned int getSize(void) const;
 
   const FunctionSpace& getFunctionSpace(void) const;
   const DofManager&    getDofManager(void) const;
@@ -62,6 +55,7 @@ class System{
 
  private:
   void assemble(GroupOfDof& group);
+  void sparcity(GroupOfDof& group);
 };
 
 
@@ -75,14 +69,6 @@ class System{
 
    @fn System::~System
    Deletes this System
-   **
-
-   @fn System::getMatrix
-   @return Returns the matrix of the the linear system
-   **
-
-   @fn System::getRHS
-   @return Returns the Right Hand Side of the the linear system
    **
 
    @fn System::getSol
@@ -119,21 +105,13 @@ class System{
 //////////////////////
 // Inline Functions //
 //////////////////////
-/*
-inline fullMatrix<double>& System::getMatrix(void) const{
-  return *A;
-}
 
-inline fullVector<double>& System::getRHS(void) const{
-  return *b;
-}
-*/
 inline fullVector<double>& System::getSol(void) const{
   return *x;
 }
 
 inline unsigned int System::getSize(void) const{
-  return A->size1();
+  return size;
 }
 
 inline const FunctionSpace& System::getFunctionSpace(void) const{

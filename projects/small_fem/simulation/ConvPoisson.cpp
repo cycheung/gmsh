@@ -14,6 +14,8 @@
 #include "PoissonSquare.h"
 #include "PoissonCircle.h"
 
+#include "Gmsh.h"
+
 using namespace std;
 
 vector<double> fPoisson(Mesh& msh, GroupOfElement& visuDomain, Writer& writer, int order);
@@ -21,6 +23,8 @@ vector<double> aPoisson(GroupOfElement& domain, Writer& writer);
 fullMatrix<double> l2(fullMatrix<vector<double> >& fem, vector<double>& ana);
 
 int main(int argc, char** argv){
+  GmshInitialize(argc, argv);
+
   // Writer //
   WriterMsh writer; 
 
@@ -69,6 +73,7 @@ int main(int argc, char** argv){
 
   cout << "    ];" << endl;
   
+  GmshFinalize();
   return 0;
 }
 
