@@ -47,6 +47,10 @@ int main(int argc, char **argv)
   onelab::number oo("beta",654321);
   client->set(oo);
 
+  std::cout << "Now sleeping for 15s\n";
+  sleep(15);
+  std::cout << "Awake again\n";
+
   delete client;
   return 0;
 }

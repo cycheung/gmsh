@@ -1,7 +1,7 @@
 # in a name.xxx.ol file onelab parameter definition lines must be enclosed 
 # between "OL.begin" and "OL.end" or start with "OL.line"
 OL.block
-NumStep.number(22,Parameters/Elmer/1, "Time steps during laser appl."); 
+NumStep.number(6,Parameters/Elmer/1, "Time steps during laser appl."); 
 TimeStep.number(, Parameters/Elmer/2,"Time step [s]");
 TimeStep.setValue(OL.eval(OL.get(Parameters/Laser/APPLICTIME)/OL.get(NumStep)));
 TimeEnd.number(0.5,Parameters/Elmer/3,"Simulation end time [s]");

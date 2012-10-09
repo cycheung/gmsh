@@ -7,14 +7,17 @@
 # Defaults are restored with
 # onelab.tags(); onelab.tags(,); or onelab.tags(OL.,#);
 
+OL.merge(OL.get(Arguments/FileName).geo);
+
 #-1)  Gmsh for meshing
-Mesher.register(encapsulated,gmsh);
+Mesher.register(native, gmsh);
 Mesher.in( OL.get(Arguments/FileName).geo );
-Mesher.run( OL.get(Arguments/FileName).geo);
+Mesher.run( OL.get(Arguments/FileName).geo );
 Mesher.out( OL.get(Arguments/FileName).msh );
 # Merge the mesh file if the metamodel is loaded by Gmsh
 Mesher.merge( OL.get(Arguments/FileName).msh);
-#Mesher.check();
+Mesher.check();
+
 # The latter optional command forces the client Mesher 
 # to be checked immediately 
 # so that parameters defined in the .geo file can be used 
@@ -41,7 +44,6 @@ OL.if( OL.get(SKINTYPE) == 2)
 Parameters/Skin/EPIDERMIS.setValue(0.12);
 OL.endif
 # The "setValue" statement overrules the value on server.
-Parameters/Skin/EPIDERMIS.setReadOnly(1);
 
 # other parameters of the model
 WCONTENT.number(0.65,Parameters/Skin/,"Water content []");
@@ -119,6 +121,7 @@ ZSURF.setValue(OL.eval( (OL.get(Parameters/Skin/DERMIS)+OL.get(Parameters/Skin/E
 # or by blocks: param.addChoices(1,2,3); param.addChoices(7,12); 
 # The 'value' of a parameter and the 'choices' are different concepts
 # used independently according to the context.
+ZSURF.resetChoices();
 ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.0001 * 1e-3) );
 ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.0125 * 1e-3) );
 ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.0250 * 1e-3) );
@@ -141,7 +144,7 @@ ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.2000 * 1e-3) );
 # in the "name.ol" file (this file)
 # In this case, the metamodel has 6 clients
 # syntax for clients
-# OL.client name.Register([interf...|encaps...]{,cmdl{,wdir,{host{,rdir}}}}) ;
+# OL.client name.Register([interf...|native]{,cmdl{,wdir,{host{,rdir}}}}) ;
 
 
 #-2) ElmerGrid converts the mesh for Elmer
@@ -150,11 +153,13 @@ ElmerGrid.in( OL.get(Arguments/FileName).msh);
 ElmerGrid.out( mesh/mesh.boundary );
 ElmerGrid.run(14 2 OL.get(Arguments/FileName).msh -out mesh);
 
+OL.dump(zzz);
+
 #-3) ElmerSolver computes the thermal problem
-Elmer.register(interfaced);
+Elmer.register(encapsulated);
 Elmer.in( ELMERSOLVER_STARTINFO.ol, OL.get(Arguments/FileName).sif.ol);
 Elmer.out( solution.pos, temp.txt );
-Elmer.run();
+Elmer.run( );
 Elmer.merge(solution.pos);
 
 
