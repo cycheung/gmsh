@@ -48,7 +48,7 @@ OL.else
 OL.endif
 
 # Metamodel description
-Mesh.register(encapsulated, gmsh);
+Mesh.register(native, gmsh);
 Mesh.in(circle.geo);
 Mesh.out(circle.msh);
 Mesh.run(circle.geo);
