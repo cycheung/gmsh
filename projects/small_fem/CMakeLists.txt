@@ -75,6 +75,7 @@ add_executable(laplace simulation/Laplace.cpp)
 add_executable(poisson simulation/Poisson.cpp) 
 
 add_executable(projvect    simulation/ProjectionVector.cpp) 
+add_executable(projvectsin simulation/ProjectionVectorSin.cpp) 
 add_executable(projscalpow simulation/ProjectionScalarPower.cpp) 
 add_executable(projscalsin simulation/ProjectionScalarSin.cpp) 
 
@@ -86,6 +87,7 @@ target_link_libraries(laplace sf cblas lapack lib ${GMSH_EXTERNAL_LIBRARIES})
 target_link_libraries(poisson sf cblas lapack lib ${GMSH_EXTERNAL_LIBRARIES})
 
 target_link_libraries(projvect    sf cblas lapack lib ${GMSH_EXTERNAL_LIBRARIES})
+target_link_libraries(projvectsin sf cblas lapack lib ${GMSH_EXTERNAL_LIBRARIES})
 target_link_libraries(projscalpow sf cblas lapack lib ${GMSH_EXTERNAL_LIBRARIES})
 target_link_libraries(projscalsin sf cblas lapack lib ${GMSH_EXTERNAL_LIBRARIES})
 

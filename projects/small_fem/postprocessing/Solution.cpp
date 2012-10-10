@@ -85,6 +85,22 @@ Solution::Solution(double (*f)(fullVector<double>& xyz),
   evaluateF();
 }
 
+Solution::Solution(fullVector<double> (*f)(fullVector<double>& xyz), 
+		   const GroupOfElement& visu){
+  // Init
+  scalar = false;
+  nodalScalarValue = NULL;
+  nodalVectorValue = NULL;
+
+  // Get Visu Domain
+  this->visuDomain = &visu;
+
+  // Get Function
+  fVector = f;
+
+  // Evaluate f on visu
+  evaluateF();
+}
 
 Solution::~Solution(void){
   if(scalar)
@@ -271,10 +287,8 @@ void Solution::evaluateF(void){
 	fScalar(xyz);
     
     else
-      ;/*
       (*nodalVectorValue)[node[i]->getNum() - 1] = 
-	f(xyz);
-       */
+	fVector(xyz);
   }
 }
 

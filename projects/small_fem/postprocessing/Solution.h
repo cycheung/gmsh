@@ -31,7 +31,8 @@ class Solution{
   const DofManager*    dofM;
   const FunctionSpace* fs;
 
-  double (*fScalar)(fullVector<double>& xyz);
+  double             (*fScalar)(fullVector<double>& xyz);
+  fullVector<double> (*fVector)(fullVector<double>& xyz);
 
   int fsType;
   
@@ -44,6 +45,9 @@ class Solution{
    Solution(const System& system);
    Solution(const System& system, const GroupOfElement& visu);
    Solution(double (*f)(fullVector<double>& xyz), const GroupOfElement& visu);
+   Solution(fullVector<double> (*f)(fullVector<double>& xyz), 
+	    const GroupOfElement& visu);
+
   ~Solution(void);
 
   void write(const std::string name, Writer& writer) const;
