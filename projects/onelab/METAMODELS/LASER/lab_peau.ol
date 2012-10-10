@@ -7,16 +7,16 @@
 # Defaults are restored with
 # onelab.tags(); onelab.tags(,); or onelab.tags(OL.,#);
 
-OL.merge(OL.get(Arguments/FileName).geo);
-
 #-1)  Gmsh for meshing
 Mesher.register(native, gmsh);
 Mesher.in( OL.get(Arguments/FileName).geo );
 Mesher.run( OL.get(Arguments/FileName).geo );
 Mesher.out( OL.get(Arguments/FileName).msh );
 # Merge the mesh file if the metamodel is loaded by Gmsh
-Mesher.merge( OL.get(Arguments/FileName).msh);
-Mesher.check();
+
+#Mesher.compute();
+#OL.merge(OL.get(Arguments/FileName).geo);
+Mesher.computeMerge(OL.get(Arguments/FileName).geo, OL.get(Arguments/FileName).msh);
 
 # The latter optional command forces the client Mesher 
 # to be checked immediately 

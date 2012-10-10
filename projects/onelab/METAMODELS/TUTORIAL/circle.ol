@@ -11,8 +11,6 @@ Khi.number(0.12, Parameters/,"Hysteresis coefficient",0:0.5:0.1);
 DISPLAY.radioButton(1, Options/,"Display functional at each step");
 LOOP.radioButton(1, Options/,"Loop on Hx");
 
-OL.merge(circle.geo);
-
 # Loops can be done on the 'list of Choices' of a ONELAB number
 Hx.setAttribute(Loop,OL.get(LOOP));
 Hx.resetChoices();
@@ -52,7 +50,9 @@ Mesh.register(native, gmsh);
 Mesh.in(circle.geo);
 Mesh.out(circle.msh);
 Mesh.run(circle.geo);
-Mesh.check();
+Mesh.computeMerge(circle.geo);
+
+#OL.merge(circle.geo);
 
 # In this metamodel, the only client is the postprocessor of gmsh
 # running (non interactively, see the "-" argument) a script called "script"
