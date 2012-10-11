@@ -13,6 +13,7 @@
 using namespace std;
 
 // Vector to Project //
+/*
 fullVector<double> f(fullVector<double>& xyz){
   fullVector<double> res(3);
 
@@ -22,6 +23,18 @@ fullVector<double> f(fullVector<double>& xyz){
 
   return res;
 }
+*/
+
+fullVector<double> f(fullVector<double>& xyz){
+  fullVector<double> res(3);
+
+  res(0) = sin(10 * xyz(0));
+  res(1) = sin(10 * xyz(1));
+  res(2) = sin(10 * xyz(2));
+
+  return res;
+}
+
 
 int main(int argc, char** argv){
   GmshInitialize(argc, argv);
@@ -30,20 +43,25 @@ int main(int argc, char** argv){
   WriterMsh writer;  
   
   // Get Mesh //
-  Mesh msh(argv[1]);
-  
+  Mesh     msh(argv[1]);
+  Mesh visuMsh(argv[2]);
+
   // Get Domain //
-  GroupOfElement domain = msh.getFromPhysical(7);
+  GroupOfElement domain =     msh.getFromPhysical(7);
+  GroupOfElement visu   = visuMsh.getFromPhysical(7);  
+
+  // Get Order //
+  const unsigned int order = atoi(argv[3]);
 
   // Projection //
-  FormulationProjectionVector projection(domain, f, atoi(argv[2]));
+  FormulationProjectionVector projection(domain, f, order);
   System sysProj(projection);
 
   sysProj.assemble();
   cout << "Projection: " << sysProj.getSize() << endl;
   sysProj.solve();
 
-  Solution solProj(sysProj);
+  Solution solProj(sysProj, visu);
   solProj.write("projection", writer);
 
   GmshFinalize();

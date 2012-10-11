@@ -46,11 +46,12 @@ FormulationProjectionVector::~FormulationProjectionVector(void){
 double FormulationProjectionVector::weak(int dofI, int dofJ, 
 					 const GroupOfDof& god) const{
   // Init //
-  double det;
   fullVector<double> phiI(3);
   fullVector<double> phiJ(3);
   fullMatrix<double> invJac(3, 3);       
+
   double integral = 0;
+  double det;
 
   // Get Element and Basis Functions //
   const MElement& element = god.getGeoElement();
@@ -91,6 +92,7 @@ double FormulationProjectionVector::rhs(int equationI,
   fullMatrix<double>  invJac(3, 3);        
   fullMatrix<double>     jac(3, 3);        
   fullVector<double>  phi(3);
+
   double integral = 0;
   double det;
 
@@ -110,17 +112,20 @@ double FormulationProjectionVector::rhs(int equationI,
 
   // Loop over Integration Point //
   for(int g = 0; g < G; g++){  
-    det = celement.getJacobian((*gC)(g, 0), 
-			       (*gC)(g, 1), 
-			       (*gC)(g, 2), 
-			       jac);
-    jac.invert(invJac);
-
     // Parametric coordinate 
     uvw(0) = (*gC)(g, 0);
     uvw(1) = (*gC)(g, 1);
     uvw(2) = (*gC)(g, 2);
+
+
+    // Jacobian
+    det = celement.getJacobian(uvw(0), 
+			       uvw(1), 
+			       uvw(2), 
+			       jac);
+    jac.invert(invJac);
   
+
     // Compute phi 
     phi = Mapper::grad(Polynomial::at(*fun[equationI],
 				      uvw(0), 
@@ -128,6 +133,7 @@ double FormulationProjectionVector::rhs(int equationI,
 				      uvw(2)),
 		       invJac);
  
+
     // Compute f in the *physical* coordinate
     //  --> Get *physical* coordinate
     //       --> Get Origin Point of Element
@@ -141,6 +147,7 @@ double FormulationProjectionVector::rhs(int equationI,
 
     // --> Evaluate f
     fxyz = f(xyz);
+
 
     // Interate
     integral += fxyz * phi * fabs(det) * (*gW)(g);

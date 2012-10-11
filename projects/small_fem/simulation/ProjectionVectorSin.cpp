@@ -10,7 +10,7 @@
 #include "WriterDummy.h"
 #include "Exception.h"
 
-//#include "FormulationProjectionScalar.h"
+#include "FormulationProjectionVector.h"
 
 #include "Gmsh.h"
 
@@ -29,6 +29,10 @@ vector<fullVector<double> > ana(GroupOfElement& domain,
 fullMatrix<double> l2(fullMatrix<vector<fullVector<double> > >& fem, 
 		      vector<fullVector<double> >& ana);
 
+double modSquare(fullVector<double>& v);
+double modDiffSquare(fullVector<double>& v0, fullVector<double>& v1);
+
+
 fullVector<double> f(fullVector<double>& xyz){
   fullVector<double> res(3);
 
@@ -43,7 +47,7 @@ int main(int argc, char** argv){
   GmshInitialize(argc, argv);
 
   // Writer //
-  WriterMsh writer;  
+  WriterDummy writer;  
 
   // Get Data //
   const unsigned int M        = argc - 3; // Mesh number (without visu)
@@ -55,9 +59,9 @@ int main(int argc, char** argv){
   // Real Solutions //
   vector<fullVector<double> > real = ana(visu, f, writer);
 
-  /*
+
   // Compute FEM //
-  fullMatrix<vector<double> > sol(maxOrder, M);
+  fullMatrix<vector<fullVector<double> > > sol(maxOrder, M);
 
   // Iterate on Meshes
   for(unsigned int i = 0; i < M; i++){
@@ -72,7 +76,7 @@ int main(int argc, char** argv){
       sol(j, i) = fem(domain, visu, f, writer, j + 1);
   }
 
-
+  
   // L2 Error //
   fullMatrix<double> l2Error = l2(sol, real);
   
@@ -94,18 +98,18 @@ int main(int argc, char** argv){
   }
 
   cout << "    ];" << endl;
-  */
+  
   GmshFinalize();
   return 0;
 }
-/*
+
 vector<fullVector<double> > fem(GroupOfElement& domain, GroupOfElement& visu, 
-		   double (*f)(fullVector<double>& xyz),
-		   Writer& writer, int order){
+				fullVector<double> (*f)(fullVector<double>& xyz),
+				Writer& writer, int order){
 
   stringstream stream;
   
-  FormulationProjectionScalar projection(domain, f, order);
+  FormulationProjectionVector projection(domain, f, order);
   System sysProj(projection);
 
   stream << "projection_Mesh" << domain.getNumber() << "_Order" << order;
@@ -118,9 +122,9 @@ vector<fullVector<double> > fem(GroupOfElement& domain, GroupOfElement& visu,
 
   solProj.write(stream.str(), writer);  
 
-  return solProj.getNodalScalarValue();
+  return solProj.getNodalVectorValue();
 }
-*/
+
 vector<fullVector<double> > ana(GroupOfElement& domain, 
 				fullVector<double> (*f)(fullVector<double>& xyz), 
 				Writer& writer){
@@ -136,9 +140,9 @@ vector<fullVector<double> > ana(GroupOfElement& domain,
 
   return projection.getNodalVectorValue();
 }
-/*
+
 fullMatrix<double> l2(fullMatrix<vector<fullVector<double> > >& fem, 
-vector<fullVector<double> >& ana){
+		      vector<fullVector<double> >& ana){
   // Init //
   const unsigned int nOrder = fem.size1();
   const unsigned int nMesh  = fem.size2();
@@ -153,7 +157,7 @@ vector<fullVector<double> >& ana){
   // Norm of Analytic Solution //
   double anaNorm = 0;
   for(unsigned int k = 0; k < nNode; k++)
-    anaNorm += ana[k] * ana[k];
+    anaNorm += modSquare(ana[k]);
   
   anaNorm = sqrt(anaNorm);
   
@@ -161,7 +165,7 @@ vector<fullVector<double> >& ana){
   for(unsigned int i = 0; i < nOrder; i++){
     for(unsigned int j = 0; j < nMesh; j++){
       for(unsigned int k = 0; k < nNode; k++)
-	res(i, j) += (ana[k] - fem(i, j)[k]) * (ana[k] - fem(i, j)[k]);
+	res(i, j) += modDiffSquare(ana[k], fem(i, j)[k]);
       
       res(i, j) = sqrt(res(i, j)) / anaNorm;
     }
@@ -169,4 +173,27 @@ vector<fullVector<double> >& ana){
 
   return res;
 }
-*/
+
+double modSquare(fullVector<double>& v){
+  const int size = v.size();
+  double res = 0;
+
+  for(int i = 0; i < size; i++)
+    res += v(i) * v(i);
+
+  return res;
+}
+
+double modDiffSquare(fullVector<double>& v0, fullVector<double>& v1){
+  const int size = v0.size();
+
+  if(size != v1.size())
+    throw Exception("Bad Vector Size (modDiffSquare)");
+
+  double res = 0;
+
+  for(int i = 0; i < size; i++)
+    res += (v0(i) - v1(i)) * (v0(i) - v1(i));
+
+  return res;
+}
