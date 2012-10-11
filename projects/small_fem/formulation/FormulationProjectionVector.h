@@ -16,9 +16,6 @@
 
 class FormulationProjectionVector: public Formulation{
  private:
-  // Vector to Project //
-  const fullVector<double>* f;
-
   // Gaussian Quadrature Data //
   int G;
   fullMatrix<double>* gC;
@@ -26,14 +23,18 @@ class FormulationProjectionVector: public Formulation{
 
   // Function Space //
   FunctionSpaceEdge* fspace;
+
+  // Function to Project //
+  fullVector<double> (*f)(fullVector<double>& xyz);
   
  public:
   FormulationProjectionVector(const GroupOfElement& goe,
-			      const fullVector<double>& vectorToProject);
+			      fullVector<double> (*f)(fullVector<double>& xyz),
+			      unsigned int order);
   
   virtual ~FormulationProjectionVector(void);
 
-  virtual double weak(int edgeI, int edgeJ, 
+  virtual double weak(int dofI, int dofJ, 
 		      const GroupOfDof& god) const;
 
   virtual double rhs(int equationI,

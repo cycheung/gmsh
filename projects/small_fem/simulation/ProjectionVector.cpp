@@ -12,6 +12,17 @@
 
 using namespace std;
 
+// Vector to Project //
+fullVector<double> f(fullVector<double>& xyz){
+  fullVector<double> res(3);
+
+  res(0) =  0.5;
+  res(1) = -0;
+  res(2) =  0;
+
+  return res;
+}
+
 int main(int argc, char** argv){
   GmshInitialize(argc, argv);
 
@@ -24,14 +35,8 @@ int main(int argc, char** argv){
   // Get Domain //
   GroupOfElement domain = msh.getFromPhysical(7);
 
-  // Vector to Prject //
-  fullVector<double> f(3); 
-  f(0) =  0.5; 
-  f(1) = -1; 
-  f(2) =  0; // Vector to project
-
   // Projection //
-  FormulationProjectionVector projection(domain, f);
+  FormulationProjectionVector projection(domain, f, atoi(argv[2]));
   System sysProj(projection);
 
   sysProj.assemble();
