@@ -14,7 +14,6 @@ Mesher.run( OL.get(Arguments/FileName).geo );
 Mesher.out( OL.get(Arguments/FileName).msh );
 # Merge the mesh file if the metamodel is loaded by Gmsh
 
-#Mesher.compute();
 #OL.merge(OL.get(Arguments/FileName).geo);
 Mesher.computeMerge(OL.get(Arguments/FileName).geo, OL.get(Arguments/FileName).msh);
 
