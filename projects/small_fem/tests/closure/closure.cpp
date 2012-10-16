@@ -64,7 +64,7 @@ int main(void){
   std::vector<int> closureRef;
 
   int order = 1;
-  int nNode = 3;
+  int nNode = 8;
 
   generate2dEdgeClosureFull(closureFull, closureRef, order, nNode, false);
 
