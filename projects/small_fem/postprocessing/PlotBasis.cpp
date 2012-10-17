@@ -120,17 +120,62 @@ void PlotBasis::interpolate(const BasisScalar& basis){
     nodalScalarValue[i] = new vector<double>(N);
 
   // Get Functions //
-  const vector<const Polynomial*>& fun = basis.getFunctions(0);
+  const vector       <const Polynomial*>&   funNode = basis.getNodeFunctions();
+  const vector<vector<const Polynomial*>*>& funEdge = basis.getEdgeFunctions();
+  const vector<vector<const Polynomial*>*>& funFace = basis.getFaceFunctions();
+  const vector       <const Polynomial*>&   funCell = basis.getCellFunctions();
+
+  const unsigned int nFNode = basis.getNVertexBased();
+  const unsigned int nFEdge = basis.getNEdgeBased();
+  const unsigned int nFFace = basis.getNFaceBased();
+  const unsigned int nFCell = basis.getNCellBased();
   
   // Interpolate //
-  for(int f = 0; f < nFunction; f++){
-    for(int n = 0; n < N; n++){
+  unsigned int f = 0;
+
+  // Vertex Based
+  for(unsigned int i = 0; i < nFNode; i++){
+    for(int n = 0; n < N; n++)
       (*nodalScalarValue[f])[n] = 
-	fun[f]->at((*node)[n]->x(),
-		   (*node)[n]->y(),
-		   (*node)[n]->z());
-    }
-  }  
+	funNode[i]->at((*node)[n]->x(),
+		       (*node)[n]->y(),
+		       (*node)[n]->z());
+    
+    f++;
+  }
+
+  // Edge Based
+  for(unsigned int i = 0; i < nFEdge; i++){
+    for(int n = 0; n < N; n++)
+      (*nodalScalarValue[f])[n] = 
+	(*funEdge[0])[i]->at((*node)[n]->x(),
+			     (*node)[n]->y(),
+			     (*node)[n]->z());
+    
+    f++;
+  }
+
+  // Face Based
+  for(unsigned int i = 0; i < nFFace; i++){
+    for(int n = 0; n < N; n++)
+      (*nodalScalarValue[f])[n] = 
+	(*funFace[0])[i]->at((*node)[n]->x(),
+			     (*node)[n]->y(),
+			     (*node)[n]->z());
+    
+    f++;
+  }
+
+  // Cell Based
+  for(unsigned int i = 0; i < nFCell; i++){
+    for(int n = 0; n < N; n++)
+      (*nodalScalarValue[f])[n] = 
+	funCell[i]->at((*node)[n]->x(),
+		       (*node)[n]->y(),
+		       (*node)[n]->z());
+    
+    f++;
+  }
 }
 
 void PlotBasis::interpolate(const BasisVector& basis){

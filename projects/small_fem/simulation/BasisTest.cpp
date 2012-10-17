@@ -14,8 +14,11 @@
 #include "HexNodeBasis.h"
 #include "HexEdgeBasis.h"
 
+#include "TetNodeBasis.h"
+
 #include "PlotBasis.h"
 #include "WriterMsh.h"
+#include "WriterDummy.h"
 
 using namespace std;
 
@@ -32,7 +35,7 @@ int main(int argc, char** argv){
   writer.setDomain(goe.getAll());
 
   // Plot Basis //
-  TriNodeBasis b(6);
+  TetNodeBasis b(atoi(argv[2]));
   
   cout << "Size: " << b.getSize() << endl;
 
