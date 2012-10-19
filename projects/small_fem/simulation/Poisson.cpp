@@ -12,7 +12,10 @@
 
 using namespace std;
 
-void fPoisson(Mesh& msh, Mesh& visu, Writer& writer, int order);
+void fPoisson(GroupOfElement& domain, 
+	      GroupOfElement& visuDomain, 
+	      GroupOfElement& constraintDomain, 
+	      Writer& writer, int order);
 
 int main(int argc, char** argv){
   GmshInitialize(argc, argv);
@@ -24,35 +27,36 @@ int main(int argc, char** argv){
   Mesh msh(argv[1]);
   Mesh visu(argv[2]);
 
-  GroupOfElement domain = msh.getFromPhysical(9);
+  GroupOfElement           domain = msh.getFromPhysical(9);
+  GroupOfElement constraintDomain = msh.getFromPhysical(5);
+  GroupOfElement       visuDomain = visu.getFromPhysical(9);
+
   cout << "Number of Element: " << domain.getNumber() << endl;
 
   // Compute FEM //
   unsigned int order = atoi(argv[3]);
-  fPoisson(msh, visu,  writer, order);
+  fPoisson(domain, constraintDomain, visuDomain, writer, order);
 
   GmshFinalize();
   return 0;
 }
 
-void fPoisson(Mesh& msh, Mesh& visu, Writer& writer, int order){
-  // FEM Solution
-  GroupOfElement domain = msh.getFromPhysical(9);
+void fPoisson(GroupOfElement& domain, 
+	      GroupOfElement& constraintDomain, 
+	      GroupOfElement& visuDomain, 
+	      Writer& writer, 
+	      int order){
 
+  // FEM Solution
   FormulationPoisson poisson(domain, order);
   System sysPoisson(poisson);
-  
-  sysPoisson.fixDof(msh.getFromPhysical(5), 0);
-  sysPoisson.fixDof(msh.getFromPhysical(6), 0);
-  sysPoisson.fixDof(msh.getFromPhysical(7), 0);
-  sysPoisson.fixDof(msh.getFromPhysical(8), 0);
-  
-  sysPoisson.assemble();
+
   cout << "Poisson (" << order << "): " << sysPoisson.getSize() << endl;
-  //cout << "Function Space:" << endl << poisson.fs().toString() << endl;
+  
+  sysPoisson.fixDof(constraintDomain, 0);  
+  sysPoisson.assemble();
   sysPoisson.solve();
 
-  GroupOfElement visuDomain = visu.getFromPhysical(9);
   Solution solPoisson(sysPoisson, visuDomain);
 
   solPoisson.write("poisson", writer);

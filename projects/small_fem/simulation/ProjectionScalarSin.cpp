@@ -30,7 +30,10 @@ fullMatrix<double> l2(fullMatrix<vector<double> >& fem,
 		      vector<double>& ana);
 
 double f(fullVector<double>& xyz){
-  return sin(10 * xyz(0)) + sin(10 * xyz(1));
+  return 
+    sin(10 * xyz(0)) + 
+    sin(10 * xyz(1)) +
+    sin(10 * xyz(2));
 }
 
 int main(int argc, char** argv){
@@ -49,7 +52,7 @@ int main(int argc, char** argv){
   // Real Solutions //
   vector<double> real = ana(visu, f, writer);
 
-
+  /*
   // Compute FEM //
   fullMatrix<vector<double> > sol(maxOrder, M);
 
@@ -88,7 +91,7 @@ int main(int argc, char** argv){
   }
 
   cout << "    ];" << endl;
-
+  */
   GmshFinalize();
   return 0;
 }

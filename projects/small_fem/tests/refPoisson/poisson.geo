@@ -1,6 +1,6 @@
 l = 1;
 
-msh = 3;
+msh = 8;
 cl  = 5;
 
 Point(1) = {+l, -l, 0, cl};
@@ -19,9 +19,5 @@ Plane Surface(1) = {1};
 Transfinite Line {1, 2, 3, 4} = msh Using Progression 1;
 Transfinite Surface {1};
 
-Physical Line(5) = {1};
-Physical Line(6) = {2};
-Physical Line(7) = {3};
-Physical Line(8) = {4};
-
+Physical Line(5)    = {1, 2, 3, 4};
 Physical Surface(9) = {1};

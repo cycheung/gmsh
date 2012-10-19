@@ -9,16 +9,11 @@ EdgeExtractor::EdgeExtractor(void){
 EdgeExtractor::~EdgeExtractor(void){
 }
 
-pair<map<const MEdge*, unsigned int, EdgeComparator>*, 
-     map<const MEdge*, int, OrientedEdgeComparator>*> 
-
+map<const MEdge*, unsigned int, EdgeComparator>*
 EdgeExtractor::extract(const map<const MElement*, 
 				 unsigned int, 
 				 ElementComparator>& element){
   // Init //
-  map<const MEdge*, int, OrientedEdgeComparator>* 
-    orientation = new map<const MEdge*, int, OrientedEdgeComparator>;
-
   map<const MEdge*, unsigned int, EdgeComparator>* 
     edge = new map<const MEdge*, unsigned int, EdgeComparator>;
   
@@ -45,39 +40,19 @@ EdgeExtractor::extract(const map<const MElement*,
       MEdge* edgeCopy = copy(myEdge);
 
       // Try to Insert
-      pair<map<const MEdge*, int, OrientedEdgeComparator>::iterator,
+      pair<map<const MEdge*, unsigned int, EdgeComparator>::iterator,
 	   bool> insert = 
-	orientation->insert(pair<const MEdge* ,int>(edgeCopy, 1));
+	edge->insert(pair<const MEdge* ,int>(edgeCopy, 0));
 
-      // If Insertion is a success,
-      // Insert inverted Edge
-      if(insert.second)
-	orientation->insert
-	  (pair<const MEdge* ,int>(invert(myEdge), -1));
-
-      // Else, Delete edgeCopy
-      else
+      // If Insertion is not a success,
+      // Delete edgeCopy
+      if(!insert.second)
 	delete edgeCopy;
     }
   }
 
-  // Keep Edge With orientation of +1 //
-  map<const MEdge*, int, OrientedEdgeComparator>::iterator end = 
-    orientation->end();
-
-  map<const MEdge*, int, OrientedEdgeComparator>::iterator it = 
-    orientation->begin();
-
-  for(; it != end; it++)
-    if(it->second == 1)
-      edge->insert
-	(pair<const MEdge*, unsigned int>(it->first, 0));
-
   // Return //
-  return 
-    pair<map<const MEdge*, unsigned int, EdgeComparator>*, 
-	 map<const MEdge*, int, OrientedEdgeComparator>*> 
-  (edge, orientation);
+  return edge;
 }
 
 MEdge* EdgeExtractor::copy(const MEdge& edge){
@@ -85,11 +60,4 @@ MEdge* EdgeExtractor::copy(const MEdge& edge){
   MVertex* end   = edge.getVertex(1);
 
   return new MEdge(begin, end);  
-}
-
-MEdge* EdgeExtractor::invert(const MEdge& edge){
-  MVertex* begin = edge.getVertex(0);
-  MVertex* end   = edge.getVertex(1);
-
-  return new MEdge(end, begin);
 }

@@ -93,6 +93,31 @@
  */
 
 /**
+   @class FaceComparator
+   @brief A comparator for MFace%s (without @em orientation notion)
+
+   This class is able to compare two MFace%s.
+
+   @warning
+   With this comparator, two MFace%s with the @em same @em points,
+   but @em different @em orientations, are handled as the @em same
+   MFace.
+
+   @fn bool FaceComparator::operator()(const MFace* a, const MFace* b) const;
+   @param a A MFace pointer
+   @param b A second MFace pointer (possibly pointing to the same MFace as @c a)
+   @return Returns:
+   @li @c true, if the MFace @em pointed by @c a is @em smaller 
+   than the MFace @em pointed by @c b
+   @li @c false, otherwise
+
+   @warning
+   With this comparator, two MFace%s with the @em same @em points,
+   but @em different @em orientations, are handled as the @em same
+   MFace.
+ */
+
+/**
    @class OrientedEdgeComparator
    @brief A comparator for MEdge%s (with @em orientation notion)
 
@@ -140,6 +165,11 @@ class VertexComparator{
 class EdgeComparator{
  public:
   bool operator()(const MEdge *a, const MEdge *b) const;
+};
+
+class FaceComparator{
+ public:
+  bool operator()(const MFace *a, const MFace *b) const;
 };
 
 class OrientedEdgeComparator{

@@ -32,25 +32,27 @@ System::~System(void){
 }
 
 void System::assemble(void){
-  printf("I'm assembling ...");
+  printf("I'm assembling ...\n");
   // Get GroupOfDofs //
   const std::vector<GroupOfDof*>& group = fs->getAllGroups();
   const int E = fs->groupNumber();
 
   // Get Sparcity Pattern & PreAllocate//
+  printf(" ** Sparcity\n");
   for(int i = 0; i < E; i++)
     sparcity(*(group[i]));  
 
   linSys->preAllocateEntries();
 
   // Assemble System //
+  printf(" ** Assembly\n");
   for(int i = 0; i < E; i++)
     assemble(*(group[i]));  
 
   // The system is assembled //
   isAssembled = true;  
 
-  printf(" Done!\n");
+  printf("... Done!\n");
 }
 
 void System::fixDof(const GroupOfElement& goe, double value){
@@ -72,9 +74,9 @@ void System::solve(void){
     assemble();
 
   // Get dof value //
-  printf("I'm Solving ...");
+  printf("I'm Solving ...\n");
   linSys->systemSolve();
-  printf(" Done!\n");
+  printf("... Done!\n");
 
   // Write Sol
   double xi;

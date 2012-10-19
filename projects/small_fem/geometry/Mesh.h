@@ -7,10 +7,6 @@
 #include "Comparators.h"
 #include "GModel.h"
 
-#include "ElementExtractor.h"
-#include "VertexExtractor.h"
-#include "EdgeExtractor.h"
-
 #include "GroupOfElement.h"
 #include "MElement.h"
 #include "MVertex.h"
@@ -44,13 +40,14 @@ class Mesh{
   std::map<const MElement*, unsigned int, ElementComparator>* element;           
   std::map<const MVertex*, unsigned int, VertexComparator>*   vertex;
   std::map<const MEdge*, unsigned int, EdgeComparator>*       edge;
+  std::map<const MFace*, unsigned int, FaceComparator>*       face;  
 
+  std::map<unsigned int, const MElement*>* idElement;
   std::map<unsigned int, const MVertex*>*  idVertex;
   std::map<unsigned int, const MEdge*>*    idEdge;
-  std::map<unsigned int, const MElement*>* idElement;           
+  std::map<unsigned int, const MFace*>*    idFace;
 
-  std::multimap<int, const MElement*>*                 physical;
-  std::map<const MEdge*, int, OrientedEdgeComparator>* orientation;
+  std::multimap<int, const MElement*>* physical;
 
   int nextId;
 
@@ -76,8 +73,6 @@ class Mesh{
   unsigned int getVertexNumber(void) const;
   unsigned int getEdgeNumber(void) const;
   unsigned int getFaceNumber(void) const;
-
-  int getOrientation(const MEdge& edge) const;
 
   GroupOfElement getFromPhysical(int physicalId) const;
   
@@ -175,14 +170,6 @@ class Mesh{
 
    @fn Mesh::getFaceNumber
    @return Returns the number of MFace%s in this Mesh
-   **
-   
-   @fn Mesh::getOrientation
-   @param edge A MEdge
-   @return Retruns:
-   @li  1, if the given MEdge got the @em good  orientation
-   @li -1, if the given MEdge got the @em wrong orientation
-   @note If the given MEdge is not found, an Exception is thrown
    **
 
    @fn Mesh::getFromPhysical

@@ -1,6 +1,7 @@
 set(src
   Exception.cpp
   Group.cpp
+  Comparators.cpp
 )
 
 

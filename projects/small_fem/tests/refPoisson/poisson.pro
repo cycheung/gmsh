@@ -1,6 +1,6 @@
 Group {
   Omega  = Region[ {9} ];
-  Gamma1 = Region[ {5, 6, 7, 8} ];
+  Gamma1 = Region[ {5} ];
 }
 
 Jacobian {
