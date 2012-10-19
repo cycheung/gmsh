@@ -40,7 +40,7 @@ int main(int argc, char** argv){
   GmshInitialize(argc, argv);
 
   // Writer //
-  WriterMsh writer;  
+  WriterDummy writer;  
 
   // Get Data //
   const unsigned int M        = argc - 3; // Mesh number (without visu)
@@ -52,7 +52,7 @@ int main(int argc, char** argv){
   // Real Solutions //
   vector<double> real = ana(visu, f, writer);
 
-  /*
+  
   // Compute FEM //
   fullMatrix<vector<double> > sol(maxOrder, M);
 
@@ -91,7 +91,7 @@ int main(int argc, char** argv){
   }
 
   cout << "    ];" << endl;
-  */
+  
   GmshFinalize();
   return 0;
 }
