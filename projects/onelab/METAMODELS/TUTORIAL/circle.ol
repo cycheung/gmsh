@@ -46,17 +46,15 @@ OL.else
 OL.endif
 
 # Metamodel description
-Mesh.register(native, gmsh);
+Mesh.register(native);
 Mesh.in(circle.geo);
 Mesh.out(circle.msh);
 Mesh.run(circle.geo);
-Mesh.computeMerge(circle.geo);
-
-#OL.merge(circle.geo);
+Mesh.frontPage(circle.geo);
 
 # In this metamodel, the only client is the postprocessor of gmsh
 # running (non interactively, see the "-" argument) a script called "script"
-Post.register (interfaced, gmsh);
+Post.register (interfaced);
 Post.in ( script.ol );
 Post.out( minimum.txt );
 Post.run( script -);

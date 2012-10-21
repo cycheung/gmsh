@@ -1,26 +1,23 @@
-
-
-# Onelab commands start with "OL.", comment lines start with "#".
-# These are the default values.
-# Tags can be modified to accomodate various client syntaxes.
-# This is done with e.g.: onelab.tags(/,//);
+# Onelab commands start with the tag "OL."
+# Comment lines start with the tag "#"
+# These tags are the default values.
+# They can be modified to accomodate various client syntaxes.
+# This is done with the sentence e.g.: onelab.tags(/,//);
 # Defaults are restored with
 # onelab.tags(); onelab.tags(,); or onelab.tags(OL.,#);
 
+
+# The metamodel is described as a list of clients 
+# in the "name.ol" file (this file)
+# In this case, the metamodel has 6 clients
+
 #-1)  Gmsh for meshing
-Mesher.register(native, gmsh);
+Mesher.register(native);
 Mesher.in( OL.get(Arguments/FileName).geo );
 Mesher.run( OL.get(Arguments/FileName).geo );
 Mesher.out( OL.get(Arguments/FileName).msh );
-# Merge the mesh file if the metamodel is loaded by Gmsh
-
-#OL.merge(OL.get(Arguments/FileName).geo);
-Mesher.computeMerge(OL.get(Arguments/FileName).geo, OL.get(Arguments/FileName).msh);
-
-# The latter optional command forces the client Mesher 
-# to be checked immediately 
-# so that parameters defined in the .geo file can be used 
-# below in this file. 
+# Tell ONELAB to show geometry and mesh as initial view
+Mesher.frontPage(OL.get(Arguments/FileName).geo,OL.get(Arguments/FileName).msh);
 
 # Enumeration, i.e. a set of real values each associated with a label
 SKINTYPE.number(1, Parameters/Skin/1,"Skin type"); 
@@ -34,7 +31,6 @@ SKINTYPE.valueLabels(1,"hairy", 2,"hairless");
 # (the value slot is left empty)
 # and the incomplete declaration is completed by a "setValue" statement
 # In this case, EPIDERMIS was defined in lab_peau.geo
-
 
 OL.if( OL.get(SKINTYPE) == 1)
 Parameters/Skin/EPIDERMIS.setValue(0.05);
@@ -114,7 +110,7 @@ ZSURF.setValue(OL.eval( (OL.get(Parameters/Skin/DERMIS)+OL.get(Parameters/Skin/E
 # of a parameter of type onelab::number or onelab::string
 # "OL.eval" allows evaluating analytical expressions involving onelab::numbers
 
-# The value of ZSURF is complemented with a list of choices
+# The parameter ZSURF is attributed a list of choices
 # which are the coordinates at which the temperature will be monitored.
 # The list of choice can be constructed element by element (as below) 
 # or by blocks: param.addChoices(1,2,3); param.addChoices(7,12); 
@@ -139,12 +135,6 @@ ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.1750 * 1e-3) );
 ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.1875 * 1e-3) );
 ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.2000 * 1e-3) );
 
-# The metamodel is described as a list of clients 
-# in the "name.ol" file (this file)
-# In this case, the metamodel has 6 clients
-# syntax for clients
-# OL.client name.Register([interf...|native]{,cmdl{,wdir,{host{,rdir}}}}) ;
-
 
 #-2) ElmerGrid converts the mesh for Elmer
 ElmerGrid.register(interfaced);
@@ -152,7 +142,6 @@ ElmerGrid.in( OL.get(Arguments/FileName).msh);
 ElmerGrid.out( mesh/mesh.boundary );
 ElmerGrid.run(14 2 OL.get(Arguments/FileName).msh -out mesh);
 
-OL.dump(zzz);
 
 #-3) ElmerSolver computes the thermal problem
 Elmer.register(encapsulated);
@@ -163,18 +152,17 @@ Elmer.merge(solution.pos);
 
 
 #-4) Post-processing with Gmsh and a script
-Post.register(interfaced);
-Post.in(solution.pos , script.opt.ol );
-Post.out(tempmin.txt, tempmax.txt, temp0.txt, activeMax.txt);
-Post.run(solution.pos script.opt -);
-Post.up( tempmin.txt,-1,8,Solution/Tmin, tempmax.txt,-1,8,Solution/Tmax);
+Post1.register(interfaced);
+Post1.in(solution.pos , script.opt.ol );
+Post1.out(tempmin.txt, tempmax.txt, temp0.txt, activeMax.txt);
+Post1.run(solution.pos script.opt -);
+Post1.up( tempmin.txt,-1,8,Solution/Tmin, tempmax.txt,-1,8,Solution/Tmax);
 
-#-5) Display solution with a client Gmsh
-Display.register(interfaced);
-Display.in(solution.pos, script2.opt.ol, overheat.pos.opt.ol );
-Display.out(overheat.pos );
-Display.run( solution.pos script2.opt - );
-#Display.merge(overheat.pos);
+#-5) Further post-processing with Gmsh and a script
+Post2.register(interfaced);
+Post2.in(solution.pos, script2.opt.ol, overheat.pos.opt.ol );
+Post2.out(overheat.pos );
+Post2.run( solution.pos script2.opt - );
 
 #-6) Display solution curves with either gnuplot or matlab
 POSTPRO.number(2, PostPro/,"Plot results with");
@@ -190,3 +178,6 @@ Gnuplot.register(interfaced);
 Gnuplot.in(temp.txt, plot.plt.ol);
 Gnuplot.run(plot.plt );
 OL.endif
+
+# Dump the ONELAB database in a file named zzz
+# OL.dump(zzz);
