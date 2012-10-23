@@ -78,6 +78,7 @@ add_executable(projvect    simulation/ProjectionVector.cpp)
 add_executable(projvectsin simulation/ProjectionVectorSin.cpp) 
 add_executable(projscalpow simulation/ProjectionScalarPower.cpp) 
 add_executable(projscalsin simulation/ProjectionScalarSin.cpp) 
+add_executable(projscalone simulation/ProjectionScalarSinOneTime.cpp) 
 
 add_executable(btest simulation/BasisTest.cpp) 
 add_executable(conv  simulation/ConvPoisson.cpp) 
@@ -90,6 +91,7 @@ target_link_libraries(projvect    sf cblas lapack lib ${GMSH_EXTERNAL_LIBRARIES}
 target_link_libraries(projvectsin sf cblas lapack lib ${GMSH_EXTERNAL_LIBRARIES})
 target_link_libraries(projscalpow sf cblas lapack lib ${GMSH_EXTERNAL_LIBRARIES})
 target_link_libraries(projscalsin sf cblas lapack lib ${GMSH_EXTERNAL_LIBRARIES})
+target_link_libraries(projscalone sf cblas lapack lib ${GMSH_EXTERNAL_LIBRARIES})
 
 target_link_libraries(btest sf cblas lapack lib ${GMSH_EXTERNAL_LIBRARIES})
 target_link_libraries(conv  sf cblas lapack lib ${GMSH_EXTERNAL_LIBRARIES})

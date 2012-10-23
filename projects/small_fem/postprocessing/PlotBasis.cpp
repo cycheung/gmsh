@@ -119,27 +119,22 @@ void PlotBasis::interpolate(const BasisScalar& basis){
   for(int i = 0; i < nFunction; i++)
     nodalScalarValue[i] = new vector<double>(N);
 
-  // Get Functions //
-  const vector       <const Polynomial*>&   funNode = basis.getNodeFunctions();
-  const vector<vector<const Polynomial*>*>& funEdge = basis.getEdgeFunctions();
-  const vector<vector<const Polynomial*>*>& funFace = basis.getFaceFunctions();
-  const vector       <const Polynomial*>&   funCell = basis.getCellFunctions();
-
+  
+  // Interpolate //
   const unsigned int nFNode = basis.getNVertexBased();
   const unsigned int nFEdge = basis.getNEdgeBased();
   const unsigned int nFFace = basis.getNFaceBased();
   const unsigned int nFCell = basis.getNCellBased();
   
-  // Interpolate //
   unsigned int f = 0;
 
   // Vertex Based
   for(unsigned int i = 0; i < nFNode; i++){
     for(int n = 0; n < N; n++)
       (*nodalScalarValue[f])[n] = 
-	funNode[i]->at((*node)[n]->x(),
-		       (*node)[n]->y(),
-		       (*node)[n]->z());
+	basis.getNodeFunction(i).at((*node)[n]->x(),
+				    (*node)[n]->y(),
+				    (*node)[n]->z());
     
     f++;
   }
@@ -148,9 +143,9 @@ void PlotBasis::interpolate(const BasisScalar& basis){
   for(unsigned int i = 0; i < nFEdge; i++){
     for(int n = 0; n < N; n++)
       (*nodalScalarValue[f])[n] = 
-	(*funEdge[0])[i]->at((*node)[n]->x(),
-			     (*node)[n]->y(),
-			     (*node)[n]->z());
+	basis.getEdgeFunction(0, i).at((*node)[n]->x(),
+				       (*node)[n]->y(),
+				       (*node)[n]->z());
     
     f++;
   }
@@ -159,9 +154,9 @@ void PlotBasis::interpolate(const BasisScalar& basis){
   for(unsigned int i = 0; i < nFFace; i++){
     for(int n = 0; n < N; n++)
       (*nodalScalarValue[f])[n] = 
-	(*funFace[0])[i]->at((*node)[n]->x(),
-			     (*node)[n]->y(),
-			     (*node)[n]->z());
+	basis.getFaceFunction(0, i).at((*node)[n]->x(),
+				       (*node)[n]->y(),
+				       (*node)[n]->z());
     
     f++;
   }
@@ -170,9 +165,9 @@ void PlotBasis::interpolate(const BasisScalar& basis){
   for(unsigned int i = 0; i < nFCell; i++){
     for(int n = 0; n < N; n++)
       (*nodalScalarValue[f])[n] = 
-	funCell[i]->at((*node)[n]->x(),
-		       (*node)[n]->y(),
-		       (*node)[n]->z());
+	basis.getCellFunction(i).at((*node)[n]->x(),
+				    (*node)[n]->y(),
+				    (*node)[n]->z());
     
     f++;
   }
@@ -185,18 +180,57 @@ void PlotBasis::interpolate(const BasisVector& basis){
 
   for(int i = 0; i < nFunction; i++)
     nodalVectorValue[i] = new vector<fullVector<double> >(N);
-
-  // Get Functions //
-  const vector<const vector<Polynomial>*>& fun = basis.getFunctions(0);
   
+
   // Interpolate //
-  for(int f = 0; f < nFunction; f++){
-    for(int n = 0; n < N; n++){
+  const unsigned int nFNode = basis.getNVertexBased();
+  const unsigned int nFEdge = basis.getNEdgeBased();
+  const unsigned int nFFace = basis.getNFaceBased();
+  const unsigned int nFCell = basis.getNCellBased();
+
+  unsigned int f = 0;
+
+  // Vertex Based
+  for(unsigned int i = 0; i < nFNode; i++){
+    for(int n = 0; n < N; n++)
       (*nodalVectorValue[f])[n] = 
-	Polynomial::at(*fun[f], 
+	Polynomial::at(basis.getNodeFunction(i), 
 		       (*node)[n]->x(),
 		       (*node)[n]->y(),
 		       (*node)[n]->z());
-    }
+    f++;
+  }
+
+  // Edge Based
+  for(unsigned int i = 0; i < nFEdge; i++){
+    for(int n = 0; n < N; n++)
+      (*nodalVectorValue[f])[n] = 
+	Polynomial::at(basis.getEdgeFunction(1, i), 
+		       (*node)[n]->x(),
+		       (*node)[n]->y(),
+		       (*node)[n]->z());    
+    f++;
+  }
+
+  // Face Based
+  for(unsigned int i = 0; i < nFFace; i++){
+    for(int n = 0; n < N; n++)
+      (*nodalVectorValue[f])[n] = 
+	Polynomial::at(basis.getFaceFunction(0, i), 
+		       (*node)[n]->x(),
+		       (*node)[n]->y(),
+		       (*node)[n]->z());
+    f++;
+  }
+
+  // Cell Based
+  for(unsigned int i = 0; i < nFCell; i++){
+    for(int n = 0; n < N; n++)
+      (*nodalVectorValue[f])[n] = 
+	Polynomial::at(basis.getCellFunction(i), 
+		       (*node)[n]->x(),
+		       (*node)[n]->y(),
+		       (*node)[n]->z());
+    f++;
   }
 }

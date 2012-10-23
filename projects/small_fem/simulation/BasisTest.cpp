@@ -15,6 +15,7 @@
 #include "HexEdgeBasis.h"
 
 #include "TetNodeBasis.h"
+#include "TetEdgeBasis.h"
 
 #include "PlotBasis.h"
 #include "WriterMsh.h"
@@ -35,7 +36,8 @@ int main(int argc, char** argv){
   writer.setDomain(goe.getAll());
 
   // Plot Basis //
-  TetNodeBasis b(atoi(argv[2]));
+  //TriNedelecBasis b;
+  TetEdgeBasis b(atoi(argv[2]));
   
   cout << "Size: " << b.getSize() << endl;
 

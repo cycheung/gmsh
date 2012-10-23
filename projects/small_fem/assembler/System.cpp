@@ -1,5 +1,5 @@
 #include "System.h"
-#include <cstdio>
+#include <iostream>
 
 using namespace std;
 
@@ -32,27 +32,27 @@ System::~System(void){
 }
 
 void System::assemble(void){
-  printf("I'm assembling ...\n");
+  cout << "I'm assembling ..." << endl << flush;
   // Get GroupOfDofs //
   const std::vector<GroupOfDof*>& group = fs->getAllGroups();
   const int E = fs->groupNumber();
 
   // Get Sparcity Pattern & PreAllocate//
-  printf(" ** Sparcity\n");
+  cout << " ** Sparcity" << endl << flush;
   for(int i = 0; i < E; i++)
     sparcity(*(group[i]));  
 
   linSys->preAllocateEntries();
 
   // Assemble System //
-  printf(" ** Assembly\n");
+  cout << " ** Assembly" << endl << flush;
   for(int i = 0; i < E; i++)
     assemble(*(group[i]));  
 
   // The system is assembled //
   isAssembled = true;  
 
-  printf("... Done!\n");
+  cout << "... Done!" << endl << flush;
 }
 
 void System::fixDof(const GroupOfElement& goe, double value){
@@ -74,9 +74,9 @@ void System::solve(void){
     assemble();
 
   // Get dof value //
-  printf("I'm Solving ...\n");
+  cout << "I'm Solving ..." << endl << flush;
   linSys->systemSolve();
-  printf("... Done!\n");
+  cout << "... Done!" << endl << flush;
 
   // Write Sol
   double xi;

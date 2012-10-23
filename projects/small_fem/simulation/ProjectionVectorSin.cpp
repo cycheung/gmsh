@@ -47,7 +47,7 @@ int main(int argc, char** argv){
   GmshInitialize(argc, argv);
 
   // Writer //
-  WriterDummy writer;  
+  WriterMsh writer;  
 
   // Get Data //
   const unsigned int M        = argc - 3; // Mesh number (without visu)
@@ -66,7 +66,7 @@ int main(int argc, char** argv){
   // Iterate on Meshes
   for(unsigned int i = 0; i < M; i++){
     // Get Domain
-    cout << "** " << argv[1 + i] << endl;
+    cout << "** " << argv[1 + i] << endl << flush;
     Mesh           msh(argv[1 + i]);
     GroupOfElement domain = msh.getFromPhysical(7);
     
@@ -113,7 +113,7 @@ vector<fullVector<double> > fem(GroupOfElement& domain, GroupOfElement& visu,
   System sysProj(projection);
 
   stream << "projection_Mesh" << domain.getNumber() << "_Order" << order;
-  cout   << stream.str()      << ": " << sysProj.getSize() << endl;
+  cout   << stream.str()      << ": " << sysProj.getSize() << endl << flush;
 
   sysProj.assemble();
   sysProj.solve();
@@ -133,7 +133,7 @@ vector<fullVector<double> > ana(GroupOfElement& domain,
 
   // Analytical Solution
   stream << "projection_Ref";
-  cout   << stream.str() << endl;
+  cout   << stream.str() << endl << flush;
 
   Solution projection(f, domain);
   projection.write(stream.str(), writer);
