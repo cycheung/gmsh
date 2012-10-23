@@ -7,6 +7,18 @@ There is now a special cm3apps projects that rules them all which is described h
 
 A) The packages needed to install gmsh are (gmsh has to be install to use cm3apps). 
 
+   # For Ubuntu use sudo apt-get install
+      - libblas-dev
+      - libopenmpi-dev
+      - openmpi-bin
+      - liblappack-dev
+      - g++
+      - gfortran
+      - swig
+      - libfltk1.3-dev
+      - libpng-dev
+      - libjpeg-dev
+
    ° For openSUSE the following packages are available via yast2
 
         - make, cmake, gcc, gcc-c++, gcc-fortran python (+ python_devel) and svn (for svn search subversion in package manager under openSUSE) 
