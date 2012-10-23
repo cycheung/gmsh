@@ -88,6 +88,9 @@ void System::solve(void){
 }
 
 void System::assemble(GroupOfDof& group){
+  cout << "Assembling Element: " << group.getGeoElement().getNum() 
+       << endl << flush;
+
   const vector<const Dof*>& dof = group.getAll();
   const int N = group.getNumber();
 
