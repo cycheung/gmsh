@@ -34,7 +34,6 @@ add_subdirectory(formulation)
 add_subdirectory(geometry)
 add_subdirectory(postprocessing)
 add_subdirectory(solver)
-add_subdirectory(simulation)
 
 ## TO BE REMOVED !!!
 ####################
@@ -74,28 +73,22 @@ set_target_properties(sf PROPERTIES LINKER_LANGUAGE CXX)
 add_executable(laplace simulation/Laplace.cpp) 
 add_executable(poisson simulation/Poisson.cpp) 
 
-add_executable(projvect    simulation/ProjectionVector.cpp) 
 add_executable(projvectsin simulation/ProjectionVectorSin.cpp) 
 add_executable(projvectone simulation/ProjectionVectorSinOneTime.cpp) 
 
-add_executable(projscalpow simulation/ProjectionScalarPower.cpp) 
 add_executable(projscalsin simulation/ProjectionScalarSin.cpp) 
 add_executable(projscalone simulation/ProjectionScalarSinOneTime.cpp) 
 
 add_executable(btest simulation/BasisTest.cpp) 
-add_executable(conv  simulation/ConvPoisson.cpp) 
 
 ## Link (Note: 'lib' is gmsh static library)
-target_link_libraries(laplace sf  lib ${GMSH_EXTERNAL_LIBRARIES})
-target_link_libraries(poisson sf  lib ${GMSH_EXTERNAL_LIBRARIES})
+target_link_libraries(laplace sf lib ${GMSH_EXTERNAL_LIBRARIES})
+target_link_libraries(poisson sf lib ${GMSH_EXTERNAL_LIBRARIES})
 
-target_link_libraries(projvect    sf lib ${GMSH_EXTERNAL_LIBRARIES})
 target_link_libraries(projvectsin sf lib ${GMSH_EXTERNAL_LIBRARIES})
 target_link_libraries(projvectone sf lib ${GMSH_EXTERNAL_LIBRARIES})
 
-target_link_libraries(projscalpow sf lib ${GMSH_EXTERNAL_LIBRARIES})
 target_link_libraries(projscalsin sf lib ${GMSH_EXTERNAL_LIBRARIES})
 target_link_libraries(projscalone sf lib ${GMSH_EXTERNAL_LIBRARIES})
 
 target_link_libraries(btest sf lib ${GMSH_EXTERNAL_LIBRARIES})
-target_link_libraries(conv  sf lib ${GMSH_EXTERNAL_LIBRARIES})
