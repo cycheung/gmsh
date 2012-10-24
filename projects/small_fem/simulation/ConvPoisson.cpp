@@ -79,18 +79,14 @@ int main(int argc, char** argv){
 
 vector<double> fPoisson(Mesh& msh, GroupOfElement& visuDomain, Writer& writer, int order){
   // FEM Solution
-  GroupOfElement domain = msh.getFromPhysical(9);
+  GroupOfElement domain = msh.getFromPhysical(7);
 
   FormulationPoisson poisson(domain, order);
   System sysPoisson(poisson);
   
-  sysPoisson.fixDof(msh.getFromPhysical(5), 0);
-  sysPoisson.fixDof(msh.getFromPhysical(6), 0);
-  sysPoisson.fixDof(msh.getFromPhysical(7), 0);
-  sysPoisson.fixDof(msh.getFromPhysical(8), 0);
-  
   cout << "Poisson (" << order << "): " << sysPoisson.getSize() << endl;
-
+ 
+  sysPoisson.fixDof(msh.getFromPhysical(5), 0);
   sysPoisson.assemble();
   sysPoisson.solve();
 

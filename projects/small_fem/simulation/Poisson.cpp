@@ -27,9 +27,9 @@ int main(int argc, char** argv){
   Mesh msh(argv[1]);
   Mesh visu(argv[2]);
 
-  GroupOfElement           domain = msh.getFromPhysical(9);
+  GroupOfElement           domain = msh.getFromPhysical(7);
   GroupOfElement constraintDomain = msh.getFromPhysical(5);
-  GroupOfElement       visuDomain = visu.getFromPhysical(9);
+  GroupOfElement       visuDomain = visu.getFromPhysical(7);
 
   cout << "Number of Element: " << domain.getNumber() << endl;
 
