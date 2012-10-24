@@ -205,7 +205,7 @@ void PlotBasis::interpolate(const BasisVector& basis){
   for(unsigned int i = 0; i < nFEdge; i++){
     for(int n = 0; n < N; n++)
       (*nodalVectorValue[f])[n] = 
-	Polynomial::at(basis.getEdgeFunction(1, i), 
+	Polynomial::at(basis.getEdgeFunction(0, i), 
 		       (*node)[n]->x(),
 		       (*node)[n]->y(),
 		       (*node)[n]->z());    

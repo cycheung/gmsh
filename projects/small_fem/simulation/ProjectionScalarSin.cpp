@@ -40,7 +40,7 @@ int main(int argc, char** argv){
   GmshInitialize(argc, argv);
 
   // Writer //
-  WriterDummy writer;  
+  WriterMsh writer;  
 
   // Get Data //
   const unsigned int M        = argc - 3; // Mesh number (without visu)
