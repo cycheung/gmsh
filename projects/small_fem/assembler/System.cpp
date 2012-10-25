@@ -1,5 +1,4 @@
 #include "System.h"
-#include <iostream>
 
 using namespace std;
 
@@ -32,27 +31,22 @@ System::~System(void){
 }
 
 void System::assemble(void){
-  cout << "I'm assembling ..." << endl << flush;
   // Get GroupOfDofs //
   const std::vector<GroupOfDof*>& group = fs->getAllGroups();
   const int E = fs->groupNumber();
 
   // Get Sparcity Pattern & PreAllocate//
-  cout << " ** Sparcity" << endl << flush;
   for(int i = 0; i < E; i++)
     sparcity(*(group[i]));  
 
   linSys->preAllocateEntries();
 
   // Assemble System //
-  cout << " ** Assembly" << endl << flush;
   for(int i = 0; i < E; i++)
     assemble(*(group[i]));  
 
   // The system is assembled //
   isAssembled = true;  
-
-  cout << "... Done!" << endl << flush;
 }
 
 void System::fixDof(const GroupOfElement& goe, double value){
@@ -73,10 +67,8 @@ void System::solve(void){
   if(!isAssembled)
     assemble();
 
-  // Get dof value //
-  cout << "I'm Solving ..." << endl << flush;
+  // Solve //
   linSys->systemSolve();
-  cout << "... Done!" << endl << flush;
 
   // Write Sol
   double xi;
@@ -88,9 +80,6 @@ void System::solve(void){
 }
 
 void System::assemble(GroupOfDof& group){
-  cout << "Assembling Element: " << group.getGeoElement().getNum() 
-       << endl << flush;
-
   const vector<const Dof*>& dof = group.getAll();
   const int N = group.getNumber();
 
