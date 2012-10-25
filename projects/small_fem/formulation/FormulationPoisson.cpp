@@ -29,7 +29,6 @@ FormulationPoisson::FormulationPoisson(const GroupOfElement& goe,
 
   GL = gWL->size(); // Nbr of Gauss points
 
-
   // Gaussian Quadrature Data (RHS) //
   // NB: We need to integrad a f * g !
   //     and here, g = 1
@@ -55,7 +54,7 @@ FormulationPoisson::~FormulationPoisson(void){
   delete fspace;
 }
 
-double FormulationPoisson::weak(int nodeI, int nodeJ, 
+double FormulationPoisson::weak(int dofI, int dofJ, 
 				const GroupOfDof& god) const{
 
   // Init Some Stuff //
@@ -68,7 +67,8 @@ double FormulationPoisson::weak(int nodeI, int nodeJ,
   const MElement& element = god.getGeoElement();
   MElement&      celement = const_cast<MElement&>(element);
   
-  const vector<const Polynomial*> fun = fspace->getLocalFunctions(element);
+  const vector<const vector<Polynomial>*> fun = 
+    fspace->getGradLocalFunctions(element);
 
   // Loop over Integration Point //
   for(int g = 0; g < GL; g++){
@@ -78,13 +78,13 @@ double FormulationPoisson::weak(int nodeI, int nodeJ,
 				      invJac);
     invJac.invertInPlace();
 
-    phiI = Mapper::grad(Polynomial::at(fun[nodeI]->gradient(), 
+    phiI = Mapper::grad(Polynomial::at(*fun[dofI], 
 				       (*gCL)(g, 0), 
 				       (*gCL)(g, 1),
 				       (*gCL)(g, 2)),
 			invJac);
 
-    phiJ = Mapper::grad(Polynomial::at(fun[nodeJ]->gradient(), 
+    phiJ = Mapper::grad(Polynomial::at(*fun[dofJ], 
 				       (*gCL)(g, 0), 
 				       (*gCL)(g, 1), 
 				       (*gCL)(g, 2)),

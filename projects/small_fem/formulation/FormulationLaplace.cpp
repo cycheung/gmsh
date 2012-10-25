@@ -37,7 +37,7 @@ FormulationLaplace::~FormulationLaplace(void){
   delete fspace;
 }
 
-double FormulationLaplace::weak(int nodeI, int nodeJ, 
+double FormulationLaplace::weak(int dofI, int dofJ, 
 				const GroupOfDof& god) const{
   // Init Some Stuff //
   fullVector<double> phiI(3);
@@ -49,7 +49,8 @@ double FormulationLaplace::weak(int nodeI, int nodeJ,
   const MElement& element = god.getGeoElement();
   MElement&      celement = const_cast<MElement&>(element);
   
-  const vector<const Polynomial*> fun = fspace->getLocalFunctions(element);
+  const vector<const vector<Polynomial>*> fun = 
+    fspace->getGradLocalFunctions(element);
 
   // Loop over Integration Point //
   for(int g = 0; g < G; g++){
@@ -59,13 +60,13 @@ double FormulationLaplace::weak(int nodeI, int nodeJ,
 				      invJac);
     invJac.invertInPlace();
 
-    phiI = Mapper::grad(Polynomial::at(fun[nodeI]->gradient(), 
+    phiI = Mapper::grad(Polynomial::at(*fun[dofI], 
 				       (*gC)(g, 0), 
 				       (*gC)(g, 1),
 				       (*gC)(g, 2)),
 			invJac);
 
-    phiJ = Mapper::grad(Polynomial::at(fun[nodeJ]->gradient(), 
+    phiJ = Mapper::grad(Polynomial::at(*fun[dofJ], 
 				       (*gC)(g, 0), 
 				       (*gC)(g, 1), 
 			       (*gC)(g, 2)),
