@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 
 #include "Mesh.h"
 #include "fullMatrix.h"
@@ -31,33 +32,42 @@ int main(int argc, char** argv){
   GroupOfElement constraintDomain = msh.getFromPhysical(5);
   GroupOfElement       visuDomain = visu.getFromPhysical(7);
 
-  cout << "Number of Element: " << domain.getNumber() << endl;
+  cout << "Number of Element: " << domain.getNumber() 
+       << endl << flush;
 
   // Compute FEM //
   unsigned int order = atoi(argv[3]);
-  fPoisson(domain, constraintDomain, visuDomain, writer, order);
+  fPoisson(domain, 
+	   constraintDomain,
+	   visuDomain, 
+	   writer, 
+	   order);
 
   GmshFinalize();
   return 0;
 }
 
 void fPoisson(GroupOfElement& domain, 
-	      GroupOfElement& constraintDomain, 
+	      GroupOfElement& constraintDomain,
 	      GroupOfElement& visuDomain, 
 	      Writer& writer, 
 	      int order){
 
   // FEM Solution
+  stringstream stream;
+
   FormulationPoisson poisson(domain, order);
   System sysPoisson(poisson);
 
-  cout << "Poisson (" << order << "): " << sysPoisson.getSize() << endl;
+  stream << "poisson_" << order;
+  cout   << stream.str() << ": " << sysPoisson.getSize() 
+	 << endl << flush;
   
-  sysPoisson.fixDof(constraintDomain, 0);  
+  sysPoisson.fixDof(constraintDomain, 0);
   sysPoisson.assemble();
   sysPoisson.solve();
 
   Solution solPoisson(sysPoisson, visuDomain);
 
-  solPoisson.write("poisson", writer);
+  solPoisson.write(stream.str(), writer);
 }

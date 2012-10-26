@@ -28,7 +28,7 @@ class Formulation{
  public:
   virtual ~Formulation(void);
   
-  virtual double weak(int entityI, int entityJ,
+  virtual double weak(int dofI, int dofJ,
 		      const GroupOfDof& god) const = 0;
   
   virtual double rhs(int equationI, 
@@ -39,12 +39,12 @@ class Formulation{
 
 /**
    @fn Formulation::~Formulation
-   Deletes this Formualtion
+   Deletes this Formulation
    **
 
    @fn Formulation::weak
-   @param entityI The @em first index of a formulation term 
-   @param entityJ The @em second index of the formulation term
+   @param dofI The @em first index of a formulation term 
+   @param dofJ The @em second index of the formulation term
    @param god The @em GroupOfDof associated with the formulation term   
    @return The value of the given formulation term
    **
