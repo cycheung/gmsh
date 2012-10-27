@@ -1,5 +1,6 @@
 set(src
   Solver.cpp
+  EigenSolver.cpp
 )
 
 

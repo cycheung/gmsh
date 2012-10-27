@@ -12,7 +12,7 @@
 #include "GmshMessage.h"
 
 #include "linearSystemPETSc.h"
-//#include <slepc.h>
+#include <slepc.h>
 
 class EigenSolver{
  private:
