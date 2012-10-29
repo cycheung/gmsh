@@ -12,6 +12,7 @@
 #include "linearSystemPETSc.h"
 #include "EigenSolver.h"
 
+#include <vector>
 #include <string>
 
 /**
@@ -36,7 +37,11 @@ class EigenSystem{
   linearSystemPETSc<double>* linSysB;
   EigenSolver*               eSys;
 
-  int size;
+  unsigned int size;
+
+  std::vector<std::complex<double> >* eigenValue;
+  std::vector<std::vector<std::complex<double> > >* eigenVector;
+  unsigned int nEigenValue; 
 
   const EigenFormulation* eFormulation;
   const FunctionSpace*    fs;
@@ -46,15 +51,18 @@ class EigenSystem{
    EigenSystem(const EigenFormulation& eFormulation);
   ~EigenSystem(void);
 
-  unsigned int        getSize(void) const;
-  //fullVector<double>& getSol(void) const;
+  unsigned int getSize(void) const;
+  unsigned int getEigenValueNumber(void) const;
+  
+  const std::vector<std::complex<double> >&               getEigenValues(void) const;
+  const std::vector<std::vector<std::complex<double> > >& getEigenVectors(void) const;
 
   const FunctionSpace& getFunctionSpace(void) const;
   const DofManager&    getDofManager(void) const;
 
   void fixDof(const GroupOfElement& goe, double value);
   void assemble(void);
-  void solve(void);
+  void solve(unsigned int nEigenValues);
 
  private:
   void assemble(GroupOfDof& group);
@@ -108,13 +116,23 @@ class EigenSystem{
 //////////////////////
 // Inline Functions //
 //////////////////////
-/*
-inline fullVector<double>& EigenSystem::getSol(void) const{
-  return *x;
-}
-*/
+
 inline unsigned int EigenSystem::getSize(void) const{
   return size;
+}
+
+inline unsigned int EigenSystem::getEigenValueNumber(void) const{
+  return nEigenValue;
+}
+  
+inline const std::vector<std::complex<double> >& 
+EigenSystem::getEigenValues(void) const{
+  return *eigenValue;
+}
+
+inline const std::vector<std::vector<std::complex<double> > >& 
+EigenSystem::getEigenVectors(void) const{
+  return *eigenVector;
 }
 
 inline const FunctionSpace& EigenSystem::getFunctionSpace(void) const{

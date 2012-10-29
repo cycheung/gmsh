@@ -4,6 +4,9 @@ set(src
   FormulationPoisson.cpp
   FormulationProjectionVector.cpp
   FormulationProjectionScalar.cpp
+
+  EigenFormulation.cpp
+  FormulationEigenFrequency.cpp
 )
 
 

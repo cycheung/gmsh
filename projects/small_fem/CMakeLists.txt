@@ -81,6 +81,9 @@ add_executable(projscalone simulation/ProjectionScalarSinOneTime.cpp)
 
 add_executable(btest simulation/BasisTest.cpp) 
 
+add_executable(cavity simulation/Cavity.cpp)
+
+
 ## Link (Note: 'lib' is gmsh static library)
 target_link_libraries(laplace sf lib ${GMSH_EXTERNAL_LIBRARIES})
 target_link_libraries(poisson sf lib ${GMSH_EXTERNAL_LIBRARIES})
@@ -92,3 +95,5 @@ target_link_libraries(projscalsin sf lib ${GMSH_EXTERNAL_LIBRARIES})
 target_link_libraries(projscalone sf lib ${GMSH_EXTERNAL_LIBRARIES})
 
 target_link_libraries(btest sf lib ${GMSH_EXTERNAL_LIBRARIES})
+
+target_link_libraries(cavity sf lib ${GMSH_EXTERNAL_LIBRARIES})

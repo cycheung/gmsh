@@ -15,7 +15,7 @@
    A Eigenvalue Formulation is defined by:
    @li A Function Space 
    @see FunctionSpace class
-   @li Two Bilinear Weak Formulation
+   @li @em Two Bilinear Weak Formulation
    @li A Right hand Side.@n
 
    @warning

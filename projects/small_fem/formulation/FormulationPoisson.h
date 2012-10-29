@@ -33,7 +33,8 @@ class FormulationPoisson: public Formulation{
   FunctionSpaceNode* fspace;
 
  public:
-  FormulationPoisson(const GroupOfElement& goe, unsigned int order);
+  FormulationPoisson(const GroupOfElement& goe, 
+		     unsigned int order);
 
   virtual ~FormulationPoisson(void);
 

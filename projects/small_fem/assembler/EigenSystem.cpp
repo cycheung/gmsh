@@ -21,13 +21,22 @@ EigenSystem::EigenSystem(const EigenFormulation& eFormulation){
   linSysA->allocate(size);
   linSysB->allocate(size);
 
-  eSys = NULL; // eSys will be created at solving point
+  // eSys will be created at solving point
+  eSys        = NULL; 
+  eigenValue  = NULL;
+  eigenVector = NULL;
 
   // The EigenSystem is not assembled //
   isAssembled = false;
 }
 
 EigenSystem::~EigenSystem(void){
+  if(eigenVector)
+    delete eigenVector;
+  
+  if(eigenValue);
+  delete eigenValue;
+
   if(eSys)
     delete eSys;
 
@@ -71,14 +80,26 @@ void EigenSystem::fixDof(const GroupOfElement& goe, double value){
   }
 }
 
-void EigenSystem::solve(void){
+void EigenSystem::solve(unsigned int nEigenValues){
   // Is the EigenSystem assembled ? //
   if(!isAssembled)
     assemble();
 
   // Solve //
   eSys = new EigenSolver(linSysA, linSysB);
-  eSys->solve();
+  eSys->solve(nEigenValues);
+
+  // Get Solution //
+  nEigenValue = eSys->getNumEigenValues();
+  
+  eigenValue  = new vector<complex<double> >(nEigenValue);
+  eigenVector = new vector<vector<complex<double> > >(nEigenValue);
+  
+  for(unsigned int i = 0; i < nEigenValue; i++)
+    (*eigenValue)[i] = eSys->getEigenValue(i);
+
+  for(unsigned int i = 0; i < nEigenValue; i++)
+    (*eigenVector)[i] = eSys->getEigenVector(i);  
 }
 
 void EigenSystem::assemble(GroupOfDof& group){

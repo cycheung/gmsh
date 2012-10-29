@@ -37,6 +37,10 @@ class Mapper{
 
   static fullVector<double> grad(const fullVector<double>& gradUVW, 
 				 const fullMatrix<double>& invJac);
+
+  static fullVector<double> curl(const fullVector<double>& curlUVW, 
+				 const fullMatrix<double>& jac,
+				 double invDet);
 };
 
 /**
@@ -75,6 +79,14 @@ class Mapper{
    @param gradUVW A gradient in the @em reference space
    @param invJac The Invert Jacobian Matrix evaluated at @c UVW 
    @returns Returns the given gradient in the 
+   @em physical space
+
+   @fn Mapper::curl
+   @param gradUVW A curl in the @em reference space
+   @param jac The Jacobian Matrix evaluated at @c UVW 
+   @param invDet The Invert of the Jacobian Matrix Determinant 
+   evaluated at @c UVW 
+   @returns Returns the given curl in the 
    @em physical space
  */
 
