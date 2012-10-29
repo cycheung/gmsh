@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "System.h"
+#include "EigenSystem.h"
 #include "Writer.h"
 #include "fullMatrix.h"
 
@@ -25,6 +26,7 @@
 
 class Solution{
  private:
+  bool ownSol;
   fullVector<double>* sol;
 
   const Mesh*          mesh;
@@ -43,6 +45,8 @@ class Solution{
 
  public:
    Solution(const System& system);
+   Solution(const EigenSystem& system,
+	    unsigned int eigenNumber);
    Solution(const System& system, const GroupOfElement& visu);
    Solution(double (*f)(fullVector<double>& xyz), const GroupOfElement& visu);
    Solution(fullVector<double> (*f)(fullVector<double>& xyz), 
@@ -57,7 +61,10 @@ class Solution{
   std::vector<fullVector<double> >& getNodalVectorValue(void) const;
 
  private:
-  void init(const System& system);
+  void initSystem(const System& system);
+  void initEigen(const EigenSystem& system,
+		 unsigned int eigenNumber);
+
   void interpolate(void);
   void interpolateOnVisu(void); 
   void evaluateF(void);

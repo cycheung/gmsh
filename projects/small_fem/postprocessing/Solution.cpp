@@ -11,15 +11,59 @@
 
 using namespace std;
 
-void Solution::init(const System& system){
+void Solution::initSystem(const System& system){
   // Save some data
-  this->sol  = &(system.getSol());
   this->dofM = &(system.getDofManager());
   this->fs   = &(system.getFunctionSpace());
 
   // Get Mesh
   this->mesh = &(fs->getSupport().getMesh());  
 
+  // Get Solution 
+  ownSol = false;
+  sol    = &(system.getSol());
+
+  // Init
+  nodalScalarValue = NULL;
+  nodalVectorValue = NULL;
+
+  // Scalar or Vector ?
+  fsType = fs->getType();
+
+  switch(fsType){
+  case 0:
+  case 3:
+    scalar = true;
+    break;
+
+  case 1:
+  case 2:
+    scalar = false;
+    break;
+  }
+}
+
+void Solution::initEigen(const EigenSystem& system, 
+			 unsigned int eigenNumber){
+  // Save some data
+  this->dofM = &(system.getDofManager());
+  this->fs   = &(system.getFunctionSpace());
+
+  // Get Mesh
+  this->mesh = &(fs->getSupport().getMesh());  
+
+  // Get Solution
+  const unsigned int size   = system.getSize();
+  const vector<vector<complex<double> > >& eVector = 
+    system.getEigenVectors();
+  
+  ownSol = true;
+  sol    = new fullVector<double>(size);
+
+  for(unsigned int i = 0; i < size; i++){
+    (*sol)(i) = norm(eVector[eigenNumber][i]);
+  }
+    
   // Init
   nodalScalarValue = NULL;
   nodalVectorValue = NULL;
@@ -42,7 +86,21 @@ void Solution::init(const System& system){
 
 Solution::Solution(const System& system){
   // Init
-  init(system);
+  initSystem(system);
+
+  // Get Visu Domain
+  this->visuDomain = &(fs->getSupport());
+
+  // Interpolate 
+  // NB: interpolate() is faster than 
+  // interpolateOnVisu() (no Octree)
+  interpolate();
+}
+
+Solution::Solution(const EigenSystem& system,
+		   unsigned int eigenNumber){
+  // Init
+  initEigen(system, eigenNumber);
 
   // Get Visu Domain
   this->visuDomain = &(fs->getSupport());
@@ -56,7 +114,7 @@ Solution::Solution(const System& system){
 Solution::Solution(const System& system,
 		   const GroupOfElement& visu){
   // Init
-  init(system);
+  initSystem(system);
 
   // Get Visu Domain
   this->visuDomain = &visu;
@@ -103,6 +161,9 @@ Solution::Solution(fullVector<double> (*f)(fullVector<double>& xyz),
 }
 
 Solution::~Solution(void){
+  if(ownSol)
+    delete sol;
+
   if(scalar)
     delete nodalScalarValue;
 

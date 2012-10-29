@@ -4,6 +4,9 @@
 #include "Mesh.h"
 #include "EigenSystem.h"
 
+#include "WriterMsh.h"
+#include "Solution.h"
+
 #include "FormulationEigenFrequency.h"
 
 #include "Gmsh.h"
@@ -19,6 +22,8 @@ int main(int argc, char** argv){
   GroupOfElement domain = msh.getFromPhysical(7);
 
   // Get Some Data //
+  WriterMsh writer;
+
   const unsigned int order = atoi(argv[2]);
   const unsigned int nFreq = atoi(argv[3]);
 
@@ -47,6 +52,11 @@ int main(int argc, char** argv){
     cout << "#" << i + 1        << "\t" 
 	 << eigenValue[i]       << "\t"
 	 << sqrt(eigenValue[i]) << endl;
+
+  // Write Sol //
+  Solution solCavity(sysCavity, atoi(argv[4]));
+  solCavity.write("cavity", writer);
+
 
   // Done //
   GmshFinalize();

@@ -16,11 +16,6 @@ const double FormulationEigenFrequency::eps = 8.85418781762E-12;
 
 FormulationEigenFrequency::FormulationEigenFrequency(const GroupOfElement& goe,
 						     unsigned int order){
-  // Can't have 0th order //
-  if(order == 0)
-    throw 
-      Exception("Can't have a Eigenfrequency problem of order 0");
-
   // Gaussian Quadrature Data (Term One) // 
   // NB: We need to integrad a rot * rot !
   //     and order(rot f) = order(f) - 1
