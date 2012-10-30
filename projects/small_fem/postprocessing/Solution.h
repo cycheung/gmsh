@@ -27,7 +27,7 @@
 class Solution{
  private:
   bool ownSol;
-  fullVector<double>* sol;
+  const fullVector<double>* sol;
 
   const Mesh*          mesh;
   const DofManager*    dofM;

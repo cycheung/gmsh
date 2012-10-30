@@ -43,8 +43,8 @@ class System{
    System(const Formulation& formulation);
   ~System(void);
 
-  unsigned int        getSize(void) const;
-  fullVector<double>& getSol(void) const;
+  unsigned int              getSize(void) const;
+  const fullVector<double>& getSol(void) const;
 
   const FunctionSpace& getFunctionSpace(void) const;
   const DofManager&    getDofManager(void) const;
@@ -106,7 +106,7 @@ class System{
 // Inline Functions //
 //////////////////////
 
-inline fullVector<double>& System::getSol(void) const{
+inline const fullVector<double>& System::getSol(void) const{
   return *x;
 }
 

@@ -57,11 +57,12 @@ void Solution::initEigen(const EigenSystem& system,
   const vector<vector<complex<double> > >& eVector = 
     system.getEigenVectors();
   
-  ownSol = true;
-  sol    = new fullVector<double>(size);
+  ownSol = false;
+  // @todo Need Some Function to return CONST fullVector ! 
+  //sol    = new fullVector<double>(size);
 
   for(unsigned int i = 0; i < size; i++){
-    (*sol)(i) = norm(eVector[eigenNumber][i]);
+    ;//(*sol)(i) = norm(eVector[eigenNumber][i]);
   }
     
   // Init
@@ -288,36 +289,47 @@ void Solution::interpolateOnVisu(void){
     // Search element (in System Mesh) containg this 
     // visu node
     SPoint3   point   = node[i]->point();
-    MElement* element = model.getMeshElementByCoord(point, dim, false);
-   
-    // Get GroupOfDof related to this Element
-    const GroupOfDof& god = fs->getGoDFromElement(*element);
-      
-    // Get Dof
-    const vector<const Dof*>& dof  = god.getAll();
-    const unsigned int        size = dof.size();
-
-    // Get Coef
-    vector<double> coef(size);
-    for(unsigned int k = 0; k < size; k++)
-      // Look in Solution
-      coef[k] = 
-	(*sol)(dofM->getGlobalId(*dof[k])); 
-	
-    // Get Node coordinate
-    fullVector<double> xyz(3);
-    xyz(0) = node[i]->x();
-    xyz(1) = node[i]->y();
-    xyz(2) = node[i]->z();
-
-    // Interpolate (AT LAST !!)
-    if(scalar)
-      (*nodalScalarValue)[node[i]->getNum() - 1] = 
-	fsScalar->interpolate(*element, coef, xyz);
+    MElement* element = model.getMeshElementByCoord(point, dim, true);
     
-    else
-      (*nodalVectorValue)[node[i]->getNum() - 1] = 
-	fsVector->interpolate(*element, coef, xyz);
+    // WARNING: if no element found, set to zero
+    if(!element){
+      if(scalar)
+	(*nodalScalarValue)[node[i]->getNum() - 1] = 0;
+    
+      else
+	(*nodalVectorValue)[node[i]->getNum() - 1] = 0;
+    }
+
+    else{
+      // Get GroupOfDof related to this Element
+      const GroupOfDof& god = fs->getGoDFromElement(*element);
+      
+      // Get Dof
+      const vector<const Dof*>& dof  = god.getAll();
+      const unsigned int        size = dof.size();
+      
+      // Get Coef
+      vector<double> coef(size);
+      for(unsigned int k = 0; k < size; k++)
+	// Look in Solution
+	coef[k] = 
+	  (*sol)(dofM->getGlobalId(*dof[k])); 
+      
+      // Get Node coordinate
+      fullVector<double> xyz(3);
+      xyz(0) = node[i]->x();
+      xyz(1) = node[i]->y();
+      xyz(2) = node[i]->z();
+      
+      // Interpolate (AT LAST !!)
+      if(scalar)
+	(*nodalScalarValue)[node[i]->getNum() - 1] = 
+	  fsScalar->interpolate(*element, coef, xyz);
+      
+      else
+	(*nodalVectorValue)[node[i]->getNum() - 1] = 
+	  fsVector->interpolate(*element, coef, xyz);
+    }
   }
 }
 

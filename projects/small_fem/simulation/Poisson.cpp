@@ -4,8 +4,10 @@
 #include "Mesh.h"
 #include "fullMatrix.h"
 #include "System.h"
+
 #include "Solution.h"
 #include "WriterMsh.h"
+#include "Integrator.h"
 
 #include "FormulationPoisson.h"
 
@@ -54,20 +56,24 @@ void fPoisson(GroupOfElement& domain,
 	      int order){
 
   // FEM Solution
-  stringstream stream;
-
   FormulationPoisson poisson(domain, order);
   System sysPoisson(poisson);
 
-  stream << "poisson_" << order;
-  cout   << stream.str() << ": " << sysPoisson.getSize() 
-	 << endl << flush;
+  cout << "Poisson -- Order " << order 
+       << ": " << sysPoisson.getSize() 
+       << endl << flush;
   
   sysPoisson.fixDof(constraintDomain, 0);
   sysPoisson.assemble();
   sysPoisson.solve();
 
-  Solution solPoisson(sysPoisson, visuDomain);
+  // Integrate Solution //
+  Integrator integrator(sysPoisson);
+  cout << "Integrated Solution: "
+       << integrator.integrate()
+       << endl;
 
-  solPoisson.write(stream.str(), writer);
+  // Write Solution //
+  Solution solPoisson(sysPoisson, visuDomain);
+  solPoisson.write("poisson", writer);
 }

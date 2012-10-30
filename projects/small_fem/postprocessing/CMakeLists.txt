@@ -6,6 +6,8 @@ set(src
 
   Solution.cpp
   PlotBasis.cpp
+
+  Integrator.cpp
 )
 
 
