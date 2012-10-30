@@ -131,7 +131,7 @@ double FormulationEigenFrequency::weakB(int dofI, int dofJ,
 				       (*gC2)(g, 2)),
 			invJac);
 
-    integral += phiI * phiJ * fabs(det) * (*gW2)(g) * eps;
+    integral += phiI * phiJ * fabs(det) * (*gW2)(g) * eps * -1;
   }
 
   return integral;
