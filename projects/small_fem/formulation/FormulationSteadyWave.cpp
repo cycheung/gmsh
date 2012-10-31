@@ -4,21 +4,22 @@
 #include "Polynomial.h"
 #include "Mapper.h"
 
-#include "FormulationEigenFrequency.h"
+#include "FormulationSteadyWave.h"
 
 using namespace std;
 
 // Pi  = atan(1) * 4
 // Mu  = 4 * Pi * 10^-7
 // Eps = 8.85418781762 * 10^−12
-//const double FormulationEigenFrequency::mu  = 4 * atan(1) * 4 * 1E-7;
-//const double FormulationEigenFrequency::eps = 8.85418781762E-12;
+//const double FormulationSteadyWave::mu  = 4 * atan(1) * 4 * 1E-7;
+//const double FormulationSteadyWave::eps = 8.85418781762E-12;
 
-const double FormulationEigenFrequency::mu  = 1;
-const double FormulationEigenFrequency::eps = 1;
+const double FormulationSteadyWave::mu  = 1;
+const double FormulationSteadyWave::eps = 1;
 
-FormulationEigenFrequency::FormulationEigenFrequency(const GroupOfElement& goe,
-						     unsigned int order){
+FormulationSteadyWave::FormulationSteadyWave(const GroupOfElement& goe,
+					     double pulsation,
+					     unsigned int order){
   // Gaussian Quadrature Data (Term One) // 
   // NB: We need to integrad a rot * rot !
   //     and order(rot f) = order(f) - 1
@@ -42,12 +43,15 @@ FormulationEigenFrequency::FormulationEigenFrequency(const GroupOfElement& goe,
 
   G2 = gW2->size(); // Nbr of Gauss points
 
+  
+  // Pulsation Squared //
+  omegaSquare = pulsation * pulsation;
 
   // Function Space //
   fspace = new FunctionSpaceEdge(goe, order);
 }
 
-FormulationEigenFrequency::~FormulationEigenFrequency(void){
+FormulationSteadyWave::~FormulationSteadyWave(void){
   delete gC1;
   delete gW1;
   delete gC2;
@@ -55,71 +59,62 @@ FormulationEigenFrequency::~FormulationEigenFrequency(void){
   delete fspace;
 }
 
-double FormulationEigenFrequency::weakA(int dofI, int dofJ,
-					const GroupOfDof& god) const{
+double FormulationSteadyWave::weak(int dofI, int dofJ,
+				   const GroupOfDof& god) const{
   // Init Some Stuff //
+  fullVector<double> curlPhiI(3);
+  fullVector<double> curlPhiJ(3);
   fullVector<double> phiI(3);
   fullVector<double> phiJ(3);
-  fullMatrix<double> jac(3, 3);        
 
-  double integral = 0;
+  fullMatrix<double> jac(3, 3);        
+  fullMatrix<double> invJac(3, 3);       
+
+  double integral1 = 0;
+  double integral2 = 0;
   double det;
 
-  // Get Element and Basis Functions //
+  // Get Element and Basis Functions (+ Curl) //
   const MElement& element = god.getGeoElement();
   MElement&      celement = const_cast<MElement&>(element);
   
-  const vector<const vector<Polynomial>*> fun = 
+  const vector<const vector<Polynomial>*> curlFun = 
     fspace->getCurlLocalFunctions(element);
 
-  // Loop over Integration Point //
+  const vector<const vector<Polynomial>*> fun = 
+    fspace->getLocalFunctions(element);
+
+  // Loop over Integration Point (Term 1) //
   for(int g = 0; g < G1; g++){
     det = celement.getJacobian((*gC1)(g, 0), 
 			       (*gC1)(g, 1), 
 			       (*gC1)(g, 2), 
 			       jac);
-
-    phiI = Mapper::curl(Polynomial::at(*fun[dofI], 
-				       (*gC1)(g, 0), 
-				       (*gC1)(g, 1),
-				       (*gC1)(g, 2)),
-			jac, 1 / det);
-
-    phiJ = Mapper::curl(Polynomial::at(*fun[dofJ], 
-				       (*gC1)(g, 0), 
-				       (*gC1)(g, 1), 
-				       (*gC1)(g, 2)),
-			jac, 1 / det);
     
-    integral += phiI * phiJ * fabs(det) * (*gW1)(g) / mu;
+    curlPhiI = Mapper::curl(Polynomial::at(*curlFun[dofI], 
+					   (*gC1)(g, 0), 
+					   (*gC1)(g, 1),
+					   (*gC1)(g, 2)),
+			    jac, 1 / det);
+    
+    curlPhiJ = Mapper::curl(Polynomial::at(*curlFun[dofJ], 
+					   (*gC1)(g, 0), 
+					   (*gC1)(g, 1), 
+					   (*gC1)(g, 2)),
+			    jac, 1 / det);
+    
+    integral1 += 
+      ((curlPhiI * curlPhiJ) / mu) * fabs(det) * (*gW1)(g);
   }
 
-  return integral;
-}
 
-double FormulationEigenFrequency::weakB(int dofI, int dofJ,
-					const GroupOfDof& god) const{
-  // Init Some Stuff //
-  fullVector<double> phiI(3);
-  fullVector<double> phiJ(3);
-  fullMatrix<double> invJac(3, 3);       
-
-  double integral = 0;
-  double det;
-
-  // Get Element and Basis Functions //
-  const MElement& element = god.getGeoElement();
-  MElement&      celement = const_cast<MElement&>(element);
-  
-  const vector<const vector<Polynomial>*> fun = 
-    fspace->getLocalFunctions(element);
-
-  // Loop over Integration Point //
+  // Loop over Integration Point (Term 2) //
   for(int g = 0; g < G2; g++){
     det = celement.getJacobian((*gC2)(g, 0), 
 			       (*gC2)(g, 1), 
 			       (*gC2)(g, 2), 
 			       invJac);
+
     invJac.invertInPlace();
 
     phiI = Mapper::grad(Polynomial::at(*fun[dofI],
@@ -133,9 +128,10 @@ double FormulationEigenFrequency::weakB(int dofI, int dofJ,
 				       (*gC2)(g, 1),
 				       (*gC2)(g, 2)),
 			invJac);
-
-    integral -= phiI * phiJ * fabs(det) * (*gW2)(g) * eps;
+    
+    integral2 += 
+      ((phiI * phiJ) * eps * omegaSquare) * fabs(det) * (*gW2)(g);
   }
 
-  return integral;
+  return integral1 - integral2;
 }

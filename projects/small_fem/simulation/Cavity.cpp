@@ -54,8 +54,8 @@ int main(int argc, char** argv){
 	 << sqrt(eigenValue[i]) << endl;
 
   // Write Sol //
-  Solution solCavity(sysCavity, atoi(argv[4]));
-  solCavity.write("cavity", writer);
+  //Solution solCavity(sysCavity, atoi(argv[4]));
+  //solCavity.write("cavity", writer);
 
 
   // Done //
