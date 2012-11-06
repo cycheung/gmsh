@@ -29,7 +29,8 @@
 
 class System{
  private:
-  bool isAssembled;
+  bool assembled;
+  bool solved;
 
   linearSystemPETSc<double>* linSys;
   fullVector<double>*        x;
@@ -48,6 +49,9 @@ class System{
 
   const FunctionSpace& getFunctionSpace(void) const;
   const DofManager&    getDofManager(void) const;
+
+  bool isAssembled(void) const;
+  bool isSolved(void) const;
 
   void fixDof(const GroupOfElement& goe, double value);
   void assemble(void);
@@ -120,6 +124,14 @@ inline const FunctionSpace& System::getFunctionSpace(void) const{
 
 inline const DofManager& System::getDofManager(void) const{
   return *dofM;
+}
+
+inline bool System::isAssembled(void) const{
+  return assembled;
+}
+
+inline bool System::isSolved(void) const{
+  return solved;
 }
 
 #endif

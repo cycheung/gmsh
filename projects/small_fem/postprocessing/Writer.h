@@ -4,6 +4,7 @@
 #include "fullMatrix.h"
 #include "MElement.h"
 #include "MVertex.h"
+#include "System.h"
 
 #include <string>
 #include <vector>
@@ -31,6 +32,7 @@ class Writer{
   bool hasDomain;
   bool hasValue;
   bool isScalar;
+  bool isNodal;
 
   int  N;
   int  E;
@@ -38,8 +40,14 @@ class Writer{
   const std::vector<const MElement*>* element;
   const std::vector<MVertex*>*        node;
 
+  // Nodal Values //
   const std::vector<double>*              nodalScalarValue;
   const std::vector<fullVector<double> >* nodalVectorValue;
+
+  // Values with inteprolation scheme //
+  const FunctionSpace*      fs;
+  const DofManager*         dofM;
+  const fullVector<double>* sol;
 
  public:
   virtual ~Writer(void);
@@ -48,6 +56,8 @@ class Writer{
 
   void setValues(const std::vector<double>& value);
   void setValues(const std::vector<fullVector<double> >& value);
+  void setValues(const System& value);
+
   void setDomain(const std::vector<const MElement*>& element);
 
  protected:
@@ -77,6 +87,16 @@ class Writer{
    @param value A set of value (fullVector<double>)
    
    Set this Writer's Data to the given values
+   **
+
+   @fn void Writer::setValues(const System& value)
+   @param value A System
+   
+   Use the System Solution for Data
+
+   @warning
+   Writer::setDomain() will be called with the Support
+   of the FunctionSpace of the System
    **
 
    @fn Writer::setDomain

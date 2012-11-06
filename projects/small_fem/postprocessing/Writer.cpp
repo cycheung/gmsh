@@ -15,19 +15,50 @@ Writer::~Writer(void){
 }
 
 void Writer::setValues(const std::vector<double>& value){
-  hasValue = true;
-  isScalar = true;
-
   nodalScalarValue = &value;
   nodalVectorValue = NULL;
+
+  fs   = NULL;
+  dofM = NULL;
+  sol  = NULL;
+
+  hasValue = true;
+  isScalar = true;
+  isNodal  = true;
 }
 
 void Writer::setValues(const std::vector<fullVector<double> >& value){
-  hasValue = true;
-  isScalar = false;
-
   nodalScalarValue = NULL;
   nodalVectorValue = &value;
+
+  fs   = NULL;
+  dofM = NULL;
+  sol  = NULL;
+
+  hasValue = true;
+  isScalar = false;
+  isNodal  = true;
+}
+
+void Writer::setValues(const System& value){
+  nodalScalarValue = NULL;
+  nodalVectorValue = NULL;
+
+  fs   = &(value.getFunctionSpace());
+  dofM = &(value.getDofManager());
+  sol  = &(value.getSol());
+
+  if(value.isSolved()){
+    hasValue = true;
+    isScalar = fs->isScalar();
+    isNodal  = false;
+  }
+
+  else{
+    hasValue = false;
+  }
+
+  setDomain(fs->getSupport().getAll());
 }
 
 void Writer::setDomain(const std::vector<const MElement*>& element){

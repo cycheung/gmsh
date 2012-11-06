@@ -1,8 +1,10 @@
 #ifndef _WRITERMSH_H_
 #define _WRITERMSH_H_
 
-#include "Writer.h"
 #include <fstream>
+
+#include "LagrangeBasis.h"
+#include "Writer.h"
 
 /**
    @class WriterMsh
@@ -29,11 +31,16 @@
    with @em only the given @em mesh.@n@n
    If no domain is given, an Exception will be thrown 
    when WriterMsh::write() is called.
+
+   @todo
+   Multi Topology for Hybrid Mesh (Adaptive View)@n
+   Vectorial Adaptive View@n
 */
 
 class WriterMsh: public Writer{
  protected:
   mutable std::ofstream* out;
+  mutable LagrangeBasis* lBasis;
   
  public:
   WriterMsh(void);
@@ -46,7 +53,11 @@ class WriterMsh: public Writer{
   void writeHeader(void) const;
   void writeNodes(void) const;
   void writeElements(void) const;
-  void writeNodalValues(const std::string name) const;
+  void writeInterpolationScheme(void) const;
+  void writeNodalValuesHeader(const std::string name) const;
+  void writeNodalValuesFromNode(void) const;
+  void writeNodalValuesFromSol(void) const;  
+  void writeNodalValuesFooter(void) const;
 };
 
 /**

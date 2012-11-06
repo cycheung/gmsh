@@ -16,7 +16,6 @@
 using namespace std;
 
 void fPoisson(GroupOfElement& domain, 
-	      GroupOfElement& visuDomain, 
 	      GroupOfElement& constraintDomain, 
 	      Writer& writer, int order);
 
@@ -26,22 +25,18 @@ int main(int argc, char** argv){
   // Writer //
   WriterMsh writer; 
   
-  // Get Mesh //
+  // Get Domains //
   Mesh msh(argv[1]);
-  Mesh visu(argv[2]);
-
   GroupOfElement           domain = msh.getFromPhysical(7);
   GroupOfElement constraintDomain = msh.getFromPhysical(5);
-  GroupOfElement       visuDomain = visu.getFromPhysical(7);
 
   cout << "Number of Element: " << domain.getNumber() 
        << endl << flush;
 
   // Compute FEM //
-  unsigned int order = atoi(argv[3]);
+  unsigned int order = atoi(argv[2]);
   fPoisson(domain, 
 	   constraintDomain,
-	   visuDomain, 
 	   writer, 
 	   order);
 
@@ -51,7 +46,6 @@ int main(int argc, char** argv){
 
 void fPoisson(GroupOfElement& domain, 
 	      GroupOfElement& constraintDomain,
-	      GroupOfElement& visuDomain, 
 	      Writer& writer, 
 	      int order){
 
@@ -74,6 +68,10 @@ void fPoisson(GroupOfElement& domain,
        << endl;
 
   // Write Solution //
-  Solution solPoisson(sysPoisson, visuDomain);
+  Solution solPoisson(sysPoisson);
   solPoisson.write("poisson", writer);
+
+  // Adaptive View //
+  writer.setValues(sysPoisson);
+  writer.write("aPoisson");
 }

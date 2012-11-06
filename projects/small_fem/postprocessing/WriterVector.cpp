@@ -1,5 +1,7 @@
 #include <fstream>
 #include <sstream>
+
+#include "Exception.h"
 #include "WriterVector.h"
 
 using namespace std;
@@ -11,6 +13,10 @@ WriterVector::~WriterVector(void){
 }
 
 void WriterVector::write(const string name) const{
+  // Check if Nodal Value //
+  if(!isNodal)
+    throw Exception("WriterVector cannot write non Nodal Values");
+
   // Check for stdout special case //
   if(name == string("stdout")){
     write(cout);

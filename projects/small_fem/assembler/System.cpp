@@ -19,8 +19,9 @@ System::System(const Formulation& formulation){
   linSys = new linearSystemPETSc<double>();
   linSys->allocate(size);
 
-  // The system is not assembled //
-  isAssembled = false;
+  // The system is not assembled and not solved//
+  assembled = false;
+  solved    = false;
 }
 
 System::~System(void){
@@ -46,7 +47,7 @@ void System::assemble(void){
     assemble(*(group[i]));  
 
   // The system is assembled //
-  isAssembled = true;  
+  assembled = true;  
 }
 
 void System::fixDof(const GroupOfElement& goe, double value){
@@ -64,7 +65,7 @@ void System::fixDof(const GroupOfElement& goe, double value){
 
 void System::solve(void){
   // Is the System assembled ? //
-  if(!isAssembled)
+  if(!assembled)
     assemble();
 
   // Solve //
@@ -77,6 +78,9 @@ void System::solve(void){
     linSys->getFromSolution(i, xi);
     (*x)(i) = xi;
   }
+
+  // System solved ! //
+  solved = true;
 }
 
 void System::assemble(GroupOfDof& group){

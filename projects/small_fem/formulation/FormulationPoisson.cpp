@@ -25,7 +25,7 @@ FormulationPoisson::FormulationPoisson(const GroupOfElement& goe,
 
   // Look for 1st element to get element type
   // (We suppose only one type of Mesh !!)
-  gaussIntegration::get(goe.get(0).getType(), (order - 1) + (order - 1) , *gCL, *gWL);
+  gaussIntegration::get(goe.get(0).getType(), (order - 1) + (order - 1), *gCL, *gWL);
 
   GL = gWL->size(); // Nbr of Gauss points
 
@@ -121,7 +121,7 @@ double FormulationPoisson::rhs(int equationI,
 			     (*gCR)(g, 1), 
 			     (*gCR)(g, 2));
 
-    integral += -1 * phi * fabs(det) * (*gWR)(g);
+    integral -= phi * fabs(det) * (*gWR)(g);
   }
 
   return integral;
