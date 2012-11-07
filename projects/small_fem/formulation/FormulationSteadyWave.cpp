@@ -18,7 +18,7 @@ const double FormulationSteadyWave::mu  = 1;
 const double FormulationSteadyWave::eps = 1;
 
 FormulationSteadyWave::FormulationSteadyWave(const GroupOfElement& goe,
-					     double pulsation,
+					     double k,
 					     unsigned int order){
   // Gaussian Quadrature Data (Term One) // 
   // NB: We need to integrad a rot * rot !
@@ -28,7 +28,7 @@ FormulationSteadyWave::FormulationSteadyWave(const GroupOfElement& goe,
 
   // Look for 1st element to get element type
   // (We suppose only one type of Mesh !!)
-  gaussIntegration::get(goe.get(0).getType(), (order - 1) + (order - 1) , *gC1, *gW1);
+  gaussIntegration::get(goe.get(0).getType(), (order - 1) + (order - 1) + 2 , *gC1, *gW1);
 
   G1 = gW1->size(); // Nbr of Gauss points
 
@@ -39,13 +39,13 @@ FormulationSteadyWave::FormulationSteadyWave(const GroupOfElement& goe,
 
   // Look for 1st element to get element type
   // (We suppose only one type of Mesh !!)
-  gaussIntegration::get(goe.get(0).getType(), order + order, *gC2, *gW2);
+  gaussIntegration::get(goe.get(0).getType(), order + order + 2, *gC2, *gW2);
 
   G2 = gW2->size(); // Nbr of Gauss points
 
   
-  // Pulsation Squared //
-  omegaSquare = pulsation * pulsation;
+  // Wave Number Squared //
+  kSquare = k * k;
 
   // Function Space //
   fspace = new FunctionSpaceEdge(goe, order);
@@ -130,7 +130,7 @@ double FormulationSteadyWave::weak(int dofI, int dofJ,
 			invJac);
     
     integral2 += 
-      ((phiI * phiJ) * eps * omegaSquare) * fabs(det) * (*gW2)(g);
+      ((phiI * phiJ) * eps * kSquare) * fabs(det) * (*gW2)(g);
   }
 
   return integral1 - integral2;

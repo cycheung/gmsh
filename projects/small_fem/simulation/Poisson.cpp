@@ -67,11 +67,7 @@ void fPoisson(GroupOfElement& domain,
        << integrator.integrate()
        << endl;
 
-  // Write Solution //
-  Solution solPoisson(sysPoisson);
-  solPoisson.write("poisson", writer);
-
   // Adaptive View //
   writer.setValues(sysPoisson);
-  writer.write("aPoisson");
+  writer.write("poisson");
 }

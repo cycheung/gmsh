@@ -23,8 +23,8 @@ class FormulationSteadyWave: public Formulation{
   static const double mu;
   static const double eps;
 
-  // Wave Squared Pulsation //
-  double omegaSquare;
+  // Wave Number Squared //
+  double kSquare;
 
   // Gaussian Quadrature Data (Term One) //
   int G1;
@@ -41,7 +41,7 @@ class FormulationSteadyWave: public Formulation{
 
  public:
   FormulationSteadyWave(const GroupOfElement& goe,
-			double pulsation,
+			double k,
 			unsigned int order);
 
   virtual ~FormulationSteadyWave(void);

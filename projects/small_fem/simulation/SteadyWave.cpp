@@ -11,6 +11,8 @@
 
 using namespace std;
 
+double pi = 3.14159265359;
+
 int main(int argc, char** argv){
   GmshInitialize(argc, argv);
 
@@ -19,22 +21,22 @@ int main(int argc, char** argv){
   
   // Get Meshes //
   Mesh msh(argv[1]);
-  Mesh visuMsh(argv[2]);
+  //Mesh visuMsh(argv[2]);
 
   // Get Domains //
   GroupOfElement domain = msh.getFromPhysical(7);
-  GroupOfElement visu   = visuMsh.getFromPhysical(7);
+  //GroupOfElement visu   = visuMsh.getFromPhysical(7);
 
   // Get Parameters //
-  const double       puls  = atof(argv[3]);
-  const unsigned int order = atoi(argv[4]);
+  const double       puls  = atof(argv[2]);
+  const unsigned int order = atoi(argv[3]);
 
   // SteadyWave //  
-  FormulationSteadyWave sWave(domain, puls, order);
+  FormulationSteadyWave sWave(domain, puls * 1, order);
   System sys(sWave);
 
-  sys.fixDof(msh.getFromPhysical(5), -1);
-  sys.fixDof(msh.getFromPhysical(6),  0);
+  sys.fixDof(msh.getFromPhysical(5), 1);
+  sys.fixDof(msh.getFromPhysical(6), 0);
 
   cout << "Steady Wave (Order: " << order 
        << " --- Pulsation: "     << puls
@@ -43,7 +45,7 @@ int main(int argc, char** argv){
   sys.assemble();
   sys.solve();
 
-  Solution sol(sys, visu);
+  Solution sol(sys);
   sol.write("swave", writer);
 
   GmshFinalize();
