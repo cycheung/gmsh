@@ -131,6 +131,7 @@ Solution::Solution(double (*f)(fullVector<double>& xyz),
 		   const GroupOfElement& visu){
   // Init
   scalar = true;
+  ownSol = false;
   nodalScalarValue = NULL;
   nodalVectorValue = NULL;
 
@@ -148,6 +149,7 @@ Solution::Solution(fullVector<double> (*f)(fullVector<double>& xyz),
 		   const GroupOfElement& visu){
   // Init
   scalar = false;
+  ownSol = false;
   nodalScalarValue = NULL;
   nodalVectorValue = NULL;
 
