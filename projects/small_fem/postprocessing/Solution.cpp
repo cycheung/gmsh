@@ -53,17 +53,11 @@ void Solution::initEigen(const EigenSystem& system,
   this->mesh = &(fs->getSupport().getMesh());  
 
   // Get Solution
-  const unsigned int size   = system.getSize();
   const vector<vector<complex<double> > >& eVector = 
     system.getEigenVectors();
-  
-  ownSol = false;
-  // @todo Need Some Function to return CONST fullVector ! 
-  //sol    = new fullVector<double>(size);
 
-  for(unsigned int i = 0; i < size; i++){
-    ;//(*sol)(i) = norm(eVector[eigenNumber][i]);
-  }
+  ownSol = true;
+  sol    = getSol(eVector, eigenNumber);
     
   // Init
   nodalScalarValue = NULL;
@@ -365,6 +359,23 @@ void Solution::evaluateF(void){
       (*nodalVectorValue)[node[i]->getNum() - 1] = 
 	fVector(xyz);
   }
+}
+
+const fullVector<double>* Solution::
+getSol(const vector<vector<complex<double> > >& eVector,
+       unsigned int eigenNumber){
+  
+  // Init 
+  unsigned int size       = eVector[eigenNumber].size(); 
+  fullVector<double>* sol = new fullVector<double>(size);
+
+  // Get Sol
+  for(unsigned int i = 0; i < size; i++){
+    (*sol)(i) = real(eVector[eigenNumber][i]);
+  }
+
+  // Return
+  return sol;
 }
 
 vector<double>& Solution::getNodalScalarValue(void) const{

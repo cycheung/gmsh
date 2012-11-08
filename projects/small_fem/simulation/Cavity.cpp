@@ -25,7 +25,7 @@ int main(int argc, char** argv){
   WriterMsh writer;
 
   const unsigned int order = atoi(argv[2]);
-  const unsigned int nFreq = atoi(argv[3]);
+  const unsigned int nWave = atoi(argv[3]);
 
   // EigenFrequency //  
   FormulationEigenFrequency cavity(domain, order);
@@ -36,7 +36,7 @@ int main(int argc, char** argv){
   cout << "Cavity: " << sysCavity.getSize() << endl;
 
   sysCavity.assemble();
-  sysCavity.solve(nFreq);
+  sysCavity.solve(nWave);
 
   // Display //
   const unsigned int nEigenValue = 
@@ -46,7 +46,7 @@ int main(int argc, char** argv){
     sysCavity.getEigenValues();
 
   cout << endl 
-       << "Number\tEigen Value\tEigen Frequency" << endl;
+       << "Number\tEigen Value\tEigen Wave Number" << endl;
   
   for(unsigned int i = 0; i < nEigenValue; i++)
     cout << "#" << i + 1        << "\t" 
@@ -54,8 +54,8 @@ int main(int argc, char** argv){
 	 << sqrt(eigenValue[i]) << endl;
 
   // Write Sol //
-  //Solution solCavity(sysCavity, atoi(argv[4]));
-  //solCavity.write("cavity", writer);
+  Solution solCavity(sysCavity, atoi(argv[4]));
+  solCavity.write("cavity", writer);
 
 
   // Done //

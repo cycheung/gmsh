@@ -68,6 +68,10 @@ class Solution{
   void interpolate(void);
   void interpolateOnVisu(void); 
   void evaluateF(void);
+
+  static const fullVector<double>* 
+    getSol(const std::vector<std::vector<std::complex<double> > >& eVector,
+	   unsigned int eigenNumber);
 };
 
 

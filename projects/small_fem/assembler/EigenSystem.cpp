@@ -17,13 +17,12 @@ EigenSystem::EigenSystem(const EigenFormulation& eFormulation){
   // Create EigenSystem //
   linSysA = new linearSystemPETSc<double>();
   linSysB = new linearSystemPETSc<double>();
-  eSys    = new EigenSolver(linSysA, linSysB);
 
   linSysA->allocate(size);
   linSysB->allocate(size);
 
   // eSys will be created at solving point
-  //eSys        = NULL; 
+  eSys        = NULL; 
   eigenValue  = NULL;
   eigenVector = NULL;
 
@@ -87,6 +86,7 @@ void EigenSystem::solve(unsigned int nEigenValues){
     assemble();
 
   // Solve //
+  eSys = new EigenSolver(linSysA, linSysB);
   eSys->solve(nEigenValues);
 
   // Get Solution //

@@ -27,7 +27,7 @@ FormulationEigenFrequency::FormulationEigenFrequency(const GroupOfElement& goe,
 
   // Look for 1st element to get element type
   // (We suppose only one type of Mesh !!)
-  gaussIntegration::get(goe.get(0).getType(), (order - 1) + (order - 1) , *gC1, *gW1);
+  gaussIntegration::get(goe.get(0).getType(), (order - 1) + (order - 1) + 2 , *gC1, *gW1);
 
   G1 = gW1->size(); // Nbr of Gauss points
 
@@ -38,7 +38,7 @@ FormulationEigenFrequency::FormulationEigenFrequency(const GroupOfElement& goe,
 
   // Look for 1st element to get element type
   // (We suppose only one type of Mesh !!)
-  gaussIntegration::get(goe.get(0).getType(), order + order, *gC2, *gW2);
+  gaussIntegration::get(goe.get(0).getType(), order + order + 2, *gC2, *gW2);
 
   G2 = gW2->size(); // Nbr of Gauss points
 
@@ -134,7 +134,7 @@ double FormulationEigenFrequency::weakB(int dofI, int dofJ,
 				       (*gC2)(g, 2)),
 			invJac);
 
-    integral -= phiI * phiJ * fabs(det) * (*gW2)(g) * eps;
+    integral += phiI * phiJ * fabs(det) * (*gW2)(g) * eps;
   }
 
   return integral;
