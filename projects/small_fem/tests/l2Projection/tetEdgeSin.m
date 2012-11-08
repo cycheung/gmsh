@@ -3,7 +3,7 @@ clear all;
 
 %% l2 [Mesh][Order]
 
-%% Sin(10x) + Sin(10y) + Sin(10z)
+%% [Sin(10x), Sin(10y), Sin(10z)]
 
 
 l2 = zeros(5, 5);
