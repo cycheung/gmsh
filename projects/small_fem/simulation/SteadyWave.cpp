@@ -19,13 +19,11 @@ int main(int argc, char** argv){
   // Writer //
   WriterMsh writer;
   
-  // Get Meshes //
-  Mesh msh(argv[1]);
-  //Mesh visuMsh(argv[2]);
-
   // Get Domains //
+  Mesh msh(argv[1]);
   GroupOfElement domain = msh.getFromPhysical(7);
-  //GroupOfElement visu   = visuMsh.getFromPhysical(7);
+  GroupOfElement source = msh.getFromPhysical(5);
+  GroupOfElement wall   = msh.getFromPhysical(6);
 
   // Get Parameters //
   const double       puls  = atof(argv[2]);
@@ -35,8 +33,8 @@ int main(int argc, char** argv){
   FormulationSteadyWave sWave(domain, puls * 1, order);
   System sys(sWave);
 
-  sys.fixDof(msh.getFromPhysical(5), 1);
-  sys.fixDof(msh.getFromPhysical(6), 0);
+  sys.fixDof(source, 1);
+  sys.fixDof(wall, 0);
 
   cout << "Steady Wave (Order: " << order 
        << " --- Pulsation: "     << puls
@@ -45,12 +43,19 @@ int main(int argc, char** argv){
   sys.assemble();
   sys.solve();
 
-  Solution sol(sys);
-  sol.write("swave", writer);
+  // Interpolated View //
+  if(argc == 5){
+    // Visu Mesh
+    Mesh visuMsh(argv[4]);
+    GroupOfElement visu = visuMsh.getFromPhysical(7);
+
+    Solution sol(sys, visu);
+    sol.write("iSwave", writer);
+  }
 
   // Adaptive View //
   writer.setValues(sys);
-  writer.write("aSwave");
+  writer.write("swave");
 
   GmshFinalize();
   return 0;

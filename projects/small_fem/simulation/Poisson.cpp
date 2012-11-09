@@ -56,6 +56,7 @@ int main(int argc, char** argv){
 
   // Interpolated View //
   if(argc == 4){
+    // Visu Mesh
     Mesh visuMesh(argv[3]);
     GroupOfElement visu = visuMesh.getFromPhysical(7);
     
