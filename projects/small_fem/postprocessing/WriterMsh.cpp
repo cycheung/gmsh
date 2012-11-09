@@ -100,10 +100,6 @@ void WriterMsh::writeElements(void) const{
 }
 
 void WriterMsh::writeInterpolationScheme(void) const{ 
-  // Up to now, adaptive view with only scalar values
-  if(!isScalar)
-    throw Exception("Adaptive View with Scalar Only");
-
   // Some Temp Value
   const fullMatrix<double>& coef = lBasis->getCoefficient();
   const fullMatrix<double>& mono = lBasis->getMonomial();
@@ -118,51 +114,44 @@ void WriterMsh::writeInterpolationScheme(void) const{
   *out << "$InterpolationScheme"     << endl
        << "\"interpolation scheme\"" << endl
        << "1"                        << endl 
-       << (*element)[0]->getType()   << endl;
-  
-  if(isScalar)
-    *out << "2" << endl; // 2 Matrices for Scalar
-  
-  else
-    *out << "6" << endl; // 6 ?? for Vector
-  
-  if(isScalar){
-    // Scalar Coef Matrix
-    *out << nRowCoef << " "
-	 << nColCoef << endl;
+       << (*element)[0]->getType()   << endl 
 
-    for(unsigned int i = 0; i < nRowCoef; i++){
-      for(unsigned int j = 0; j < nColCoef; j++){
-	*out << coef(i, j);
-	
-	if(j < nColCoef - 1)
-	  *out << " ";
+    // 2 Matrices: Coefficients and Monomials
+       << "2"                        << endl; 
+  
+  // Coefficients Matrix
+  *out << nRowCoef << " "
+       << nColCoef << endl;
+  
+  for(unsigned int i = 0; i < nRowCoef; i++){
+    for(unsigned int j = 0; j < nColCoef; j++){
+      *out << coef(i, j);
       
-	else
-	  *out << endl;
-      }
-    }
-
-    // Scalar Mono Matrix
-    *out << nRowMono << " "
-	 << nColMono << endl;
-
-    for(unsigned int i = 0; i < nRowMono; i++){
-      for(unsigned int j = 0; j < nColMono; j++){
-	*out << mono(i, j);
+      if(j < nColCoef - 1)
+	*out << " ";
       
-	if(j < nColMono - 1)
-	  *out << " ";
-	
-	else
-	  *out << endl;
-      }
+      else
+	*out << endl;
     }
   }
+  
+  // Monomials Matrix
+  *out << nRowMono << " "
+       << nColMono << endl;
 
-  else{
+  for(unsigned int i = 0; i < nRowMono; i++){
+    for(unsigned int j = 0; j < nColMono; j++){
+      *out << mono(i, j);
+      
+      if(j < nColMono - 1)
+	*out << " ";
+      
+      else
+	*out << endl;
+    }
   }
-
+ 
+  // End
   *out << "$EndInterpolationScheme" << endl;
 }
 
@@ -170,18 +159,18 @@ void WriterMsh::writeNodalValuesHeader(const string name) const{
   *out << "$ElementNodeData"   << endl;
 
   if(isNodal)
-    *out << "1"                  << endl  // 1 string tag
-	 << "\"" << name << "\"" << endl; // (name)
+    *out << "1"                        << endl  // 1 string tag
+	 << "\"" << name << "\""       << endl; // (name)
 
   else
     *out << "2"                        << endl  // 2 string tag
 	 << "\"" << name << "\""       << endl  // (name)
 	 << "\"interpolation scheme\"" << endl; // (interpolation scheme)
     
-  *out << "1" << endl  // 1 real tag 
-       << "0" << endl  // (time value)
-       << "3" << endl  // 3 integer tag
-       << "0" << endl; // (time step index)
+  *out << "1"                          << endl  // 1 real tag 
+       << "0"                          << endl  // (time value)
+       << "3"                          << endl  // 3 integer tag
+       << "0"                          << endl; // (time step index)
     
   if(isScalar)
     *out << "1" << endl;                // (number of field -- scalar)
@@ -244,20 +233,28 @@ void WriterMsh::writeNodalValuesFromSol(void) const{
     const unsigned int        size = dof.size();
     
     // Get Coef In FS Basis
-    fullVector<double> fsCoef(size);
+    vector<double> fsCoef(size);
     for(unsigned int j = 0; j < size; j++)
       // Look in Solution
-      fsCoef(j) = 
-	(*sol)(dofM->getGlobalId(*dof[j])); 
+      fsCoef[j] = (*sol)(dofM->getGlobalId(*dof[j])); 
 
     // Get Coef In Lagrange Basis
     if(isScalar){
-      fullVector<double> lCoef = 
-	lBasis->project(fsCoef, fsScalar->getLocalFunctions(*(*element)[i]));
+      vector<double> lCoef = 
+	lBasis->project(*(*element)[i], fsCoef, *fsScalar);
       
       for(unsigned int j = 0; j < nCoef; j++)
-	*out << lCoef(j) << " ";
-    
+	*out << lCoef[j] << " ";
+    }
+
+    else{
+      vector<fullVector<double> > lCoef = 
+	lBasis->project(*(*element)[i], fsCoef, *fsVector);
+      
+      for(unsigned int j = 0; j < nCoef; j++)
+	*out << lCoef[j](0) << " "
+	     << lCoef[j](1) << " "
+	     << lCoef[j](2) << " ";
     }
 
     *out << endl;

@@ -48,6 +48,10 @@ int main(int argc, char** argv){
   Solution sol(sys);
   sol.write("swave", writer);
 
+  // Adaptive View //
+  writer.setValues(sys);
+  writer.write("aSwave");
+
   GmshFinalize();
   return 0;
 }

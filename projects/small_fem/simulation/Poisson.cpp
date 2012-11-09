@@ -33,23 +33,10 @@ int main(int argc, char** argv){
   cout << "Number of Element: " << domain.getNumber() 
        << endl << flush;
 
-  // Compute FEM //
+  // Get Order //
   unsigned int order = atoi(argv[2]);
-  fPoisson(domain, 
-	   constraintDomain,
-	   writer, 
-	   order);
-
-  GmshFinalize();
-  return 0;
-}
-
-void fPoisson(GroupOfElement& domain, 
-	      GroupOfElement& constraintDomain,
-	      Writer& writer, 
-	      int order){
-
-  // FEM Solution
+ 
+  // Compute //
   FormulationPoisson poisson(domain, order);
   System sysPoisson(poisson);
 
@@ -67,7 +54,19 @@ void fPoisson(GroupOfElement& domain,
        << integrator.integrate()
        << endl;
 
+  // Interpolated View //
+  if(argc == 4){
+    Mesh visuMesh(argv[3]);
+    GroupOfElement visu = visuMesh.getFromPhysical(7);
+    
+    Solution sol(sysPoisson, visu);
+    sol.write("iPoisson", writer);
+  }
+
   // Adaptive View //
   writer.setValues(sysPoisson);
   writer.write("poisson");
+
+  GmshFinalize();
+  return 0;
 }
