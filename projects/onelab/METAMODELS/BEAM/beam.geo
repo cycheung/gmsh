@@ -1,26 +1,52 @@
-Mesh.RecombinationAlgorithm=1;
-Mesh.Algorithm = 8;
 
-unit = 1.0e-02 ;
+DefineConstant[ L = {1, Path "1Geometry/", Label "Length"}];
+DefineConstant[ A = {0.1, Path "1Geometry/", Label "Height"}];
+DefineConstant[ B = {0.1, Path "1Geometry/", Label "Depth"}];
+DefineConstant[ E = {0.05, Path "1Geometry/", Label "Characteristic element size", Visible 0}];
+DefineConstant[CLAMPING = {1, Path "1Geometry/"}] ;
 
-DefineConstant[ H = {4.5 * unit, Min 1 *unit, Max 8.5 *unit, Step 1*unit, Path "Parameters/Geometry",
-                     ShortHelp "Beam Width"} ] ;
-DefineConstant[ L = {20 * unit, Min 10 *unit, Max 200 *unit, Step 1*unit, Path "Parameters/Geometry",
-                     ShortHelp "Beam Heigth"} ] ;
-DefineConstant[ lc = {1 * unit, Min .1 *unit, Max 10 *unit, Step .1*unit, Path "Parameters/Geometry",
-                     ShortHelp "Mesh Size"} ] ;
+DefineConstant [ RIV = {"RemoveInvisibleViews.geo", Path "Macros/", Label "Remove Invisible Views", Macro "Gmsh"}];
 
-Point(1) = {0, 0, 0, lc};
-Point(2) = {H, 0, 0, lc};
-Point(3) = {H, L, 0, lc};
-Point(4) = {0, L, 0, lc};
-Line(1) = {4, 3};
-Line(2) = {3, 2};
-Line(3) = {2, 1};
-Line(4) = {1, 4};
-Line Loop(5) = {2, 3, 4, 1};
-Plane Surface(6) = {5};
-Physical Surface(7) = {6};
-Physical Line(8) = {1};
-Physical Line(9) = {3};
-Recombine Surface {6};
+NbLayX=20;
+NbLayY=5;
+NbLayZ=5;
+
+If(E >= 0.001)
+  NbLayX=Floor(L/E);
+  NbLayY=2*Floor(B/E);
+  NbLayZ=2*Floor(A/E);
+EndIf
+
+Printf("Number of layers = %g %g %g", NbLayX, NbLayY, NbLayZ);
+
+lc=0.002; //dummy
+
+Point(1) = {0,-A/2,-B/2, lc};
+Point(2) = {0, A/2,-B/2, lc};
+Point(3) = {0, A/2, B/2, lc};
+Point(4) = {0,-A/2, B/2, lc};
+Line(1) = {1, 2};
+Line(2) = {2, 3};
+Line(3) = {3, 4};
+Line(4) = {4, 1};
+
+Line Loop(5) = {1, 2, 3, 4};
+Plane Surface(10) = {5};
+
+Transfinite Line {1, 3} = NbLayY;
+Transfinite Line {2, 4} = NbLayZ;
+Transfinite Surface {10} Right;
+Recombine Surface {10};
+Extrude Surface { 10, {L, 0, 0} } {Layers{NbLayX}; Recombine; } ;   
+
+Physical Volume("Volume")={1};
+Physical Surface("LoadSurf")={23};
+Physical Surface("FreeEnd")={32};
+If(CLAMPING == 1)
+Physical Surface("Clamping")={10};
+EndIf
+If(CLAMPING == 2)
+Physical Surface("Clamping")={10, 32};
+EndIf
+Coherence;
+
