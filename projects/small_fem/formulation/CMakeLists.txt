@@ -8,6 +8,7 @@ set(src
 
   EigenFormulation.cpp
   FormulationEigenFrequency.cpp
+  FormulationVibration.cpp
 )
 
 

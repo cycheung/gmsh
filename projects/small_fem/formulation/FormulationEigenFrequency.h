@@ -37,6 +37,8 @@ class FormulationEigenFrequency: public EigenFormulation{
 			    unsigned int order);
 
   virtual ~FormulationEigenFrequency(void);
+
+  virtual bool isGeneral(void) const;
   
   virtual double weakA(int dofI, int dofJ,
 		       const GroupOfDof& god) const;
@@ -63,6 +65,10 @@ class FormulationEigenFrequency: public EigenFormulation{
 //////////////////////
 // Inline Functions //
 //////////////////////
+
+inline bool FormulationEigenFrequency::isGeneral(void) const{
+  return true;
+}
 
 inline double FormulationEigenFrequency::rhs(int equationI, 
 					     const GroupOfDof& god) const{

@@ -32,6 +32,7 @@
 class EigenSystem{
  private:
   bool isAssembled;
+  bool isGeneral;
 
   linearSystemPETSc<double>* linSysA;
   linearSystemPETSc<double>* linSysB;
@@ -61,12 +62,15 @@ class EigenSystem{
   const DofManager&    getDofManager(void) const;
 
   void fixDof(const GroupOfElement& goe, double value);
+
   void assemble(void);
   void solve(unsigned int nEigenValues);
 
  private:
   void assemble(GroupOfDof& group);
+  void assembleGeneral(GroupOfDof& group);
   void sparcity(GroupOfDof& group);
+  void sparcityGeneral(GroupOfDof& group);
 };
 
 

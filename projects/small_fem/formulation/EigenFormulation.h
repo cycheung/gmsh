@@ -30,6 +30,8 @@ class EigenFormulation{
  public:
   virtual ~EigenFormulation(void);
   
+  virtual bool isGeneral(void) const = 0;
+
   virtual double weakA(int dofI, int dofJ,
 		       const GroupOfDof& god) const = 0;
 
@@ -45,6 +47,12 @@ class EigenFormulation{
 /**
    @fn EigenFormulation::~EigenFormulation
    Deletes this EigenFormualtion
+   **
+
+   @fn EigenFormulation::isGeneral
+   @return Returns 
+   @li @c true, if the problem is a @em generalized Eigenvalue problem
+   @li @c false, if not
    **
 
    @fn EigenFormulation::weakA
