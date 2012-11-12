@@ -1,4 +1,5 @@
 k=PostProcessing.NbViews; 
+Printf("%g views", k);
 
 // Calculation of M
 

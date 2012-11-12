@@ -35,8 +35,8 @@ OL.endif
 
 WEIGHT.radioButton(1, 3Material/0, "Account for weight");
 
-CLAMPING.number(1, 1Geometry/, "Clamping");
-CLAMPING.valueLabels(1, "One side", 2, "Both sides");
+#CLAMPING.number(1, 1Geometry/, "Clamping");
+#CLAMPING.valueLabels(1, "One side", 2, "Both sides");
 
 #1) Client Gmsh pour le maillage initial
 Mesher.register(native);
@@ -92,4 +92,3 @@ X.setAttribute(Graph,0);
 9Results/T.setAttribute(Graph,0);
 OL.endif
 
-OL.show(Macros/RIV);

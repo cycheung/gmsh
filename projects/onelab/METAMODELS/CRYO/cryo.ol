@@ -25,7 +25,7 @@ OL.iftrue(DISTANT)
 OL.else
   ElmerGrid.register(interfaced);
 OL.endif
-ElmerGrid.in(_OL.get(Arguments/FileName).msh);
+ElmerGrid.in( _OL.get(Arguments/FileName).msh);
 ElmerGrid.run(14 2 OL.get(Arguments/FileName).msh -out mesh);
 ElmerGrid.out(mesh);
 
@@ -36,7 +36,7 @@ OL.else
   Elmer.register(encapsulated);
 OL.endif
 Elmer.in(_ELMERSOLVER_STARTINFO.ol, _OL.get(Arguments/FileName).sif.ol);
-Elmer.out(_solution.pos, _tempevol.txt);
+Elmer.out( _solution.pos, _tempevol.txt);
 Elmer.run();
 Elmer.merge(solution.pos);
 

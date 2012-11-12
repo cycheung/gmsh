@@ -3,9 +3,10 @@ DefineConstant[ L = {1, Path "1Geometry/", Label "Length"}];
 DefineConstant[ A = {0.1, Path "1Geometry/", Label "Height"}];
 DefineConstant[ B = {0.1, Path "1Geometry/", Label "Depth"}];
 DefineConstant[ E = {0.05, Path "1Geometry/", Label "Characteristic element size", Visible 0}];
-DefineConstant[CLAMPING = {1, Path "1Geometry/"}] ;
+DefineConstant[CLAMPING = {1, Path "1Geometry/", 
+			   Choices{1="One side", 2="Both sides"} }] ;
 
-DefineConstant [ RIV = {"RemoveInvisibleViews.geo", Path "Macros/", Label "Remove Invisible Views", Macro "Gmsh"}];
+//DefineConstant [ RIV = {"RemoveInvisibleViews.geo", Path "Macros/", Label "Remove Invisible Views", Macro "Gmsh", Autocheck "0", Highlight "Turquoise"}];
 
 NbLayX=20;
 NbLayY=5;
