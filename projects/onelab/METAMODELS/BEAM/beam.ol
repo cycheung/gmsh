@@ -1,6 +1,6 @@
 # global variables 
 
-OL.dump(aaa);
+#OL.dump(aaa);
 #LOGFILES.radioButton(0);
 
 LOADX.number(0, 2Loads/, "Applied load along x [N/m2]");

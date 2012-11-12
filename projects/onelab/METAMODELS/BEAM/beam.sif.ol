@@ -106,13 +106,13 @@ Boundary Condition 2
   Force 3 = 0
 End
 
-Boundary Condition 3
-  Target Boundaries = OL.region(LoadSurf)
-  Force 1 = 0
-  Force 2 = Variable Coordinate 1
-            Real MATC " if(tx(0) > 0.5) {7000} else {-30000} "
-  Force 3 = 0
-End
+#Boundary Condition 3
+#  Target Boundaries = OL.region(LoadSurf)
+#  Force 1 = 0
+#  Force 2 = Variable Coordinate 1 Coordinate 2
+#            Real MATC " if(tx(0) > 0.5) {0} else {0} "
+#  Force 3 = 0
+#End
 
 Boundary Condition 4
   Target Boundaries = OL.region(FreeEnd)
