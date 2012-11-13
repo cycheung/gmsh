@@ -4,7 +4,6 @@
 #include "Mapper.h"
 #include "Polynomial.h"
 
-#include "MVertex.h"
 #include "Exception.h"
 
 #include "FormulationProjectionScalar.h"
@@ -86,14 +85,12 @@ double FormulationProjectionScalar::rhs(int equationI,
   double det;
   double phi;
 
-  fullVector<double>  uvw(3);
-  fullVector<double> oxyz(3);
-  fullVector<double>  xyz(3);
-  double fxyz;
+  fullVector<double> xyz(3);
+  SPoint3            pxyz;
+  double             fxyz;
 
   double integral = 0;
   fullMatrix<double> jac(3, 3);
-  MVertex* vertex;
 
   // Get Element and Basis Functions //
   const MElement& element = god.getGeoElement();
@@ -104,36 +101,29 @@ double FormulationProjectionScalar::rhs(int equationI,
 
   // Loop over Integration Point //
   for(int g = 0; g < G; g++){
-    // Parametric coordinate 
-    uvw(0) = (*gC)(g, 0);
-    uvw(1) = (*gC)(g, 1);
-    uvw(2) = (*gC)(g, 2);
-  
     // Compute phi 
-    det = celement.getJacobian(uvw(0), 
-			       uvw(1), 
-			       uvw(2), 
+    det = celement.getJacobian((*gC)(g, 0), 
+			       (*gC)(g, 1), 
+			       (*gC)(g, 2), 
 			       jac);
 
-    phi = fun[equationI]->at(uvw(0), 
-			     uvw(1),
-			     uvw(2));
+    phi = fun[equationI]->at((*gC)(g, 0), 
+			     (*gC)(g, 1),
+			     (*gC)(g, 2));
     
     // Compute f in the *physical* coordinate
-    //  --> Get *physical* coordinate
-    //       --> Get Origin Point of Element
-    vertex = celement.getVertex(0);
-    oxyz(0) = vertex->x();
-    oxyz(1) = vertex->y();
-    oxyz(2) = vertex->z();
+    celement.pnt((*gC)(g, 0), 
+		 (*gC)(g, 1), 
+		 (*gC)(g, 2), 
+		 pxyz);
     
-    //       --> Map
-    xyz = Mapper::map(uvw, oxyz, jac);
-
-    // --> Evaluate f
+    xyz(0) = pxyz.x();
+    xyz(1) = pxyz.y();
+    xyz(2) = pxyz.z();
+    
     fxyz = f(xyz);
 
-    // Interate
+    // Integrate
     integral += fxyz * phi * fabs(det) * (*gW)(g);
   }
 
