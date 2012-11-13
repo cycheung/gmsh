@@ -82,8 +82,8 @@ double FormulationProjectionScalar::weak(int dofI, int dofJ,
 double FormulationProjectionScalar::rhs(int equationI,
 					const GroupOfDof& god) const{
   // Init //
-  double det;
   double phi;
+  double det;
 
   fullVector<double> xyz(3);
   SPoint3            pxyz;

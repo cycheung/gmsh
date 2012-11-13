@@ -47,7 +47,7 @@ int main(int argc, char** argv){
   GmshInitialize(argc, argv);
 
   // Writer //
-  WriterDummy writer;  
+  WriterMsh writer;  
 
   // Get Data //
   const unsigned int order = atoi(argv[3]);

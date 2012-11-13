@@ -5,6 +5,8 @@
 #include "GroupOfElement.h"
 
 #include "LineNodeBasis.h"
+#include "LineEdgeBasis.h"
+#include "LineNedelecBasis.h"
 
 #include "QuadNodeBasis.h"
 #include "QuadEdgeBasis.h"
@@ -40,7 +42,7 @@ int main(int argc, char** argv){
   writer.setDomain(goe.getAll());
 
   // Plot Basis //
-  LineNodeBasis b(atoi(argv[2]));
+  LineEdgeBasis b(atoi(argv[2]));
   cout << "Size: " << b.getSize() << endl;
 
   PlotBasis plot(b, goe, writer);

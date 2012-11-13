@@ -4,9 +4,6 @@
 #include "Mapper.h"
 #include "Polynomial.h"
 
-#include "MVertex.h"
-#include "Exception.h"
-
 #include "FormulationProjectionVector.h"
 
 using namespace std;
@@ -17,11 +14,6 @@ FormulationProjectionVector::FormulationProjectionVector(const GroupOfElement& g
   // Vector to Project //
   this->f = f;
 
-  // Can't have 0th order //
-  if(order == 0)
-    throw 
-      Exception("Can't have a Projection of order 0");
-
   // Gaussian Quadrature Data  // 
   // NB: We need to integrad f_i * f_j or f_i * g
   gC = new fullMatrix<double>();
@@ -29,8 +21,14 @@ FormulationProjectionVector::FormulationProjectionVector(const GroupOfElement& g
 
   // Look for 1st element to get element type
   // (We suppose only one type of Mesh !!)
-  gaussIntegration::get(goe.get(0).getType(), order + order, *gC, *gW);
 
+  // if Order == 0 --> we want Nedelec Basis of ordre *almost* one //
+  if(order != 0)
+    gaussIntegration::get(goe.get(0).getType(), order + order, *gC, *gW);
+
+  else
+    gaussIntegration::get(goe.get(0).getType(), 1 + 1, *gC, *gW);
+  
   G = gW->size(); // Nbr of Gauss points
 
   // Function Space //
@@ -89,19 +87,15 @@ double FormulationProjectionVector::weak(int dofI, int dofJ,
 double FormulationProjectionVector::rhs(int equationI,
 					const GroupOfDof& god) const{
   // Init //
-  fullMatrix<double>  invJac(3, 3);        
-  fullMatrix<double>     jac(3, 3);        
-  fullVector<double>  phi(3);
-
-  double integral = 0;
+  fullVector<double> phi(3);
   double det;
 
-  MVertex* vertex;
-  fullVector<double>  uvw(3);
-  fullVector<double> oxyz(3);
-  fullVector<double>  xyz(3);
-  fullVector<double> fxyz(3);
+  fullVector<double> xyz(3);
+  SPoint3            pxyz;
+  fullVector<double> fxyz;
 
+  double integral = 0;
+  fullMatrix<double> invJac(3, 3);       
 
   // Get Element and Basis Functions //
   const MElement& element = god.getGeoElement();
@@ -112,44 +106,34 @@ double FormulationProjectionVector::rhs(int equationI,
 
   // Loop over Integration Point //
   for(int g = 0; g < G; g++){  
-    // Parametric coordinate 
-    uvw(0) = (*gC)(g, 0);
-    uvw(1) = (*gC)(g, 1);
-    uvw(2) = (*gC)(g, 2);
-
-
-    // Jacobian
-    det = celement.getJacobian(uvw(0), 
-			       uvw(1), 
-			       uvw(2), 
-			       jac);
-    jac.invert(invJac);
+    // Compute phi 
+    det = celement.getJacobian((*gC)(g, 0), 
+			       (*gC)(g, 1), 
+			       (*gC)(g, 2), 
+			       invJac);
+    invJac.invertInPlace();
   
 
-    // Compute phi 
     phi = Mapper::grad(Polynomial::at(*fun[equationI],
-				      uvw(0), 
-				      uvw(1),
-				      uvw(2)),
+				      (*gC)(g, 0), 
+				      (*gC)(g, 1),
+				      (*gC)(g, 2)),
 		       invJac);
  
 
     // Compute f in the *physical* coordinate
-    //  --> Get *physical* coordinate
-    //       --> Get Origin Point of Element
-    vertex = celement.getVertex(0);
-    oxyz(0) = vertex->x();
-    oxyz(1) = vertex->y();
-    oxyz(2) = vertex->z();
+    celement.pnt((*gC)(g, 0), 
+		 (*gC)(g, 1), 
+		 (*gC)(g, 2), 
+		 pxyz);
     
-    //       --> Map
-    xyz = Mapper::map(uvw, oxyz, jac);
-
-    // --> Evaluate f
+    xyz(0) = pxyz.x();
+    xyz(1) = pxyz.y();
+    xyz(2) = pxyz.z();
+    
     fxyz = f(xyz);
 
-
-    // Interate
+    // Integrate
     integral += fxyz * phi * fabs(det) * (*gW)(g);
   }
 
