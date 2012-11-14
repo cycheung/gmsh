@@ -27,10 +27,10 @@ Solver 1
   !Element = p:2
   Procedure = "StressSolve" "StressSolver"
   Linear System Solver = Iterative
-  Linear System Iterative Method = BiCGStab
-  Linear System Preconditioning = ILU1
+  Linear System Iterative Method = GMRES
+  Linear System Preconditioning = ILUT
   Linear System Max Iterations = 500
-  Linear System Convergence Tolerance = 1.0e-8
+  Linear System Convergence Tolerance = 1.0e-6
   Linear System Residual Output = 20
   Nonlinear System Newton After Tolerance = 1.0e-3
   Nonlinear System Newton After Iterations = 20

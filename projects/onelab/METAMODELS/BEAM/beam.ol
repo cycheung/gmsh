@@ -1,6 +1,6 @@
 # global variables 
 
-#OL.dump(aaa);
+OL.dump(aaa);
 #LOGFILES.radioButton(0);
 
 LOADX.number(0, 2Loads/, "Applied load along x [N/m2]");
@@ -48,7 +48,7 @@ Mesher.frontPage(OL.get(Arguments/FileName).geo,
 
 #2) Client ElmerGrid pour convertir le maillage pour Elmer
 ElmerGrid.register(interfaced);
-ElmerGrid.in(_OL.get(Arguments/FileName).msh);
+ElmerGrid.in(OL.get(Arguments/FileName).msh);
 ElmerGrid.out(mesh);
 ElmerGrid.run(14 2 OL.get(Arguments/FileName).msh -out mesh);
 
