@@ -46,6 +46,8 @@ class System{
 
   unsigned int              getSize(void) const;
   const fullVector<double>& getSol(void) const;
+  const std::vector<std::pair<const Dof*, double> >
+    getSolAndCoef(void) const;
 
   const FunctionSpace& getFunctionSpace(void) const;
   const DofManager&    getDofManager(void) const;
@@ -53,7 +55,9 @@ class System{
   bool isAssembled(void) const;
   bool isSolved(void) const;
 
-  void fixDof(const GroupOfElement& goe, double value);
+  void fixCoef(const GroupOfElement& goe, double value);
+  void fixCoef(const std::vector<std::pair<const Dof*, double> >& value);
+
   void assemble(void);
   void solve(void);
 
@@ -87,12 +91,26 @@ class System{
    @return Returns the DofManager used by the System
    **
 
-   @fn System::fixDof
+   @fn System::fixCoef(const GroupOfElement& goe, double value)
    @param goe A GroupOfElement 
    @param value A real value
    
-   Fixes the Dof%s associated the the given 
+   Fixes the Coefficients (Dof%s) associated the the given 
    GroupOfElement to the given value
+
+   @note These Coefficients are (Dof%s) weights of the 
+   Basis Function defined on the given GroupOfElement
+   **
+
+   @fn System::fixCoef(const std::vector<std::pair<const Dof*, double> >& value);
+   @param value A vector of pair of Dof and Real Value
+   
+   Fixes the @f$i@f$th Dof (Coefficient) to the 
+   @f$i@f$th value 
+   (for @f$i@f$ rangin from 0 to value.size() - 1)
+
+   @note These Dof%s (Coefficients) are weights of the 
+   Basis Function defined on the given GroupOfElement
    **
 
    @fn System::assemble

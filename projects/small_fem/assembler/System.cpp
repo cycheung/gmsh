@@ -10,7 +10,7 @@ System::System(const Formulation& formulation){
   // Get Dof Manager //
   dofM = new DofManager();
   dofM->addDof(*fs);
-
+  cout << dofM->toString() << endl;
   // Get DofManager Data //
   size = fs->dofNumber();
   
@@ -29,6 +29,20 @@ System::~System(void){
   delete linSys;
   delete dofM;
   // System is not responsible for deleting 'Formulations'
+}
+
+const vector<pair<const Dof*, double> > System::getSolAndCoef(void) const{
+  // Solution Vector
+  vector<pair<const Dof*, double> > sol(size);
+
+  // Fill this Vector
+  for(int i = 0; i < size; i++){
+    
+    sol[i].second = (*x)(i);
+  }
+
+  // Return
+  return sol;
 }
 
 void System::assemble(void){
@@ -50,7 +64,7 @@ void System::assemble(void){
   assembled = true;  
 }
 
-void System::fixDof(const GroupOfElement& goe, double value){
+void System::fixCoef(const GroupOfElement& goe, double value){
   const vector<const MElement*>&  element = goe.getAll();
   unsigned int                   nElement = goe.getNumber();
   
@@ -62,6 +76,14 @@ void System::fixDof(const GroupOfElement& goe, double value){
       dofM->fixValue(dof[j], value);
   }
 }
+
+void System::fixCoef(const vector<pair<const Dof*, double> >& value){
+  const unsigned int size = value.size();
+  
+  for(unsigned int i = 0; i < size; i++)
+    dofM->fixValue(*(value[i].first), (value[i].second));
+}
+
 
 void System::solve(void){
   // Is the System assembled ? //

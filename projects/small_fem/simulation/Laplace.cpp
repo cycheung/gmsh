@@ -27,8 +27,8 @@ int main(int argc, char** argv){
   FormulationLaplace laplace(domain, 1);
   System sysLaplace(laplace);
 
-  sysLaplace.fixDof(msh.getFromPhysical(6), -1);
-  sysLaplace.fixDof(msh.getFromPhysical(5),  2);
+  sysLaplace.fixCoef(msh.getFromPhysical(6), -1);
+  sysLaplace.fixCoef(msh.getFromPhysical(5),  2);
 
   sysLaplace.assemble();
   cout << "Laplace: " << sysLaplace.getSize() << endl;

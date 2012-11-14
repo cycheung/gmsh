@@ -38,6 +38,7 @@ class DofManager{
 
   void addDof(const FunctionSpace& fs);
 
+  const std::vector<const Dof*> getAllDof(void) const;
   int getGlobalId(const Dof& dof) const;
 
   bool isUnknown(const Dof& dof) const;

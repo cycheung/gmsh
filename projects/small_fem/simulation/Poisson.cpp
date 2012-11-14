@@ -44,7 +44,7 @@ int main(int argc, char** argv){
        << ": " << sysPoisson.getSize() 
        << endl << flush;
   
-  sysPoisson.fixDof(constraintDomain, 0);
+  sysPoisson.fixCoef(constraintDomain, 0);
   sysPoisson.assemble();
   sysPoisson.solve();
 

@@ -48,6 +48,17 @@ void DofManager::addDof(const FunctionSpace& fs){
 
 }
 
+const vector<const Dof*> DofManager::getAllDof(void) const{
+  // New Vector 
+  const unsigned int size = globalId->size();
+  vector<const Dof*> dof(size);
+
+  // Fill this Vector
+  
+  // Return Vector
+  return dof;
+}
+
 int DofManager::getGlobalId(const Dof& dof) const{
   const map<const Dof*, int, DofComparator>::iterator it = 
     globalId->find(&dof);

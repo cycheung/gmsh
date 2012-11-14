@@ -33,8 +33,8 @@ int main(int argc, char** argv){
   FormulationSteadyWave sWave(domain, puls * 1, order);
   System sys(sWave);
 
-  sys.fixDof(source, 1);
-  sys.fixDof(wall, 0);
+  sys.fixCoef(source, 1);
+  sys.fixCoef(wall, 0);
 
   cout << "Steady Wave (Order: " << order 
        << " --- Pulsation: "     << puls
