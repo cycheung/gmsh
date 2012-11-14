@@ -31,7 +31,7 @@ int main(int argc, char** argv){
   FormulationEigenFrequency cavity(domain, order);
   EigenSystem sysCavity(cavity);
 
-  sysCavity.fixDof(msh.getFromPhysical(5), 0);
+  sysCavity.fixCoef(msh.getFromPhysical(5), 0);
 
   cout << "Cavity: " << sysCavity.getSize() << endl;
 
@@ -45,6 +45,9 @@ int main(int argc, char** argv){
   const vector<complex<double> >& eigenValue = 
     sysCavity.getEigenValues();
 
+  cout << "Number of found Eigenvalues: " << nEigenValue 
+       << endl;
+
   cout << endl 
        << "Number\tEigen Value\tEigen Wave Number" << endl;
   
@@ -54,8 +57,13 @@ int main(int argc, char** argv){
 	 << sqrt(eigenValue[i]) << endl;
 
   // Write Sol //
-  Solution solCavity(sysCavity, atoi(argv[4]));
-  solCavity.write("cavity", writer);
+  for(unsigned int i = 0; i < nEigenValue; i++){
+    stringstream stream;
+    stream << "cavity_mode" << i;
+    
+    Solution solCavity(sysCavity, i);
+    solCavity.write(stream.str(), writer);
+  }
 
 
   // Done //

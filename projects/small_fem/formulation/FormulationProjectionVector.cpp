@@ -14,6 +14,9 @@ FormulationProjectionVector::FormulationProjectionVector(const GroupOfElement& g
   // Vector to Project //
   this->f = f;
 
+  // Function Space //
+  fspace = new FunctionSpaceEdge(goe, order);
+
   // Gaussian Quadrature Data  // 
   // NB: We need to integrad f_i * f_j or f_i * g
   gC = new fullMatrix<double>();
@@ -30,9 +33,6 @@ FormulationProjectionVector::FormulationProjectionVector(const GroupOfElement& g
     gaussIntegration::get(goe.get(0).getType(), 1 + 1, *gC, *gW);
   
   G = gW->size(); // Nbr of Gauss points
-
-  // Function Space //
-  fspace = new FunctionSpaceEdge(goe, order);
 }
 
 FormulationProjectionVector::~FormulationProjectionVector(void){

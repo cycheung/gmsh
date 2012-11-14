@@ -19,17 +19,14 @@ const double FormulationEigenFrequency::eps = 1;
 
 FormulationEigenFrequency::FormulationEigenFrequency(const GroupOfElement& goe,
 						     unsigned int order){
+  // Function Space //
+  fspace = new FunctionSpaceEdge(goe, order);
+
   // Gaussian Quadrature Data (Term One) // 
   // NB: We need to integrad a rot * rot !
   //     and order(rot f) = order(f) - 1
   gC1 = new fullMatrix<double>();
   gW1 = new fullVector<double>();
-
-  // Look for 1st element to get element type
-  // (We suppose only one type of Mesh !!)
-  gaussIntegration::get(goe.get(0).getType(), (order - 1) + (order - 1) + 2 , *gC1, *gW1);
-
-  G1 = gW1->size(); // Nbr of Gauss points
 
   // Gaussian Quadrature Data (Term Two) //
   // NB: We need to integrad a f * f !
@@ -38,13 +35,21 @@ FormulationEigenFrequency::FormulationEigenFrequency(const GroupOfElement& goe,
 
   // Look for 1st element to get element type
   // (We suppose only one type of Mesh !!)
-  gaussIntegration::get(goe.get(0).getType(), order + order + 2, *gC2, *gW2);
+  
+  // if Order == 0 --> we want Nedelec Basis of ordre *almost* one //
+  if(order == 0){
+    gaussIntegration::get(goe.get(0).getType(), 0, *gC1, *gW1);
+    gaussIntegration::get(goe.get(0).getType(), 2, *gC2, *gW2);
+  }
 
-  G2 = gW2->size(); // Nbr of Gauss points
+  else{
+    gaussIntegration::get(goe.get(0).getType(), (order - 1) + (order - 1), *gC1, *gW1);
+    gaussIntegration::get(goe.get(0).getType(), order + order, *gC2, *gW2);
+  }
 
-
-  // Function Space //
-  fspace = new FunctionSpaceEdge(goe, order);
+  // Nbr of Gauss points
+  G1 = gW1->size(); 
+  G2 = gW2->size(); 
 }
 
 FormulationEigenFrequency::~FormulationEigenFrequency(void){
@@ -91,7 +96,7 @@ double FormulationEigenFrequency::weakA(int dofI, int dofJ,
 				       (*gC1)(g, 2)),
 			jac, 1 / det);
     
-    integral += phiI * phiJ * fabs(det) * (*gW1)(g) / mu;
+    integral += ((phiI * phiJ) / mu) * fabs(det) * (*gW1)(g);
   }
 
   return integral;
@@ -134,7 +139,7 @@ double FormulationEigenFrequency::weakB(int dofI, int dofJ,
 				       (*gC2)(g, 2)),
 			invJac);
 
-    integral += phiI * phiJ * fabs(det) * (*gW2)(g) * eps;
+    integral += ((phiI * phiJ) * eps) * fabs(det) * (*gW2)(g);
   }
 
   return integral;

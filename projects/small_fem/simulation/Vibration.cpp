@@ -1,4 +1,5 @@
 #include <cmath>
+#include <sstream>
 #include <iostream>
 
 #include "Mesh.h"
@@ -31,7 +32,7 @@ int main(int argc, char** argv){
   FormulationVibration vibration(domain, order);
   EigenSystem sysVibration(vibration);
 
-  sysVibration.fixDof(msh.getFromPhysical(5), 0);
+  sysVibration.fixCoef(msh.getFromPhysical(5), 0);
 
   cout << "Vibration: " << sysVibration.getSize() << endl;
 
@@ -54,8 +55,13 @@ int main(int argc, char** argv){
 	 << sqrt(eigenValue[i]) << endl;
 
   // Write Sol //
-  Solution solVibration(sysVibration, atoi(argv[4]));
-  solVibration.write("vibration", writer);
+  for(unsigned int i = 0; i < nEigenValue; i++){
+    stringstream stream;
+    stream << "vibration_mode" << i;
+    
+    Solution solVibration(sysVibration, i);
+    solVibration.write(stream.str(), writer);
+  }
 
 
   // Done //

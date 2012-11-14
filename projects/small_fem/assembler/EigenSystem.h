@@ -61,7 +61,7 @@ class EigenSystem{
   const FunctionSpace& getFunctionSpace(void) const;
   const DofManager&    getDofManager(void) const;
 
-  void fixDof(const GroupOfElement& goe, double value);
+  void fixCoef(const GroupOfElement& goe, double value);
 
   void assemble(void);
   void solve(unsigned int nEigenValues);
@@ -98,12 +98,15 @@ class EigenSystem{
    @return Returns the DofManager used by the Eigenvalue System
    **
 
-   @fn EigenSystem::fixDof
+   @fn System::fixCoef(const GroupOfElement& goe, double value)
    @param goe A GroupOfElement 
    @param value A real value
    
-   Fixes the Dof%s associated the the given 
+   Fixes the Coefficients (Dof%s) associated the the given 
    GroupOfElement to the given value
+
+   @note These Coefficients are (Dof%s) weights of the 
+   Basis Function defined on the given GroupOfElement
    **
 
    @fn EigenSystem::assemble

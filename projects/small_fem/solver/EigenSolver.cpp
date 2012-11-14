@@ -6,7 +6,6 @@
 #include "EigenSolver.h"
 #include "OS.h"
 
-#include<cstdio>
 #include <slepceps.h>
 
 EigenSolver::EigenSolver(linearSystemPETSc<double> *A,linearSystemPETSc<double> *B, bool hermitian) : _A(A), _B(B), _hermitian(hermitian){}
@@ -62,18 +61,18 @@ bool EigenSolver::solve(int numEigenValues, std::string which)
   // print info
   const EPSType type;
   _try(EPSGetType(eps, &type));
-  printf("SLEPc solution method: %s\n", type);
+  Msg::Debug("SLEPc solution method: %s", type);
 
   PetscInt nev;
   _try(EPSGetDimensions(eps, &nev, PETSC_NULL, PETSC_NULL));
-  printf("SLEPc number of requested eigenvalues: %d\n", nev);
+  Msg::Debug("SLEPc number of requested eigenvalues: %d", nev);
   PetscReal tol;
   PetscInt maxit;
   _try(EPSGetTolerances(eps, &tol, &maxit));
-  printf("SLEPc stopping condition: tol=%g, maxit=%d\n", tol, maxit);
+  Msg::Debug("SLEPc stopping condition: tol=%g, maxit=%d", tol, maxit);
 
   // solve
-  printf("SLEPc solving...\n");
+  Msg::Info("SLEPc solving...");
   double t1 = Cpu();
   _try(EPSSolve(eps));
 
@@ -84,7 +83,7 @@ bool EigenSolver::solve(int numEigenValues, std::string which)
   _try(EPSGetConvergedReason(eps, &reason));
   if(reason == EPS_CONVERGED_TOL){
     double t2 = Cpu();
-    printf("SLEPc converged in %d iterations (%g s)\n", its, t2-t1);
+    Msg::Debug("SLEPc converged in %d iterations (%g s)", its, t2-t1);
   }
   else if(reason == EPS_DIVERGED_ITS)
     Msg::Error("SLEPc diverged after %d iterations", its);
@@ -98,7 +97,7 @@ bool EigenSolver::solve(int numEigenValues, std::string which)
   // get number of converged approximate eigenpairs
   PetscInt nconv;
   _try(EPSGetConverged(eps, &nconv));
-  printf("SLEPc number of converged eigenpairs: %d\n", nconv);
+  Msg::Debug("SLEPc number of converged eigenpairs: %d", nconv);
 
   // ignore additional eigenvalues if we get more than what we asked
   if(nconv > nev) nconv = nev;
@@ -107,8 +106,8 @@ bool EigenSolver::solve(int numEigenValues, std::string which)
     Vec xr, xi;
     _try(MatGetVecs(A, PETSC_NULL, &xr));
     _try(MatGetVecs(A, PETSC_NULL, &xi));
-    printf("         Re[EigenValue]          Im[EigenValue]"
-	       "          Relative error\n");
+    Msg::Debug("         Re[EigenValue]          Im[EigenValue]"
+	       "          Relative error");
     for (int i = 0; i < nconv; i++){
       PetscScalar kr, ki;
       _try(EPSGetEigenpair(eps, i, &kr, &ki, xr, xi));
@@ -121,9 +120,9 @@ bool EigenSolver::solve(int numEigenValues, std::string which)
       PetscReal re = kr;
       PetscReal im = ki;
 #endif
-      printf("EIG %03d %s%.16e %s%.16e  %3.6e",
+      Msg::Debug("EIG %03d %s%.16e %s%.16e  %3.6e",
 		 i, (re < 0) ? "" : " ", re, (im < 0) ? "" : " ", im, error);
-      printf("\n");
+
       // store eigenvalues and eigenvectors
       _eigenValues.push_back(std::complex<double>(re, im));
       PetscScalar *tmpr, *tmpi;
@@ -155,7 +154,7 @@ bool EigenSolver::solve(int numEigenValues, std::string which)
 #endif
 
   if(reason == EPS_CONVERGED_TOL){
-    printf("SLEPc done\n");
+    Msg::Debug("SLEPc done");
     return true;
   }
   else{
@@ -164,3 +163,5 @@ bool EigenSolver::solve(int numEigenValues, std::string which)
   }
 
 }
+
+

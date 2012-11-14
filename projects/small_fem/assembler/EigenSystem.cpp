@@ -1,3 +1,4 @@
+#include "Exception.h"
 #include "EigenSystem.h"
 
 using namespace std;
@@ -45,8 +46,8 @@ EigenSystem::~EigenSystem(void){
   if(eigenVector)
     delete eigenVector;
   
-  if(eigenValue);
-  delete eigenValue;
+  if(eigenValue)
+    delete eigenValue;
 
   if(eSys)
     delete eSys;
@@ -92,7 +93,7 @@ void EigenSystem::assemble(void){
   isAssembled = true;  
 }
 
-void EigenSystem::fixDof(const GroupOfElement& goe, double value){
+void EigenSystem::fixCoef(const GroupOfElement& goe, double value){
   const vector<const MElement*>&  element = goe.getAll();
   unsigned int                   nElement = goe.getNumber();
   
@@ -106,14 +107,20 @@ void EigenSystem::fixDof(const GroupOfElement& goe, double value){
 }
 
 void EigenSystem::solve(unsigned int nEigenValues){
+  // Check nEigenValues
+  if(nEigenValues > size)
+    throw 
+      Exception("I cannot compute more Eigenvalues (%d) than the number of unknowns (%d)",
+		nEigenValues, size);
+
   // Is the EigenSystem assembled ? //
   if(!isAssembled)
     assemble();
 
   // Solve //
-  eSys = new EigenSolver(linSysA, linSysB);
-  eSys->solve(nEigenValues);
-
+  eSys = new EigenSolver(linSysA, linSysB, false);
+  eSys->solve(nEigenValues, "smallest");
+  
   // Get Solution //
   nEigenValue = eSys->getNumEigenValues();
   
@@ -138,7 +145,6 @@ void EigenSystem::assemble(GroupOfDof& group){
     if(fixed.first){
       // If fixed Dof
       linSysA->addToMatrix(dofI, dofI, 1);
-      linSysA->addToRightHandSide(dofI, fixed.second); 
     }
        
     else{
@@ -149,9 +155,6 @@ void EigenSystem::assemble(GroupOfDof& group){
 	linSysA->addToMatrix(dofI, dofJ, 
 			     eFormulation->weakA(i, j, group));
       }
-      
-      linSysA->addToRightHandSide(dofI, 
-				  eFormulation->rhs(i, group)); 
     }
   }
 }
@@ -167,10 +170,7 @@ void EigenSystem::assembleGeneral(GroupOfDof& group){
     if(fixed.first){
       // If fixed Dof
       linSysA->addToMatrix(dofI, dofI, 1);
-      linSysA->addToRightHandSide(dofI, fixed.second); 
-
       linSysB->addToMatrix(dofI, dofI, 1);
-      linSysB->addToRightHandSide(dofI, fixed.second); 
     }
        
     else{
@@ -184,12 +184,6 @@ void EigenSystem::assembleGeneral(GroupOfDof& group){
 	linSysB->addToMatrix(dofI, dofJ, 
 			     eFormulation->weakB(i, j, group));
       }
-      
-      linSysA->addToRightHandSide(dofI, 
-				  eFormulation->rhs(i, group)); 
-
-      linSysB->addToRightHandSide(dofI, 
-				  eFormulation->rhs(i, group)); 
     }
   } 
 }

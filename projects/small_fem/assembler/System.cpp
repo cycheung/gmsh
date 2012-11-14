@@ -10,7 +10,7 @@ System::System(const Formulation& formulation){
   // Get Dof Manager //
   dofM = new DofManager();
   dofM->addDof(*fs);
-  cout << dofM->toString() << endl;
+
   // Get DofManager Data //
   size = fs->dofNumber();
   

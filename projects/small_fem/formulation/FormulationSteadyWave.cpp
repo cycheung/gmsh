@@ -20,17 +20,17 @@ const double FormulationSteadyWave::eps = 1;
 FormulationSteadyWave::FormulationSteadyWave(const GroupOfElement& goe,
 					     double k,
 					     unsigned int order){
+  // Wave Number Squared //
+  kSquare = k * k;
+
+  // Function Space //
+  fspace = new FunctionSpaceEdge(goe, order);
+
   // Gaussian Quadrature Data (Term One) // 
   // NB: We need to integrad a rot * rot !
   //     and order(rot f) = order(f) - 1
   gC1 = new fullMatrix<double>();
   gW1 = new fullVector<double>();
-
-  // Look for 1st element to get element type
-  // (We suppose only one type of Mesh !!)
-  gaussIntegration::get(goe.get(0).getType(), (order - 1) + (order - 1) + 2 , *gC1, *gW1);
-
-  G1 = gW1->size(); // Nbr of Gauss points
 
   // Gaussian Quadrature Data (Term Two) //
   // NB: We need to integrad a f * f !
@@ -39,16 +39,21 @@ FormulationSteadyWave::FormulationSteadyWave(const GroupOfElement& goe,
 
   // Look for 1st element to get element type
   // (We suppose only one type of Mesh !!)
-  gaussIntegration::get(goe.get(0).getType(), order + order + 2, *gC2, *gW2);
-
-  G2 = gW2->size(); // Nbr of Gauss points
-
   
-  // Wave Number Squared //
-  kSquare = k * k;
+  // if Order == 0 --> we want Nedelec Basis of ordre *almost* one //
+  if(order == 0){
+    gaussIntegration::get(goe.get(0).getType(), 0, *gC1, *gW1);
+    gaussIntegration::get(goe.get(0).getType(), 2, *gC2, *gW2);
+  }
 
-  // Function Space //
-  fspace = new FunctionSpaceEdge(goe, order);
+  else{
+    gaussIntegration::get(goe.get(0).getType(), (order - 1) + (order - 1), *gC1, *gW1);
+    gaussIntegration::get(goe.get(0).getType(), order + order, *gC2, *gW2);
+  }
+
+  // Nbr of Gauss points
+  G1 = gW1->size(); 
+  G2 = gW2->size(); 
 }
 
 FormulationSteadyWave::~FormulationSteadyWave(void){
