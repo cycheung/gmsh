@@ -1,4 +1,4 @@
-cl = 2;
+cl = 0.5;
 l  = 1;
 
 Point(1) = {+l, -l, 0, cl};
@@ -14,7 +14,7 @@ Line(4) = {4, 1};
 Line Loop(1)     = {1, 2, 3, 4};
 Plane Surface(1) = {1};
 
-Recombine Surface {1};
+//Recombine Surface {1};
 
 Physical Line(5) = {3};
 Physical Line(6) = {1};
