@@ -1,7 +1,7 @@
 l = 1;
 
-msh = 100;
-cl  = 0.3;
+msh = 8;
+cl  = 5;
 
 Point(1) = {+l, -l, 0, cl};
 Point(2) = {+l, +l, 0, cl};
@@ -20,4 +20,4 @@ Transfinite Line {1, 2, 3, 4} = msh Using Progression 1;
 Transfinite Surface {1};
 
 Physical Line(5)    = {1, 2, 3, 4};
-Physical Surface(9) = {1};
+Physical Surface(7) = {1};

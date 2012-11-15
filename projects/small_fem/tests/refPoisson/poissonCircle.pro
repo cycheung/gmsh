@@ -1,5 +1,5 @@
 Group {
-  Omega  = Region[ {9} ];
+  Omega  = Region[ {7} ];
   Gamma1 = Region[ {5} ];
 }
 
