@@ -27,7 +27,7 @@ FormulationProjectionVector::FormulationProjectionVector(const GroupOfElement& g
 
   // if Order == 0 --> we want Nedelec Basis of ordre *almost* one //
   if(order != 0)
-    gaussIntegration::get(goe.get(0).getType(), order + order, *gC, *gW);
+    gaussIntegration::get(goe.get(0).getType(), order + order + 4, *gC, *gW);
 
   else
     gaussIntegration::get(goe.get(0).getType(), 1 + 1, *gC, *gW);

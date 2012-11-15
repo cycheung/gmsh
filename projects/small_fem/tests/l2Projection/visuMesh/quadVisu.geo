@@ -1,10 +1,12 @@
-msh = 40;
-cl = 0.2;
+msh = 100;
+cl  = 2;
 
-Point(1) = {-1, -1, 0, cl};
-Point(2) = {+1, -1, 0, cl};
-Point(3) = {+1, +1, 0, cl};
-Point(4) = {-1, +1, 0, cl};
+l = 1;
+
+Point(1) = {0, 0, 0, cl};
+Point(2) = {l, 0, 0, cl};
+Point(3) = {l, l, 0, cl};
+Point(4) = {0, l, 0, cl};
 
 Line(1) = {1, 2};
 Line(2) = {2, 3};

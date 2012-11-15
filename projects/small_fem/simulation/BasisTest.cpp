@@ -42,7 +42,7 @@ int main(int argc, char** argv){
   writer.setDomain(goe.getAll());
 
   // Plot Basis //
-  TriEdgeBasis b(atoi(argv[2]));
+  QuadEdgeBasis b(atoi(argv[2]));
   cout << "Size: " << b.getSize() << endl;
 
   PlotBasis plot(b, goe, writer);
