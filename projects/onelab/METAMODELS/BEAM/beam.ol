@@ -1,10 +1,7 @@
 # global variables 
 
-OL.dump(aaa);
+#OL.dump(aaa);
 #LOGFILES.radioButton(0);
-
-LOADX.number(0, 2Loads/, "Applied load along x [N/m2]");
-LOADY.number(0, 2Loads/, "Applied load along y [N/m2]");
 
 MATERIAL.number(1,3Material/0,"Name");
 MATERIAL.valueLabels(0, "User defined", 1, "Steel", 2, "Wood", 3, "Alu");
@@ -35,9 +32,6 @@ OL.endif
 
 WEIGHT.radioButton(1, 3Material/0, "Account for weight");
 
-#CLAMPING.number(1, 1Geometry/, "Clamping");
-#CLAMPING.valueLabels(1, "One side", 2, "Both sides");
-
 #1) Client Gmsh pour le maillage initial
 Mesher.register(native);
 Mesher.in(OL.get(Arguments/FileName).geo);
@@ -61,8 +55,14 @@ Elmer.up(beam.txt,-1,1,9Results/vmin,
          beam.txt,-1,2,9Results/vmax);
 
 X.number(0.8,1Geometry/,"Cut location");
-X.range(0.01:OL.eval(0.99*OL.get(1Geometry/L))|10);
+X.range(0.01:OL.eval(0.99*OL.get(1Geometry/L))|20.00001);
 X.withinRange();
+
+#resetChoices() must be done before Post.up()
+OL.if( OL.get(X, choices.index()) == 0 )
+9Results/M.resetChoices();
+9Results/T.resetChoices();
+OL.endif
 
 #4) Post-processing with Gmsh and a script
 Post.register(interfaced);
@@ -75,11 +75,6 @@ Post.up(MNT.txt,-1,8,9Results/M,
 Post.merge(beam.pos);
 
 LOOP.radioButton(0,,"Compute MNT diagram");
-
-OL.if( OL.get(X, choices.index()) == 0 )
-9Results/M.resetChoices();
-9Results/T.resetChoices();
-OL.endif
 
 X.setAttribute(Loop,OL.get(LOOP));
 OL.iftrue(LOOP)

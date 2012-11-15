@@ -1,6 +1,43 @@
 OL.block
-PLANESTR.radioButton(1,1Geometry/,"Plane stress (1:0)");
-PLANESTR.setVisible(0);
+
+LOADTYPE.number(0,2Loads/2,"Type");
+LOADTYPE.valueLabels(0, "Constant",   
+                     1, "Ramp", 
+                     2, "Rectangle", 
+                     3, "User defined");
+FORMULA.string(,2Loads/3,"Formula");
+
+LOAD.number(1,2Loads/1,"Magnitude P [N/cm2]");
+D.number(0.1,2Loads/,"delta d [m]");
+XX.number(0.5,2Loads/,"Position X [m]")
+XX.range(0:OL.get(1Geometry/L):0.1);
+XX.withinRange();
+
+OL.if(OL.get(LOADTYPE) == 0)
+FORMULA.setValue("P");
+FORMULA.setReadOnly(1);
+D.setVisible(0);
+XX.setVisible(0);
+OL.endif
+OL.if(OL.get(LOADTYPE) == 1)
+FORMULA.setValue("P *tx(0)/L");
+FORMULA.setReadOnly(1);
+D.setVisible(0);
+XX.setVisible(0);
+OL.endif
+OL.if(OL.get(LOADTYPE) == 2)
+FORMULA.setValue("if(tx(0)<(X-d)) {0} else {if(tx(0)<=(X+d)) {P} else {0}}");
+FORMULA.setReadOnly(1);
+D.setVisible(1);
+XX.setVisible(1);
+OL.endif
+OL.if(OL.get(LOADTYPE) == 3)
+FORMULA.setValue("P");
+FORMULA.setReadOnly(0);
+D.setVisible(1);
+XX.setVisible(1);
+OL.endif
+
 OL.endblock
 
 Header
@@ -22,10 +59,12 @@ End
 
 Solver 1
   Equation = "Displacement analysis"
+  !Equation = "Elasticity solver"
   Variable = Displacement
   Variable DOFs = 3
-  !Element = p:2
+  !Element = "p:2"
   Procedure = "StressSolve" "StressSolver"
+  !Procedure = "ElasticSolve" "ElasticSolver"
   Linear System Solver = Iterative
   Linear System Iterative Method = GMRES
   Linear System Preconditioning = ILUT
@@ -66,11 +105,6 @@ End
 Equation 1
   Active Solvers(3) = 1 2 3
   Stress Analysis = True
-OL.iftrue(1Geometry/PLANESTR)
-  Plane Stress = True
-OL.else
-  Plane Stress = False
-OL.endif
 End
 
 Body OL.region(Volume)
@@ -82,6 +116,7 @@ End
 Body Force 1
   Stress Bodyforce 1 = 0
   Stress Bodyforce 2 = Real MATC "-9.81 * OL.get(Material/DENSITY) * OL.get(Material/WEIGHT)"
+  Stress Bodyforce 3 = 0
 End 
 
 Material 1
@@ -97,25 +132,23 @@ Boundary Condition 1
   Displacement 3 = 0
 End
 
+! variables from ONELAB
+$P = OL.get(2Loads/LOAD)*1e4
+$L = OL.get(1Geometry/L)
+$X = OL.get(2Loads/XX)
+$d = OL.get(2Loads/D)
+
 Boundary Condition 2
   Target Boundaries = OL.region(LoadSurf)
-  Force 1 = Variable Coordinate 1
-            Real MATC "OL.get(Loads/LOADX) * tx(0)/OL.get(1Geometry/L)"
-  Force 2 = Variable Coordinate 1
-            Real MATC "OL.get(Loads/LOADY) * tx(0)/OL.get(1Geometry/L)"
+  Force 1 = 0
+  Force 2 = Variable Coordinate 1, Coordinate 3
+            Real MATC OL.get(Loads/FORMULA)
   Force 3 = 0
 End
 
-#Boundary Condition 3
-#  Target Boundaries = OL.region(LoadSurf)
-#  Force 1 = 0
-#  Force 2 = Variable Coordinate 1 Coordinate 2
-#            Real MATC " if(tx(0) > 0.5) {0} else {0} "
-#  Force 3 = 0
-#End
-
-Boundary Condition 4
+Boundary Condition 3
   Target Boundaries = OL.region(FreeEnd)
   Force 1 = 0
   Force 2 = 0
 End
+
