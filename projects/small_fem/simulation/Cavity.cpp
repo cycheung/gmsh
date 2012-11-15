@@ -59,7 +59,7 @@ int main(int argc, char** argv){
   // Write Sol //
   for(unsigned int i = 0; i < nEigenValue; i++){
     stringstream stream;
-    stream << "cavity_mode" << i;
+    stream << "cavity_mode" << i + 1;
     
     Solution solCavity(sysCavity, i);
     solCavity.write(stream.str(), writer);

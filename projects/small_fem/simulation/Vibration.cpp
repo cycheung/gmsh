@@ -57,7 +57,7 @@ int main(int argc, char** argv){
   // Write Sol //
   for(unsigned int i = 0; i < nEigenValue; i++){
     stringstream stream;
-    stream << "vibration_mode" << i;
+    stream << "vibration_mode" << i + 1;
     
     Solution solVibration(sysVibration, i);
     solVibration.write(stream.str(), writer);

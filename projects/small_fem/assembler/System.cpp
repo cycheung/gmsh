@@ -47,7 +47,7 @@ const vector<pair<const Dof*, double> > System::getSolAndCoef(void) const{
 
 void System::assemble(void){
   // Get GroupOfDofs //
-  const std::vector<GroupOfDof*>& group = fs->getAllGroups();
+  const vector<GroupOfDof*>& group = fs->getAllGroups();
   const int E = fs->groupNumber();
 
   // Get Sparcity Pattern & PreAllocate//
@@ -83,7 +83,6 @@ void System::fixCoef(const vector<pair<const Dof*, double> >& value){
   for(unsigned int i = 0; i < size; i++)
     dofM->fixValue(*(value[i].first), (value[i].second));
 }
-
 
 void System::solve(void){
   // Is the System assembled ? //

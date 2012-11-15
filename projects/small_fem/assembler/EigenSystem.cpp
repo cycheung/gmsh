@@ -63,7 +63,7 @@ EigenSystem::~EigenSystem(void){
 
 void EigenSystem::assemble(void){
   // Get GroupOfDofs //
-  const std::vector<GroupOfDof*>& group = fs->getAllGroups();
+  const vector<GroupOfDof*>& group = fs->getAllGroups();
   const int E = fs->groupNumber();
 
   // Get Sparcity Pattern & PreAllocate//
