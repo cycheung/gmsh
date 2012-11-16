@@ -55,14 +55,32 @@ Elmer.up(beam.txt,-1,1,9Results/vmin,
          beam.txt,-1,2,9Results/vmax);
 
 X.number(0.8,1Geometry/,"Cut location");
-X.range(0.01:OL.eval(0.99*OL.get(1Geometry/L))|20.00001);
+X.range(0.01:OL.eval(0.99*OL.get(1Geometry/L))|15.00001);
 X.withinRange();
 
+LOOP.radioButton(0,,"Compute MNT diagram");
+
+M.number(,9Results/,"Moment");
+N.number(,9Results/,"Traction");
+T.number(,9Results/,"Shear");
+X.setAttribute(Loop,OL.get(LOOP));
+OL.iftrue(LOOP)
+X.setAttribute(Graph,101000);
+9Results/M.setAttribute(Graph,010000);
+9Results/T.setAttribute(Graph,000100);
+OL.else
+X.setAttribute(Graph,0);
+9Results/M.setAttribute(Graph,0);
+9Results/T.setAttribute(Graph,0);
+OL.endif
+
 #resetChoices() must be done before Post.up()
-OL.if( OL.get(X, choices.index()) == 0 )
+OL.if( OL.get(X, choices.index()) <= 0 )
 9Results/M.resetChoices();
 9Results/T.resetChoices();
 OL.endif
+
+OL.merge(RemoveViews.macro);
 
 #4) Post-processing with Gmsh and a script
 Post.register(interfaced);
@@ -74,16 +92,4 @@ Post.up(MNT.txt,-1,8,9Results/M,
         MNT.txt,-1,10,9Results/T);
 Post.merge(beam.pos);
 
-LOOP.radioButton(0,,"Compute MNT diagram");
-
-X.setAttribute(Loop,OL.get(LOOP));
-OL.iftrue(LOOP)
-X.setAttribute(Graph,101000);
-9Results/M.setAttribute(Graph,010000);
-9Results/T.setAttribute(Graph,000100);
-OL.else
-X.setAttribute(Graph,0);
-9Results/M.setAttribute(Graph,0);
-9Results/T.setAttribute(Graph,0);
-OL.endif
 

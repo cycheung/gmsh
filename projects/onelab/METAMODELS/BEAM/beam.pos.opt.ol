@@ -1,10 +1,8 @@
 k=PostProcessing.NbViews; 
 
-Printf("%g views in beam.pos.opt", k);
-//For ii In {1:k-12}
-//If(View[k-ii].Visible == 0)
+//Printf("%g views in beam.pos.opt", k);
+//For ii In {10:k}
 //Delete View[k-ii]; 
-//EndIf
 //EndFor
 
 View[k-9].Visible = 0;
