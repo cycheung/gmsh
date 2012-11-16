@@ -13,6 +13,26 @@ using namespace std;
 
 double pi = 3.14159265359;
 
+fullVector<double> fSource(fullVector<double>& xyz){
+  fullVector<double> res(3);
+
+  res(0) = 0;
+  res(1) = 1;
+  res(2) = 0;
+
+  return res;
+}
+
+fullVector<double> fWall(fullVector<double>& xyz){
+  fullVector<double> res(3);
+
+  res(0) = 0;
+  res(1) = 0;
+  res(2) = 0;
+
+  return res;
+}
+
 int main(int argc, char** argv){
   GmshInitialize(argc, argv);
 
@@ -33,8 +53,8 @@ int main(int argc, char** argv){
   FormulationSteadyWave sWave(domain, puls * 1, order);
   System sys(sWave);
 
-  sys.fixCoef(source, 1);
-  sys.fixCoef(wall, 0);
+  sys.dirichlet(source, fSource);
+  sys.dirichlet(wall,   fWall);
 
   cout << "Steady Wave (Order: " << order 
        << " --- Pulsation: "     << puls

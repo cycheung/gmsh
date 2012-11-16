@@ -53,8 +53,16 @@ class System{
   bool isAssembled(void) const;
   bool isSolved(void) const;
 
-  void fixCoef(const GroupOfElement& goe, double value);
-  void dirichlet(const GroupOfElement& goe, double (*f)(fullVector<double>& xyz));
+  void fixCoef(const GroupOfElement& goe, 
+	       double value);
+  
+  void dirichlet(const GroupOfElement& goe, 
+		 double (*f)(fullVector<double>& xyz));
+  
+  void dirichlet(const GroupOfElement& goe, 
+		 fullVector<double> (*f)(fullVector<double>& xyz));
+
+
 
   void assemble(void);
   void solve(void);
