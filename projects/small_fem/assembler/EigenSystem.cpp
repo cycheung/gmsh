@@ -10,7 +10,7 @@ EigenSystem::EigenSystem(const EigenFormulation& eFormulation){
 
   // Get Dof Manager //
   dofM = new DofManager();
-  dofM->addDof(*fs);
+  dofM->addToGlobalIdSpace(fs->getAllGroups());
 
   // Get DofManager Data //
   size = fs->dofNumber();

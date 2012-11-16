@@ -36,19 +36,14 @@ class DofManager{
    DofManager(void);
   ~DofManager(void);
 
-  void addDof(const FunctionSpace& fs);
-
-  const std::vector<const Dof*> getAllDof(void) const;
-  int getGlobalId(const Dof& dof) const;
+  void addToGlobalIdSpace(const std::vector<GroupOfDof*>& god);
+  int  getGlobalId(const Dof& dof) const;
 
   bool isUnknown(const Dof& dof) const;
   bool fixValue(const Dof& dof, double value);
   std::pair<bool, double> getValue(const Dof& dof) const;
 
   std::string toString(void) const;
-
- private:
-  void number(std::vector<GroupOfDof*>& god);
 };
 
 

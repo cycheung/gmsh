@@ -54,19 +54,21 @@ int main(int argc, char** argv){
        << integrator.integrate()
        << endl;
 
-  // Interpolated View //
   if(argc == 4){
+  // Interpolated View //
     // Visu Mesh
     Mesh visuMesh(argv[3]);
     GroupOfElement visu = visuMesh.getFromPhysical(7);
     
     Solution sol(sysPoisson, visu);
-    sol.write("iPoisson", writer);
+    sol.write("poisson", writer);
   }
 
-  // Adaptive View //
-  writer.setValues(sysPoisson);
-  writer.write("poisson");
+  else{
+    // Adaptive View //
+    writer.setValues(sysPoisson);
+    writer.write("poisson");
+  }
 
   GmshFinalize();
   return 0;

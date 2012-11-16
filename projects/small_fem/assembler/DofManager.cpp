@@ -20,10 +20,7 @@ DofManager::~DofManager(void){
   delete fixedDof;
 }
 
-void DofManager::addDof(const FunctionSpace& fs){
-  // Get Groups //
-  const vector<GroupOfDof*>& god = fs.getAllGroups();
-
+void DofManager::addToGlobalIdSpace(const vector<GroupOfDof*>& god){
   // Number Dof //
   const unsigned int nGoD = god.size();
 
@@ -46,17 +43,6 @@ void DofManager::addDof(const FunctionSpace& fs){
     // NB: If the jth Dof was already in 'globalId', nothing append !
   }
 
-}
-
-const vector<const Dof*> DofManager::getAllDof(void) const{
-  // New Vector 
-  const unsigned int size = globalId->size();
-  vector<const Dof*> dof(size);
-
-  // Fill this Vector
-  
-  // Return Vector
-  return dof;
 }
 
 int DofManager::getGlobalId(const Dof& dof) const{

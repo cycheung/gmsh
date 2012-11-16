@@ -46,8 +46,6 @@ class System{
 
   unsigned int              getSize(void) const;
   const fullVector<double>& getSol(void) const;
-  const std::vector<std::pair<const Dof*, double> >
-    getSolAndCoef(void) const;
 
   const FunctionSpace& getFunctionSpace(void) const;
   const DofManager&    getDofManager(void) const;
@@ -56,7 +54,7 @@ class System{
   bool isSolved(void) const;
 
   void fixCoef(const GroupOfElement& goe, double value);
-  void fixCoef(const std::vector<std::pair<const Dof*, double> >& value);
+  void dirichlet(const GroupOfElement& goe, double (*f)(fullVector<double>& xyz));
 
   void assemble(void);
   void solve(void);

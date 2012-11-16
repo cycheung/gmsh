@@ -1,3 +1,6 @@
+#include "FormulationProjectionScalar.h"
+#include "Exception.h"
+
 #include "System.h"
 
 using namespace std;
@@ -9,7 +12,7 @@ System::System(const Formulation& formulation){
 
   // Get Dof Manager //
   dofM = new DofManager();
-  dofM->addDof(*fs);
+  dofM->addToGlobalIdSpace(fs->getAllGroups());
 
   // Get DofManager Data //
   size = fs->dofNumber();
@@ -29,20 +32,6 @@ System::~System(void){
   delete linSys;
   delete dofM;
   // System is not responsible for deleting 'Formulations'
-}
-
-const vector<pair<const Dof*, double> > System::getSolAndCoef(void) const{
-  // Solution Vector
-  vector<pair<const Dof*, double> > sol(size);
-
-  // Fill this Vector
-  for(int i = 0; i < size; i++){
-    
-    sol[i].second = (*x)(i);
-  }
-
-  // Return
-  return sol;
 }
 
 void System::assemble(void){
@@ -77,11 +66,32 @@ void System::fixCoef(const GroupOfElement& goe, double value){
   }
 }
 
-void System::fixCoef(const vector<pair<const Dof*, double> >& value){
-  const unsigned int size = value.size();
-  
-  for(unsigned int i = 0; i < size; i++)
-    dofM->fixValue(*(value[i].first), (value[i].second));
+void System::dirichlet(const GroupOfElement& goe, double (*f)(fullVector<double>& xyz)){
+  // New FunctionSpace, on the Dirichlet Domain: dirFS //
+  // WARNING: The support of the dirFS *MUST* have the fs Mesh
+  //  --> So we have the same Dof Numbering
+
+  if(&(goe.getMesh()) != &(fs->getSupport().getMesh()))
+    throw Exception("Dirichlet Domain must come from the FunctionSpace Domain's Mesh");
+
+  FunctionSpaceNode dirFS(goe, fs->getOrder());
+
+  // Solve The Projection Of f on the Dirichlet Domain with dirFS //
+  FormulationProjectionScalar projection(f, dirFS);
+  System sysProj(projection);
+
+  sysProj.assemble();
+  sysProj.solve();
+
+  // Fix This System Dofs with sysProj Solution //
+  const vector<const Dof*> dof = dirFS.getAllDofs();
+  const unsigned int      nDof = dof.size();
+
+  const DofManager&        dirDofM = sysProj.getDofManager();
+  const fullVector<double>& dirSol = sysProj.getSol();
+
+  for(unsigned int i = 0; i < nDof; i++)
+    dofM->fixValue(*dof[i], dirSol(dirDofM.getGlobalId(*dof[i]))); 
 }
 
 void System::solve(void){

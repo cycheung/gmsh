@@ -43,19 +43,21 @@ int main(int argc, char** argv){
   sys.assemble();
   sys.solve();
 
-  // Interpolated View //
   if(argc == 5){
+    // Interpolated View //
     // Visu Mesh
     Mesh visuMsh(argv[4]);
     GroupOfElement visu = visuMsh.getFromPhysical(7);
 
     Solution sol(sys, visu);
-    sol.write("iSwave", writer);
+    sol.write("swave", writer);
   }
 
-  // Adaptive View //
-  writer.setValues(sys);
-  writer.write("swave");
+  else{
+    // Adaptive View //
+    writer.setValues(sys);
+    writer.write("swave");
+  }
 
   GmshFinalize();
   return 0;
