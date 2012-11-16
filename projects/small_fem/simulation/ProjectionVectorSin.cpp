@@ -10,6 +10,7 @@
 #include "WriterDummy.h"
 #include "Exception.h"
 
+#include "FunctionSpaceEdge.h"
 #include "FormulationProjectionVector.h"
 
 #include "Gmsh.h"
@@ -109,7 +110,8 @@ vector<fullVector<double> > fem(GroupOfElement& domain, GroupOfElement& visu,
 
   stringstream stream;
   
-  FormulationProjectionVector projection(domain, f, order);
+  FunctionSpaceEdge fSpace(domain, order);
+  FormulationProjectionVector projection(f, fSpace);
   System sysProj(projection);
 
   stream << "projection_Mesh" << domain.getNumber() << "_Order" << order;

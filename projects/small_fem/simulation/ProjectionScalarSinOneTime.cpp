@@ -10,6 +10,7 @@
 #include "WriterDummy.h"
 #include "Exception.h"
 
+#include "FunctionSpaceNode.h"
 #include "FormulationProjectionScalar.h"
 
 #include "Gmsh.h"
@@ -106,7 +107,8 @@ vector<double> fem(GroupOfElement& domain, GroupOfElement& visu,
 
   stringstream stream;
   
-  FormulationProjectionScalar projection(domain, f, order);
+  FunctionSpaceNode fSpace(domain, order);
+  FormulationProjectionScalar projection(f, fSpace);
   System sysProj(projection);
 
   stream << "projection_Mesh" << domain.getNumber() << "_Order" << order;

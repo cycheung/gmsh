@@ -8,14 +8,14 @@
 
 using namespace std;
 
-FormulationProjectionVector::FormulationProjectionVector(const GroupOfElement& goe,
-							 fullVector<double> (*f)(fullVector<double>& xyz),
-							 unsigned int order){
+FormulationProjectionVector::
+FormulationProjectionVector(fullVector<double> (*f)(fullVector<double>& xyz),
+			    const FunctionSpaceEdge& fs){
   // Vector to Project //
   this->f = f;
 
-  // Function Space //
-  fspace = new FunctionSpaceEdge(goe, order);
+  // Save fspace //
+  fspace = &fs;
 
   // Gaussian Quadrature Data  // 
   // NB: We need to integrad f_i * f_j or f_i * g
@@ -24,13 +24,7 @@ FormulationProjectionVector::FormulationProjectionVector(const GroupOfElement& g
 
   // Look for 1st element to get element type
   // (We suppose only one type of Mesh !!)
-
-  // if Order == 0 --> we want Nedelec Basis of ordre *almost* one //
-  if(order != 0)
-    gaussIntegration::get(goe.get(0).getType(), order + order + 4, *gC, *gW);
-
-  else
-    gaussIntegration::get(goe.get(0).getType(), 1 + 1, *gC, *gW);
+  gaussIntegration::get(fs.getSupport().get(0).getType(), 2 * 2 * fs.getOrder(), *gC, *gW);
   
   G = gW->size(); // Nbr of Gauss points
 }
@@ -38,7 +32,6 @@ FormulationProjectionVector::FormulationProjectionVector(const GroupOfElement& g
 FormulationProjectionVector::~FormulationProjectionVector(void){
   delete gC;
   delete gW;
-  delete fspace;
 }
 
 double FormulationProjectionVector::weak(int dofI, int dofJ, 

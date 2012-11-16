@@ -22,15 +22,14 @@ class FormulationProjectionVector: public Formulation{
   fullVector<double>* gW;
 
   // Function Space //
-  FunctionSpaceEdge* fspace;
+  const FunctionSpaceEdge* fspace;
 
   // Function to Project //
   fullVector<double> (*f)(fullVector<double>& xyz);
   
  public:
-  FormulationProjectionVector(const GroupOfElement& goe,
-			      fullVector<double> (*f)(fullVector<double>& xyz),
-			      unsigned int order);
+  FormulationProjectionVector(fullVector<double> (*f)(fullVector<double>& xyz),
+			      const FunctionSpaceEdge& fs);
   
   virtual ~FormulationProjectionVector(void);
 
@@ -45,14 +44,14 @@ class FormulationProjectionVector: public Formulation{
 
 /**
    @fn FormulationProjectionVector::FormulationProjectionVector
-   @param goe A GroupOfElement
-   @param vectorToProject A fullVector<double>
+   @param f The function to project
+   @param fs A FunctionSpaceNode
    
    Instantiates a new FormulationProjectionVector to project
-   the given Vector@n
+   the given function@n
 
-   The given GroupOfElement will be used as the 
-   geomtrical @em domain
+   FormulationProjectionVector will use the given FunctionSpace
+   for the projection
    **
 
    @fn FormulationProjectionVector::~FormulationProjectionVector

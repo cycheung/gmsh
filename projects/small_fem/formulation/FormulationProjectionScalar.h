@@ -20,15 +20,14 @@ class FormulationProjectionScalar: public Formulation{
   fullVector<double>* gW;
 
   // Function Space //
-  FunctionSpaceNode* fspace;
+  const FunctionSpaceNode* fspace;
 
   // Function to Project //
   double (*f)(fullVector<double>& xyz);
 
  public:
-  FormulationProjectionScalar(const GroupOfElement& goe,
-			      double (*f)(fullVector<double>& xyz),
-			      unsigned int ordre);
+  FormulationProjectionScalar(double (*f)(fullVector<double>& xyz),
+			      const FunctionSpaceNode& fs);
   
   virtual ~FormulationProjectionScalar(void);
 
@@ -43,18 +42,14 @@ class FormulationProjectionScalar: public Formulation{
 
 /**
    @fn FormulationProjectionScalar::FormulationProjectionScalar
-   @param goe A GroupOfElement
    @param f The function to project
-   @param ordre A strictly positive natural number
+   @param fs A FunctionSpaceNode
    
    Instantiates a new FormulationProjectionScalar to project
    the given function@n
 
-   FormulationProjectionScalar will use a @em Nodal Basis
-   of the given ordre@n
-
-   The given GroupOfElement will be used as the 
-   geomtrical @em domain
+   FormulationProjectionScalar will use the given FunctionSpace
+   for the projection
    **
 
    @fn FormulationProjectionScalar::~FormulationProjectionScalar

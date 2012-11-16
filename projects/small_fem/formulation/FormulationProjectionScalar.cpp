@@ -10,16 +10,14 @@
 
 using namespace std;
 
-FormulationProjectionScalar::FormulationProjectionScalar(const GroupOfElement& goe,
-							 double (*f)(fullVector<double>& xyz),
-							 unsigned int ordre){
+FormulationProjectionScalar::
+FormulationProjectionScalar(double (*f)(fullVector<double>& xyz),
+			    const FunctionSpaceNode& fs){
   // Save f //
   this->f = f;
 
-  // Can't have 0th order //
-  if(ordre == 0)
-    throw 
-      Exception("Can't have a Projection of order 0");
+  // Save fspace //
+  fspace = &fs;
 
   // Gaussian Quadrature Data  // 
   // NB: We need to integrad f_i * f_j or f_i * g
@@ -28,18 +26,14 @@ FormulationProjectionScalar::FormulationProjectionScalar(const GroupOfElement& g
 
   // Look for 1st element to get element type
   // (We suppose only one type of Mesh !!)
-  gaussIntegration::get(goe.get(0).getType(), ordre + ordre, *gC, *gW);
+  gaussIntegration::get(fs.getSupport().get(0).getType(), 2 * fs.getOrder(), *gC, *gW);
 
   G = gW->size(); // Nbr of Gauss points
-
-  // Function Space //
-  fspace = new FunctionSpaceNode(goe, ordre);
 }
 
 FormulationProjectionScalar::~FormulationProjectionScalar(void){
   delete gC;
   delete gW;
-  delete fspace;
 }
 
 double FormulationProjectionScalar::weak(int dofI, int dofJ, 
