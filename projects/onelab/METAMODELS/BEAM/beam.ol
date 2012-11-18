@@ -1,9 +1,4 @@
-# global variables 
-
-#OL.dump(aaa);
-#LOGFILES.radioButton(0);
-
-MATERIAL.number(1,3Material/0,"Name");
+MATERIAL.number(1, 3Material/0,"Name");
 MATERIAL.valueLabels(0, "User defined", 1, "Steel", 2, "Wood", 3, "Alu");
 YOUNG.number(, 3Material/, "Young modulus [GPa]");
 POISSON.number(, 3Material/, "Poisson ratio []");
@@ -31,6 +26,34 @@ OL.if(OL.get(MATERIAL) == 0)
 OL.endif
 
 WEIGHT.radioButton(1, 3Material/0, "Account for weight");
+LOOP.radioButton(0,,"Compute MNT diagram");
+
+M.number(,9Results/,"Moment (M)");
+N.number(,9Results/,"Traction (N)");
+T.number(,9Results/,"Shear (Q)");
+vmin.number(,9Results/,"min v(x)");
+vmax.number(,9Results/,"max v(x)");
+
+X.number(0.75, 1Geometry/,"Cut location");
+
+OL.iftrue(LOOP)
+X.setAttribute(Loop,3);
+X.setAttribute(Graph,101000);
+9Results/M.setAttribute(Graph,010000);
+9Results/T.setAttribute(Graph,000100);
+OL.else
+  OL.if( OL.get(X, attrib.get(Loop)) == 3)
+    X.setAttribute(Loop,0);
+  OL.endif
+X.setAttribute(Graph,0);
+9Results/M.setAttribute(Graph,0);
+9Results/T.setAttribute(Graph,0);
+OL.endif
+
+OL.if( OL.get(X, choices.index()) == 0 )
+9Results/M.resetChoices();
+9Results/T.resetChoices();
+OL.endif
 
 #1) Client Gmsh pour le maillage initial
 Mesher.register(native);
@@ -39,6 +62,14 @@ Mesher.out(OL.get(Arguments/FileName).msh);
 Mesher.run(OL.get(Arguments/FileName).geo);
 Mesher.frontPage(OL.get(Arguments/FileName).geo,
                  OL.get(Arguments/FileName).msh);
+
+#X.range(0.15:OL.eval(0.99*OL.get(1Geometry/L))|15.00001);
+OL.iftrue(LOOP)
+X.range(0.10:OL.get(1Geometry/L)|10.00001);
+OL.else
+X.range(0.0:OL.get(1Geometry/L):O.1);
+X.withinRange();
+OL.endif
 
 #2) Client ElmerGrid pour convertir le maillage pour Elmer
 ElmerGrid.register(interfaced);
@@ -54,42 +85,17 @@ Elmer.run();
 Elmer.up(beam.txt,-1,1,9Results/vmin,
          beam.txt,-1,2,9Results/vmax);
 
-X.number(0.8,1Geometry/,"Cut location");
-X.range(0.01:OL.eval(0.99*OL.get(1Geometry/L))|15.00001);
-X.withinRange();
-
-LOOP.radioButton(0,,"Compute MNT diagram");
-
-M.number(,9Results/,"Moment");
-N.number(,9Results/,"Traction");
-T.number(,9Results/,"Shear");
-X.setAttribute(Loop,OL.get(LOOP));
-OL.iftrue(LOOP)
-X.setAttribute(Graph,101000);
-9Results/M.setAttribute(Graph,010000);
-9Results/T.setAttribute(Graph,000100);
-OL.else
-X.setAttribute(Graph,0);
-9Results/M.setAttribute(Graph,0);
-9Results/T.setAttribute(Graph,0);
-OL.endif
-
-#resetChoices() must be done before Post.up()
-OL.if( OL.get(X, choices.index()) <= 0 )
-9Results/M.resetChoices();
-9Results/T.resetChoices();
-OL.endif
-
-OL.merge(RemoveViews.macro);
+#OL.merge(RemoveViews.macro);
 
 #4) Post-processing with Gmsh and a script
 Post.register(interfaced);
-Post.in(beam.pos, script.ol, beam.pos.opt.ol);
+Post.in(beam.pos, MNT.pos.ol, script.opt.ol);
 Post.out(MNT.txt);
-Post.run(beam.pos script -);
+Post.run(beam.pos MNT.pos -);
 Post.up(MNT.txt,-1,8,9Results/M,
         MNT.txt,-1,9,9Results/N,
         MNT.txt,-1,10,9Results/T);
-Post.merge(beam.pos);
+Post.merge(RemoveViews.macro, beam.pos, script.opt);
 
-
+#OL.msg(Loop index = <OL.get(X,attributes.get(Loop))> );
+#OL.dump(aaa);

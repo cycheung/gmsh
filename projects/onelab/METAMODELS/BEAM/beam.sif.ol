@@ -3,39 +3,48 @@ OL.block
 LOADTYPE.number(0,2Loads/2,"Type");
 LOADTYPE.valueLabels(0, "Constant",   
                      1, "Ramp", 
-                     2, "Rectangle", 
-                     3, "User defined");
+                     2, "Rectangle",
+                     3, "Torsion",
+                     4, "User defined");
 FORMULA.string(,2Loads/3,"Formula");
 
-LOAD.number(1,2Loads/1,"Magnitude P [N/cm2]");
-D.number(0.1,2Loads/,"delta d [m]");
-XX.number(0.5,2Loads/,"Position X [m]")
+LOAD.number(, 2Loads/1,"Magnitude P [N/cm2]");
+D.number(0.1, 2Loads/,"delta d [m]");
+XX.number(0.5, 2Loads/,"Position X [m]")
 XX.range(0:OL.get(1Geometry/L):0.1);
 XX.withinRange();
 
 OL.if(OL.get(LOADTYPE) == 0)
-FORMULA.setValue("P");
-FORMULA.setReadOnly(1);
-D.setVisible(0);
-XX.setVisible(0);
+FORMULA.setValue(P);
 OL.endif
 OL.if(OL.get(LOADTYPE) == 1)
-FORMULA.setValue("P *tx(0)/L");
-FORMULA.setReadOnly(1);
+FORMULA.setValue(P *tx(0)/L);
+OL.endif
+OL.if(OL.get(LOADTYPE) == 2)
+FORMULA.setValue(if(tx(0)<(X-d)) {0} else {if(tx(0)<=(X+d)) {P/(2*d)} else {0}});
+OL.endif
+OL.if(OL.get(LOADTYPE) == 3)
+FORMULA.setValue(P*tx(1)/B*10);
+OL.endif
+
+OL.iftrue(LOADTYPE))
+LOAD.setValue(1);
+OL.else
+LOAD.setValue(0);
+OL.endif
+
+OL.if(OL.get(LOADTYPE) == 2)
+D.setVisible(1);
+XX.setVisible(1);
+OL.else
 D.setVisible(0);
 XX.setVisible(0);
 OL.endif
-OL.if(OL.get(LOADTYPE) == 2)
-FORMULA.setValue("if(tx(0)<(X-d)) {0} else {if(tx(0)<=(X+d)) {P} else {0}}");
-FORMULA.setReadOnly(1);
-D.setVisible(1);
-XX.setVisible(1);
-OL.endif
-OL.if(OL.get(LOADTYPE) == 3)
-FORMULA.setValue("P");
+
+OL.if(OL.get(LOADTYPE) == 4)
 FORMULA.setReadOnly(0);
-D.setVisible(1);
-XX.setVisible(1);
+OL.else
+FORMULA.setReadOnly(1);
 OL.endif
 
 OL.endblock
@@ -135,6 +144,8 @@ End
 ! variables from ONELAB
 $P = OL.get(2Loads/LOAD)*1e4
 $L = OL.get(1Geometry/L)
+$A = OL.get(1Geometry/A)
+$B = OL.get(1Geometry/B)
 $X = OL.get(2Loads/XX)
 $d = OL.get(2Loads/D)
 
@@ -142,7 +153,7 @@ Boundary Condition 2
   Target Boundaries = OL.region(LoadSurf)
   Force 1 = 0
   Force 2 = Variable Coordinate 1, Coordinate 3
-            Real MATC OL.get(Loads/FORMULA)
+            Real MATC "OL.get(Loads/FORMULA)"
   Force 3 = 0
 End
 

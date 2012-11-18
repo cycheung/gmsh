@@ -5,7 +5,7 @@ DefineConstant[ B = {0.1, Path "1Geometry/", Label "Width"}];
 
 DefineConstant[CLAMPING = {1, Path "1Geometry/", Label "Clamping",
 			   Choices{1="One side", 2="Both sides"} }] ;
-DefineConstant[STRUCTURED = {0, Path "1Geometry/", Label "Mesh",
+DefineConstant[STRUCTURED = {1, Path "1Geometry/", Label "Mesh",
 			   Choices{0="Unstructured", 1="Structured"} }] ;
 
 /*  == S T R U C T U R E D   M E S H ==  */
