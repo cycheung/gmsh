@@ -31,8 +31,9 @@
 
 class EigenSystem{
  private:
-  bool isAssembled;
-  bool isGeneral;
+  bool assembled;
+  bool solved;
+  bool general;
 
   linearSystemPETSc<double>* linSysA;
   linearSystemPETSc<double>* linSysB;
@@ -60,6 +61,10 @@ class EigenSystem{
 
   const FunctionSpace& getFunctionSpace(void) const;
   const DofManager&    getDofManager(void) const;
+
+  bool isAssembled(void) const;
+  bool isSolved(void) const;
+  bool isGeneral(void) const;
 
   void fixCoef(const GroupOfElement& goe, double value);
 
@@ -148,6 +153,18 @@ inline const FunctionSpace& EigenSystem::getFunctionSpace(void) const{
 
 inline const DofManager& EigenSystem::getDofManager(void) const{
   return *dofM;
+}
+
+inline bool EigenSystem::isAssembled(void) const{
+  return assembled;
+}
+
+inline bool EigenSystem::isSolved(void) const{
+  return solved;
+}
+
+inline bool EigenSystem::isGeneral(void) const{
+  return general;
 }
 
 #endif

@@ -35,7 +35,10 @@ int main(int argc, char** argv){
 
   cout << "Cavity: " << sysCavity.getSize() << endl;
 
+  cout << "Assembling..." << endl << flush;
   sysCavity.assemble();
+
+  cout << "Solving..." << endl << flush;
   sysCavity.solve(nWave);
 
   // Display //
@@ -57,14 +60,30 @@ int main(int argc, char** argv){
 	 << sqrt(eigenValue[i]) << endl;
 
   // Write Sol //
-  for(unsigned int i = 0; i < nEigenValue; i++){
-    stringstream stream;
-    stream << "cavity_mode" << i + 1;
-    
-    Solution solCavity(sysCavity, i);
-    solCavity.write(stream.str(), writer);
+  if(argc == 5){
+    // With VisuMesh
+    Mesh           visuMesh(argv[4]);
+    GroupOfElement visu = visuMesh.getFromPhysical(7);
+  
+    for(unsigned int i = 0; i < nEigenValue; i++){
+      stringstream stream;
+      stream << "cavity_mode" << i + 1;
+      
+      Solution solCavity(sysCavity, i, visu);
+      solCavity.write(stream.str(), writer);
+    }
   }
 
+  else{
+    // Without VisuMesh
+    for(unsigned int i = 0; i < nEigenValue; i++){
+      stringstream stream;
+      stream << "cavity_mode" << i + 1;
+      
+      writer.setValues(sysCavity, i);
+      writer.write(stream.str());
+    }
+  }
 
   // Done //
   GmshFinalize();

@@ -23,7 +23,7 @@ System::System(const Formulation& formulation){
   linSys = new linearSystemPETSc<double>();
   linSys->allocate(size);
 
-  // The system is not assembled and not solved//
+  // The system is not assembled and not solved //
   assembled = false;
   solved    = false;
 }

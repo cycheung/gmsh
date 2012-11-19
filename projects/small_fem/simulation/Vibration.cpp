@@ -36,7 +36,10 @@ int main(int argc, char** argv){
 
   cout << "Vibration: " << sysVibration.getSize() << endl;
 
+  cout << "Assembling..." << endl << flush;
   sysVibration.assemble();
+
+  cout << "Solving..." << endl << flush;
   sysVibration.solve(nWave);
 
   // Display //
@@ -55,14 +58,30 @@ int main(int argc, char** argv){
 	 << sqrt(eigenValue[i]) << endl;
 
   // Write Sol //
-  for(unsigned int i = 0; i < nEigenValue; i++){
-    stringstream stream;
-    stream << "vibration_mode" << i + 1;
-    
-    Solution solVibration(sysVibration, i);
-    solVibration.write(stream.str(), writer);
+  if(argc == 5){
+    // With VisuMesh
+    Mesh           visuMesh(argv[4]);
+    GroupOfElement visu = visuMesh.getFromPhysical(7);
+  
+    for(unsigned int i = 0; i < nEigenValue; i++){
+      stringstream stream;
+      stream << "vibration_mode" << i + 1;
+      
+      Solution solVibration(sysVibration, i, visu);
+      solVibration.write(stream.str(), writer);
+    }
   }
 
+  else{
+    // Without VisuMesh
+    for(unsigned int i = 0; i < nEigenValue; i++){
+      stringstream stream;
+      stream << "vibration_mode" << i + 1;
+      
+      writer.setValues(sysVibration, i);
+      writer.write(stream.str());
+    }
+  }
 
   // Done //
   GmshFinalize();

@@ -16,7 +16,7 @@ EigenSystem::EigenSystem(const EigenFormulation& eFormulation){
   size = fs->dofNumber();
   
   // Is the Problem a General EigenValue Problem ? //
-  isGeneral = eFormulation.isGeneral();
+  general = eFormulation.isGeneral();
 
   // Create EigenSystem //
   // Linear System A
@@ -24,7 +24,7 @@ EigenSystem::EigenSystem(const EigenFormulation& eFormulation){
   linSysA->allocate(size);
 
   // Linear System B
-  if(isGeneral){
+  if(general){
     linSysB = new linearSystemPETSc<double>();
     linSysB->allocate(size);
   }
@@ -38,8 +38,9 @@ EigenSystem::EigenSystem(const EigenFormulation& eFormulation){
   eigenValue  = NULL;
   eigenVector = NULL;
 
-  // The EigenSystem is not assembled //
-  isAssembled = false;
+  // The EigenSystem is not assembled and not solved//
+  assembled = false;
+  solved    = false;
 }
 
 EigenSystem::~EigenSystem(void){
@@ -54,7 +55,7 @@ EigenSystem::~EigenSystem(void){
 
   delete linSysA;
 
-  if(isGeneral)
+  if(general)
     delete linSysB;
 
   delete dofM;
@@ -67,7 +68,7 @@ void EigenSystem::assemble(void){
   const int E = fs->groupNumber();
 
   // Get Sparcity Pattern & PreAllocate//
-  if(isGeneral)
+  if(general)
     for(int i = 0; i < E; i++)
       sparcityGeneral(*(group[i]));  
 
@@ -77,11 +78,11 @@ void EigenSystem::assemble(void){
 
   linSysA->preAllocateEntries();
   
-  if(isGeneral)
+  if(general)
     linSysB->preAllocateEntries();
 
   // Assemble EigenSystem //
-  if(isGeneral)
+  if(general)
     for(int i = 0; i < E; i++)
       assembleGeneral(*(group[i]));  
 
@@ -90,7 +91,7 @@ void EigenSystem::assemble(void){
       assemble(*(group[i]));  
 
   // The EigenSystem is assembled //
-  isAssembled = true;  
+  assembled = true;  
 }
 
 void EigenSystem::fixCoef(const GroupOfElement& goe, double value){
@@ -114,7 +115,7 @@ void EigenSystem::solve(unsigned int nEigenValues){
 		nEigenValues, size);
 
   // Is the EigenSystem assembled ? //
-  if(!isAssembled)
+  if(!assembled)
     assemble();
 
   // Solve //
@@ -132,6 +133,9 @@ void EigenSystem::solve(unsigned int nEigenValues){
 
   for(unsigned int i = 0; i < nEigenValue; i++)
     (*eigenVector)[i] = eSys->getEigenVector(i);  
+
+  // System solved ! //
+  solved = true;
 }
 
 void EigenSystem::assemble(GroupOfDof& group){
