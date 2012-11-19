@@ -12,7 +12,7 @@ Integrator::Integrator(const System& system){
   // Get FEM Solution //
   sol  = &(system.getSol());
   dofM = &(system.getDofManager());
-  fs   = &(system.getFunctionSpace());
+  fs   = &(system.getFormulation().fs());
   
   // Get Mesh //
   const GroupOfElement& domain = fs->getSupport();

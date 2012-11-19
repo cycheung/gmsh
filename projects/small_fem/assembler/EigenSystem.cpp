@@ -39,8 +39,9 @@ EigenSystem::EigenSystem(const EigenFormulation& eFormulation){
   eigenVector = NULL;
 
   // The EigenSystem is not assembled and not solved//
-  assembled = false;
-  solved    = false;
+  nEigenValue = 0;
+  assembled   = false;
+  solved      = false;
 }
 
 EigenSystem::~EigenSystem(void){

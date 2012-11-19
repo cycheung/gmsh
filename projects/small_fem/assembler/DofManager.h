@@ -14,7 +14,7 @@
    
    This class numbers the Degrees Of Freedom (Dof).@n
 
-   It can map a Dof a @em global @c ID.@n
+   It can map a Dof to a @em global @c ID.@n
    Those @c IDs are handeld by the DofManager itself.@n
 
    Finaly, this class allows to fix a Dof to a given value 
@@ -56,6 +56,14 @@ class DofManager{
    @fn DofManager::~DofManager
    
    Deletes this DofManager
+   **
+
+   @fn DofManager::addToGlobalIdSpace
+   @param god A vector of GroupOfDof
+
+   Numbers every Dof of every given GroupOfDof.@n
+
+   Each Dof%s will be given a @em unique @em global @c ID .
    **
 
    @fn DofManager::getGlobalId

@@ -50,7 +50,7 @@ void Writer::setValues(const System& system){
   nodalScalarValue = NULL;
   nodalVectorValue = NULL;
 
-  fs   = &(system.getFunctionSpace());
+  fs   = &(system.getFormulation().fs());
   dofM = &(system.getDofManager());
   sol  = &(system.getSol());
 
@@ -77,7 +77,7 @@ void Writer::setValues(const EigenSystem& system, unsigned int eigenNumber){
   nodalScalarValue = NULL;
   nodalVectorValue = NULL;
 
-  fs   = &(system.getFunctionSpace());
+  fs   = &(system.getFormulation().fs());
   dofM = &(system.getDofManager());
   sol  = getSol(system.getEigenVectors(), eigenNumber);
 

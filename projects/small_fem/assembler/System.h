@@ -17,7 +17,7 @@
    @class System
    @brief This class assembles a linear system
 
-   This class assembles the linear system, 
+   This class assembles a linear system, 
    described by a Formulation 
   
    @warning
@@ -47,8 +47,8 @@ class System{
   unsigned int              getSize(void) const;
   const fullVector<double>& getSol(void) const;
 
-  const FunctionSpace& getFunctionSpace(void) const;
-  const DofManager&    getDofManager(void) const;
+  const Formulation& getFormulation(void) const;
+  const DofManager&  getDofManager(void) const;
 
   bool isAssembled(void) const;
   bool isSolved(void) const;
@@ -75,8 +75,8 @@ class System{
 
 /**
    @fn System::System
-   @param formulation A Formulation, 
-   giving the way to assemble the system
+   @param formulation A Formulation that
+   gives the way to assemble the system
    
    Instantiated a new System
    ***
@@ -85,38 +85,60 @@ class System{
    Deletes this System
    **
 
+   @fn System::getSize
+   @return Returns the number of @em unknowns 
+   of the the linear system
+   **
+
    @fn System::getSol
    @return Returns the solution of the the linear system
    **
 
-   @fn System::getFunctionSpace
-   @return Returns the FunctionSpace used by the System
+   @fn System::getFormulation
+   @return Returns the Formulation used by the System
    **
 
    @fn System::getDofManager
    @return Returns the DofManager used by the System
    **
 
-   @fn System::fixCoef(const GroupOfElement& goe, double value)
+   @fn System::isAssembled
+   @return Returns: 
+   @li @c true, if the System has been assembled
+   @li @c false otherwise
+   **
+
+   @fn System::isSolved
+   @return Returns: 
+   @li @c true, if the System has been solved
+   @li @c false otherwise
+   **
+
+   @fn System::fixCoef
    @param goe A GroupOfElement 
    @param value A real value
    
-   Fixes the Coefficients (Dof%s) associated the the given 
-   GroupOfElement to the given value
+   Fixes the Coefficients (Dof%s), associated the the given 
+   GroupOfElement, to the given value
 
    @note These Coefficients are (Dof%s) weights of the 
    Basis Function defined on the given GroupOfElement
    **
 
-   @fn System::fixCoef(const std::vector<std::pair<const Dof*, double> >& value);
-   @param value A vector of pair of Dof and Real Value
+   @fn System::dirichlet(const GroupOfElement& goe,  double (*f)(fullVector<double>& xyz));
+   @param goe A GroupOfElement
+   @param f A scalar Function
    
-   Fixes the @f$i@f$th Dof (Coefficient) to the 
-   @f$i@f$th value 
-   (for @f$i@f$ rangin from 0 to value.size() - 1)
+   Imposes a @em scalar Dirichlet Condition (given by @c f) on the
+   given GroupOfElement
+   **
 
-   @note These Dof%s (Coefficients) are weights of the 
-   Basis Function defined on the given GroupOfElement
+   @fn System::dirichlet(const GroupOfElement& goe, fullVector<double> (*f)(fullVector<double>& xyz));
+   @param goe A GroupOfElement
+   @param f A vectorial Function
+   
+   Imposes a @em vectorial Dirichlet Condition (given by @c f) on the
+   given GroupOfElement
    **
 
    @fn System::assemble
@@ -125,7 +147,7 @@ class System{
 
    @fn System::solve
    Solves the linear system
-   @note If the System is @em not @em assembled,@n
+   @note If the System is @em not @em assembled, 
    the assembly method will be called
    **
 */
@@ -142,8 +164,8 @@ inline unsigned int System::getSize(void) const{
   return size;
 }
 
-inline const FunctionSpace& System::getFunctionSpace(void) const{
-  return *fs;
+inline const Formulation& System::getFormulation(void) const{
+  return *formulation;
 }
 
 inline const DofManager& System::getDofManager(void) const{

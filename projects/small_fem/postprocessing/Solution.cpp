@@ -14,7 +14,7 @@ using namespace std;
 void Solution::initSystem(const System& system){
   // Save some data
   this->dofM = &(system.getDofManager());
-  this->fs   = &(system.getFunctionSpace());
+  this->fs   = &(system.getFormulation().fs());
 
   // Get Mesh
   this->mesh = &(fs->getSupport().getMesh());  
@@ -47,7 +47,7 @@ void Solution::initSystem(const EigenSystem& system,
 			  unsigned int eigenNumber){
   // Save some data
   this->dofM = &(system.getDofManager());
-  this->fs   = &(system.getFunctionSpace());
+  this->fs   = &(system.getFormulation().fs());
 
   // Get Mesh
   this->mesh = &(fs->getSupport().getMesh());  

@@ -21,8 +21,8 @@ GroupOfDof::~GroupOfDof(void){
   delete dof;
 }
 
-void GroupOfDof::add(const Dof* dof){
-  this->dof->at(nextDof) = dof;
+void GroupOfDof::add(const Dof& dof){
+  this->dof->at(nextDof) = &dof;
   nextDof++;
 }
 

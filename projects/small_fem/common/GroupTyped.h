@@ -15,6 +15,9 @@
 
    @note
    Note that a GroupTyped is a Group
+
+   @todo
+   Is interface Worthy ?? --> virtual fct problem
  */
 
 template<class T>

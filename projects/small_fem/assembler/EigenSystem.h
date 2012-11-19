@@ -19,9 +19,18 @@
    @class EigenSystem
    @brief This class assembles an Eigenvalue System
 
-   This class assembles an Eigenvalue ystem, 
-   described by a EigenFormulation 
-  
+   This class assembles an Eigenvalue system, 
+   described by a EigenFormulation.@n
+
+   The Eigenvalue Problem can be @em generalized or not:
+   @li An Eigenvalue Problem is a of the type 
+   @f$\qquad(\mathbf{A} - \lambda{}\mathbf{I})\mathbf{x} = \mathbf{b}@f$
+   @li An Generalized Eigenvalue Problem is a of the type 
+   @f$\qquad(\mathbf{A} - \lambda{}\mathbf{B})\mathbf{x} = \mathbf{b}@f$
+   
+   @see EigenFormulation
+   
+
    @warning
    We can @em only assemble Dof related to a MElement@n
 
@@ -59,8 +68,8 @@ class EigenSystem{
   const std::vector<std::complex<double> >&               getEigenValues(void) const;
   const std::vector<std::vector<std::complex<double> > >& getEigenVectors(void) const;
 
-  const FunctionSpace& getFunctionSpace(void) const;
-  const DofManager&    getDofManager(void) const;
+  const EigenFormulation& getFormulation(void) const;
+  const DofManager&       getDofManager(void) const;
 
   bool isAssembled(void) const;
   bool isSolved(void) const;
@@ -81,8 +90,8 @@ class EigenSystem{
 
 /**
    @fn EigenSystem::EigenSystem
-   @param formulation An EigenFormulation, 
-   giving the way to assemble the Eigenvalue System
+   @param eFormulation An EigenFormulation that 
+   gives the way to assemble the Eigenvalue System
    
    Instantiated a new EigenSystem
    ***
@@ -91,19 +100,33 @@ class EigenSystem{
    Deletes this EigenSystem
    **
 
-   @fn EigenSystem::getSol
-   @return Returns the solution of the the Eigenvalue System
+   @fn EigenSystem::getSize
+   @return Returns the number of @em unknowns 
+   of the the Eigenvalue System
    **
 
-   @fn EigenSystem::getFunctionSpace
-   @return Returns the FunctionSpace used by the Eigenvalue System
+   @fn EigenSystem::getEigenValueNumber
+   @return Returns the number of @em computed 
+   Eigenvalues
+   **
+
+   @fn EigenSystem::getEigenValues
+   @return Returns the @em computed Eigenvalues
+   **
+
+   @fn EigenSystem::getEigenVectors
+   @return Returns the @em computed Eigenvectors
+   **
+
+   @fn EigenSystem::getFormulation
+   @return Returns the EigenFormulation used by the Eigenvalue System
    **
 
    @fn EigenSystem::getDofManager
    @return Returns the DofManager used by the Eigenvalue System
    **
 
-   @fn System::fixCoef(const GroupOfElement& goe, double value)
+   @fn EigenSystem::fixCoef(const GroupOfElement& goe, double value)
    @param goe A GroupOfElement 
    @param value A real value
    
@@ -114,15 +137,39 @@ class EigenSystem{
    Basis Function defined on the given GroupOfElement
    **
 
+   @fn EigenSystem::isAssembled
+   @return Returns: 
+   @li @c true, if the EigenSystem has been assembled
+   @li @c false otherwise
+   **
+
+   @fn EigenSystem::isSolved
+   @return Returns: 
+   @li @c true, if the EigenSystem has been solved
+   @li @c false otherwise
+
+   @fn EigenSystem::assemble
+   Assembles the Eigenvalue System
+   **
+
+   @fn EigenSystem::isGeneral
+   @return Returns: 
+   @li @c true, if the EigenSystem is a Generalized one
+   @li @c false otherwise
+   **
+
    @fn EigenSystem::assemble
    Assembles the Eigenvalue System
    **
 
    @fn EigenSystem::solve
-   Solves the Eigenvalue System
+   @param nEigenValues A natural number
+
+   Solves the Eigenvalue System@n
+   The EigenSystem will compute @c nEigenValues Eigenvalues
+
    @note If the EigenSystem is @em not @em assembled,@n
    the assembly method will be called
-   **
 */
 
 //////////////////////
@@ -147,8 +194,8 @@ EigenSystem::getEigenVectors(void) const{
   return *eigenVector;
 }
 
-inline const FunctionSpace& EigenSystem::getFunctionSpace(void) const{
-  return *fs;
+inline const EigenFormulation& EigenSystem::getFormulation(void) const{
+  return *eFormulation;
 }
 
 inline const DofManager& EigenSystem::getDofManager(void) const{
