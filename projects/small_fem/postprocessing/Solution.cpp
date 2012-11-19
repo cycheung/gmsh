@@ -43,8 +43,8 @@ void Solution::initSystem(const System& system){
   }
 }
 
-void Solution::initEigen(const EigenSystem& system, 
-			 unsigned int eigenNumber){
+void Solution::initSystem(const EigenSystem& system, 
+			  unsigned int eigenNumber){
   // Save some data
   this->dofM = &(system.getDofManager());
   this->fs   = &(system.getFunctionSpace());
@@ -53,11 +53,8 @@ void Solution::initEigen(const EigenSystem& system,
   this->mesh = &(fs->getSupport().getMesh());  
 
   // Get Solution
-  const vector<vector<complex<double> > >& eVector = 
-    system.getEigenVectors();
-
   ownSol = true;
-  sol    = getSol(eVector, eigenNumber);
+  sol    = getSol(system.getEigenVectors(), eigenNumber);
     
   // Init
   nodalScalarValue = NULL;
@@ -92,20 +89,6 @@ Solution::Solution(const System& system){
   interpolate();
 }
 
-Solution::Solution(const EigenSystem& system,
-		   unsigned int eigenNumber){
-  // Init
-  initEigen(system, eigenNumber);
-
-  // Get Visu Domain
-  this->visuDomain = &(fs->getSupport());
-
-  // Interpolate 
-  // NB: interpolate() is faster than 
-  // interpolateOnVisu() (no Octree)
-  interpolate();
-}
-
 Solution::Solution(const System& system,
 		   const GroupOfElement& visu){
   // Init
@@ -116,7 +99,37 @@ Solution::Solution(const System& system,
 
   // Interpolate
   // NB: Can't use interpolate(), because
-  // we don't have to *all* nodes (visu mesh) 
+  // we don't have *all* nodes (visu mesh) 
+  // with Dofs
+  interpolateOnVisu();
+}
+
+Solution::Solution(const EigenSystem& system,
+		   unsigned int eigenNumber){
+  // Init
+  initSystem(system, eigenNumber);
+
+  // Get Visu Domain
+  this->visuDomain = &(fs->getSupport());
+
+  // Interpolate 
+  // NB: interpolate() is faster than 
+  // interpolateOnVisu() (no Octree)
+  interpolate();
+}
+
+Solution::Solution(const EigenSystem& system,
+		   unsigned int eigenNumber,
+		   const GroupOfElement& visu){
+  // Init
+  initSystem(system, eigenNumber);
+
+  // Get Visu Domain
+  this->visuDomain = &visu;
+
+  // Interpolate
+  // NB: Can't use interpolate(), because
+  // we don't have *all* nodes (visu mesh) 
   // with Dofs
   interpolateOnVisu();
 }

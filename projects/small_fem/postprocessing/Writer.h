@@ -5,6 +5,7 @@
 #include "MElement.h"
 #include "MVertex.h"
 #include "System.h"
+#include "EigenSystem.h"
 
 #include <string>
 #include <vector>
@@ -29,6 +30,7 @@
 
 class Writer{
  protected:
+  bool ownSol;
   bool hasDomain;
   bool hasValue;
   bool isScalar;
@@ -56,12 +58,17 @@ class Writer{
 
   void setValues(const std::vector<double>& value);
   void setValues(const std::vector<fullVector<double> >& value);
-  void setValues(const System& value);
+  void setValues(const System& system);
+  void setValues(const EigenSystem& system, unsigned int eigenNumber);
 
   void setDomain(const std::vector<const MElement*>& element);
 
  protected:
   Writer(void);
+
+  static const fullVector<double>* 
+    getSol(const std::vector<std::vector<std::complex<double> > >& eVector,
+	   unsigned int eigenNumber);
 };
 
 

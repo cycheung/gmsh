@@ -45,10 +45,17 @@ class Solution{
 
  public:
    Solution(const System& system);
+   Solution(const System& system, 
+	    const GroupOfElement& visu);
+
    Solution(const EigenSystem& system,
 	    unsigned int eigenNumber);
-   Solution(const System& system, const GroupOfElement& visu);
-   Solution(double (*f)(fullVector<double>& xyz), const GroupOfElement& visu);
+   Solution(const EigenSystem& system,
+	    unsigned int eigenNumber,
+	    const GroupOfElement& visu);
+
+   Solution(double (*f)(fullVector<double>& xyz), 
+	    const GroupOfElement& visu);
    Solution(fullVector<double> (*f)(fullVector<double>& xyz), 
 	    const GroupOfElement& visu);
 
@@ -62,8 +69,8 @@ class Solution{
 
  private:
   void initSystem(const System& system);
-  void initEigen(const EigenSystem& system,
-		 unsigned int eigenNumber);
+  void initSystem(const EigenSystem& system,
+		  unsigned int eigenNumber);
 
   void interpolate(void);
   void interpolateOnVisu(void); 
