@@ -1,9 +1,7 @@
 k=PostProcessing.NbViews; 
 Printf("%g views in Remove", k);
 For ii In {1:k}
-//If(View[k-ii].Visible == 0)
 Delete View[k-ii]; 
-//EndIf
 EndFor
 
 

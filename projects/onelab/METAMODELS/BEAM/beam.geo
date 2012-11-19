@@ -1,7 +1,7 @@
 
-DefineConstant[ L = {1, Path "1Geometry/", Label "Length"}];
-DefineConstant[ A = {0.1, Path "1Geometry/", Label "Height"}];
-DefineConstant[ B = {0.1, Path "1Geometry/", Label "Width"}];
+DefineConstant[ L = {1, Path "1Geometry/", Label "Length - L [m]"}];
+DefineConstant[ A = {0.1, Path "1Geometry/", Label "Height - A [m]"}];
+DefineConstant[ B = {0.1, Path "1Geometry/", Label "Width - B [m]"}];
 
 DefineConstant[CLAMPING = {1, Path "1Geometry/", Label "Clamping",
 			   Choices{1="One side", 2="Both sides"} }] ;

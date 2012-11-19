@@ -8,7 +8,12 @@ LOADTYPE.valueLabels(0, "Constant",
                      4, "User defined");
 FORMULA.string(,2Loads/3,"Formula");
 
-LOAD.number(, 2Loads/1,"Magnitude P [N/cm2]");
+OL.iftrue(LOADTYPE))
+LOAD.number(1, 2Loads/1,"Magnitude - P [N/cm2]");
+OL.else
+LOAD.number(0, 2Loads/1,"Magnitude - P [N/cm2]");
+OL.endif
+
 D.number(0.1, 2Loads/,"delta d [m]");
 XX.number(0.5, 2Loads/,"Position X [m]")
 XX.range(0:OL.get(1Geometry/L):0.1);
@@ -25,12 +30,6 @@ FORMULA.setValue(if(tx(0)<(X-d)) {0} else {if(tx(0)<=(X+d)) {P/(2*d)} else {0}})
 OL.endif
 OL.if(OL.get(LOADTYPE) == 3)
 FORMULA.setValue(P*tx(1)/B*10);
-OL.endif
-
-OL.iftrue(LOADTYPE))
-LOAD.setValue(1);
-OL.else
-LOAD.setValue(0);
 OL.endif
 
 OL.if(OL.get(LOADTYPE) == 2)

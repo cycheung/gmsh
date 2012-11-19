@@ -11,16 +11,17 @@ View[k-3].Visible = 0;
 View[k-2].ShowElement = 1;
 View[k-2].VectorType = 5;
 View[k-2].ExternalView = k-9;
-OL.block
-RANGE.number();
-RANGE.setValue(OL.eval(fabs((OL.get(9Results/vmax))-(OL.get(9Results/vmin))) ));
-RANGE.setVisible(0);
-OL.endblock
-OL.if( OL.get(RANGE) < 1e-7 ) 
-  View[k-2].DisplacementFactor = 10000 ;
-OL.else
-  View[k-2].DisplacementFactor = OL.eval(0.33*OL.get(1Geometry/L)/OL.get(RANGE) ) ;
-OL.endif
+
+#OL.block
+#RANGE.number();
+#RANGE.setValue(OL.eval(fabs((OL.get(9Results/vmax))-(OL.get(9Results/vmin))) ));
+#RANGE.setVisible(0);
+#OL.endblock
+#OL.if( OL.get(RANGE) < 1e-7 ) 
+#  View[k-2].DisplacementFactor = 10000 ;
+#OL.else
+#  View[k-2].DisplacementFactor = OL.eval(0.33*OL.get(1Geometry/L)/OL.get(RANGE) ) ;
+#OL.endif
 
 View[k-2].DisplacementFactor = 10000 ;
 
