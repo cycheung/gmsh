@@ -1,4 +1,4 @@
-#include "Solution.h"
+#include "Interpolator.h"
 
 #include "FunctionSpaceScalar.h"
 #include "FunctionSpaceVector.h"
@@ -11,7 +11,7 @@
 
 using namespace std;
 
-void Solution::initSystem(const System& system){
+void Interpolator::initSystem(const System& system){
   // Save some data
   this->dofM = &(system.getDofManager());
   this->fs   = &(system.getFormulation().fs());
@@ -43,8 +43,8 @@ void Solution::initSystem(const System& system){
   }
 }
 
-void Solution::initSystem(const EigenSystem& system, 
-			  unsigned int eigenNumber){
+void Interpolator::initSystem(const EigenSystem& system, 
+			      unsigned int eigenNumber){
   // Save some data
   this->dofM = &(system.getDofManager());
   this->fs   = &(system.getFormulation().fs());
@@ -76,7 +76,7 @@ void Solution::initSystem(const EigenSystem& system,
   }
 }
 
-Solution::Solution(const System& system){
+Interpolator::Interpolator(const System& system){
   // Init
   initSystem(system);
 
@@ -89,8 +89,8 @@ Solution::Solution(const System& system){
   interpolate();
 }
 
-Solution::Solution(const System& system,
-		   const GroupOfElement& visu){
+Interpolator::Interpolator(const System& system,
+			   const GroupOfElement& visu){
   // Init
   initSystem(system);
 
@@ -104,8 +104,8 @@ Solution::Solution(const System& system,
   interpolateOnVisu();
 }
 
-Solution::Solution(const EigenSystem& system,
-		   unsigned int eigenNumber){
+Interpolator::Interpolator(const EigenSystem& system,
+			   unsigned int eigenNumber){
   // Init
   initSystem(system, eigenNumber);
 
@@ -118,9 +118,9 @@ Solution::Solution(const EigenSystem& system,
   interpolate();
 }
 
-Solution::Solution(const EigenSystem& system,
-		   unsigned int eigenNumber,
-		   const GroupOfElement& visu){
+Interpolator::Interpolator(const EigenSystem& system,
+			   unsigned int eigenNumber,
+			   const GroupOfElement& visu){
   // Init
   initSystem(system, eigenNumber);
 
@@ -134,8 +134,8 @@ Solution::Solution(const EigenSystem& system,
   interpolateOnVisu();
 }
 
-Solution::Solution(double (*f)(fullVector<double>& xyz), 
-		   const GroupOfElement& visu){
+Interpolator::Interpolator(double (*f)(fullVector<double>& xyz), 
+			   const GroupOfElement& visu){
   // Init
   scalar = true;
   ownSol = false;
@@ -152,8 +152,8 @@ Solution::Solution(double (*f)(fullVector<double>& xyz),
   evaluateF();
 }
 
-Solution::Solution(fullVector<double> (*f)(fullVector<double>& xyz), 
-		   const GroupOfElement& visu){
+Interpolator::Interpolator(fullVector<double> (*f)(fullVector<double>& xyz), 
+			   const GroupOfElement& visu){
   // Init
   scalar = false;
   ownSol = false;
@@ -170,7 +170,7 @@ Solution::Solution(fullVector<double> (*f)(fullVector<double>& xyz),
   evaluateF();
 }
 
-Solution::~Solution(void){
+Interpolator::~Interpolator(void){
   if(ownSol)
     delete sol;
 
@@ -181,7 +181,7 @@ Solution::~Solution(void){
     delete nodalVectorValue;
 }
 
-void Solution::write(const std::string name, Writer& writer) const{
+void Interpolator::write(const std::string name, Writer& writer) const{
   // Set Writer
   writer.setDomain(visuDomain->getAll());
 
@@ -195,7 +195,7 @@ void Solution::write(const std::string name, Writer& writer) const{
   writer.write(name);
 }
 
-void Solution::interpolate(void){
+void Interpolator::interpolate(void){
   // Init
   const unsigned int nTotVertex       = mesh->getVertexNumber();
   const std::vector<GroupOfDof*>& god = fs->getAllGroups();
@@ -269,7 +269,7 @@ void Solution::interpolate(void){
   }
 }
 
-void Solution::interpolateOnVisu(void){
+void Interpolator::interpolateOnVisu(void){
   // Init
   const Mesh& visuMesh              = visuDomain->getMesh();
   const unsigned int nTotVertex     = visuMesh.getVertexNumber();
@@ -342,7 +342,7 @@ void Solution::interpolateOnVisu(void){
   }
 }
 
-void Solution::evaluateF(void){
+void Interpolator::evaluateF(void){
   // Init
   const Mesh& visuMesh              = visuDomain->getMesh();
   const unsigned int nTotVertex     = visuMesh.getVertexNumber();
@@ -374,7 +374,7 @@ void Solution::evaluateF(void){
   }
 }
 
-const fullVector<double>* Solution::
+const fullVector<double>* Interpolator::
 getSol(const vector<vector<complex<double> > >& eVector,
        unsigned int eigenNumber){
   
@@ -391,17 +391,17 @@ getSol(const vector<vector<complex<double> > >& eVector,
   return sol;
 }
 
-vector<double>& Solution::getNodalScalarValue(void) const{
+vector<double>& Interpolator::getNodalScalarValue(void) const{
   if(!scalar)
-    throw Exception("Solution: try to get Scalar value in a Vectorial Solution");
+    throw Exception("Interpolator: try to get Scalar value in a Vectorial Interpolation");
 
   else
     return *nodalScalarValue;
 }
 
-vector<fullVector<double> >& Solution::getNodalVectorValue(void) const{
+vector<fullVector<double> >& Interpolator::getNodalVectorValue(void) const{
   if(scalar)
-    throw Exception("Solution: try to get Vectorial value in a Scalar Solution");
+    throw Exception("Interpolator: try to get Vectorial value in a Scalar Interpolation");
 
   else
     return *nodalVectorValue;  

@@ -5,7 +5,7 @@
 #include "fullMatrix.h"
 #include "System.h"
 
-#include "Solution.h"
+#include "Interpolator.h"
 #include "WriterMsh.h"
 #include "Integrator.h"
 
@@ -60,8 +60,8 @@ int main(int argc, char** argv){
     Mesh visuMesh(argv[3]);
     GroupOfElement visu = visuMesh.getFromPhysical(7);
     
-    Solution sol(sysPoisson, visu);
-    sol.write("poisson", writer);
+    Interpolator interp(sysPoisson, visu);
+    interp.write("poisson", writer);
   }
 
   else{

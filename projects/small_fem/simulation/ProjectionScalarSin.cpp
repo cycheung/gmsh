@@ -5,7 +5,7 @@
 #include "Mesh.h"
 #include "fullMatrix.h"
 #include "System.h"
-#include "Solution.h"
+#include "Interpolator.h"
 #include "WriterMsh.h"
 #include "WriterDummy.h"
 #include "Exception.h"
@@ -113,11 +113,11 @@ vector<double> fem(GroupOfElement& domain, GroupOfElement& visu,
   sysProj.assemble();
   sysProj.solve();
 
-  Solution solProj(sysProj, visu);
+  Interpolator intProj(sysProj, visu);
 
-  solProj.write(stream.str(), writer);  
+  intProj.write(stream.str(), writer);  
 
-  return solProj.getNodalScalarValue();
+  return intProj.getNodalScalarValue();
 }
 
 vector<double> ana(GroupOfElement& domain, 
@@ -130,7 +130,7 @@ vector<double> ana(GroupOfElement& domain,
   stream << "projection_Ref";
   cout   << stream.str() << endl;
 
-  Solution projection(f, domain);
+  Interpolator projection(f, domain);
   projection.write(stream.str(), writer);
 
   return projection.getNodalScalarValue();

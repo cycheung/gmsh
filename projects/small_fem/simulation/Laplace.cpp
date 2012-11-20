@@ -2,7 +2,7 @@
 
 #include "Mesh.h"
 #include "System.h"
-#include "Solution.h"
+#include "Interpolator.h"
 #include "WriterMsh.h"
 
 #include "FormulationLaplace.h"
@@ -53,8 +53,8 @@ int main(int argc, char** argv){
     Mesh visuMesh(argv[3]);
     GroupOfElement visu = visuMesh.getFromPhysical(7);
     
-    Solution sol(sysLaplace, visu);
-    sol.write("laplace", writer);
+    Interpolator interp(sysLaplace, visu);
+    interp.write("laplace", writer);
   }
 
   else{

@@ -5,7 +5,7 @@
 #include "EigenSystem.h"
 
 #include "WriterMsh.h"
-#include "Solution.h"
+#include "Interpolator.h"
 
 #include "FormulationEigenFrequency.h"
 
@@ -69,8 +69,8 @@ int main(int argc, char** argv){
       stringstream stream;
       stream << "cavity_mode" << i + 1;
       
-      Solution solCavity(sysCavity, i, visu);
-      solCavity.write(stream.str(), writer);
+      Interpolator intCavity(sysCavity, i, visu);
+      intCavity.write(stream.str(), writer);
     }
   }
 

@@ -4,7 +4,7 @@ set(src
   WriterMsh.cpp
   WriterVector.cpp
 
-  Solution.cpp
+  Interpolator.cpp
   PlotBasis.cpp
 
   Integrator.cpp

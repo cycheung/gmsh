@@ -2,7 +2,7 @@
 
 #include "Mesh.h"
 #include "System.h"
-#include "Solution.h"
+#include "Interpolator.h"
 #include "WriterMsh.h"
 
 #include "FormulationSteadyWave.h"
@@ -69,8 +69,8 @@ int main(int argc, char** argv){
     Mesh visuMsh(argv[4]);
     GroupOfElement visu = visuMsh.getFromPhysical(7);
 
-    Solution sol(sys, visu);
-    sol.write("swave", writer);
+    Interpolator interp(sys, visu);
+    interp.write("swave", writer);
   }
 
   else{

@@ -6,7 +6,7 @@
 #include "EigenSystem.h"
 
 #include "WriterMsh.h"
-#include "Solution.h"
+#include "Interpolator.h"
 
 #include "FormulationVibration.h"
 
@@ -67,8 +67,8 @@ int main(int argc, char** argv){
       stringstream stream;
       stream << "vibration_mode" << i + 1;
       
-      Solution solVibration(sysVibration, i, visu);
-      solVibration.write(stream.str(), writer);
+      Interpolator intVibration(sysVibration, i, visu);
+      intVibration.write(stream.str(), writer);
     }
   }
 
