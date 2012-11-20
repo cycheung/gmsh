@@ -1,5 +1,5 @@
 MATERIAL.number(1, 3Material/0,"Name");
-MATERIAL.valueLabels(0, "User defined", 1, "Steel", 2, "Wood", 3, "Alu");
+MATERIAL.valueLabels(1, "Steel", 2, "Wood", 3, "Alu", 4, "User defined");
 YOUNG.number(, 3Material/, "Young modulus [GPa]");
 POISSON.number(, 3Material/, "Poisson ratio []", 0:0.44:0.1);
 POISSON.withinRange();
@@ -29,12 +29,12 @@ OL.endif
 WEIGHT.radioButton(1, 3Material/0, "Account for weight");
 LOOP.radioButton(0,,"Compute MQ diagrams");
 
-M.number(,9Results/2,"Moment - M");
-N.number(,9Results/3,"Traction - N");
-T.number(,9Results/4,"Shear - Q");
-vmin.number(,9Results/,"min v(x)"); 
-vmax.number(,9Results/,"max v(x)"); 
-MAX.number(,9Results/1,"max |v(x)|");
+M.number(,9Results/2,"Moment - M [Nm]");
+N.number(,9Results/3,"Traction - N [N]");
+T.number(,9Results/4,"Shear - Q [N]");
+vmin.number(,9Results/,"min v(x) [m]"); 
+vmax.number(,9Results/,"max v(x) [m]"); 
+MAX.number(,9Results/1,"max |v(x)| [m]");
 
 vmin.setVisible(0);
 vmax.setVisible(0);
@@ -48,15 +48,15 @@ X.number(0.75, 1Geometry/,"Cut location [m]");
 OL.iftrue(LOOP)
 X.setAttribute(Loop,3);
 X.setAttribute(Graph,101000);
-9Results/M.setAttribute(Graph,010000);
-9Results/T.setAttribute(Graph,000100);
+M.setAttribute(Graph,010000);
+T.setAttribute(Graph,000100);
 OL.else
   OL.if( OL.get(X, attrib.get(Loop)) == 3)
     X.setAttribute(Loop,0);
   OL.endif
 X.setAttribute(Graph,0);
-9Results/M.setAttribute(Graph,0);
-9Results/T.setAttribute(Graph,0);
+M.setAttribute(Graph,0);
+T.setAttribute(Graph,0);
 OL.endif
 
 OL.if( OL.get(X, choices.index()) == 0 )
@@ -75,7 +75,7 @@ Mesher.frontPage(OL.get(Arguments/FileName).geo,
 OL.iftrue(LOOP)
 X.range(0.10:OL.get(1Geometry/L)|10.00001);
 OL.else
-X.range(0.0:OL.get(1Geometry/L):O.1);
+X.range(1e-4:OL.eval(OL.get(1Geometry/L)-1e-4):O.1);
 X.withinRange();
 OL.endif
 
@@ -104,5 +104,5 @@ Post.up(MNT.txt,-1,8,9Results/2M,
 Post.merge(RemoveViews.macro, beam.pos, script.opt);
 
 MAX.setValue(OL.eval( Max(abs(OL.get(vmin)), abs(OL.get(vmax))) ));
-MAX.setReadOnly(0);
+
 #OL.dump(aaa);
