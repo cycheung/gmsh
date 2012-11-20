@@ -2,13 +2,9 @@
 
 #include <sstream>
 
-unsigned int GroupOfDof::nextId = 0;
-
 GroupOfDof::GroupOfDof(unsigned int numberOfDof, const MElement& geoElement){
   // Init //
   element = &geoElement;
-  id      = nextId;
-  nextId++;
 
   // Set GroupOfDof //
   nDof = numberOfDof;
@@ -30,7 +26,7 @@ std::string GroupOfDof::toString(void) const{
   std::stringstream stream;
   
   stream << "*************************** " << std::endl
-	 << "* Group Of Dof #" << id       << std::endl
+	 << "* Group Of Dof"               << std::endl
 	 << "*************************** " << std::endl
 	 << "* Associated Dofs:  " << std::endl;
 

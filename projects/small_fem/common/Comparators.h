@@ -2,7 +2,6 @@
 #define _COMPARATORS_H_
 
 #include "Dof.h"
-#include "Group.h"
 #include "MElement.h"
 #include "MVertex.h"
 #include "MEdge.h"
@@ -22,20 +21,6 @@
    @li @c false, otherwise
  */
 
-/**
-   @class GroupComparator
-   @brief A comparator for Group%s
-
-   This class is able to compare two Group%s.
-
-   @fn bool GroupComparator::operator()(const Group* a, const Group* b) const;
-   @param a A Group pointer
-   @param b A second Group pointer (possibly pointing to the same Group as @c a)
-   @return Returns:
-   @li @c true, if the Group @em pointed by @c a is @em smaller 
-   than the Group @em pointed by @c b
-   @li @c false, otherwise
- */
 
 /**
    @class ElementComparator
@@ -147,11 +132,6 @@ class DofComparator{
   bool operator()(const Dof* a, const Dof* b) const;
 };
 
-class GroupComparator{
- public:
-  bool operator()(const Group* a, const Group* b) const;
-};
-
 class ElementComparator{
  public:
   bool operator()(const MElement *a, const MElement *b) const;
@@ -185,11 +165,6 @@ class OrientedEdgeComparator{
 inline bool DofComparator::
 operator()(const Dof* a, const Dof* b) const{
   return *a < *b;
-}
-
-inline bool GroupComparator::
-operator()(const Group* a, const Group* b) const{
-  return a->getId() < b->getId();
 }
 
 inline bool ElementComparator::

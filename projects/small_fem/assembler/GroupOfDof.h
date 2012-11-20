@@ -2,29 +2,23 @@
 #define _GROUPOFDOF_H_
 
 #include <vector>
-#include "GroupTyped.h"
+
 #include "Dof.h"
-
-#include "Mesh.h"
-
 #include "MElement.h"
 
 /**
    @class GroupOfDof
    @brief Handels a Group of Dof%s with @em geometrical meaning
 
-   This class handles a Group of Dof%s with a @em geometrical meaning 
+   This class handles a collection of Dof%s with a @em geometrical meaning 
    (@e e.g: Dof%s that belongs to the same (finite) element).@n
 
    It also gives acces to the underlying Geometrical Element.
 */
 
-class GroupOfDof: public GroupTyped<Dof>{
+class GroupOfDof{
  private:
-  static unsigned int nextId;
-  unsigned int            id;
-
-  const MElement*      element;
+  const MElement* element;
 
   unsigned int nDof;
   std::vector<const Dof*>* dof;
@@ -37,18 +31,15 @@ class GroupOfDof: public GroupTyped<Dof>{
 
   ~GroupOfDof(void);
 
-  virtual unsigned int getNumber(void) const;
-  virtual unsigned int getId(void) const;
-  virtual unsigned int getType(void)   const;
-
   void add(const Dof& dof);
   
-  virtual const Dof&                     get(unsigned int i) const; 
-  virtual const std::vector<const Dof*>& getAll(void) const;
+  unsigned int                   getNumber(void)     const;
+  const Dof&                     get(unsigned int i) const; 
+  const std::vector<const Dof*>& getAll(void)        const;
   
   const MElement& getGeoElement(void) const;
 
-  virtual std::string toString(void) const;
+  std::string toString(void) const;
 };
 
 
@@ -72,6 +63,10 @@ class GroupOfDof: public GroupTyped<Dof>{
    Adds the given Dof to this GroupOfDof
    **
 
+   @fn GroupOfDof::getNumber
+   @return Returns the number of elements in this GroupOfDof
+   **
+
    @fn GroupOfDof::get
    @param i An interger ranging from 0 
    to GroupOfDof::getNumber() - 1
@@ -85,6 +80,9 @@ class GroupOfDof: public GroupTyped<Dof>{
    @fn GroupOfDof::getGeoElement
    @return Returns the underlying Geometrical Element
    **
+
+   @fn GroupOfDof::toString
+   @return Returns a string discribing this GroupOfDof
 */
 
 //////////////////////
@@ -93,14 +91,6 @@ class GroupOfDof: public GroupTyped<Dof>{
 
 inline unsigned int GroupOfDof::getNumber(void) const{
   return nDof;
-}
-
-inline unsigned int GroupOfDof::getId(void) const{
-  return id;
-}
-
-inline unsigned int GroupOfDof::getType(void) const{
-  return 0;
 }
 
 inline const Dof& GroupOfDof::get(unsigned int i) const{

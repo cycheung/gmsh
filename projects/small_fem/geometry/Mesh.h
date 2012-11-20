@@ -24,7 +24,7 @@
 
    It is also responsible of the @em numbering of those
    elements.@n
-   Indeed, each element shall be granted a @em unique @c ID.@n
+   Indeed, each element is granted a @em unique @c ID.@n
 
    A Mesh is instantiated thanks to a 
    <a href="http://www.geuz.org/gmsh">gmsh</a>
@@ -42,11 +42,6 @@ class Mesh{
   std::map<const MEdge*, unsigned int, EdgeComparator>*       edge;
   std::map<const MFace*, unsigned int, FaceComparator>*       face;  
 
-  std::map<unsigned int, const MElement*>* idElement;
-  std::map<unsigned int, const MVertex*>*  idVertex;
-  std::map<unsigned int, const MEdge*>*    idEdge;
-  std::map<unsigned int, const MFace*>*    idFace;
-
   std::multimap<int, const MElement*>* physical;
 
   int nextId;
@@ -61,11 +56,6 @@ class Mesh{
   unsigned int getGlobalId(const MVertex& vertex) const;
   unsigned int getGlobalId(const MEdge& edge) const;
   unsigned int getGlobalId(const MFace& face) const;
-
-  const MElement& getElement(unsigned int id) const;
-  const MVertex&  getVertex(unsigned int id) const;
-  const MEdge&    getEdge(unsigned int id) const;
-  const MFace&    getFace(unsigned int id) const;
 
   const std::vector<const MVertex*> getAllVertex(void) const;
 
@@ -120,34 +110,6 @@ class Mesh{
    @param face A MFace
    @return Returns the @em global @em @c ID (in this Mesh) of the
    given MFace
-   **
- 
-   @fn Mesh::getElement
-   @param id A natural number
-   @return Returns the MElement with the given @em global @c ID
-   @note 
-   If no MElement has the given global @c ID, an Exception is thrown
-   **
-
-   @fn Mesh::getVertex
-   @param id A natural number
-   @return Returns the MVertex with the given @em global @c ID
-   @note 
-   If no MVertex has the given global @c ID, an Exception is thrown
-   **
-
-   @fn Mesh::getEdge
-   @param id A natural number
-   @return Returns the MEdge with the given @em global @c ID
-   @note 
-   If no MEdge has the given global @c ID, an Exception is thrown
-   **
-
-   @fn Mesh::getFace
-   @param id A natural number
-   @return Returns the MFace with the given @em global @c ID
-   @note 
-   If no MFace has the given global @c ID, an Exception is thrown
    **
 
    @fn Mesh::getAllVertex

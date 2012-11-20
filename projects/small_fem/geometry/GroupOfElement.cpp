@@ -5,16 +5,10 @@
 
 using namespace std;
 
-unsigned int GroupOfElement::nextId = 0;
-
 GroupOfElement::GroupOfElement
 (std::multimap<int, const MElement*>::iterator begin, 
  std::multimap<int, const MElement*>::iterator end,
  const Mesh& mesh){
-  
-  // Set ID //
-  id = nextId;
-  nextId++;
   
   // Get Element //
   list<const MElement*> lst;
@@ -38,7 +32,7 @@ string GroupOfElement::toString(void) const{
   
   stream << "*********************************************"    
 	 << endl
-	 << "* Group Of Element #" << id    
+	 << "* Group Of Element"    
 	 << endl
 	 << "*********************************************" 
 	 << endl << "*" 

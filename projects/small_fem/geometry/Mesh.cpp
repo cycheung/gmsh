@@ -43,12 +43,7 @@ Mesh::Mesh(const std::string fileName){
   // Extract Faces //
   face = FaceExtractor::extract(*element);
   
-  // Number Mesh Entities //
-  idElement = new map<unsigned int, const MElement*>;
-  idVertex  = new map<unsigned int, const MVertex*>;
-  idEdge    = new map<unsigned int, const MEdge*>;
-  idFace    = new map<unsigned int, const MFace*>;
-
+  // Number Geometry //
   nextId = 0;
   number();
 }
@@ -59,16 +54,14 @@ Mesh::~Mesh(void){
   // WARNING
   // Mesh is *NOT* responsible for
   // Deleting MElement*
-  delete idElement;
   delete element;
   delete physical;
 
-  // Delete Vertices
+  // Delete Vertices //
 
   // WARNING
   // Mesh is *NOT* responsible for
   // Deleting MVertex*
-  delete idVertex;
   delete vertex;
 
   // Delete Edges //
@@ -81,7 +74,6 @@ Mesh::~Mesh(void){
   for(; itE != endE; itE++)
     delete itE->first;
 
-  delete idEdge;
   delete edge;  
 
   // Delete Faces //
@@ -94,7 +86,6 @@ Mesh::~Mesh(void){
   for(; itF != endF; itF++)
     delete itF->first;
 
-  delete idFace;
   delete face;  
 
   // Delete Model //
@@ -157,38 +148,6 @@ unsigned int Mesh::getGlobalId(const MFace& face) const{
   return it->second; 
 }
 
-const MElement& Mesh::getElement(unsigned int id) const{
-  map<unsigned int, const MElement*>::iterator it = 
-    idElement->find(id);
-
-  if(it == idElement->end())
-    throw 
-      Exception("No Element with Global Id %d found", id);
-
-  return *(it->second);   
-}
-
-const MVertex& Mesh::getVertex(unsigned int id) const{
-  map<unsigned int, const MVertex*>::iterator it = 
-    idVertex->find(id);
-
-  if(it == idVertex->end())
-    throw 
-      Exception("No Vertex with Global Id %d found", id);
-
-  return *(it->second);   
-}
-
-const MEdge& Mesh::getEdge(unsigned int id) const{
-  map<unsigned int, const MEdge*>::iterator it = 
-    idEdge->find(id);
-
-  if(it == idEdge->end())
-    throw 
-      Exception("No Edge with Global Id %d found", id);
-  return *(it->second);   
-}
-
 const vector<const MVertex*> Mesh::getAllVertex(void) const{
   // Init
   const unsigned int size = vertex->size();
@@ -236,40 +195,24 @@ void Mesh::number(void){
   // Number Vertices //
   for(; itV != endV; itV++){
     itV->second = nextId;
-    idVertex->insert
-      (pair<unsigned int, const MVertex*>
-       (itV->second, itV->first));
-    
     nextId++;
   }
 
   // Number Edges //
   for(; itEd != endEd; itEd++){
     itEd->second = nextId;
-    idEdge->insert
-      (pair<unsigned int, const MEdge*>
-       (itEd->second, itEd->first));
-    
     nextId++;
   }
 
   // Number Faces //
   for(; itF != endF; itF++){
     itF->second = nextId;
-    idFace->insert
-      (pair<unsigned int, const MFace*>
-       (itF->second, itF->first));
-    
     nextId++;
   }
 
   // Number Elements //
   for(; itEl != endEl; itEl++){
     itEl->second = nextId;
-    idElement->insert
-      (pair<unsigned int, const MElement*>
-       (itEl->second, itEl->first));
-    
     nextId++;
   }
 }
