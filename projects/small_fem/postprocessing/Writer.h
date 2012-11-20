@@ -87,23 +87,36 @@ class Writer{
    @fn void Writer::setValues(const std::vector<double>& value)
    @param value A set of value (double)
    
-   Set this Writer's Data to the given values
+   Sets this Writer's Data to the given values
    **
 
    @fn void Writer::setValues(const std::vector<fullVector<double> >& value)
    @param value A set of value (fullVector<double>)
    
-   Set this Writer's Data to the given values
+   Sets this Writer's Data to the given values
    **
 
-   @fn void Writer::setValues(const System& value)
-   @param value A System
+   @fn void Writer::setValues(const System&)
+   @param system A System
    
-   Use the System Solution for Data
+   Uses the given System Solution for Data
 
    @warning
    Writer::setDomain() will be called with the Support
-   of the FunctionSpace of the System
+   of the FunctionSpace of the Formulation of the System
+   **
+
+   @fn void Writer::setValues(const EigenSystem& system, unsigned int)
+   @param system An EigenSystem
+   @param eigenNumber A natural number
+
+   Uses the given EigenSystem Eigenvector for Data
+
+   @note The used Eigenvector is defined by @c eigenNumber
+
+   @warning
+   Writer::setDomain() will be called with the Support
+   of the FunctionSpace of the EigenFormulation of the EigenSystem
    **
 
    @fn Writer::setDomain

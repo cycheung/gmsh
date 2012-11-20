@@ -21,8 +21,10 @@
    The @em domain of this Writer is a set of MElement%s
    defining the geometrical support (a mesh) of @f$f@f$. 
 
-   The @em data of this Writer are the set of scalar (or vectorial)
-   values, defined on the @em vertices of the mesh, of @f$f@f$. 
+   The @em data of this Writer are either:
+   @li A set of scalar (or vectorial) values, 
+   defined on the @em vertices of the mesh, of @f$f@f$. 
+   @li A System (or EigenSystem) solution
 
    A WriterMsh can write a .@c msh file of @f$f@f$
 
