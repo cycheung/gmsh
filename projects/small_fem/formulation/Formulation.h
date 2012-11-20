@@ -10,6 +10,9 @@
 
    This is the base interface of a Finite Element formulation.@n
 
+   A Finite Element Problem is of the type:@n
+   @f$\mathbf{A}~\mathbf{x} = \mathbf{b}@f$@n
+
    A Formulation is defined by:
    @li A Function Space 
    @see FunctionSpace class
@@ -43,10 +46,10 @@ class Formulation{
    **
 
    @fn Formulation::weak
-   @param dofI The @em first index of a formulation term 
+   @param dofI The @em first index of the formulation term 
    @param dofJ The @em second index of the formulation term
    @param god The @em GroupOfDof associated with the formulation term   
-   @return The value of the given formulation term
+   @return The value of the requested formulation term
    **
 
    @fn Formulation::rhs

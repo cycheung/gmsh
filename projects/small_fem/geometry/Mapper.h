@@ -82,7 +82,7 @@ class Mapper{
    @em physical space
 
    @fn Mapper::curl
-   @param gradUVW A curl in the @em reference space
+   @param curlUVW A curl in the @em reference space
    @param jac The Jacobian Matrix evaluated at @c UVW 
    @param invDet The Invert of the Jacobian Matrix Determinant 
    evaluated at @c UVW 

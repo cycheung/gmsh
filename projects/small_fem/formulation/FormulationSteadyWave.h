@@ -58,14 +58,14 @@ class FormulationSteadyWave: public Formulation{
 /**
    @fn FormulationSteadyWave::FormulationSteadyWave
    @param goe A GroupOfElement
-   @param pulsation A real number
+   @param k A real number
    @param order A natural number
 
    Instantiates a new FormulationSteadyWave of the given 
-   @em order and @em pulsation@n
+   @em order and @em wave @em number (@c k)@n
 
    The given GroupOfElement will be used as the 
-   geomtrical @em domain@n
+   geomtrical @em domain
    **
 
    @fn FormulationSteadyWave::~FormulationSteadyWave

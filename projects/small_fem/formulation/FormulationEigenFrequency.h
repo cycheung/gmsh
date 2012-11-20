@@ -8,9 +8,9 @@
 
 /**
    @class FormulationEigenFrequency
-   @brief Formulation for the Eigenfrequencies Problem
+   @brief EigenFormulation for the Eigenfrequencies Problem
 
-   Formulation for the Eigenfrequencies Problem
+   EigenFormulation for the Eigenfrequencies Problem
  */
 
 class FormulationEigenFrequency: public EigenFormulation{
@@ -46,14 +46,14 @@ class FormulationEigenFrequency: public EigenFormulation{
   virtual double weakB(int dofI, int dofJ,
 		       const GroupOfDof& god) const;
   
-  virtual double rhs(int equationI, 
-		     const GroupOfDof& god) const;
-
   virtual const FunctionSpace& fs(void) const;
 };
 
 /**
    @fn FormulationEigenFrequency::FormulationEigenFrequency
+   @param goe A GroupOfElement defining the Domain of the Problem
+   @param order A natural number, giving the order of this Formulation
+
    Instanciates a new EigenFormulation for the
    Eigenfrequencies Problem
    **
@@ -68,11 +68,6 @@ class FormulationEigenFrequency: public EigenFormulation{
 
 inline bool FormulationEigenFrequency::isGeneral(void) const{
   return true;
-}
-
-inline double FormulationEigenFrequency::rhs(int equationI, 
-					     const GroupOfDof& god) const{
-  return 0;
 }
 
 inline const FunctionSpace& FormulationEigenFrequency::fs(void) const{

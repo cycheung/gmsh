@@ -8,9 +8,9 @@
 
 /**
    @class FormulationVibration
-   @brief Formulation for the Poisson problem
+   @brief EigenFormulation for the Vibration problem
 
-   Formulation for the @em Poisson problem.
+   EigenFormulation for the @em Vibration problem.
 
    @todo
    Remove ALL const_cast%S by correcting MElement constness@n
@@ -40,9 +40,6 @@ class FormulationVibration: public EigenFormulation{
 
   virtual double weakB(int dofI, int dofJ,
 		       const GroupOfDof& god) const;
-
-  virtual double rhs(int equationI,
-		     const GroupOfDof& god) const;
 
   virtual const FunctionSpace& fs(void) const;
 };
@@ -74,11 +71,6 @@ inline bool FormulationVibration::isGeneral(void) const{
 inline double FormulationVibration::weakB(int dofI, int dofJ,
 					  const GroupOfDof& god) const{
   return 42;
-}
-
-inline double FormulationVibration::rhs(int equationI,
-					const GroupOfDof& god) const{
-  return 0;
 }
 
 inline const FunctionSpace& FormulationVibration::fs(void) const{

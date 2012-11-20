@@ -68,4 +68,22 @@ class Integrator{
 		      fullVector<double>& gW);
 };
 
+
+/**
+   @fn Integrator::Integrator
+   @param system A Finite Element System
+
+   Instanciates a new Integrator that will be able
+   to integrate the given System%'s solution
+   **
+
+   @fn Integrator::~Integrator
+   
+   Deletes this Integrator
+   **
+
+   @fn Integrator::integrate
+   @return Returns the integrated solution
+ */
+
 #endif
