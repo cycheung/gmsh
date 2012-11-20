@@ -27,11 +27,11 @@ OL.if(OL.get(MATERIAL) == 4)
 OL.endif
 
 WEIGHT.radioButton(1, 3Material/0, "Account for weight");
-LOOP.radioButton(0,,"Compute MQ diagrams");
+LOOP.radioButton(0,,"Compute MT diagrams");
 
 M.number(,9Results/2,"Moment - M [Nm]");
 N.number(,9Results/3,"Traction - N [N]");
-T.number(,9Results/4,"Shear - Q [N]");
+T.number(,9Results/4,"Shear - T [N]");
 vmin.number(,9Results/,"min v(x) [m]"); 
 vmax.number(,9Results/,"max v(x) [m]"); 
 MAX.number(,9Results/1,"max |v(x)| [mm]");
@@ -73,7 +73,7 @@ Mesher.frontPage(OL.get(Arguments/FileName).geo,
                  OL.get(Arguments/FileName).msh);
 
 OL.iftrue(LOOP)
-X.range(0.10:OL.get(1Geometry/L)|25.00001);
+X.range(0.10:OL.get(1Geometry/L)|15.00001);
 OL.else
 X.range(1e-4:OL.eval(OL.get(1Geometry/L)-1e-4):O.1);
 X.withinRange();
