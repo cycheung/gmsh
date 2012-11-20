@@ -1,7 +1,7 @@
 MATERIAL.number(1, 3Material/0,"Name");
 MATERIAL.valueLabels(1, "Steel", 2, "Wood", 3, "Alu", 4, "User defined");
 YOUNG.number(, 3Material/, "Young modulus [GPa]");
-POISSON.number(, 3Material/, "Poisson ratio []", 0:0.44:0.1);
+POISSON.number(, 3Material/, "Poisson ratio []", 0:0.46:0.1);
 POISSON.withinRange();
 DENSITY.number(, 3Material/, "Mass density [kg/m3]");
 
@@ -20,7 +20,7 @@ OL.if(OL.get(MATERIAL) == 3)
   POISSON.setValue(0.33);
   DENSITY.setValue(6000);
 OL.endif
-OL.if(OL.get(MATERIAL) == 0)
+OL.if(OL.get(MATERIAL) == 4)
   YOUNG.setReadOnly(0);
   POISSON.setReadOnly(0);
   DENSITY.setReadOnly(0);
@@ -34,7 +34,7 @@ N.number(,9Results/3,"Traction - N [N]");
 T.number(,9Results/4,"Shear - Q [N]");
 vmin.number(,9Results/,"min v(x) [m]"); 
 vmax.number(,9Results/,"max v(x) [m]"); 
-MAX.number(,9Results/1,"max |v(x)| [m]");
+MAX.number(,9Results/1,"max |v(x)| [mm]");
 
 vmin.setVisible(0);
 vmax.setVisible(0);
@@ -73,7 +73,7 @@ Mesher.frontPage(OL.get(Arguments/FileName).geo,
                  OL.get(Arguments/FileName).msh);
 
 OL.iftrue(LOOP)
-X.range(0.10:OL.get(1Geometry/L)|10.00001);
+X.range(0.10:OL.get(1Geometry/L)|25.00001);
 OL.else
 X.range(1e-4:OL.eval(OL.get(1Geometry/L)-1e-4):O.1);
 X.withinRange();
@@ -103,6 +103,6 @@ Post.up(MNT.txt,-1,8,9Results/2M,
         MNT.txt,-1,10,9Results/4T);
 Post.merge(RemoveViews.macro, beam.pos, script.opt);
 
-MAX.setValue(OL.eval( Max(abs(OL.get(vmin)), abs(OL.get(vmax))) ));
+MAX.setValue(OL.eval( 1e3*Max(abs(OL.get(vmin)), abs(OL.get(vmax))) ));
 
 #OL.dump(aaa);
