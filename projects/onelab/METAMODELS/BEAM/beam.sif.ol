@@ -93,7 +93,7 @@ Solver 1
   Nonlinear System Convergence Tolerance = 1.0e-5
   Nonlinear System Relaxation Factor = 1.0
   Steady State Convergence Tolerance = 1.0e-4
-  Calculate Load = True
+  Calculate Loads = True
   Calculate stresses = True
 End
 
