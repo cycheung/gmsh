@@ -1,19 +1,12 @@
-#include "VertexExtractor.h"
+#include "GeoExtractor.h"
 
 using namespace std;
 
-VertexExtractor::VertexExtractor(void){
-}
-
-
-VertexExtractor::~VertexExtractor(void){
-}
-
 map<const MVertex*, unsigned int, VertexComparator>*
 
-VertexExtractor::extract(const map<const MElement*, 
-				   unsigned int, 
-				   ElementComparator>& element){
+GeoExtractor::extractVertex(const map<const MElement*, 
+				      unsigned int, 
+				      ElementComparator>& element){
   // Init //
   map<const MVertex*, unsigned int, VertexComparator>* 
     vertex = new map<const MVertex*, unsigned int, VertexComparator>;

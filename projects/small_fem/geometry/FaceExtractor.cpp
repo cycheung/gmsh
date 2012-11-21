@@ -1,18 +1,11 @@
-#include "FaceExtractor.h"
+#include "GeoExtractor.h"
 
 using namespace std;
 
-FaceExtractor::FaceExtractor(void){
-}
-
-
-FaceExtractor::~FaceExtractor(void){
-}
-
 map<const MFace*, unsigned int, FaceComparator>*
-FaceExtractor::extract(const map<const MElement*, 
-				 unsigned int, 
-				 ElementComparator>& element){
+GeoExtractor::extractFace(const map<const MElement*, 
+				    unsigned int, 
+				    ElementComparator>& element){
   // Init //
   map<const MFace*, unsigned int, FaceComparator>* 
     face = new map<const MFace*, unsigned int, FaceComparator>;
@@ -53,14 +46,4 @@ FaceExtractor::extract(const map<const MElement*,
 
   // Return //
   return face;
-}
-
-MFace* FaceExtractor::copy(const MFace& face){
-  const int size = face.getNumVertices();
-  vector<MVertex*> vertex(size);
-
-  for(int i = 0; i < size; i++)
-    vertex[i] = face.getVertex(i);
-
-  return new MFace(vertex);  
 }

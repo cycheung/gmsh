@@ -1,18 +1,11 @@
-#include "EdgeExtractor.h"
+#include "GeoExtractor.h"
 
 using namespace std;
 
-EdgeExtractor::EdgeExtractor(void){
-}
-
-
-EdgeExtractor::~EdgeExtractor(void){
-}
-
 map<const MEdge*, unsigned int, EdgeComparator>*
-EdgeExtractor::extract(const map<const MElement*, 
-				 unsigned int, 
-				 ElementComparator>& element){
+GeoExtractor::extractEdge(const map<const MElement*, 
+				    unsigned int, 
+				    ElementComparator>& element){
   // Init //
   map<const MEdge*, unsigned int, EdgeComparator>* 
     edge = new map<const MEdge*, unsigned int, EdgeComparator>;
@@ -53,11 +46,4 @@ EdgeExtractor::extract(const map<const MElement*,
 
   // Return //
   return edge;
-}
-
-MEdge* EdgeExtractor::copy(const MEdge& edge){
-  MVertex* begin = edge.getVertex(0);
-  MVertex* end   = edge.getVertex(1);
-
-  return new MEdge(begin, end);  
 }

@@ -1,18 +1,11 @@
-#include "ElementExtractor.h"
+#include "GeoExtractor.h"
 
 using namespace std;
-
-ElementExtractor::ElementExtractor(void){
-}
-
-
-ElementExtractor::~ElementExtractor(void){
-}
 
 pair<map<const MElement*, unsigned int, ElementComparator>*,
      multimap<int, const MElement*>*>
 
-ElementExtractor::extract(const vector<GEntity*>& entity){
+GeoExtractor::extractElement(const vector<GEntity*>& entity){
   // Init //
   map<const MElement*, unsigned int, ElementComparator>* 
     element = new map<const MElement*, unsigned int, ElementComparator>;

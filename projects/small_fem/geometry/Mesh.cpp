@@ -1,11 +1,7 @@
 #include <vector>
 #include <sstream>
 
-#include "ElementExtractor.h"
-#include "VertexExtractor.h"
-#include "EdgeExtractor.h"
-#include "FaceExtractor.h"
-
+#include "GeoExtractor.h"
 #include "Exception.h"
 #include "Mesh.h"
 
@@ -29,19 +25,15 @@ Mesh::Mesh(const std::string fileName){
     map<const MElement*, unsigned int, ElementComparator>*,
     multimap<int, const MElement*>*
     >
-    elementsExtracted = ElementExtractor::extract(entity);
+    elementsExtracted = GeoExtractor::extractElement(entity);
 
   element  = elementsExtracted.first;
   physical = elementsExtracted.second;
 
-  // Extract Nodes //
-  vertex = VertexExtractor::extract(*element);
-
-  // Extract Edges //
-  edge = EdgeExtractor::extract(*element);
-
-  // Extract Faces //
-  face = FaceExtractor::extract(*element);
+  // Extract Nodes, Edges and Faces //
+  vertex = GeoExtractor::extractVertex(*element);
+  edge   = GeoExtractor::extractEdge(*element);
+  face   = GeoExtractor::extractFace(*element);
   
   // Number Geometry //
   nextId = 0;

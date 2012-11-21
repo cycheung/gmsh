@@ -3,6 +3,7 @@ set(src
   Mesh.cpp
   GroupOfElement.cpp
 
+  GeoExtractor.cpp
   ElementExtractor.cpp
   VertexExtractor.cpp
   EdgeExtractor.cpp
