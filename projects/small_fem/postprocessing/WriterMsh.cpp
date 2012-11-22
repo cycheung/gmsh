@@ -3,7 +3,8 @@
 #include "Exception.h"
 #include "FunctionSpaceScalar.h"
 #include "FunctionSpaceVector.h"
-#include "LagrangeGenerator.h"
+#include "BasisGenerator.h"
+#include "LagrangeBasis.h"
 #include "WriterMsh.h"
 
 using namespace std;
@@ -31,8 +32,13 @@ void WriterMsh::write(const std::string name) const{
     writeElements();
     
     if(!isNodal){
-      lBasis = LagrangeGenerator::generate((*element)[0]->getType(),
-					   fs->getOrder());
+      lBasis = static_cast<LagrangeBasis*>
+	(BasisGenerator::generate((*element)[0]->getType(),
+				  0,
+				  fs->getOrder(),
+				  "lagrange")
+	 );
+
       writeInterpolationScheme();
     }
 

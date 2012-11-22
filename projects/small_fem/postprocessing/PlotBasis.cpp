@@ -1,4 +1,4 @@
-#include <sstream>
+#include <cstdio>
 #include <set>
 
 #include "BasisScalar.h"
@@ -48,26 +48,23 @@ PlotBasis::~PlotBasis(void){
 }
 
 void PlotBasis::plot(const string name) const{
-  // Compute '0' spoofing for file names// 
-  int dec   = nFunction;
-  int spoof = 0;
+  // Number of decimals in nFunction //
+  // Used for '0' pading in sprintf
+  int tmp = nFunction;
+  int dec = 0;
 
-  while(dec > 10){
-    spoof++;
-    dec /= 10;
+  while(tmp != 0){
+    dec++;
+    tmp /= 10;
   }
 
   // Plot //
+  char fileName[1024];
+  
   for(int i = 0, j = 0; i < nFunction; i++, j++){
-    stringstream nameCat; 
-    
-    // Get name with right number of '0' 
-    nameCat << name;
-   
-    for(int k = 0; k < spoof; k++)
-      nameCat << "0";
-
-    nameCat << i + 1;
+    // Basis Name
+    sprintf(fileName, 
+	    "%s%0*d", name.c_str(), dec, i + 1);
    
     // Set Values 
     if(isScalar)
@@ -77,13 +74,7 @@ void PlotBasis::plot(const string name) const{
       writer->setValues(*(nodalVectorValue[i]));
 
     // Plot
-    writer->write(nameCat.str());
-
-    // Go to higher decimal
-    if(j == 8){
-      j = 0;
-      spoof--;
-    }
+    writer->write(string(fileName));
   }
 }
 

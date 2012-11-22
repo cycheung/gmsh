@@ -1,6 +1,6 @@
 l = 1;
 
-msh = 8;
+msh = 2;
 cl  = 5;
 
 Point(1) = {+l, -l, 0, cl};
