@@ -40,6 +40,11 @@ void System::assemble(void){
   const vector<GroupOfDof*>& group = fs->getAllGroups();
   const int E = fs->groupNumber();
 
+  // Set to put Fixed Dof only ones 
+  // (cannot use both  setValue and add Value
+  //  in PETSc)
+  fixedOnes = new set<const Dof*, DofComparator>();
+
   // Get Sparcity Pattern & PreAllocate//
   for(int i = 0; i < E; i++)
     sparcity(*(group[i]));  
@@ -51,6 +56,7 @@ void System::assemble(void){
     assemble(*(group[i]));  
 
   // The system is assembled //
+  delete fixedOnes;
   assembled = true;  
 }
 
@@ -166,8 +172,14 @@ void System::assemble(GroupOfDof& group){
 
     if(fixed.first){
       // If fixed Dof
-      linSys->addToMatrix(dofI, dofI, 1);
-      linSys->addToRightHandSide(dofI, fixed.second); 
+      pair<
+	set<const Dof*, DofComparator>::iterator,
+	bool> ones = fixedOnes->insert(dof[i]);
+	
+      if(ones.second){
+	linSys->addToMatrix(dofI, dofI, 1);
+	linSys->addToRightHandSide(dofI, fixed.second);
+      } 
     }
        
     else{

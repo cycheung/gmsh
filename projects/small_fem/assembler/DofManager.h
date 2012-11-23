@@ -43,6 +43,9 @@ class DofManager{
   bool fixValue(const Dof& dof, double value);
   std::pair<bool, double> getValue(const Dof& dof) const;
 
+  unsigned int getDofNumber(void) const;
+  unsigned int getUnkownNumber(void) const;  
+
   std::string toString(void) const;
 };
 
@@ -114,6 +117,16 @@ class DofManager{
    </ul>
    **
 
+   @fn DofManager::getDofNumber
+   @return Returns the number of Dof%s in 
+   this DofManager (with fixed Dof%s)
+   **
+
+   @fn DofManager::getUnkownNumber  
+   @return Returns the number of fixed Dof%s
+   in this DofManager
+   **
+
    @fn  DofManager::toString
    @return Returns the DofManager's string
    **
@@ -125,6 +138,14 @@ class DofManager{
 
 inline bool DofManager::isUnknown(const Dof& dof) const{
   return fixedDof->count(&dof) == 0;
+}
+
+inline unsigned int DofManager::getDofNumber(void) const{
+  return globalId->size() - fixedDof->size();
+}
+
+inline unsigned int DofManager::getUnkownNumber(void) const{
+  return fixedDof->size();
 }
 
 #endif

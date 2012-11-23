@@ -11,6 +11,7 @@
 
 #include "linearSystemPETSc.h"
 
+#include <set>
 #include <string>
 
 /**
@@ -31,6 +32,8 @@ class System{
  private:
   bool assembled;
   bool solved;
+
+  std::set<const Dof*, DofComparator>* fixedOnes;
 
   linearSystemPETSc<double>* linSys;
   fullVector<double>*        x;

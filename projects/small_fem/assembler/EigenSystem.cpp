@@ -70,6 +70,11 @@ void EigenSystem::assemble(void){
   const vector<GroupOfDof*>& group = fs->getAllGroups();
   const int E = fs->groupNumber();
 
+  // Set to put Fixed Dof only ones 
+  // (cannot use both  setValue and add Value
+  //  in PETSc)
+  fixedOnes = new set<const Dof*, DofComparator>();
+
   // Get Sparcity Pattern & PreAllocate//
   if(general)
     for(int i = 0; i < E; i++)
@@ -94,6 +99,7 @@ void EigenSystem::assemble(void){
       assemble(*(group[i]));  
 
   // The EigenSystem is assembled //
+  delete fixedOnes;
   assembled = true;  
 }
 
@@ -154,7 +160,7 @@ void EigenSystem::solve(unsigned int nEigenValues){
   // Is the EigenSystem assembled ? //
   if(!assembled)
     assemble();
-
+    
   // Solve //
   eSys = new EigenSolver(linSysA, linSysB, false);
   eSys->solve(nEigenValues, "smallest");
@@ -185,7 +191,12 @@ void EigenSystem::assemble(GroupOfDof& group){
 
     if(fixed.first){
       // If fixed Dof
-      linSysA->addToMatrix(dofI, dofI, 1);
+      pair<
+	set<const Dof*, DofComparator>::iterator,
+	bool> ones = fixedOnes->insert(dof[i]);
+	
+      if(ones.second)
+	linSysA->addToMatrix(dofI, dofI, 1);
     }
        
     else{
@@ -210,8 +221,14 @@ void EigenSystem::assembleGeneral(GroupOfDof& group){
 
     if(fixed.first){
       // If fixed Dof
-      linSysA->addToMatrix(dofI, dofI, 1);
-      linSysB->addToMatrix(dofI, dofI, 1);
+      pair<
+	set<const Dof*, DofComparator>::iterator,
+	bool> ones = fixedOnes->insert(dof[i]);
+	
+      if(ones.second){
+	linSysA->addToMatrix(dofI, dofI, 1);
+	linSysB->addToMatrix(dofI, dofI, 1);
+      }
     }
        
     else{

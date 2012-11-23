@@ -12,6 +12,7 @@
 #include "linearSystemPETSc.h"
 #include "EigenSolver.h"
 
+#include <set>
 #include <vector>
 #include <string>
 
@@ -43,6 +44,8 @@ class EigenSystem{
   bool assembled;
   bool solved;
   bool general;
+
+  std::set<const Dof*, DofComparator>* fixedOnes;
 
   linearSystemPETSc<double>* linSysA;
   linearSystemPETSc<double>* linSysB;
