@@ -5,7 +5,7 @@
 #include "Interpolator.h"
 #include "WriterMsh.h"
 
-#include "FormulationSteadyWave.h"
+#include "FormulationSteadyWaveVector.h"
 
 #include "Gmsh.h"
 
@@ -49,16 +49,16 @@ int main(int argc, char** argv){
   const double       puls  = atof(argv[2]);
   const unsigned int order = atoi(argv[3]);
 
-  // SteadyWave //  
-  FormulationSteadyWave sWave(domain, puls * 1, order);
+  // SteadyWaveVector //  
+  FormulationSteadyWaveVector sWave(domain, puls * 1, order);
   System sys(sWave);
 
   sys.dirichlet(source, fSource);
   sys.dirichlet(wall,   fWall);
 
-  cout << "Steady Wave (Order: " << order 
-       << " --- Pulsation: "     << puls
-       << "): " << sys.getSize() << endl;
+  cout << "Vectorial Steady Wave (Order: " << order 
+       << " --- Pulsation: "               << puls
+       << "): " << sys.getSize()           << endl;
 
   sys.assemble();
   sys.solve();
@@ -70,13 +70,13 @@ int main(int argc, char** argv){
     GroupOfElement visu = visuMsh.getFromPhysical(7);
 
     Interpolator interp(sys, visu);
-    interp.write("swave", writer);
+    interp.write("swavev", writer);
   }
 
   else{
     // Adaptive View //
     writer.setValues(sys);
-    writer.write("swave");
+    writer.write("swavev");
   }
 
   GmshFinalize();

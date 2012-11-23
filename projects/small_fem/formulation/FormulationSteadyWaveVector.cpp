@@ -4,22 +4,22 @@
 #include "Polynomial.h"
 #include "Mapper.h"
 
-#include "FormulationSteadyWave.h"
+#include "FormulationSteadyWaveVector.h"
 
 using namespace std;
 
 // Pi  = atan(1) * 4
 // Mu  = 4 * Pi * 10^-7
 // Eps = 8.85418781762 * 10^−12
-//const double FormulationSteadyWave::mu  = 4 * atan(1) * 4 * 1E-7;
-//const double FormulationSteadyWave::eps = 8.85418781762E-12;
+//const double FormulationSteadyWaveVector::mu  = 4 * atan(1) * 4 * 1E-7;
+//const double FormulationSteadyWaveVector::eps = 8.85418781762E-12;
 
-const double FormulationSteadyWave::mu  = 1;
-const double FormulationSteadyWave::eps = 1;
+const double FormulationSteadyWaveVector::mu  = 1;
+const double FormulationSteadyWaveVector::eps = 1;
 
-FormulationSteadyWave::FormulationSteadyWave(const GroupOfElement& goe,
-					     double k,
-					     unsigned int order){
+FormulationSteadyWaveVector::FormulationSteadyWaveVector(const GroupOfElement& goe,
+							 double k,
+							 unsigned int order){
   // Wave Number Squared //
   kSquare = k * k;
 
@@ -56,7 +56,7 @@ FormulationSteadyWave::FormulationSteadyWave(const GroupOfElement& goe,
   G2 = gW2->size(); 
 }
 
-FormulationSteadyWave::~FormulationSteadyWave(void){
+FormulationSteadyWaveVector::~FormulationSteadyWaveVector(void){
   delete gC1;
   delete gW1;
   delete gC2;
@@ -64,8 +64,8 @@ FormulationSteadyWave::~FormulationSteadyWave(void){
   delete fspace;
 }
 
-double FormulationSteadyWave::weak(int dofI, int dofJ,
-				   const GroupOfDof& god) const{
+double FormulationSteadyWaveVector::weak(int dofI, int dofJ,
+					 const GroupOfDof& god) const{
   // Init Some Stuff //
   fullVector<double> curlPhiI(3);
   fullVector<double> curlPhiJ(3);

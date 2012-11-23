@@ -76,6 +76,8 @@ class EigenSystem{
   bool isGeneral(void) const;
 
   void fixCoef(const GroupOfElement& goe, double value);
+  void dirichlet(const GroupOfElement& goe, 
+		 double (*f)(fullVector<double>& xyz));
 
   void assemble(void);
   void solve(unsigned int nEigenValues);

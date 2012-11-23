@@ -82,7 +82,8 @@ add_executable(projscalone simulation/ProjectionScalarSinOneTime.cpp)
 add_executable(btest simulation/BasisTest.cpp) 
 
 add_executable(cavity    simulation/Cavity.cpp)
-add_executable(swave     simulation/SteadyWave.cpp)
+add_executable(swavev    simulation/SteadyWaveVector.cpp)
+add_executable(swaves    simulation/SteadyWaveScalar.cpp)
 add_executable(vibration simulation/Vibration.cpp)
 
 
@@ -99,5 +100,6 @@ target_link_libraries(projscalone sf lib ${GMSH_EXTERNAL_LIBRARIES})
 target_link_libraries(btest sf lib ${GMSH_EXTERNAL_LIBRARIES})
 
 target_link_libraries(cavity    sf lib ${GMSH_EXTERNAL_LIBRARIES})
-target_link_libraries(swave     sf lib ${GMSH_EXTERNAL_LIBRARIES})
+target_link_libraries(swavev    sf lib ${GMSH_EXTERNAL_LIBRARIES})
+target_link_libraries(swaves    sf lib ${GMSH_EXTERNAL_LIBRARIES})
 target_link_libraries(vibration sf lib ${GMSH_EXTERNAL_LIBRARIES})

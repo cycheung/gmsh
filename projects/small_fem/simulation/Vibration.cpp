@@ -1,11 +1,12 @@
 #include <cmath>
-#include <sstream>
+#include <cstdio>
 #include <iostream>
 
 #include "Mesh.h"
 #include "EigenSystem.h"
 
 #include "WriterMsh.h"
+#include "WriterDummy.h"
 #include "Interpolator.h"
 
 #include "FormulationVibration.h"
@@ -13,6 +14,10 @@
 #include "Gmsh.h"
 
 using namespace std;
+
+double fDir(fullVector<double>& xyz){
+  return 0;
+}
 
 int main(int argc, char** argv){
   // Init //
@@ -59,28 +64,40 @@ int main(int argc, char** argv){
 	 << sqrt(eigenValue[i]) << endl;
 
   // Write Sol //
+  // Number of decimals in nEigenValue
+  // Used for '0' pading in sprintf
+  int tmp = nEigenValue;
+  int dec = 0;
+  
+  while(tmp != 0){
+    dec++;
+    tmp /= 10;
+  }
+  
+  char fileName[1024];
+
   if(argc == 5){
     // With VisuMesh
     Mesh           visuMesh(argv[4]);
     GroupOfElement visu = visuMesh.getFromPhysical(7);
-
+    
     for(unsigned int i = 0; i < nEigenValue; i++){
-      stringstream stream;
-      stream << "vibration_mode" << i + 1;
+      sprintf(fileName, 
+	      "%s%0*d", "vibration_mode", dec, i + 1);
 
       Interpolator intVibration(sysVibration, i, visu);
-      intVibration.write(stream.str(), writer);
+      intVibration.write(string(fileName), writer);
     }
   }
 
   else{
     // Without VisuMesh
     for(unsigned int i = 0; i < nEigenValue; i++){
-      stringstream stream;
-      stream << "vibration_mode" << i + 1;
+      sprintf(fileName, 
+	      "%s%0*d", "vibration_mode", dec, i + 1);
 
       writer.setValues(sysVibration, i);
-      writer.write(stream.str());
+      writer.write(string(fileName));
     }
   }
 

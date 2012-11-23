@@ -4,7 +4,8 @@ set(src
   FormulationPoisson.cpp
   FormulationProjectionVector.cpp
   FormulationProjectionScalar.cpp
-  FormulationSteadyWave.cpp
+  FormulationSteadyWaveVector.cpp
+  FormulationSteadyWaveScalar.cpp
 
   EigenFormulation.cpp
   FormulationEigenFrequency.cpp

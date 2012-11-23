@@ -1,23 +1,23 @@
-#ifndef _FORMULATIONSTEADYWAVE_H_
-#define _FORMULATIONSTEADYWAVE_H_
+#ifndef _FORMULATIONSTEADYWAVESCALAR_H_
+#define _FORMULATIONSTEADYWAVESCALAR_H_
 
 #include <vector>
 
-#include "FunctionSpaceEdge.h"
+#include "FunctionSpaceNode.h"
 #include "Formulation.h"
 
 /**
-   @class FormulationSteadyWave
-   @brief Formulation for the Steady Wave problem
+   @class FormulationSteadyWaveScalar
+   @brief Scalar Formulation for the Steady Wave problem
 
-   Formulation for the @em Steady @em Wave problem.
+   Scalar Formulation for the @em Steady @em Wave problem.
 
    @todo
    Remove ALL const_cast%S by correcting MElement constness@n
    Allow Hybrid Mesh
  */
 
-class FormulationSteadyWave: public Formulation{
+class FormulationSteadyWaveScalar: public Formulation{
  private:
   // Physical Values //
   static const double mu;
@@ -37,14 +37,14 @@ class FormulationSteadyWave: public Formulation{
   fullVector<double>* gW2;
 
   // Function Space //
-  FunctionSpaceEdge* fspace;
+  FunctionSpaceNode* fspace;
 
  public:
-  FormulationSteadyWave(const GroupOfElement& goe,
-			double k,
-			unsigned int order);
+  FormulationSteadyWaveScalar(const GroupOfElement& goe,
+			      double k,
+			      unsigned int order);
 
-  virtual ~FormulationSteadyWave(void);
+  virtual ~FormulationSteadyWaveScalar(void);
 
   virtual double weak(int dofI, int dofJ, 
 		      const GroupOfDof& god) const;
@@ -56,33 +56,32 @@ class FormulationSteadyWave: public Formulation{
 };
 
 /**
-   @fn FormulationSteadyWave::FormulationSteadyWave
+   @fn FormulationSteadyWaveScalar::FormulationSteadyWaveScalar
    @param goe A GroupOfElement
    @param k A real number
    @param order A natural number
 
-   Instantiates a new FormulationSteadyWave of the given 
+   Instantiates a new FormulationSteadyWaveScalar of the given 
    @em order and @em wave @em number (@c k)@n
 
    The given GroupOfElement will be used as the 
    geomtrical @em domain
    **
 
-   @fn FormulationSteadyWave::~FormulationSteadyWave
-   Deletes this FormulationSteadyWave
-   **
+   @fn FormulationSteadyWaveScalar::~FormulationSteadyWaveScalar
+   Deletes this FormulationSteadyWaveScalar
 */
 
 //////////////////////
 // Inline Functions //
 //////////////////////
 
-inline double FormulationSteadyWave::rhs(int equationI,
-					 const GroupOfDof& god) const{
+inline double FormulationSteadyWaveScalar::rhs(int equationI,
+					       const GroupOfDof& god) const{
   return 0;
 }
 
-inline const FunctionSpace& FormulationSteadyWave::fs(void) const{
+inline const FunctionSpace& FormulationSteadyWaveScalar::fs(void) const{
   return *fspace;
 }
 
