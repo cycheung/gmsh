@@ -68,7 +68,7 @@ OL.endif
 Mesher.register(native);
 Mesher.in(OL.get(Arguments/FileName).geo);
 Mesher.out(OL.get(Arguments/FileName).msh);
-Mesher.run(OL.get(Arguments/FileName).geo);
+Mesher.run(OL.get(Arguments/FileName).geo -v 1);
 Mesher.frontPage(OL.get(Arguments/FileName).geo,
                  OL.get(Arguments/FileName).msh);
 

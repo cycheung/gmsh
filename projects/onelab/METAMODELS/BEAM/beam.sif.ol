@@ -82,7 +82,7 @@ Solver 1
   Procedure = "StressSolve" "StressSolver"
   !Procedure = "ElasticSolve" "ElasticSolver"
   Linear System Solver = Iterative
-  Linear System Iterative Method = GMRES
+  Linear System Iterative Method = CG
   Linear System Preconditioning = ILUT
   Linear System Max Iterations = 500
   Linear System Convergence Tolerance = 1.0e-6
