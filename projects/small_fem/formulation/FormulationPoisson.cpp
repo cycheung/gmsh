@@ -44,6 +44,10 @@ FormulationPoisson::FormulationPoisson(const GroupOfElement& goe,
 
   // Function Space //
   fspace = new FunctionSpaceNode(goe, order);
+
+  // PreEvaluate
+  fspace->preEvaluateLocalFunctions(*gCR);
+  fspace->preEvaluateGradLocalFunctions(*gCL);
 }
 
 FormulationPoisson::~FormulationPoisson(void){
@@ -66,10 +70,10 @@ double FormulationPoisson::weak(int dofI, int dofJ,
   // Get Element and Basis Functions //
   const MElement& element = god.getGeoElement();
   MElement&      celement = const_cast<MElement&>(element);
-  
-  const vector<const vector<Polynomial>*> fun = 
-    fspace->getGradLocalFunctions(element);
 
+  const vector<const vector<fullVector<double> >*> eFun = 
+    fspace->getEvaluatedGradLocalFunctions(element);
+    
   // Loop over Integration Point //
   for(int g = 0; g < GL; g++){
     double det = celement.getJacobian((*gCL)(g, 0), 
@@ -78,17 +82,8 @@ double FormulationPoisson::weak(int dofI, int dofJ,
 				      invJac);
     invJac.invertInPlace();
 
-    phiI = Mapper::grad(Polynomial::at(*fun[dofI], 
-				       (*gCL)(g, 0), 
-				       (*gCL)(g, 1),
-				       (*gCL)(g, 2)),
-			invJac);
-
-    phiJ = Mapper::grad(Polynomial::at(*fun[dofJ], 
-				       (*gCL)(g, 0), 
-				       (*gCL)(g, 1), 
-				       (*gCL)(g, 2)),
-			invJac);
+    phiI = Mapper::grad((*eFun[dofI])[g], invJac);
+    phiJ = Mapper::grad((*eFun[dofJ])[g], invJac);
     
     integral += phiI * phiJ * fabs(det) * (*gWL)(g);
   }
@@ -102,13 +97,13 @@ double FormulationPoisson::rhs(int equationI,
   // Init Some Stuff //
   fullMatrix<double> jac(3, 3);        
   double integral = 0;
-  double phi;
 
   // Get Element and Basis Functions //
   const MElement& element = god.getGeoElement();
   MElement&      celement = const_cast<MElement&>(element);
   
-  const vector<const Polynomial*> fun = fspace->getLocalFunctions(element);
+  const vector<const vector<double>*> eFun = 
+    fspace->getEvaluatedLocalFunctions(element);
 
   // Loop over Integration Point //
   for(int g = 0; g < GR; g++){
@@ -117,11 +112,8 @@ double FormulationPoisson::rhs(int equationI,
 				      (*gCR)(g, 2), 
 				      jac);
 
-    phi = fun[equationI]->at((*gCR)(g, 0), 
-			     (*gCR)(g, 1), 
-			     (*gCR)(g, 2));
-
-    integral -= phi * fabs(det) * (*gWR)(g);
+    integral -= 
+      (*eFun[equationI])[g] * fabs(det) * (*gWR)(g);
   }
 
   return integral;
