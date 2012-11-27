@@ -83,7 +83,7 @@ A) The packages needed to install gmsh are (gmsh has to be install to use cm3app
                       ./config/configure.py --with-debugging=0 --download-f-blas-lapack=1 --download-openmpi=1  --with-pic --with-shared=1 --with-clanguage=cxx --with-batch --known-mpi-shared=0
                   nic3
                     module purge module add shared sge  ict/compiler/64/11.1/038  openmpi/intel/64/1.4.2  
-                   ./config/configure.py --with-debugging=0 --download-f-blas-lapack=1 --with-mpi-dir=/cvos/shared/apps/openmpi/gcc/64/1.3.0/  --with-pic --with-shared=1 --with-clanguage=cxx --with-batch -known-mpi-shared=0
+                   ./config/configure.py --with-debugging=0 --download-f-blas-lapack=1 --with-mpi-dir=/cvos/shared/apps/openmpi/gcc/64/1.3.0/  --with-pic --with-shared-libraries=1 --with-clanguage=cxx --with-batch -known-mpi-shared-libraries=0
                      add this extra-line in your .bashrc 
                   export LD_PRELOAD=$LD_PRELOAD:/cvos/shared/apps/openmpi/gcc/64/1.3.0/lib64/libmpi.so
 
