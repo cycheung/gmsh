@@ -135,6 +135,9 @@ ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.1750 * 1e-3) );
 ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.1875 * 1e-3) );
 ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.2000 * 1e-3) );
 
+Tmin.number(,Solution/,"Minimum temperature");
+Tmax.number(,Solution/,"Maximum temperature");
+
 
 #-2) ElmerGrid converts the mesh for Elmer
 ElmerGrid.register(interfaced);
