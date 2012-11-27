@@ -10,7 +10,7 @@ using namespace std;
 
 FormulationProjectionVector::
 FormulationProjectionVector(fullVector<double> (*f)(fullVector<double>& xyz),
-			    const FunctionSpaceEdge& fs){
+			    FunctionSpaceEdge& fs){
   // Vector to Project //
   this->f = f;
 
@@ -27,6 +27,9 @@ FormulationProjectionVector(fullVector<double> (*f)(fullVector<double>& xyz),
   gaussIntegration::get(fs.getSupport().get(0).getType(), 2 * 2 * fs.getOrder(), *gC, *gW);
   
   G = gW->size(); // Nbr of Gauss points
+
+  // PreEvaluate
+  fspace->preEvaluateLocalFunctions(*gC);
 }
 
 FormulationProjectionVector::~FormulationProjectionVector(void){
@@ -48,8 +51,8 @@ double FormulationProjectionVector::weak(int dofI, int dofJ,
   const MElement& element = god.getGeoElement();
   MElement&      celement = const_cast<MElement&>(element);
   
-  const vector<const vector<Polynomial>*> fun = 
-    fspace->getLocalFunctions(element);
+  const vector<const vector<fullVector<double> >*> eFun = 
+    fspace->getEvaluatedLocalFunctions(element);
 
   // Loop over Integration Point //
   for(int g = 0; g < G; g++){
@@ -59,17 +62,8 @@ double FormulationProjectionVector::weak(int dofI, int dofJ,
 			       invJac);
     invJac.invertInPlace();
 
-    phiI = Mapper::grad(Polynomial::at(*fun[dofI],
-				       (*gC)(g, 0), 
-				       (*gC)(g, 1),
-				       (*gC)(g, 2)),
-			invJac);
-    
-    phiJ = Mapper::grad(Polynomial::at(*fun[dofJ],
-				       (*gC)(g, 0), 
-				       (*gC)(g, 1),
-				       (*gC)(g, 2)),
-			invJac);
+    phiI = Mapper::grad((*eFun[dofI])[g], invJac);
+    phiJ = Mapper::grad((*eFun[dofJ])[g], invJac);
 
     integral += phiI * phiJ * fabs(det) * (*gW)(g);
   }
@@ -94,8 +88,8 @@ double FormulationProjectionVector::rhs(int equationI,
   const MElement& element = god.getGeoElement();
   MElement&      celement = const_cast<MElement&>(element);
   
-  const vector<const vector<Polynomial>*> fun = 
-    fspace->getLocalFunctions(element);  
+  const vector<const vector<fullVector<double> >*> eFun = 
+    fspace->getEvaluatedLocalFunctions(element);
 
   // Loop over Integration Point //
   for(int g = 0; g < G; g++){  
@@ -106,13 +100,7 @@ double FormulationProjectionVector::rhs(int equationI,
 			       invJac);
     invJac.invertInPlace();
   
-
-    phi = Mapper::grad(Polynomial::at(*fun[equationI],
-				      (*gC)(g, 0), 
-				      (*gC)(g, 1),
-				      (*gC)(g, 2)),
-		       invJac);
- 
+    phi = Mapper::grad((*eFun[equationI])[g], invJac);
 
     // Compute f in the *physical* coordinate
     celement.pnt((*gC)(g, 0), 

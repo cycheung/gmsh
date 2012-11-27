@@ -12,7 +12,7 @@ using namespace std;
 
 FormulationProjectionScalar::
 FormulationProjectionScalar(double (*f)(fullVector<double>& xyz),
-			    const FunctionSpaceNode& fs){
+			    FunctionSpaceNode& fs){
   // Save f //
   this->f = f;
 
@@ -29,6 +29,9 @@ FormulationProjectionScalar(double (*f)(fullVector<double>& xyz),
   gaussIntegration::get(fs.getSupport().get(0).getType(), 2 * fs.getOrder(), *gC, *gW);
 
   G = gW->size(); // Nbr of Gauss points
+
+  // PreEvaluate
+  fspace->preEvaluateLocalFunctions(*gC);
 }
 
 FormulationProjectionScalar::~FormulationProjectionScalar(void){
@@ -49,8 +52,8 @@ double FormulationProjectionScalar::weak(int dofI, int dofJ,
   const MElement& element = god.getGeoElement();
   MElement&      celement = const_cast<MElement&>(element);
   
-  const vector<const Polynomial*> fun = 
-    fspace->getLocalFunctions(element);
+  const vector<const vector<double>*> eFun = 
+    fspace->getEvaluatedLocalFunctions(element);
 
   // Loop over Integration Point //
   for(int g = 0; g < G; g++){
@@ -59,13 +62,8 @@ double FormulationProjectionScalar::weak(int dofI, int dofJ,
 			       (*gC)(g, 2), 
 			       jac);
 
-    phiI = fun[dofI]->at((*gC)(g, 0),
-			 (*gC)(g, 1),
-			 (*gC)(g, 2));
-  
-    phiJ = fun[dofJ]->at((*gC)(g, 0), 
-			 (*gC)(g, 1),
-			 (*gC)(g, 2));
+    phiI = (*eFun[dofI])[g];
+    phiJ = (*eFun[dofJ])[g];
 
     integral += phiI * phiJ * fabs(det) * (*gW)(g);
   }
@@ -90,8 +88,8 @@ double FormulationProjectionScalar::rhs(int equationI,
   const MElement& element = god.getGeoElement();
   MElement&      celement = const_cast<MElement&>(element);
   
-  const vector<const Polynomial*> fun = 
-    fspace->getLocalFunctions(element);  
+  const vector<const vector<double>*> eFun = 
+    fspace->getEvaluatedLocalFunctions(element);
 
   // Loop over Integration Point //
   for(int g = 0; g < G; g++){
@@ -101,9 +99,7 @@ double FormulationProjectionScalar::rhs(int equationI,
 			       (*gC)(g, 2), 
 			       jac);
 
-    phi = fun[equationI]->at((*gC)(g, 0), 
-			     (*gC)(g, 1),
-			     (*gC)(g, 2));
+    phi = (*eFun[equationI])[g];
     
     // Compute f in the *physical* coordinate
     celement.pnt((*gC)(g, 0), 

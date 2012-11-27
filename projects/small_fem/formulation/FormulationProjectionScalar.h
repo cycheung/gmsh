@@ -20,14 +20,14 @@ class FormulationProjectionScalar: public Formulation{
   fullVector<double>* gW;
 
   // Function Space //
-  const FunctionSpaceNode* fspace;
+  FunctionSpaceNode* fspace;
 
   // Function to Project //
   double (*f)(fullVector<double>& xyz);
 
  public:
   FormulationProjectionScalar(double (*f)(fullVector<double>& xyz),
-			      const FunctionSpaceNode& fs);
+			      FunctionSpaceNode& fs);
   
   virtual ~FormulationProjectionScalar(void);
 
@@ -50,6 +50,12 @@ class FormulationProjectionScalar: public Formulation{
 
    FormulationProjectionScalar will use the given FunctionSpace
    for the projection
+
+   @warning The given FunctionSpace will be ask to 
+   @em PreEvaluate 
+   (@em see FunctionSpaceScalar::preEvaluateLocalFunctions() 
+   and similar)
+   some Functions
    **
 
    @fn FormulationProjectionScalar::~FormulationProjectionScalar

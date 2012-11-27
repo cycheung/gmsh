@@ -29,6 +29,9 @@ FormulationLaplace::FormulationLaplace(const GroupOfElement& goe,
 
   // Function Space //
   fspace = new FunctionSpaceNode(goe, order);
+
+  // PreEvaluate
+  fspace->preEvaluateGradLocalFunctions(*gC);
 }
 
 FormulationLaplace::~FormulationLaplace(void){
@@ -49,8 +52,8 @@ double FormulationLaplace::weak(int dofI, int dofJ,
   const MElement& element = god.getGeoElement();
   MElement&      celement = const_cast<MElement&>(element);
   
-  const vector<const vector<Polynomial>*> fun = 
-    fspace->getGradLocalFunctions(element);
+  const vector<const vector<fullVector<double> >*> eFun = 
+    fspace->getEvaluatedGradLocalFunctions(element);
 
   // Loop over Integration Point //
   for(int g = 0; g < G; g++){
@@ -60,17 +63,8 @@ double FormulationLaplace::weak(int dofI, int dofJ,
 				      invJac);
     invJac.invertInPlace();
 
-    phiI = Mapper::grad(Polynomial::at(*fun[dofI], 
-				       (*gC)(g, 0), 
-				       (*gC)(g, 1),
-				       (*gC)(g, 2)),
-			invJac);
-
-    phiJ = Mapper::grad(Polynomial::at(*fun[dofJ], 
-				       (*gC)(g, 0), 
-				       (*gC)(g, 1), 
-			       (*gC)(g, 2)),
-			invJac);
+    phiI = Mapper::grad((*eFun[dofI])[g], invJac);
+    phiJ = Mapper::grad((*eFun[dofJ])[g], invJac);
     
     integral += phiI * phiJ * fabs(det) * (*gW)(g);
   }

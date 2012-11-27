@@ -50,6 +50,10 @@ FormulationSteadyWaveScalar::FormulationSteadyWaveScalar(const GroupOfElement& g
   // Nbr of Gauss points
   G1 = gW1->size(); 
   G2 = gW2->size(); 
+
+  // PreEvaluate
+  fspace->preEvaluateGradLocalFunctions(*gC1);
+  fspace->preEvaluateLocalFunctions(*gC2);
 }
 
 FormulationSteadyWaveScalar::~FormulationSteadyWaveScalar(void){
@@ -78,11 +82,11 @@ double FormulationSteadyWaveScalar::weak(int dofI, int dofJ,
   const MElement& element = god.getGeoElement();
   MElement&      celement = const_cast<MElement&>(element);
   
-  const vector<const vector<Polynomial>*> gradFun = 
-    fspace->getGradLocalFunctions(element);
+  const vector<const vector<fullVector<double> >*> eGradFun = 
+    fspace->getEvaluatedGradLocalFunctions(element);
 
-  const vector<const Polynomial*> fun = 
-    fspace->getLocalFunctions(element);
+  const vector<const vector<double>*> eFun = 
+    fspace->getEvaluatedLocalFunctions(element);
 
   // Loop over Integration Point (Term 1) //
   for(int g = 0; g < G1; g++){
@@ -93,18 +97,9 @@ double FormulationSteadyWaveScalar::weak(int dofI, int dofJ,
     
     invJac.invertInPlace();
 
-    gradPhiI = Mapper::grad(Polynomial::at(*gradFun[dofI], 
-					   (*gC1)(g, 0), 
-					   (*gC1)(g, 1),
-					   (*gC1)(g, 2)),
-			    invJac);
-    
-    gradPhiJ = Mapper::grad(Polynomial::at(*gradFun[dofJ], 
-					   (*gC1)(g, 0), 
-					   (*gC1)(g, 1), 
-					   (*gC1)(g, 2)),
-			    invJac);
-    
+    gradPhiI = Mapper::grad((*eGradFun[dofI])[g], invJac);
+    gradPhiJ = Mapper::grad((*eGradFun[dofJ])[g], invJac);
+
     integral1 += 
       ((gradPhiI * gradPhiJ) / mu) * fabs(det) * (*gW1)(g);
   }
@@ -117,14 +112,10 @@ double FormulationSteadyWaveScalar::weak(int dofI, int dofJ,
 			       (*gC2)(g, 2), 
 			       invJac);
 
-    phiI = fun[dofI]->at((*gC2)(g, 0), 
-			 (*gC2)(g, 1),
-			 (*gC2)(g, 2));
-    
-    phiJ = fun[dofJ]->at((*gC2)(g, 0), 
-			 (*gC2)(g, 1),
-			 (*gC2)(g, 2));
-    
+
+    phiI = (*eFun[dofI])[g];
+    phiJ = (*eFun[dofJ])[g];
+
     integral2 += 
       ((phiI * phiJ) * eps * kSquare) * fabs(det) * (*gW2)(g);
   }

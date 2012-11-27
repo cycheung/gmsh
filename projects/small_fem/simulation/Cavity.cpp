@@ -1,4 +1,5 @@
 #include <cmath>
+#include <cstdio>
 #include <iostream>
 
 #include "Mesh.h"
@@ -60,17 +61,29 @@ int main(int argc, char** argv){
 	 << sqrt(eigenValue[i]) << endl;
 
   // Write Sol //
+  // Number of decimals in nEigenValue
+  // Used for '0' pading in sprintf
+  int tmp = nEigenValue;
+  int dec = 0;
+  
+  while(tmp != 0){
+    dec++;
+    tmp /= 10;
+  }
+  
+  char fileName[1024];
+
   if(argc == 5){
     // With VisuMesh
     Mesh           visuMesh(argv[4]);
     GroupOfElement visu = visuMesh.getFromPhysical(7);
   
     for(unsigned int i = 0; i < nEigenValue; i++){
-      stringstream stream;
-      stream << "cavity_mode" << i + 1;
-      
+      sprintf(fileName, 
+	      "%s%0*d", "cavity_mode", dec, i + 1);
+
       Interpolator intCavity(sysCavity, i, visu);
-      intCavity.write(stream.str(), writer);
+      intCavity.write(string(fileName), writer);
     }
   }
 

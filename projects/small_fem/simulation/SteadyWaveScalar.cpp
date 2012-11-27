@@ -41,11 +41,11 @@ int main(int argc, char** argv){
   FormulationSteadyWaveScalar sWave(domain, puls * 1, order);
   System sys(sWave);
 
-  //sys.dirichlet(source, fSource);
-  //sys.dirichlet(wall,   fWall);
+  sys.dirichlet(source, fSource);
+  sys.dirichlet(wall,   fWall);
 
-  sys.fixCoef(source, 1);
-  sys.fixCoef(wall,   0);
+  //sys.fixCoef(source, 1);
+  //sys.fixCoef(wall,   0);
 
   cout << "Scalar Steady Wave (Order: " << order 
        << " --- Pulsation: "            << puls

@@ -22,14 +22,14 @@ class FormulationProjectionVector: public Formulation{
   fullVector<double>* gW;
 
   // Function Space //
-  const FunctionSpaceEdge* fspace;
+  FunctionSpaceEdge* fspace;
 
   // Function to Project //
   fullVector<double> (*f)(fullVector<double>& xyz);
   
  public:
   FormulationProjectionVector(fullVector<double> (*f)(fullVector<double>& xyz),
-			      const FunctionSpaceEdge& fs);
+			      FunctionSpaceEdge& fs);
   
   virtual ~FormulationProjectionVector(void);
 
@@ -45,13 +45,19 @@ class FormulationProjectionVector: public Formulation{
 /**
    @fn FormulationProjectionVector::FormulationProjectionVector
    @param f The function to project
-   @param fs A FunctionSpaceNode
+   @param fs A FunctionSpaceEdge
    
    Instantiates a new FormulationProjectionVector to project
    the given function@n
 
    FormulationProjectionVector will use the given FunctionSpace
    for the projection
+
+   @warning The given FunctionSpace will be ask to 
+   @em PreEvaluate 
+   (@em see FunctionSpaceVector::preEvaluateLocalFunctions() 
+   and similar)
+   some Functions
    **
 
    @fn FormulationProjectionVector::~FormulationProjectionVector

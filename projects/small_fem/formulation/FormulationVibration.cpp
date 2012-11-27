@@ -31,6 +31,9 @@ FormulationVibration::FormulationVibration(const GroupOfElement& goe,
 
   // Function Space //
   fspace = new FunctionSpaceNode(goe, order);
+
+  // PreEvaluate
+  fspace->preEvaluateGradLocalFunctions(*gCL);
 }
 
 FormulationVibration::~FormulationVibration(void){
@@ -52,8 +55,8 @@ double FormulationVibration::weakA(int dofI, int dofJ,
   const MElement& element = god.getGeoElement();
   MElement&      celement = const_cast<MElement&>(element);
   
-  const vector<const vector<Polynomial>*> fun = 
-    fspace->getGradLocalFunctions(element);
+  const vector<const vector<fullVector<double> >*> eFun = 
+    fspace->getEvaluatedGradLocalFunctions(element);
 
   // Loop over Integration Point //
   for(int g = 0; g < GL; g++){
@@ -63,17 +66,8 @@ double FormulationVibration::weakA(int dofI, int dofJ,
 				      invJac);
     invJac.invertInPlace();
 
-    phiI = Mapper::grad(Polynomial::at(*fun[dofI], 
-				       (*gCL)(g, 0), 
-				       (*gCL)(g, 1),
-				       (*gCL)(g, 2)),
-			invJac);
-
-    phiJ = Mapper::grad(Polynomial::at(*fun[dofJ], 
-				       (*gCL)(g, 0), 
-				       (*gCL)(g, 1), 
-				       (*gCL)(g, 2)),
-			invJac);
+    phiI = Mapper::grad((*eFun[dofI])[g], invJac);
+    phiJ = Mapper::grad((*eFun[dofJ])[g], invJac);
     
     integral += phiI * phiJ * fabs(det) * (*gWL)(g);
   }

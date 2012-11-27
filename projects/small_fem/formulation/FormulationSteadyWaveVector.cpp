@@ -54,6 +54,10 @@ FormulationSteadyWaveVector::FormulationSteadyWaveVector(const GroupOfElement& g
   // Nbr of Gauss points
   G1 = gW1->size(); 
   G2 = gW2->size(); 
+
+  // PreEvaluate
+  fspace->preEvaluateCurlLocalFunctions(*gC1);
+  fspace->preEvaluateLocalFunctions(*gC2);
 }
 
 FormulationSteadyWaveVector::~FormulationSteadyWaveVector(void){
@@ -83,11 +87,11 @@ double FormulationSteadyWaveVector::weak(int dofI, int dofJ,
   const MElement& element = god.getGeoElement();
   MElement&      celement = const_cast<MElement&>(element);
   
-  const vector<const vector<Polynomial>*> curlFun = 
-    fspace->getCurlLocalFunctions(element);
+  const vector<const vector<fullVector<double> >*> eCurlFun = 
+    fspace->getEvaluatedCurlLocalFunctions(element);
 
-  const vector<const vector<Polynomial>*> fun = 
-    fspace->getLocalFunctions(element);
+  const vector<const vector<fullVector<double> >*> eFun = 
+    fspace->getEvaluatedLocalFunctions(element);
 
   // Loop over Integration Point (Term 1) //
   for(int g = 0; g < G1; g++){
@@ -96,17 +100,8 @@ double FormulationSteadyWaveVector::weak(int dofI, int dofJ,
 			       (*gC1)(g, 2), 
 			       jac);
     
-    curlPhiI = Mapper::curl(Polynomial::at(*curlFun[dofI], 
-					   (*gC1)(g, 0), 
-					   (*gC1)(g, 1),
-					   (*gC1)(g, 2)),
-			    jac, 1 / det);
-    
-    curlPhiJ = Mapper::curl(Polynomial::at(*curlFun[dofJ], 
-					   (*gC1)(g, 0), 
-					   (*gC1)(g, 1), 
-					   (*gC1)(g, 2)),
-			    jac, 1 / det);
+    curlPhiI = Mapper::curl((*eCurlFun[dofI])[g], jac, 1 / det);
+    curlPhiJ = Mapper::curl((*eCurlFun[dofJ])[g], jac, 1 / det);
     
     integral1 += 
       ((curlPhiI * curlPhiJ) / mu) * fabs(det) * (*gW1)(g);
@@ -122,17 +117,8 @@ double FormulationSteadyWaveVector::weak(int dofI, int dofJ,
 
     invJac.invertInPlace();
 
-    phiI = Mapper::grad(Polynomial::at(*fun[dofI],
-				       (*gC2)(g, 0), 
-				       (*gC2)(g, 1),
-				       (*gC2)(g, 2)),
-			invJac);
-    
-    phiJ = Mapper::grad(Polynomial::at(*fun[dofJ],
-				       (*gC2)(g, 0), 
-				       (*gC2)(g, 1),
-				       (*gC2)(g, 2)),
-			invJac);
+    phiI = Mapper::grad((*eFun[dofI])[g], invJac);
+    phiJ = Mapper::grad((*eFun[dofJ])[g], invJac);
     
     integral2 += 
       ((phiI * phiJ) * eps * kSquare) * fabs(det) * (*gW2)(g);
