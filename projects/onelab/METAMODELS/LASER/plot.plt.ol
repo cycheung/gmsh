@@ -21,15 +21,16 @@ set ylabel "Temperature [{\260}C]";
 set xlabel "Time [s]"
 set ytics nomirror
 set y2tics
-set y2label "Activated volume [mm^2]"
-set y2range[:6]
+set y2label "Activated volume [mm^3]"
 plot "temp.txt" u 1:($2)-273 t "",\
      "temp.txt" u 1:($9)-273 t "",\
      "temp.txt" u 1:($16)-273 t "",\
      "temp.txt" u 1:($23)-273 t "",\
      "temp.txt" u 1:($30)-273 t "", \
      320-273 w l  lt rgb "black" t "threshold ",\
-     "volume.txt" u 2:8 axis x1y2 w p lt 1 t "act. vol. "
+     "volume.txt" u 2:8 axis x1y2 w p lt 0 t "",\
+     "volume.txt" u 2:8 axis x1y2 smooth bezier lw 2 lt 1 t "act. vol. "
+
 set ytics mirror
 unset y2tics
 unset y2label
