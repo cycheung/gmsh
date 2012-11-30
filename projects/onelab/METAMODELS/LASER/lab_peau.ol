@@ -20,7 +20,7 @@ Mesher.out( OL.get(Arguments/FileName).msh );
 Mesher.frontPage(OL.get(Arguments/FileName).geo,OL.get(Arguments/FileName).msh);
 
 # Enumeration, i.e. a set of real values each associated with a label
-SKINTYPE.number(1, Parameters/Skin/1,"Skin type"); 
+SKINTYPE.number(2, Parameters/Skin/1,"Skin type"); 
 SKINTYPE.valueLabels(1,"hairy", 2,"hairless");
 # Numbers in pathes allow to sort parameters in the onelab window.
 # SKINTYPE will be the 1 paraemeter in the subtree /Parameters/Skin
@@ -135,9 +135,7 @@ ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.1750 * 1e-3) );
 ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.1875 * 1e-3) );
 ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.2000 * 1e-3) );
 
-Tmin.number(,Solution/,"Minimum temperature");
-Tmax.number(,Solution/,"Maximum temperature");
-
+VOLUME.number(,Solution/,"Vol. above threshold [mm3]");
 
 #-2) ElmerGrid converts the mesh for Elmer
 ElmerGrid.register(interfaced);
@@ -157,15 +155,16 @@ Elmer.merge(solution.pos);
 #-4) Post-processing with Gmsh and a script
 Post1.register(interfaced);
 Post1.in(solution.pos , script.opt.ol );
-Post1.out(tempmin.txt, tempmax.txt, temp0.txt, activeMax.txt);
+Post1.out(temp0.txt, activeMax.txt);
 Post1.run(solution.pos script.opt -);
-Post1.up( tempmin.txt,-1,8,Solution/Tmin, tempmax.txt,-1,8,Solution/Tmax);
 
 #-5) Further post-processing with Gmsh and a script
 Post2.register(interfaced);
-Post2.in(solution.pos, script2.opt.ol, overheat.pos.opt.ol );
-Post2.out(overheat.pos );
+Post2.in(solution.pos, script2.opt.ol);
+Post2.out(volume.txt, aboveThres.pos );
 Post2.run( solution.pos script2.opt - );
+Post2.merge(aboveThres.pos);
+Post1.up( volmax.txt,-1,8,Solution/VOLUME);
 
 #-6) Display solution curves with either gnuplot or matlab
 POSTPRO.number(2, PostPro/,"Plot results with");

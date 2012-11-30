@@ -29,8 +29,8 @@ Plugin(MinMax).View=2;
 Plugin(MinMax).OverTime=0;
 Plugin(MinMax).Argument=0;
 Plugin(MinMax).Run;
-Save View [nbDepth+2] "tempmin.txt";
-Save View [nbDepth+3] "tempmax.txt";
+//Save View [nbDepth+2] "tempmin.txt";
+//Save View [nbDepth+3] "tempmax.txt";
 
 ViewNum=nbDepth+3;
 
