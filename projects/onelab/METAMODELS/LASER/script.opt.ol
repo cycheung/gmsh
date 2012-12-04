@@ -3,7 +3,7 @@ nbDepth = #ListDepth[];
 
 //SKINTEMP AT THE END OF LASER APPLICATION
 Plugin(MathEval).Expression0= "v0";
-Plugin(MathEval).TimeStep=OL.eval(OL.get(Parameters/Elmer/NumStep)-1);
+Plugin(MathEval).TimeStep=OL.eval(OL.get(PostPro/PROBETIME)/OL.get(Parameters/Elmer/TimeStep)-1);
 Plugin(MathEval).View=0;
 Plugin(MathEval).OtherTimeStep=-1;
 Plugin(MathEval).OtherView=-1;
@@ -50,7 +50,7 @@ EndFor
 
 //MATHEVAL THE CUTPLANE WITH STEP
 For k In {1:nbDepth}
- Plugin(MathEval).Expression0= "Step(v0-320.15)*2*pi*x";
+ Plugin(MathEval).Expression0= "Step(v0-OL.get(Parameters/Skin/OVERTEMP))*2*pi*x";
  Plugin(MathEval).TimeStep=-1;
  Plugin(MathEval).View=ViewNum+k;
  Plugin(MathEval).OtherTimeStep=-1;
