@@ -75,8 +75,8 @@ A) The packages needed to install gmsh are (gmsh has to be install to use cm3app
         4) close your terminal and open it (to reload your bashrc)
 
         5) Go to your petsc installation folder and type the following command (you have to use this configuration for hmem server):               
-               ./config/configure.py --with-debugging=0 --with-cc=gcc --with-fc=gfortran --with-cxx=g++ --download-f-blas-lapack=1 --download-openmpi=1  --CFLAGS=-fPIC --CXXFLAGS=-fPIC --FFLAGS=-fPIC --with-shared=1 --with-clanguage=cxx
-             note if you have openmpi problem when you launch a computation :"error: /usr/lib/openmpi/lib/openmpi/mca_paffinity_linux.so: undefined symbol: mca_base_param_reg_int"
+								./config/configure.py --with-debugging=0 --with-cc=gcc --with-fc=gfortran --with-cxx=g++ --download-f-blas-lapack=1 --download-openmpi=1  --CFLAGS=-fPIC --CXXFLAGS=-fPIC --FFLAGS=-fPIC --with-shared=1 --with-clanguage=cxx
+									note if you have openmpi problem when you launch a computation :"error: /usr/lib/openmpi/lib/openmpi/mca_paffinity_linux.so: undefined symbol: mca_base_param_reg_int"
              add this extra-line in your .bashrc (for hmem server you have to add this line):
                   export LD_PRELOAD=$LD_PRELOAD:<the absolute path where you install petsc>/$PETSC_ARCH/lib/libmpi.so
                   (configuration hmem)
@@ -111,7 +111,7 @@ A) The packages needed to install gmsh are (gmsh has to be install to use cm3app
            If you have the following error Cannot run executables created with FC add (openSuSE 12.2 petsc3.3p3)
              --with-fc=0
 
-        My last config (with superlu and mumps)
+        My last config (with superlu and mumps: required for multiscale)
 ./config/configure.py --with-debugging=0 --with-blas-lapack-dir=/usr/lib64 --with-mpi-dir=/usr/lib64/ --with-pic --with-shared-libraries=1 --download-mumps=yes --download-scalapack=yes --download-blacs=yes --with-batch --known-mpi-shared-libraries=0 --download-parmetis=yes --download-metis=yes --download-superlu_dist=yes
 
            put --with-debugging=1 for debug
