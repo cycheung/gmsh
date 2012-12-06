@@ -6,6 +6,7 @@ Plugin(MathEval).OtherView=-1;
 Plugin(MathEval).ForceInterpolation=0;
 Plugin(MathEval).PhysicalRegion=1;
 Plugin(MathEval).Run;
+
 Plugin(MathEval).Expression0= "(Step(230-v0)*(230-v0)+Step(v0-233)*(v0-233))*2.0*3.14*x";
 Plugin(MathEval).TimeStep=-1;
 Plugin(MathEval).View=0;
@@ -14,10 +15,15 @@ Plugin(MathEval).OtherView=-1;
 Plugin(MathEval).ForceInterpolation=0;
 Plugin(MathEval).PhysicalRegion=2;
 Plugin(MathEval).Run;
+
 Plugin(Integrate).View=1;
+Plugin(Integrate).Dimension=2;
 Plugin(Integrate).Run;
+
 Plugin(Integrate).View=2;
+Plugin(Integrate).Dimension=2;
 Plugin(Integrate).Run;
+
 Plugin(MathEval).Expression0= "v0+w0";
 Plugin(MathEval).TimeStep=-1;
 Plugin(MathEval).View=3;
@@ -26,8 +32,10 @@ Plugin(MathEval).OtherView=4;
 Plugin(MathEval).ForceInterpolation=0;
 Plugin(MathEval).PhysicalRegion=-1;
 Plugin(MathEval).Run;
+
 Plugin(MinMax).View=5;
 Plugin(MinMax).OverTime=1;
 Plugin(MinMax).Run;
+
 Save View [5] "f.txt" ;
 Save View [6] "fmax.txt" ;

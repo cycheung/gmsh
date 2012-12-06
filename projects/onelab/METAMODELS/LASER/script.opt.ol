@@ -1,16 +1,16 @@
 ListDepth=OL.get(PostPro/ZSURF,choices.expand( '{comma}' ));
 nbDepth = #ListDepth[];
 
-//SKINTEMP AT THE END OF LASER APPLICATION
-Plugin(MathEval).Expression0= "v0";
-Plugin(MathEval).TimeStep=OL.eval(OL.get(PostPro/PROBETIME)/OL.get(Parameters/Elmer/TimeStep)-1);
-Plugin(MathEval).View=0;
-Plugin(MathEval).OtherTimeStep=-1;
-Plugin(MathEval).OtherView=-1;
-Plugin(MathEval).ForceInterpolation=0;
-Plugin(MathEval).PhysicalRegion=-1;
-Plugin(MathEval).Run;
+Plugin(ExtractElements).MinVal=0;
+Plugin(ExtractElements).MaxVal=0;
+Plugin(ExtractElements).TimeStep=OL.eval(OL.get(PostPro/PROBETIME)/OL.get(Parameters/Elmer/TimeStep)-1);
+Plugin(ExtractElements).Visible=1;
+Plugin(ExtractElements).Dimension=2;
+Plugin(ExtractElements).View=0;
+Plugin(ExtractElements).Run;
 
+//SKINTEMP AT THE END OF LASER APPLICATION
+// View 1 -> nbDepth
 For k In {1:nbDepth}
  Plugin(CutPlane).A=0;
  Plugin(CutPlane).B=-1;
@@ -24,15 +24,7 @@ For k In {1:nbDepth}
  Save View [1+k] Sprintf("templaser%g.txt", k-1);
 EndFor
 
-//MINMAX SURF TEMP
-Plugin(MinMax).View=2;
-Plugin(MinMax).OverTime=0;
-Plugin(MinMax).Argument=0;
-Plugin(MinMax).Run;
-//Save View [nbDepth+2] "tempmin.txt";
-//Save View [nbDepth+3] "tempmax.txt";
-
-ViewNum=nbDepth+3;
+ViewNum=nbDepth+1;
 
 //CUT THE Z_PLANES
 For k In {1:nbDepth}
@@ -43,7 +35,7 @@ For k In {1:nbDepth}
     Plugin(CutPlane).ExtractVolume=0;
     Plugin(CutPlane).RecurLevel=4;
     Plugin(CutPlane).TargetError=0;
-    Plugin(CutPlane).View=0;
+    Plugin(CutPlane).View=1;
     Plugin(CutPlane).Run;
     Save View [ViewNum+k] Sprintf("temp%g.txt", k-1);
 EndFor
@@ -82,4 +74,4 @@ EndFor
 ViewNum=ViewNum+nbDepth;
 
 Combine ElementsByViewName;
-Save View [9] "activeMax.txt";  // toujours View[9] ??
+Save View [6] "activeMax.txt"; 

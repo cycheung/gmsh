@@ -87,8 +87,7 @@ while i<nstep:
    msts.append(mst) 
    vwps.append(vwp)
    #
-   print ("\nCurrents=(%g, %g, %g) alpha=%g" %(IR,IS,IT,alpha) )
-   print ("Position=%g Speed=%g Mst=%g\n" %(angle,speed,mst) )
+   print ("Currents=(%g, %g, %g) alpha=%g x=%g N=%g T=%g" %(IR,IS,IT,alpha,angle,speed,mst) )
    pylab.subplot(211)
    lines.set_xdata(times)
    lines.set_ydata(speeds)

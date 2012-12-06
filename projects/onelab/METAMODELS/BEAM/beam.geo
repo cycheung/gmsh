@@ -11,7 +11,7 @@ DefineConstant[STRUCTURED = {1, Path "1Geometry/", Label "Mesh",
 /*  == S T R U C T U R E D   M E S H ==  */
 
 If(STRUCTURED == 1)
-NbLayX=20;
+NbLayX=50;
 NbLayY=7;
 NbLayZ=7;
 Printf("Number of layers = %g %g %g", NbLayX, NbLayY, NbLayZ);

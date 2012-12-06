@@ -60,10 +60,8 @@ HCONV.number(100, Parameters/Skin/5, "Convection coefficient [W/(Km)]");
 TAMBIANT.number(20, Parameters/Skin/6, "Ambiant temperature [C]");
 OL.iftrue(CONVBC) 
 HCONV.setVisible(1);
-TAMBIANT.setVisible(1);
 OL.else
 HCONV.setVisible(0);
-TAMBIANT.setVisible(0);
 OL.endif
 
 # Available LASER models, another enumeration
@@ -195,4 +193,4 @@ Gnuplot.run(plot.plt );
 OL.endif
 
 # Dump the ONELAB database in a file named zzz
-OL.dump(zzz);
+# OL.dump(zzz);

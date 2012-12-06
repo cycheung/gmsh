@@ -19,11 +19,12 @@ Plugin(CutPlane).RecurLevel=4;
 Plugin(CutPlane).TargetError=0;
 Plugin(CutPlane).View=1;
 Plugin(CutPlane).Run;
-Save View [2] "step.txt";
+//Save View [2] "step.txt";
 
 // View 3
 Plugin(Integrate).View=2;
 Plugin(Integrate).OverTime=1;
+Plugin(Integrate).Dimension=1;
 Plugin(Integrate).Run;
 Save View [3] "duration.txt";
 
@@ -40,6 +41,7 @@ Plugin(MathEval).Run;
 // View 5
 Plugin(Integrate).View=4;
 Plugin(Integrate).OverTime=-1;
+Plugin(Integrate).Dimension=2;
 Plugin(Integrate).Run; 
 
 Save View [5] "volume.txt" ;

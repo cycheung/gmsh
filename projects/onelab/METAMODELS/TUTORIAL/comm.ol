@@ -1,5 +1,5 @@
 LOGFILES.radioButton(0);
-SHOWSOCKETMESSAGES.radioButton(0);
+SHOWSOCKETMESSAGES.radioButton(1);
 
 MESSAGE.string(Hello World!);
 OL.show(MESSAGE);

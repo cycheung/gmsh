@@ -33,7 +33,7 @@ for i in range(0,nangle):
    angles.append(angle)
    msts.append(mst) 
    vwps.append(vwp)
-   print ("\n Position=%g Mst=%g Vwp=%g" %(angle,mst,vwp) )
+   print ("Position=%g Mst=%g Vwp=%g" %(angle,mst,vwp) )
    lines.set_xdata(angles)
    lines.set_ydata(msts)
    tmax = 1.05*max(math.fabs(v) for v in msts)

@@ -43,7 +43,7 @@ N.setAttribute(Highlight, Coral);
 T.setAttribute(Highlight, Coral);
 MAX.setAttribute(Highlight, Coral);
 
-X.number(0.75, 1Geometry/,"Cut location [m]");
+X.number(0.10, 1Geometry/,"Cut location [m]");
 
 OL.iftrue(LOOP)
 X.setAttribute(Loop,3);

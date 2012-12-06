@@ -148,7 +148,7 @@ Body Force 1
 OL.if( OL.get(Parameters/Laser/LASERTYPE) == 2)   # imposed power density
 
 OL.iftrue(Parameters/Laser/QSKINFILE)
-  OL.include(pin.sif);
+  OL.include(OL.get(Parameters/Laser/QSKINFILE));
   Heat Source = Variable Pin, Qvolume
   Real MATC " tx(0) * tx(1)"
 OL.else
@@ -189,7 +189,7 @@ OL.if( OL.get(Parameters/Laser/LASERTYPE) == 1) # imposed temperature
 Boundary Condition 3
   Target Boundaries(1) = OL.region(LaserSpot)
 OL.iftrue(Parameters/Laser/TSKINFILE)
-   OL.include(tskin.sif);
+   OL.include(OL.get(Parameters/Laser/TSKINFILE));
 OL.else
    Temperature = Variable Time 
    Real MATC "if(tx(0)<=tlaser) {OL.get(Parameters/Laser/LASERTEMP)} else {OL.get(Parameters/Skin/BODYTEMP)}"

@@ -56,7 +56,7 @@ set size 0.5,0.5
 set origin 0.0,0.0
 set xlabel "Depth [mm]"
 set ylabel "A_{A{/Symbol d}} [mm^2]"
-set arrow from dermis,0 to dermis,graph(1,1) nohead lt 8
+set arrow from dermis,graph(0,0) to dermis,graph(1,1) nohead lt 8
 plot "activeMax.txt" u (zsurf-($6))*1000:($8)*10**6 w lp t ""
 
 if (INTERACT==-1) set title "time above threshold (on axis)"

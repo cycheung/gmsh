@@ -1,7 +1,6 @@
 # global variables 
-#RSYNCDELAY.number(1); RSYNCDELAY.setVisible(0);
 
-DISTANT.number(1, 0Host/0, "host");
+DISTANT.number(0, 0Host/0, "host");
 DISTANT.valueLabels(0,"local",
                     1,"remote");
 OL.iftrue(DISTANT)
@@ -30,6 +29,9 @@ Elmer.in( _ELMERSOLVER_STARTINFO.ol, _OL.get(Arguments/FileName).sif.ol);
 Elmer.out( _solution.pos, _tempevol.txt);
 Elmer.run();
 Elmer.merge(solution.pos);
+
+tmin.number(,Solution/,"Time when f(t) is minimum");
+fmin.number(,Solution/,"Minimum of f(t)");
 
 #4) Client Postpro pour executer un script gmsh
 Post.register(interfaced);
