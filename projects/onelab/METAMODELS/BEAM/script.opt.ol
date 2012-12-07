@@ -26,7 +26,7 @@ View[k-2].ExternalView = k-9;
 #OL.endif
 
 OL.block
-MAGN.number(2000); MAGN.setVisible(0);
+MAGN.number(2000, 1Geometry/,"Magnification factor");
 OL.endblock
 
 View[k-2].DisplacementFactor = OL.get(MAGN) ;
