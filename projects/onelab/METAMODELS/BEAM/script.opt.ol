@@ -1,3 +1,5 @@
+
+
 k=PostProcessing.NbViews; 
 Printf("%g views in script.pos", k);
 
@@ -23,7 +25,11 @@ View[k-2].ExternalView = k-9;
 #  View[k-2].DisplacementFactor = OL.eval(0.33*OL.get(1Geometry/L)/OL.get(RANGE) ) ;
 #OL.endif
 
-View[k-2].DisplacementFactor = 10000 ;
+OL.block
+MAGN.number(2000); MAGN.setVisible(0);
+OL.endblock
+
+View[k-2].DisplacementFactor = OL.get(MAGN) ;
 
 View[k-1].Visible = 0;
 

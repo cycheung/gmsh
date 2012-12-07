@@ -75,7 +75,7 @@ Mesher.frontPage(OL.get(Arguments/FileName).geo,
 OL.iftrue(LOOP)
 X.range(0.10:OL.get(1Geometry/L)|15.00001);
 OL.else
-X.range(1e-4:OL.eval(OL.get(1Geometry/L)-1e-4):O.1);
+X.range(1e-4:OL.eval(OL.get(1Geometry/L)-1e-4):0.1);
 X.withinRange();
 OL.endif
 

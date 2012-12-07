@@ -1,5 +1,6 @@
 OL.block
-CUTPLANE.radioButton(0,,"Use CutPlane instead of CutGrid");
+CUTPLANE.radioButton(1,,"Use CutPlane instead of CutGrid");
+CUTPLANE.setVisible(0);
 OL.endblock
 
 k=PostProcessing.NbViews; 
@@ -34,7 +35,6 @@ Plugin(CutGrid).ConnectPoints=1;
 Plugin(CutGrid).View=k-9;
 Plugin(CutGrid).Run;
 OL.endif
-
 
 //View[k+1]
 Plugin(MathEval).Expression0= "v0*y";

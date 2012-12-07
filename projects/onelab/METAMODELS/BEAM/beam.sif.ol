@@ -12,7 +12,7 @@ FORMULA.string(,2Load/3,"Formula");
 LOAD.number(1, 2Load/1,"Magnitude - P [N/cm2]");
 
 D.number(0.1, 2Load/,"delta d [m]");
-XX.number(0.5, 2Load/,"Position X [m]")
+XX.number(0.5, 2Load/,"Position X [m]");
 XX.range(0:OL.get(1Geometry/L):0.1);
 XX.withinRange();
 
