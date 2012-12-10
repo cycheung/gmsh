@@ -86,6 +86,8 @@ add_executable(swavev    simulation/SteadyWaveVector.cpp)
 add_executable(swaves    simulation/SteadyWaveScalar.cpp)
 add_executable(vibration simulation/Vibration.cpp)
 
+add_executable(test simulation/Test.cpp)
+
 
 ## Link (Note: 'lib' is gmsh static library)
 target_link_libraries(laplace sf lib ${GMSH_EXTERNAL_LIBRARIES})
@@ -103,3 +105,5 @@ target_link_libraries(cavity    sf lib ${GMSH_EXTERNAL_LIBRARIES})
 target_link_libraries(swavev    sf lib ${GMSH_EXTERNAL_LIBRARIES})
 target_link_libraries(swaves    sf lib ${GMSH_EXTERNAL_LIBRARIES})
 target_link_libraries(vibration sf lib ${GMSH_EXTERNAL_LIBRARIES})
+
+target_link_libraries(test sf lib ${GMSH_EXTERNAL_LIBRARIES})

@@ -21,6 +21,7 @@ class Exception: public std::exception{
   std::string* why;
   
  public:
+  Exception(void);
   Exception(const std::string format, ...);
 
   virtual ~Exception(void) throw();
@@ -29,11 +30,18 @@ class Exception: public std::exception{
 
 /**
    @fn Exception::Exception
+   
+   Instantiates a new Exception with 
+   empty Exception::what()
+   **
+
+   @fn Exception::Exception
    @param format A @em formated string 
    of the @em cause of the exception
    @param ... The parameters of the formated string
    
-   Instantiates a new Exception
+   Instantiates a new Exception with Exception::what()
+   equal to the given string
    **
 
    @fn Exception::~Exception

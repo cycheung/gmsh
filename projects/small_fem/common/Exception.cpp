@@ -1,6 +1,10 @@
 #include <cstdio>
 #include "Exception.h"
 
+Exception::Exception(void){
+  why = new std::string;
+}
+
 Exception::Exception(const std::string format, ...){
   char    buf[256];
   va_list list;
