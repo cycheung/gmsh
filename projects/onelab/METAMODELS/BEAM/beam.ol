@@ -53,16 +53,17 @@ T.setAttribute(Graph,000100);
 OL.else
   OL.if( OL.get(X, attrib.get(Loop)) == 3)
     X.setAttribute(Loop,0);
+    X.setAttribute(Graph,0);
+    M.setAttribute(Graph,0);
+    T.setAttribute(Graph,0);
   OL.endif
-X.setAttribute(Graph,0);
-M.setAttribute(Graph,0);
-T.setAttribute(Graph,0);
 OL.endif
 
 OL.if( OL.get(X, choices.index()) == 0 )
-M.resetChoices();
-T.resetChoices();
+  M.resetChoices();
+  T.resetChoices();
 OL.endif
+
 
 #1) Client Gmsh pour le maillage initial
 Mesher.register(native);

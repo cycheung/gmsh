@@ -10,9 +10,9 @@ LOADTYPE.valueLabels(0, "None",
 FORMULA.string(,2Load/3,"Formula");
 
 LOAD.number(1, 2Load/1,"Magnitude - P [N/cm2]");
-
 D.number(0.1, 2Load/,"delta d [m]");
-XX.number(0.5, 2Load/,"Position X [m]");
+D.range(0.02:0.20:0.02);
+XX.number(0.75, 2Load/,"Position X [m]");
 XX.range(0:OL.get(1Geometry/L):0.1);
 XX.withinRange();
 
@@ -26,10 +26,13 @@ OL.if(OL.get(LOADTYPE) == 2)
 FORMULA.setValue(P *tx(0)/L);
 OL.endif
 OL.if(OL.get(LOADTYPE) == 3)
-FORMULA.setValue(if(tx(0)<(X-d)) {0} else {if(tx(0)<=(X+d)) {P/(2*d)} else {0}});
+# Formule qui adapte P automatiquement en fonction de d (P exprime en 1e4N)
+#FORMULA.setValue(if(tx(0)<(X-d)) {0} else {if(tx(0)<=(X+d)) {P/(2*d)/B} else {0}});
+# Formule avec P en N/cm2
+FORMULA.setValue(if(tx(0)<(X-d)) {0} else {if(tx(0)<=(X+d)) {P} else {0}});
 OL.endif
 OL.if(OL.get(LOADTYPE) == 4)
-FORMULA.setValue(P*tx(1)/B*10);
+FORMULA.setValue(P*tx(1)/B);
 OL.endif
 
 OL.if(OL.get(LOADTYPE) == 0)
@@ -52,6 +55,11 @@ OL.if(OL.get(LOADTYPE) == 5)
 FORMULA.setReadOnly(0);
 OL.else
 FORMULA.setReadOnly(1);
+OL.endif
+
+OL.if( OL.get(2Load/D, choices.index()) == 0 )
+  Results/M.resetChoices();
+  Results/T.resetChoices();
 OL.endif
 
 OL.endblock
@@ -168,5 +176,27 @@ Boundary Condition 3
   Target Boundaries = OL.region(FreeEnd)
   Force 1 = 0
   Force 2 = 0
+  Force 3 = 0
 End
 
+OL.block
+BEARING.number(0,1Geometry/,"Bearing at free end");
+BEARING.valueLabels(0, "None", 1, "Fixed", 2, "Roller");
+OL.endblock
+
+OL.if( OL.get(BEARING) == 1)
+Boundary Condition 4
+  Target Boundaries = OL.region(Bearing)
+  Displacement 1 = 0
+  Displacement 2 = 0
+  Displacement 3 = 0
+End
+OL.endif
+OL.if( OL.get(BEARING) == 2)
+Boundary Condition 4
+  Target Boundaries = OL.region(Bearing)
+  !Displacement 1 = 0
+  Displacement 2 = 0
+  Displacement 3 = 0
+End
+OL.endif

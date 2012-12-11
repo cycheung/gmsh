@@ -11,7 +11,7 @@ DefineConstant[STRUCTURED = {1, Path "1Geometry/", Label "Mesh",
 /*  == S T R U C T U R E D   M E S H ==  */
 
 If(STRUCTURED == 1)
-NbLayX=50;
+NbLayX=51;
 NbLayY=7;
 NbLayZ=7;
 Printf("Number of layers = %g %g %g", NbLayX, NbLayY, NbLayZ);
@@ -37,12 +37,16 @@ Extrude Surface { 10, {L, 0, 0} } {Layers{NbLayX}; Recombine; } ;
 Physical Volume("Volume")={1};
 Physical Surface("LoadSurf")={23};
 Physical Surface("FreeEnd")={32};
+
 If(CLAMPING == 1)
-Physical Surface("Clamping")={10};
+  Physical Surface("Clamping")={10};
 EndIf
 If(CLAMPING == 2)
-Physical Surface("Clamping")={10, 32};
+  Physical Surface("Clamping")={10, 32};
 EndIf
+
+Physical Line("Bearing")={15};
+
 EndIf
 
 /*  == U N S T R U C T U R E D   M E S H ==  */
@@ -52,7 +56,7 @@ lc1=(A+B)/15;
 lc2=(A+B)/8;
 lc3=lc2;
 If(CLAMPING == 2)
-lc3=lc1;
+  lc3=lc1;
 EndIf
 
 Point( 1) = {0,-A/2,-B/2, lc1};
@@ -110,12 +114,15 @@ Volume(30) = {29};
 Physical Volume("Volume")={30};
 Physical Surface("LoadSurf")={26};
 Physical Surface("FreeEnd")={28};
+
 If(CLAMPING == 1)
-Physical Surface("Clamping")={18};
+  Physical Surface("Clamping")={18};
 EndIf
+
 If(CLAMPING == 2)
-Physical Surface("Clamping")={18, 28};
+  Physical Surface("Clamping")={18, 28};
 EndIf
-EndIf
+
+Physical Line("Bearing")={15};
 
 EndIf
