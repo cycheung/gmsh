@@ -14,7 +14,7 @@ set size 1.0, 1.0
 set origin 0.0, 0.0
 set grid
 
-if (INTERACT==-1) set title "Temperature on axis at different depths"
+if (INTERACT==-1) set title "Temperature on axis at different depths (every 12.5 {{/Symbol m}m})"
 set size 0.5,0.5
 set origin 0.0,0.5
 set ylabel "Temperature [{\260}C]";
@@ -36,7 +36,7 @@ set ytics mirror
 unset y2tics
 unset y2label
  
-if (INTERACT==-1) set title "Temperature distribution at t_{laser} at different depths"
+if (INTERACT==-1) set title "Temperature distribution at t_{laser} at different depths (every 12.5 {{/Symbol m}m})"
 set size 0.5,0.5
 set origin 0.5,0.5  
 set xlabel "Radial coordinate [mm]"
