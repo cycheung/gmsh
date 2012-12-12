@@ -1,6 +1,7 @@
 set(src
   Exception.cpp
   Comparators.cpp
+  Timer.cpp
 )
 
 

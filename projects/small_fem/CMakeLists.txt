@@ -68,6 +68,7 @@ add_definitions(-pedantic -Wall -g)
 ## Build SmallFEM Library
 add_library(sf STATIC ${sources})
 set_target_properties(sf PROPERTIES LINKER_LANGUAGE CXX)
+target_link_libraries(sf -lrt)
 
 ## Build Simulations
 add_executable(laplace simulation/Laplace.cpp) 
