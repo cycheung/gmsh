@@ -1,7 +1,17 @@
+OL.block
+OS.number(2,Configuration/); OS.setVisible(0);
+OS.valueLabels(1,"Linux",2,"MAC-OS",3,"Windows");
+OL.endblock
+
 
 INTERACT=-1
 
+OL.if(OL.get(OS) == 2)
 if (INTERACT==-1) set terminal aqua enhanced
+OL.else
+if (INTERACT==-1) set terminal x11 persist
+OL.endif
+
 if (INTERACT== 0) set terminal pdf enhanced font "Times-Roman,6"
 if (INTERACT== 0) set output "plot.pdf"
 
