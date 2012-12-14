@@ -94,6 +94,7 @@ LASERPOWER.setVisible(0);
 QSKINFILE.setVisible(0);
 ABSORPTION.setVisible(0);
 LASERSHAPE.setVisible(0);
+REFLECTIVITY.setVisible(0);
 OL.endif
 OL.if( OL.get(LASERTYPE) == 2)
 LASERTEMP.setVisible(0);
@@ -102,6 +103,7 @@ LASERPOWER.setVisible(1);
 QSKINFILE.setVisible(1);
 ABSORPTION.setVisible(1);
 LASERSHAPE.setVisible(1);
+REFLECTIVITY.setVisible(1);
 OL.endif
 OL.if( OL.get(LASERTYPE) == 3)
 LASERTEMP.setVisible(1);
@@ -110,6 +112,7 @@ LASERPOWER.setVisible(1);
 QSKINFILE.setVisible(0);
 ABSORPTION.setVisible(1);
 LASERSHAPE.setVisible(1);
+REFLECTIVITY.setVisible(1);
 OL.endif
 
 PROBETIME.number(OL.get(STIMTIME), PostPro/, "Probe time [s]");
