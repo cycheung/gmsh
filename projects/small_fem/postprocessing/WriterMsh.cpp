@@ -214,7 +214,7 @@ void WriterMsh::writeNodalValuesFromNode(void) const{
 
 void WriterMsh::writeNodalValuesFromSol(void) const{
   // Lagrange Basis Size //
-  const unsigned int nCoef = lBasis->getSize();
+  const unsigned int nCoef = lBasis->getNFunction();
 
   // Scalar FS ? //
   const FunctionSpaceScalar* fsScalar = NULL;

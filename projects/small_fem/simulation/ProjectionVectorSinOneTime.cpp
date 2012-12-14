@@ -13,6 +13,7 @@
 #include "FunctionSpaceEdge.h"
 #include "FormulationProjectionVector.h"
 
+#include "Timer.h"
 #include "Gmsh.h"
 
 using namespace std;
@@ -45,6 +46,10 @@ fullVector<double> f(fullVector<double>& xyz){
 }
 
 int main(int argc, char** argv){
+  // Timer //
+  Timer timer;
+
+  // Init //
   GmshInitialize(argc, argv);
 
   // Writer //
@@ -76,7 +81,9 @@ int main(int argc, char** argv){
   cout << "## Computing FEM Solution on: " << argv[1] 
        << " (Order " << order << ") ..." << endl << flush;
 
+  timer.start();
   sol(0, 0) = fem(domain, visu, f, writer, order);
+  timer.stop();
   cout << "## ... Done !" << endl << flush;
 
   
@@ -104,7 +111,14 @@ int main(int argc, char** argv){
 
   cout << "    ];" << endl;
   
+  // Done //
   GmshFinalize();
+
+  cout << endl
+       << "## Time: " 
+       << timer.time() << " " 
+       << timer.unit() << endl;
+
   return 0;
 }
 

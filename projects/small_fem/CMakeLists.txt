@@ -70,6 +70,7 @@ add_library(sf STATIC ${sources})
 set_target_properties(sf PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(sf -lrt)
 
+
 ## Build Simulations
 add_executable(laplace simulation/Laplace.cpp) 
 add_executable(poisson simulation/Poisson.cpp) 
@@ -82,9 +83,9 @@ add_executable(projscalone simulation/ProjectionScalarSinOneTime.cpp)
 
 add_executable(btest simulation/BasisTest.cpp) 
 
-add_executable(cavity    simulation/Cavity.cpp)
 add_executable(swavev    simulation/SteadyWaveVector.cpp)
 add_executable(swaves    simulation/SteadyWaveScalar.cpp)
+add_executable(cavity    simulation/Cavity.cpp)
 add_executable(vibration simulation/Vibration.cpp)
 
 add_executable(test simulation/Test.cpp)
@@ -102,9 +103,9 @@ target_link_libraries(projscalone sf lib ${GMSH_EXTERNAL_LIBRARIES})
 
 target_link_libraries(btest sf lib ${GMSH_EXTERNAL_LIBRARIES})
 
-target_link_libraries(cavity    sf lib ${GMSH_EXTERNAL_LIBRARIES})
 target_link_libraries(swavev    sf lib ${GMSH_EXTERNAL_LIBRARIES})
 target_link_libraries(swaves    sf lib ${GMSH_EXTERNAL_LIBRARIES})
+target_link_libraries(cavity    sf lib ${GMSH_EXTERNAL_LIBRARIES})
 target_link_libraries(vibration sf lib ${GMSH_EXTERNAL_LIBRARIES})
 
 target_link_libraries(test sf lib ${GMSH_EXTERNAL_LIBRARIES})

@@ -82,10 +82,10 @@ double FormulationSteadyWaveScalar::weak(int dofI, int dofJ,
   const MElement& element = god.getGeoElement();
   MElement&      celement = const_cast<MElement&>(element);
   
-  const vector<const vector<fullVector<double> >*> eGradFun = 
+  const fullMatrix<double>& eGradFun = 
     fspace->getEvaluatedGradLocalFunctions(element);
 
-  const vector<const vector<double>*> eFun = 
+  const fullMatrix<double>& eFun = 
     fspace->getEvaluatedLocalFunctions(element);
 
   // Loop over Integration Point (Term 1) //
@@ -97,8 +97,15 @@ double FormulationSteadyWaveScalar::weak(int dofI, int dofJ,
     
     invJac.invertInPlace();
 
-    gradPhiI = Mapper::grad((*eGradFun[dofI])[g], invJac);
-    gradPhiJ = Mapper::grad((*eGradFun[dofJ])[g], invJac);
+    gradPhiI = Mapper::grad(eGradFun(dofI, g * 3),
+			    eGradFun(dofI, g * 3 + 1),
+			    eGradFun(dofI, g * 3 + 2),
+			    invJac);
+
+    gradPhiJ = Mapper::grad(eGradFun(dofJ, g * 3),
+			    eGradFun(dofJ, g * 3 + 1), 
+			    eGradFun(dofJ, g * 3 + 2), 
+			    invJac);
 
     integral1 += 
       ((gradPhiI * gradPhiJ) / mu) * fabs(det) * (*gW1)(g);
@@ -113,8 +120,8 @@ double FormulationSteadyWaveScalar::weak(int dofI, int dofJ,
 			       invJac);
 
 
-    phiI = (*eFun[dofI])[g];
-    phiJ = (*eFun[dofJ])[g];
+    phiI = eFun(dofI, g);
+    phiJ = eFun(dofJ, g);
 
     integral2 += 
       ((phiI * phiJ) * eps * kSquare) * fabs(det) * (*gW2)(g);

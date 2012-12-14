@@ -25,9 +25,9 @@
 
 class PlotBasis{
  private:
-  Writer* writer;
-  int nFunction;
-  bool isScalar;
+  Writer*      writer;
+  unsigned int nFunction;
+  bool         isScalar;
 
   int N;
   int E;

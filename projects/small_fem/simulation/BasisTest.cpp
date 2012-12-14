@@ -43,7 +43,7 @@ int main(int argc, char** argv){
 
   // Plot Basis //
   TriNodeBasis b(atoi(argv[2]));
-  cout << "Size: " << b.getSize() << endl;
+  cout << "Size: " << b.getNFunction() << endl;
   cout << b.toString() << endl;
 
   PlotBasis plot(b, goe, writer);

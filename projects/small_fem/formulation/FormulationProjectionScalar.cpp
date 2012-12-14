@@ -52,7 +52,7 @@ double FormulationProjectionScalar::weak(int dofI, int dofJ,
   const MElement& element = god.getGeoElement();
   MElement&      celement = const_cast<MElement&>(element);
   
-  const vector<const vector<double>*> eFun = 
+  const fullMatrix<double>& eFun = 
     fspace->getEvaluatedLocalFunctions(element);
 
   // Loop over Integration Point //
@@ -62,8 +62,8 @@ double FormulationProjectionScalar::weak(int dofI, int dofJ,
 			       (*gC)(g, 2), 
 			       jac);
 
-    phiI = (*eFun[dofI])[g];
-    phiJ = (*eFun[dofJ])[g];
+    phiI = eFun(dofI, g);
+    phiJ = eFun(dofJ, g);
 
     integral += phiI * phiJ * fabs(det) * (*gW)(g);
   }
@@ -88,7 +88,7 @@ double FormulationProjectionScalar::rhs(int equationI,
   const MElement& element = god.getGeoElement();
   MElement&      celement = const_cast<MElement&>(element);
   
-  const vector<const vector<double>*> eFun = 
+  const fullMatrix<double>& eFun = 
     fspace->getEvaluatedLocalFunctions(element);
 
   // Loop over Integration Point //
@@ -99,7 +99,7 @@ double FormulationProjectionScalar::rhs(int equationI,
 			       (*gC)(g, 2), 
 			       jac);
 
-    phi = (*eFun[equationI])[g];
+    phi = eFun(equationI, g);
     
     // Compute f in the *physical* coordinate
     celement.pnt((*gC)(g, 0), 

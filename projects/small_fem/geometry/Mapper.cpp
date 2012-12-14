@@ -40,10 +40,43 @@ fullVector<double> Mapper::grad(const fullVector<double>& gradUVW,
   return gradXYZ;
 }
 
+fullVector<double> Mapper::grad(double gradU,
+				double gradV,
+				double gradW, 
+				const fullMatrix<double>& invJac){
+  
+  fullVector<double> gradXYZ(3);
+  fullVector<double> gradUVW(3);
+  
+  gradUVW(0) = gradU;
+  gradUVW(1) = gradV;
+  gradUVW(2) = gradW;
+
+  invJac.mult(gradUVW, gradXYZ);
+  return gradXYZ;
+}
+
 fullVector<double> Mapper::curl(const fullVector<double>& curlUVW, 
 				const fullMatrix<double>& jac,
 				double invDet){
   fullVector<double> curlXYZ(3);
+  
+  jac.multWithATranspose(curlUVW, invDet, 0, curlXYZ);
+  
+  return curlXYZ;
+}
+
+fullVector<double> Mapper::curl(double curlU,
+				double curlV,
+				double curlW, 
+				const fullMatrix<double>& jac,
+				double invDet){
+  fullVector<double> curlXYZ(3);
+  fullVector<double> curlUVW(3);
+  
+  curlUVW(0) = curlU;
+  curlUVW(1) = curlV;
+  curlUVW(2) = curlW;
   
   jac.multWithATranspose(curlUVW, invDet, 0, curlXYZ);
   

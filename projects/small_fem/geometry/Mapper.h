@@ -38,7 +38,18 @@ class Mapper{
   static fullVector<double> grad(const fullVector<double>& gradUVW, 
 				 const fullMatrix<double>& invJac);
 
+  static fullVector<double> grad(double gradU,
+				 double gradV,
+				 double gradW,
+				 const fullMatrix<double>& invJac);
+
   static fullVector<double> curl(const fullVector<double>& curlUVW, 
+				 const fullMatrix<double>& jac,
+				 double invDet);
+
+  static fullVector<double> curl(double curlU,
+				 double curlV,
+				 double curlW, 
 				 const fullMatrix<double>& jac,
 				 double invDet);
 };

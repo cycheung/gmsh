@@ -78,7 +78,7 @@ double FormulationEigenFrequency::weakA(int dofI, int dofJ,
   const MElement& element = god.getGeoElement();
   MElement&      celement = const_cast<MElement&>(element);
   
-  const vector<const vector<fullVector<double> >*> eFun = 
+  const fullMatrix<double>& eFun = 
     fspace->getEvaluatedCurlLocalFunctions(element);
 
   // Loop over Integration Point //
@@ -88,8 +88,15 @@ double FormulationEigenFrequency::weakA(int dofI, int dofJ,
 			       (*gC1)(g, 2), 
 			       jac);
 
-    phiI = Mapper::curl((*eFun[dofI])[g], jac, 1 / det);
-    phiJ = Mapper::curl((*eFun[dofJ])[g], jac, 1 / det);
+    phiI = Mapper::curl(eFun(dofI, g * 3),
+			eFun(dofI, g * 3 + 1),
+			eFun(dofI, g * 3 + 2), 
+			jac, 1 / det);
+    
+    phiJ = Mapper::curl(eFun(dofJ, g * 3),
+			eFun(dofJ, g * 3 + 1),
+			eFun(dofJ, g * 3 + 2), 
+			jac, 1 / det);
 
     integral += ((phiI * phiJ) / mu) * fabs(det) * (*gW1)(g);
   }
@@ -111,7 +118,7 @@ double FormulationEigenFrequency::weakB(int dofI, int dofJ,
   const MElement& element = god.getGeoElement();
   MElement&      celement = const_cast<MElement&>(element);
   
-  const vector<const vector<fullVector<double> >*> eFun = 
+  const fullMatrix<double>& eFun = 
     fspace->getEvaluatedLocalFunctions(element);
 
   // Loop over Integration Point //
@@ -122,8 +129,15 @@ double FormulationEigenFrequency::weakB(int dofI, int dofJ,
 			       invJac);
     invJac.invertInPlace();
 
-    phiI = Mapper::grad((*eFun[dofI])[g], invJac);
-    phiJ = Mapper::grad((*eFun[dofJ])[g], invJac);
+    phiI = Mapper::grad(eFun(dofI, g * 3),
+			eFun(dofI, g * 3 + 1),
+			eFun(dofI, g * 3 + 2),
+			invJac);
+
+    phiJ = Mapper::grad(eFun(dofJ, g * 3),
+			eFun(dofJ, g * 3 + 1), 
+			eFun(dofJ, g * 3 + 2), 
+			invJac);
 
     integral += ((phiI * phiJ) * eps) * fabs(det) * (*gW2)(g);
   }

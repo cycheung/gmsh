@@ -87,10 +87,10 @@ double FormulationSteadyWaveVector::weak(int dofI, int dofJ,
   const MElement& element = god.getGeoElement();
   MElement&      celement = const_cast<MElement&>(element);
   
-  const vector<const vector<fullVector<double> >*> eCurlFun = 
+  const fullMatrix<double>& eCurlFun = 
     fspace->getEvaluatedCurlLocalFunctions(element);
 
-  const vector<const vector<fullVector<double> >*> eFun = 
+  const fullMatrix<double>& eFun = 
     fspace->getEvaluatedLocalFunctions(element);
 
   // Loop over Integration Point (Term 1) //
@@ -99,10 +99,17 @@ double FormulationSteadyWaveVector::weak(int dofI, int dofJ,
 			       (*gC1)(g, 1), 
 			       (*gC1)(g, 2), 
 			       jac);
+
+    curlPhiI = Mapper::curl(eCurlFun(dofI, g * 3),
+			    eCurlFun(dofI, g * 3 + 1),
+			    eCurlFun(dofI, g * 3 + 2), 
+			    jac, 1 / det);
     
-    curlPhiI = Mapper::curl((*eCurlFun[dofI])[g], jac, 1 / det);
-    curlPhiJ = Mapper::curl((*eCurlFun[dofJ])[g], jac, 1 / det);
-    
+    curlPhiJ = Mapper::curl(eCurlFun(dofJ, g * 3),
+			    eCurlFun(dofJ, g * 3 + 1),
+			    eCurlFun(dofJ, g * 3 + 2), 
+			    jac, 1 / det);
+
     integral1 += 
       ((curlPhiI * curlPhiJ) / mu) * fabs(det) * (*gW1)(g);
   }
@@ -117,8 +124,15 @@ double FormulationSteadyWaveVector::weak(int dofI, int dofJ,
 
     invJac.invertInPlace();
 
-    phiI = Mapper::grad((*eFun[dofI])[g], invJac);
-    phiJ = Mapper::grad((*eFun[dofJ])[g], invJac);
+    phiI = Mapper::grad(eFun(dofI, g * 3),
+			eFun(dofI, g * 3 + 1),
+			eFun(dofI, g * 3 + 2),
+			invJac);
+
+    phiJ = Mapper::grad(eFun(dofJ, g * 3),
+			eFun(dofJ, g * 3 + 1), 
+			eFun(dofJ, g * 3 + 2), 
+			invJac);
     
     integral2 += 
       ((phiI * phiJ) * eps * kSquare) * fabs(det) * (*gW2)(g);

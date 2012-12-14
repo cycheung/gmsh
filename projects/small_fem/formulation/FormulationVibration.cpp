@@ -55,7 +55,7 @@ double FormulationVibration::weakA(int dofI, int dofJ,
   const MElement& element = god.getGeoElement();
   MElement&      celement = const_cast<MElement&>(element);
   
-  const vector<const vector<fullVector<double> >*> eFun = 
+  const fullMatrix<double>& eFun = 
     fspace->getEvaluatedGradLocalFunctions(element);
 
   // Loop over Integration Point //
@@ -66,8 +66,15 @@ double FormulationVibration::weakA(int dofI, int dofJ,
 				      invJac);
     invJac.invertInPlace();
 
-    phiI = Mapper::grad((*eFun[dofI])[g], invJac);
-    phiJ = Mapper::grad((*eFun[dofJ])[g], invJac);
+    phiI = Mapper::grad(eFun(dofI, g * 3),
+			eFun(dofI, g * 3 + 1),
+			eFun(dofI, g * 3 + 2),
+			invJac);
+
+    phiJ = Mapper::grad(eFun(dofJ, g * 3),
+			eFun(dofJ, g * 3 + 1), 
+			eFun(dofJ, g * 3 + 2), 
+			invJac);
     
     integral += phiI * phiJ * fabs(det) * (*gWL)(g);
   }

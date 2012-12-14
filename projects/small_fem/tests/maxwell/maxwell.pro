@@ -6,7 +6,7 @@ Group{
 
 
 Function{
-  k = 1;
+  k = 5;
 }
 
 
@@ -40,8 +40,8 @@ Integration {
 Constraint{
   { Name Dirichlet_e ;
     Case {      
-      { Region GammaC ; Value  0. ; }
-      { Region GammaS ; Value -1. ; }
+      { Region GammaC ; Value 0. ; }
+      { Region GammaS ; Value 1. ; }
     }
   }
 }
@@ -100,7 +100,7 @@ PostProcessing {
 PostOperation {
   { Name Maxwell_e ; NameOfPostProcessing Maxwell_e; 
     Operation {
-      Print[ e, OnElementsOf Omega, File "e.pos"] ;
+      Print[ e, OnElementsOf Omega, File "maxwell.pos"] ;
     }
   }
 }
