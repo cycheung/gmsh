@@ -261,10 +261,24 @@ string Mesh::toString(void) const{
 	 << "* This mesh contains the following Elements:  *" 
 	 << endl;
   
-  for(; itEl != endEl; itEl++)
+  for(; itEl != endEl; itEl++){
+    int nVertex = 
+      const_cast<MElement*>(itEl->first)->getNumPrimaryVertices();
+    
+    int nVertexMinus = nVertex - 1;
+    
     stream << "*   -- Element "
 	   << getGlobalId(*itEl->first)
+	   << ": [";
+    
+    for(int i = 0; i < nVertexMinus; i++)
+      stream << getGlobalId(*const_cast<MElement*>(itEl->first)->getVertex(i))
+	     << ", ";
+    
+    stream << getGlobalId(*const_cast<MElement*>(itEl->first)->getVertex(nVertexMinus))
+	   << "]"
 	   << endl;
+  }
 
   stream << "*                                             *"
 	 << endl
@@ -280,15 +294,15 @@ string Mesh::toString(void) const{
   
   for(; itV != endV; itV++)
     stream << "*   -- Vertex "
+	   << showpos
 	   << getGlobalId(*itV->first)
-	   << endl
-	   << "*    (["
+	   << ": ["
 	   << itV->first->x()
 	   << ", "
 	   << itV->first->y()
 	   << ", "
 	   << itV->first->z()
-	   << "])"
+	   << "]"
 	   << endl;
 
   stream << "*                                             *"
@@ -306,20 +320,11 @@ string Mesh::toString(void) const{
   for(; itEd != endEd; itEd++)
     stream << "*   -- Edge "
 	   << getGlobalId(*itEd->first)
-	   << endl
-	   << "*    (["
-	   << itEd->first->getVertex(0)->x()
+	   << ": ["
+	   << getGlobalId(*itEd->first->getVertex(0))
 	   << ", "
-	   << itEd->first->getVertex(0)->y()
-	   << ", "
-	   << itEd->first->getVertex(0)->z()
-	   << "], ["
-	   << itEd->first->getVertex(1)->x()
-	   << ", "
-	   << itEd->first->getVertex(1)->y()
-	   << ", "
-	   << itEd->first->getVertex(1)->z()
-	   << "])"
+	   << getGlobalId(*itEd->first->getVertex(1))
+	   << "]"
 	   << endl;
 
   stream << "*                                             *"
@@ -336,6 +341,13 @@ string Mesh::toString(void) const{
   for(; itF != endF; itF++)
     stream << "*   -- Face "
 	   << getGlobalId(*itF->first)
+	   << ": ["
+	   << getGlobalId(*itF->first->getVertex(0))
+	   << ", "
+	   << getGlobalId(*itF->first->getVertex(1))
+	   << ", "
+	   << getGlobalId(*itF->first->getVertex(2))
+	   << "]"
 	   << endl;
 
   stream << "*                                             *"

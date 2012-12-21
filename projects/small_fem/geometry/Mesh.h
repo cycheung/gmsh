@@ -169,7 +169,7 @@ inline unsigned int Mesh::getEdgeNumber(void) const{
 }
 
 inline unsigned int Mesh::getFaceNumber(void) const{
-  return 0;
+  return face->size();
 }
 
 #endif

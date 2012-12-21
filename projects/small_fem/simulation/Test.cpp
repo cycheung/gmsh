@@ -13,9 +13,8 @@ using namespace std;
 int main(int argc, char** argv){
   GmshInitialize(argc, argv);
   
-  LineReferenceSpace a;
-  cout << a.toLatex() << endl;
-  cout << a.toString() << endl;  
+  Mesh msh(argv[1]);
+  cout << msh.toString() << endl;
 
   GmshFinalize();
   return 0;

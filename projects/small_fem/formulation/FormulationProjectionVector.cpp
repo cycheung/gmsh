@@ -24,7 +24,7 @@ FormulationProjectionVector(fullVector<double> (*f)(fullVector<double>& xyz),
 
   // Look for 1st element to get element type
   // (We suppose only one type of Mesh !!)
-  gaussIntegration::get(fs.getSupport().get(0).getType(), 2 * 2 * fs.getOrder(), *gC, *gW);
+  gaussIntegration::get(fs.getSupport().get(0).getType(), 2 * fs.getOrder(), *gC, *gW);
   
   G = gW->size(); // Nbr of Gauss points
 
