@@ -141,7 +141,6 @@ void System::dirichlet(const GroupOfElement& goe,
     dofM->fixValue(*dof[i], dirSol(dirDofM.getGlobalId(*dof[i]))); 
 }
 
-
 void System::solve(void){
   // Is the System assembled ? //
   if(!assembled)
