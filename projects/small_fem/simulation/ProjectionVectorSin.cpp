@@ -37,9 +37,9 @@ double modDiffSquare(fullVector<double>& v0, fullVector<double>& v1);
 fullVector<double> f(fullVector<double>& xyz){
   fullVector<double> res(3);
 
-  res(0) = xyz(0) * xyz(0);// * xyz(0);//sin(10 * xyz(0));
-  res(1) = xyz(1) * xyz(1);// * xyz(1);//sin(10 * xyz(1));
-  res(2) = xyz(2) * xyz(2);// * xyz(2);//sin(10 * xyz(2));
+  res(0) = xyz(0) * xyz(0);// * xyz(0) * xyz(0) * xyz(0);//sin(10 * xyz(0));
+  res(1) = xyz(1) * xyz(1);// * xyz(1) * xyz(1) * xyz(1);//sin(10 * xyz(1));
+  res(2) = xyz(2) * xyz(2);// * xyz(2) * xyz(2) * xyz(2);//sin(10 * xyz(2));
 
   return res;
 }

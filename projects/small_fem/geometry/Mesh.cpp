@@ -255,37 +255,6 @@ string Mesh::toString(void) const{
 	 << endl; 
 
 
-  // Elements //
-  stream << "*                                             *"
-	 << endl
-	 << "* This mesh contains the following Elements:  *" 
-	 << endl;
-  
-  for(; itEl != endEl; itEl++){
-    int nVertex = 
-      const_cast<MElement*>(itEl->first)->getNumPrimaryVertices();
-    
-    int nVertexMinus = nVertex - 1;
-    
-    stream << "*   -- Element "
-	   << getGlobalId(*itEl->first)
-	   << ": [";
-    
-    for(int i = 0; i < nVertexMinus; i++)
-      stream << getGlobalId(*const_cast<MElement*>(itEl->first)->getVertex(i))
-	     << ", ";
-    
-    stream << getGlobalId(*const_cast<MElement*>(itEl->first)->getVertex(nVertexMinus))
-	   << "]"
-	   << endl;
-  }
-
-  stream << "*                                             *"
-	 << endl
-	 << "***********************************************"  
-	 << endl;  
-
-
   // Vertices //
   stream << "*                                             *"
 	 << endl
@@ -296,13 +265,13 @@ string Mesh::toString(void) const{
     stream << "*   -- Vertex "
 	   << showpos
 	   << getGlobalId(*itV->first)
-	   << ": ["
+	   << ": {"
 	   << itV->first->x()
 	   << ", "
 	   << itV->first->y()
 	   << ", "
 	   << itV->first->z()
-	   << "]"
+	   << "}"
 	   << endl;
 
   stream << "*                                             *"
@@ -354,6 +323,37 @@ string Mesh::toString(void) const{
 	 << endl
 	 << "***********************************************"  
 	 << endl;
+
+
+  // Elements //
+  stream << "*                                             *"
+	 << endl
+	 << "* This mesh contains the following Elements:  *" 
+	 << endl;
+  
+  for(; itEl != endEl; itEl++){
+    int nVertex = 
+      const_cast<MElement*>(itEl->first)->getNumPrimaryVertices();
+    
+    int nVertexMinus = nVertex - 1;
+    
+    stream << "*   -- Element "
+	   << getGlobalId(*itEl->first)
+	   << ": [";
+    
+    for(int i = 0; i < nVertexMinus; i++)
+      stream << getGlobalId(*const_cast<MElement*>(itEl->first)->getVertex(i))
+	     << ", ";
+    
+    stream << getGlobalId(*const_cast<MElement*>(itEl->first)->getVertex(nVertexMinus))
+	   << "]"
+	   << endl;
+  }
+
+  stream << "*                                             *"
+	 << endl
+	 << "***********************************************"  
+	 << endl;  
 
   
   // Retrun //
