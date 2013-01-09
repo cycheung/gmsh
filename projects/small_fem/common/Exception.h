@@ -29,13 +29,13 @@ class Exception: public std::exception{
 };
 
 /**
-   @fn Exception::Exception
+   @fn Exception::Exception(void)
    
    Instantiates a new Exception with 
    empty Exception::what()
    **
 
-   @fn Exception::Exception
+   @fn Exception::Exception(const std::string format, ...)
    @param format A @em formated string 
    of the @em cause of the exception
    @param ... The parameters of the formated string

@@ -86,14 +86,32 @@ class Mapper{
    @returns Returns the coordiantes of the given point
    in the @em reference space
 
-   @fn Mapper::grad
+   @fn Mapper::grad(const fullVector<double>& gradUVW, const fullMatrix<double>& invJac)
    @param gradUVW A gradient in the @em reference space
    @param invJac The Invert Jacobian Matrix evaluated at @c UVW 
    @returns Returns the given gradient in the 
    @em physical space
 
-   @fn Mapper::curl
+   @fn Mapper::grad(double gradU, double gradV, double gradW, const fullMatrix<double>& invJac)
+   @param gradU The @c U componenet of a gradient in the @em reference space
+   @param gradV The @c V componenet of a gradient in the @em reference space
+   @param gradW The @c W componenet of a gradient in the @em reference space
+   @param invJac The Invert Jacobian Matrix evaluated at @c UVW 
+   @returns Returns the given gradient in the 
+   @em physical space
+
+   @fn Mapper::curl(const fullVector<double>& curlUVW, const fullMatrix<double>& jac, double invDet);
    @param curlUVW A curl in the @em reference space
+   @param jac The Jacobian Matrix evaluated at @c UVW 
+   @param invDet The Invert of the Jacobian Matrix Determinant 
+   evaluated at @c UVW 
+   @returns Returns the given curl in the 
+   @em physical space
+
+   @fn Mapper::curl(double curlU, double curlV, double curlW, const fullMatrix<double>& jac, double invDet);
+   @param curlU The @c U componenet of a curl in the @em reference space
+   @param curlV The @c V componenet of a curl in the @em reference space
+   @param curlW The @c W componenet of a curl in the @em reference space
    @param jac The Jacobian Matrix evaluated at @c UVW 
    @param invDet The Invert of the Jacobian Matrix Determinant 
    evaluated at @c UVW 
