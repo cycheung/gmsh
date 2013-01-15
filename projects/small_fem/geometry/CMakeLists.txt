@@ -8,6 +8,8 @@ set(src
   VertexExtractor.cpp
   EdgeExtractor.cpp
   FaceExtractor.cpp
+
+  Jacobian.cpp
 )
 
 add_sources(geometry "${src}")
