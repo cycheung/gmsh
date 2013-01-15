@@ -7,7 +7,6 @@
 
 #include "Interpolator.h"
 #include "WriterMsh.h"
-#include "Integrator.h"
 
 #include "FormulationPoisson.h"
 
@@ -47,12 +46,6 @@ int main(int argc, char** argv){
   sysPoisson.fixCoef(constraintDomain, 0);
   sysPoisson.assemble();
   sysPoisson.solve();
-
-  // Integrate Solution //
-  Integrator integrator(sysPoisson);
-  cout << "Integrated Solution: "
-       << integrator.integrate()
-       << endl;
 
   if(argc == 4){
   // Interpolated View //

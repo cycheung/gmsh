@@ -6,8 +6,6 @@ set(src
 
   Interpolator.cpp
   PlotBasis.cpp
-
-  Integrator.cpp
 )
 
 

@@ -4,7 +4,6 @@
 #include "FunctionSpaceScalar.h"
 #include "FunctionSpaceVector.h"
 #include "BasisGenerator.h"
-#include "LagrangeBasis.h"
 #include "WriterMsh.h"
 
 using namespace std;
@@ -30,7 +29,7 @@ void WriterMsh::write(const std::string name) const{
     writeHeader();
     writeNodes();
     writeElements();
-    
+    /*
     if(!isNodal){
       lBasis = static_cast<LagrangeBasis*>
 	(BasisGenerator::generate((*element)[0]->getType(),
@@ -41,7 +40,7 @@ void WriterMsh::write(const std::string name) const{
 
       writeInterpolationScheme();
     }
-
+    */
     if(hasValue){
       writeNodalValuesHeader(name);
       
@@ -49,7 +48,7 @@ void WriterMsh::write(const std::string name) const{
 	writeNodalValuesFromNode();
 
       else
-	writeNodalValuesFromSol();
+	;//writeNodalValuesFromSol();
   
       writeNodalValuesFooter();  
     }
@@ -59,7 +58,7 @@ void WriterMsh::write(const std::string name) const{
   delete out;
 
   if(!isNodal)
-    delete lBasis;
+    ;//delete lBasis;
 }
 
 void WriterMsh::writeHeader(void) const{
@@ -104,7 +103,7 @@ void WriterMsh::writeElements(void) const{
   
   *out << "$EndElements" << endl;
 }
-
+/*
 void WriterMsh::writeInterpolationScheme(void) const{ 
   // Some Temp Value
   const fullMatrix<double>& coef = lBasis->getCoefficient();
@@ -160,7 +159,7 @@ void WriterMsh::writeInterpolationScheme(void) const{
   // End
   *out << "$EndInterpolationScheme" << endl;
 }
-
+*/
 void WriterMsh::writeNodalValuesHeader(const string name) const{
   *out << "$ElementNodeData"   << endl;
 
@@ -211,7 +210,7 @@ void WriterMsh::writeNodalValuesFromNode(void) const{
     *out << endl;
   }
 }
-
+/*
 void WriterMsh::writeNodalValuesFromSol(void) const{
   // Lagrange Basis Size //
   const unsigned int nCoef = lBasis->getNFunction();
@@ -266,7 +265,7 @@ void WriterMsh::writeNodalValuesFromSol(void) const{
     *out << endl;
   }
 }
-
+*/
 void WriterMsh::writeNodalValuesFooter(void) const{
   *out << "$EndElementNodeData" << endl;
 }

@@ -42,9 +42,9 @@ int main(int argc, char** argv){
   writer.setDomain(goe.getAll());
 
   // Plot Basis //
-  TetEdgeBasis b(atoi(argv[2]));
-  cout << "Size: " << b.getNFunction() << endl;
-  cout << b.toString() << endl;
+  TriLagrangeBasis b(atoi(argv[2]));
+  cout << "Size: "     << b.getNFunction() << endl;
+  //cout << b.toString() << endl;
 
   PlotBasis plot(b, goe, writer);
   plot.plot("basis");

@@ -109,14 +109,18 @@ void PlotBasis::interpolate(const BasisScalar& basis){
   for(unsigned int i = 0; i < nFunction; i++)
     nodalScalarValue[i] = new vector<double>(N);
 
-  
   // Interpolate //
-  for(unsigned int i = 0; i < nFunction; i++){
-    for(int n = 0; n < N; n++)
-      (*nodalScalarValue[i])[n] = 
-	basis.getFunction(0, i).at((*node)[n]->x(),
-				   (*node)[n]->y(),
-				   (*node)[n]->z());
+  for(int n = 0; n < N; n++){
+    fullMatrix<double>* fun = 
+      basis.getFunctions(0,
+			 (*node)[n]->x(),
+			 (*node)[n]->y(),
+			 (*node)[n]->z());
+    
+    for(unsigned int i = 0; i < nFunction; i++)
+      (*nodalScalarValue[i])[n] = (*fun)(i, 0);
+
+    delete fun;
   }
 }
 
@@ -128,14 +132,24 @@ void PlotBasis::interpolate(const BasisVector& basis){
   for(unsigned int i = 0; i < nFunction; i++)
     nodalVectorValue[i] = new vector<fullVector<double> >(N);
   
-
   // Interpolate //
-  for(unsigned int i = 0; i < nFunction; i++){
-    for(int n = 0; n < N; n++)
-      (*nodalVectorValue[i])[n] = 
-	Polynomial::at(basis.getFunction(0, i), 
-		       (*node)[n]->x(),
-		       (*node)[n]->y(),
-		       (*node)[n]->z());    
+  for(int n = 0; n < N; n++){
+    fullMatrix<double>* fun = 
+      basis.getFunctions(0,
+			 (*node)[n]->x(),
+			 (*node)[n]->y(),
+			 (*node)[n]->z());
+    
+    for(unsigned int i = 0; i < nFunction; i++){
+      fullVector<double> tmp(3);
+
+      tmp(0) = (*fun)(i, 0);
+      tmp(1) = (*fun)(i, 1);
+      tmp(2) = (*fun)(i, 2);
+
+      (*nodalVectorValue[i])[n] = tmp;
+    }
+
+    delete fun;
   }
 }
