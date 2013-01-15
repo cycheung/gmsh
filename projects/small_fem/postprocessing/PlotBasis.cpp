@@ -1,15 +1,12 @@
 #include <cstdio>
 #include <set>
 
-#include "BasisScalar.h"
-#include "BasisVector.h"
 #include "Polynomial.h"
-
 #include "PlotBasis.h"
 
 using namespace std;
 
-PlotBasis::PlotBasis(const Basis& basis,
+PlotBasis::PlotBasis(const BasisLocal& basis,
 		     const GroupOfElement& group, 
 		     Writer& writer){
 
@@ -20,12 +17,12 @@ PlotBasis::PlotBasis(const Basis& basis,
 
   if(basis.isScalar()){
     isScalar = true;
-    interpolate(static_cast<const BasisScalar&>(basis));
+    interpolate(static_cast<const BasisLocalScalar&>(basis));
   }
 
   else{
     isScalar = false;
-    interpolate(static_cast<const BasisVector&>(basis));
+    interpolate(static_cast<const BasisLocalVector&>(basis));
   }
 }
 
@@ -101,7 +98,7 @@ void PlotBasis::getGeometry(const GroupOfElement& group){
   N    = node->size();
 }
 
-void PlotBasis::interpolate(const BasisScalar& basis){
+void PlotBasis::interpolate(const BasisLocalScalar& basis){
   // Allocate //
   nodalVectorValue = NULL;
   nodalScalarValue = new vector<double>*[nFunction];
@@ -124,7 +121,7 @@ void PlotBasis::interpolate(const BasisScalar& basis){
   }
 }
 
-void PlotBasis::interpolate(const BasisVector& basis){
+void PlotBasis::interpolate(const BasisLocalVector& basis){
   // Allocate //
   nodalScalarValue = NULL;  
   nodalVectorValue = new vector<fullVector<double> >*[nFunction];
