@@ -3,7 +3,7 @@
 
 #include <fstream>
 
-//#include "LagrangeBasis.h"
+#include "BasisLagrange.h"
 #include "Writer.h"
 
 /**
@@ -42,7 +42,7 @@
 class WriterMsh: public Writer{
  protected:
   mutable std::ofstream* out;
-  //mutable LagrangeBasis* lBasis;
+  mutable BasisLagrange* lBasis;
   
  public:
   WriterMsh(void);
