@@ -15,8 +15,7 @@
    This class handels the Jacobians of a
    Group of Element (GroupOfElement).@n
 
-   The Jacobian%s will be computed at a given point.@n
-   This point is given at construction time.@n
+   The Jacobian%s will be computed at a given set of points.@n
 
    For this class the jacobian matrix is defined as:@n@n
    @f$J~=~\left(
@@ -32,39 +31,41 @@
    \displaystyle\frac{\partial{}z}{\partial{}w}\\
    \end{array}
    \right)@f$
+
+   @todo
+   GMSH WARNING: Memory leak with MElement::getJacobian() !!
 */
 
 class Jacobian{
  private:
   const std::vector<const MElement*>* element;
   const fullMatrix<double>*           point;
-  unsigned int                        row;
+  unsigned int                        nElement;
+  unsigned int                        nPoint;
 
-  typedef std::pair<const fullMatrix<double>*, double> jac_t;
+  typedef std::pair<const fullMatrix<double>*, double> jac_pair;
+  typedef std::vector<const jac_pair*>                 jac_t;
 
   std::map<const MElement*, jac_t*, ElementComparator>* jac;
   std::map<const MElement*, jac_t*, ElementComparator>* invJac;
 
  public:
   Jacobian(const GroupOfElement& goe,
-	   const fullMatrix<double>& point,
-	   unsigned int row);
+	   const fullMatrix<double>& point);
 
   ~Jacobian(void);
 
   void computeJacobians(void);
   void computeInvertJacobians(void);
 
-  const std::pair<const fullMatrix<double>*, double>&
+  const std::vector<const std::pair<const fullMatrix<double>*, double>*>&
     getJacobian(const MElement& element) const;
 
-  const std::pair<const fullMatrix<double>*, double>&
+  const std::vector<const std::pair<const fullMatrix<double>*, double>*>&
     getInvertJacobian(const MElement& element) const;
 
-  const std::vector<const MElement*>&
-    getAllElements(void) const;
-
-  fullVector<double> getPoint(void) const;
+  const std::vector<const MElement*>& getAllElements(void) const;
+  const fullMatrix<double>&           getAllPoints(void) const;
 
  private:
   void deleteJac(void);
@@ -78,9 +79,7 @@ class Jacobian{
    @fn Jacobian::Jacobian
    @param goe A Group of Element (GroupOfElement)
    @param point A @c [ @c N @c x @c 3 @c ] matrix
-   (a set of @c N points coordinates)
-   @param row A row of the matrix @c point
-   (row is ranging from @c 0 to @c N @c - @c 1)
+   (a set of @c N points and their coordinates)
 
    Instanciates a new Jacobian@n
 
@@ -88,9 +87,9 @@ class Jacobian{
    where jacobians will be computed@n
    @see Jacobian::getAllElements()
 
-   The given matrix and its row defines the point
+   The given matrix defines the points
    where jacobians will be computed@n
-   @see Jacobian::getPoint()
+   @see Jacobian::getAllPoints()
    **
 
    @fn Jacobian::~Jacobian
@@ -101,21 +100,30 @@ class Jacobian{
    @fn Jacobian::computeJacobians
 
    Computes the jacobians (and its determinant)
-   of Jacobian::getAllElements() at Jacobian::getPoint()
+   of all Jacobian::getAllElements()
+   at all Jacobian::getAllPoints()
    **
 
    @fn Jacobian::computeInvertJacobians
 
    Computes the @em invert of jacobians
    (and the @em non @em invert determinant)
-   of Jacobian::getAllElements() at Jacobian::getPoint()
+   of all Jacobian::getAllElements()
+   at all Jacobian::getAllPoints()
    **
 
    @fn Jacobian::getJacobian
    @param element A MElement
-   @return Returns a pair with the jacobian matrix,
-   and its determinant, of Jacobian::getAllElements()
-   evaluated at Jacobian::getPoint()
+   @return Returns a vector of pairs.@n
+   The @c i-th element of this vector is such that:
+
+   @li Its first entry is the jacobian matrix
+   of the given element
+   evaluated at Jacobian::getAllPoints()(i, :)
+
+   @li Its second entry is the jacobian matrix
+   detetminant of the given element
+   evaluated at Jacobian::getAllPoints()(i, :)
 
    @note
    If no jacobian has been precomputed,
@@ -126,16 +134,23 @@ class Jacobian{
 
    @fn Jacobian::getInvertJacobian
    @param element A MElement
-   @return Returns a pair with the @em invert
-   jacobian matrix, and its @em non @em invert
-   determinant, of Jacobian::getAllElements()
-   evaluated at Jacobian::getPoint()
+   @return Returns a vector of pairs.@n
+   The @c i-th element of this vector is such that:
+
+   @li Its first entry is the @em invert
+   jacobian matrix of the given element
+   evaluated at Jacobian::getAllPoints()(i, :)
+
+   @li Its second entry is the
+   @em non @em inverted jacobian matrix
+   detetminant of the given element
+   evaluated at Jacobian::getAllPoints()(i, :)
 
    @note
-   If no jacobian has been precomputed,
+   If no inverted jacobian has been precomputed,
    an Exception is thrown
 
-   @see Jacobian::computeJacobians()
+   @see Jacobian::computeInvertJacobians()
    **
 
    @fn Jacobian::getAllElements
@@ -143,8 +158,8 @@ class Jacobian{
    will be computed
    **
 
-   @fn Jacobian::getPoint
-   @return Returns the point where the jacobians
+   @fn Jacobian::getAllPoints
+   @return Returns the points where the jacobians
    will be computed
  */
 
@@ -158,15 +173,9 @@ Jacobian::getAllElements(void) const{
   return *element;
 }
 
-inline fullVector<double>Jacobian::
-getPoint(void) const{
-  fullVector<double> p(3);
-
-  p(0) = (*point)(row, 0);
-  p(1) = (*point)(row, 1);
-  p(2) = (*point)(row, 2);
-
-  return p;
+inline const fullMatrix<double>& Jacobian::
+getAllPoints(void) const{
+  return *point;
 }
 
 inline void Jacobian::
