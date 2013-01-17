@@ -30,10 +30,10 @@ Elmer.out( _solution.pos, _tempevol.txt);
 Elmer.run();
 Elmer.merge(solution.pos);
 
+#4) Client Postpro pour executer un script gmsh
+# et calculer les variables tmin et tmax
 tmin.number(,Solution/,"Time when f(t) is minimum");
 fmin.number(,Solution/,"Minimum of f(t)");
-
-#4) Client Postpro pour executer un script gmsh
 Post.register(interfaced);
 Post.in(solution.pos, script.opt );
 Post.run(solution.pos script.opt -);
