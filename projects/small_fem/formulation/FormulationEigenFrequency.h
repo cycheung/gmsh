@@ -29,8 +29,9 @@ class FormulationEigenFrequency: public EigenFormulation{
   fullMatrix<double>* gC2;
   fullVector<double>* gW2;
 
-  // Function Space //
+  // Function Space & Basis //
   FunctionSpaceEdge* fspace;
+  const Basis*       basis;
 
  public:
   FormulationEigenFrequency(const GroupOfElement& goe,
@@ -39,13 +40,13 @@ class FormulationEigenFrequency: public EigenFormulation{
   virtual ~FormulationEigenFrequency(void);
 
   virtual bool isGeneral(void) const;
-  
+
   virtual double weakA(int dofI, int dofJ,
 		       const GroupOfDof& god) const;
 
   virtual double weakB(int dofI, int dofJ,
 		       const GroupOfDof& god) const;
-  
+
   virtual const FunctionSpace& fs(void) const;
 };
 

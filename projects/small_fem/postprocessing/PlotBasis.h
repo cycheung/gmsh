@@ -6,8 +6,6 @@
 #include "GroupOfElement.h"
 #include "fullMatrix.h"
 #include "BasisLocal.h"
-#include "BasisLocalScalar.h"
-#include "BasisLocalVector.h"
 
 #include <string>
 #include <vector>
@@ -42,23 +40,23 @@ class PlotBasis{
 
  public:
   PlotBasis(const BasisLocal& basis,
-	    const GroupOfElement& group, 
+	    const GroupOfElement& group,
 	    Writer& writer);
-  
+
   virtual ~PlotBasis(void);
 
   virtual void plot(const std::string name) const;
 
  private:
   void getGeometry(const GroupOfElement& group);
-  void interpolate(const BasisLocalScalar& basis);
-  void interpolate(const BasisLocalVector& basis);
+  void interpolateScalar(const BasisLocal& basis);
+  void interpolateVector(const BasisLocal& basis);
 };
 
 /**
    @fn PlotBasis::PlotBasis
    @param basis The Local Basis functions to plot
-   @param group A GroupOfElement, 
+   @param group A GroupOfElement,
    defining the @em geometrical @em domain of
    the Basis functions
    @param writer The Writer to use to write the output file

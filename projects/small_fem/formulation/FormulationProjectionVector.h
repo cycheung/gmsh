@@ -21,19 +21,20 @@ class FormulationProjectionVector: public Formulation{
   fullMatrix<double>* gC;
   fullVector<double>* gW;
 
-  // Function Space //
+  // Function Space & Basis //
   FunctionSpaceEdge* fspace;
+  const Basis*       basis;
 
   // Function to Project //
   fullVector<double> (*f)(fullVector<double>& xyz);
-  
+
  public:
   FormulationProjectionVector(fullVector<double> (*f)(fullVector<double>& xyz),
 			      FunctionSpaceEdge& fs);
-  
+
   virtual ~FormulationProjectionVector(void);
 
-  virtual double weak(int dofI, int dofJ, 
+  virtual double weak(int dofI, int dofJ,
 		      const GroupOfDof& god) const;
 
   virtual double rhs(int equationI,
@@ -46,16 +47,16 @@ class FormulationProjectionVector: public Formulation{
    @fn FormulationProjectionVector::FormulationProjectionVector
    @param f The function to project
    @param fs A FunctionSpaceEdge
-   
+
    Instantiates a new FormulationProjectionVector to project
    the given function@n
 
    FormulationProjectionVector will use the given FunctionSpace
    for the projection
 
-   @warning The given FunctionSpace will be ask to 
-   @em PreEvaluate 
-   (@em see FunctionSpaceVector::preEvaluateLocalFunctions() 
+   @warning The given FunctionSpace will be ask to
+   @em PreEvaluate
+   (@em see FunctionSpaceVector::preEvaluateLocalFunctions()
    and similar)
    some Functions
    **

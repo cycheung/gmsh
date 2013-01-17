@@ -14,10 +14,14 @@ FormulationVibration::FormulationVibration(const GroupOfElement& goe,
 					   unsigned int order){
   // Can't have 0th order //
   if(order == 0)
-    throw 
+    throw
       Exception("Can't have a Vibration formulation of order 0");
 
-  // Gaussian Quadrature Data (LHS) // 
+  // Function Space & Basis //
+  fspace = new FunctionSpaceNode(goe, order);
+  basis  = &fspace->getBasis(0);
+
+  // Gaussian Quadrature Data (LHS) //
   // NB: We need to integrad a grad * grad !
   //     and order(grad f) = order(f) - 1
   gCL = new fullMatrix<double>();
@@ -29,11 +33,8 @@ FormulationVibration::FormulationVibration(const GroupOfElement& goe,
 
   GL = gWL->size(); // Nbr of Gauss points
 
-  // Function Space //
-  fspace = new FunctionSpaceNode(goe, order);
-
   // PreEvaluate
-  fspace->preEvaluateGradLocalFunctions(*gCL);
+  basis->preEvaluateDerivatives(*gCL);
 }
 
 FormulationVibration::~FormulationVibration(void){
@@ -42,27 +43,27 @@ FormulationVibration::~FormulationVibration(void){
   delete fspace;
 }
 
-double FormulationVibration::weakA(int dofI, int dofJ, 
+double FormulationVibration::weakA(int dofI, int dofJ,
 				   const GroupOfDof& god) const{
 
   // Init Some Stuff //
   fullVector<double> phiI(3);
   fullVector<double> phiJ(3);
-  fullMatrix<double> invJac(3, 3);        
+  fullMatrix<double> invJac(3, 3);
   double integral = 0;
 
   // Get Element and Basis Functions //
   const MElement& element = god.getGeoElement();
   MElement&      celement = const_cast<MElement&>(element);
-  
-  const fullMatrix<double>& eFun = 
-    fspace->getEvaluatedGradLocalFunctions(element);
+
+  const fullMatrix<double>& eFun =
+    basis->getPreEvaluatedDerivatives(element);
 
   // Loop over Integration Point //
   for(int g = 0; g < GL; g++){
-    double det = celement.getJacobian((*gCL)(g, 0), 
-				      (*gCL)(g, 1), 
-				      (*gCL)(g, 2), 
+    double det = celement.getJacobian((*gCL)(g, 0),
+				      (*gCL)(g, 1),
+				      (*gCL)(g, 2),
 				      invJac);
     invJac.invertInPlace();
 
@@ -72,10 +73,10 @@ double FormulationVibration::weakA(int dofI, int dofJ,
 			invJac);
 
     phiJ = Mapper::grad(eFun(dofJ, g * 3),
-			eFun(dofJ, g * 3 + 1), 
-			eFun(dofJ, g * 3 + 2), 
+			eFun(dofJ, g * 3 + 1),
+			eFun(dofJ, g * 3 + 2),
 			invJac);
-    
+
     integral += phiI * phiJ * fabs(det) * (*gWL)(g);
   }
 

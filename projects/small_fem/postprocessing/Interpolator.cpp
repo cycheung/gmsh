@@ -17,9 +17,9 @@ void Interpolator::initSystem(const System& system){
   this->fs   = &(system.getFormulation().fs());
 
   // Get Mesh
-  this->mesh = &(fs->getSupport().getMesh());  
+  this->mesh = &(fs->getSupport().getMesh());
 
-  // Get Solution 
+  // Get Solution
   ownSol = false;
   sol    = &(system.getSol());
 
@@ -28,7 +28,7 @@ void Interpolator::initSystem(const System& system){
   nodalVectorValue = NULL;
 
   // Scalar or Vector ?
-  fsType = fs->getType();
+  fsType = 0; throw Exception("Fix getType");//fs->getType();
 
   switch(fsType){
   case 0:
@@ -43,25 +43,25 @@ void Interpolator::initSystem(const System& system){
   }
 }
 
-void Interpolator::initSystem(const EigenSystem& system, 
+void Interpolator::initSystem(const EigenSystem& system,
 			      unsigned int eigenNumber){
   // Save some data
   this->dofM = &(system.getDofManager());
   this->fs   = &(system.getFormulation().fs());
 
   // Get Mesh
-  this->mesh = &(fs->getSupport().getMesh());  
+  this->mesh = &(fs->getSupport().getMesh());
 
   // Get Solution
   ownSol = true;
   sol    = getSol(system.getEigenVectors(), eigenNumber);
-    
+
   // Init
   nodalScalarValue = NULL;
   nodalVectorValue = NULL;
 
   // Scalar or Vector ?
-  fsType = fs->getType();
+  fsType = 0; throw Exception("Fix getType");//fs->getType();
 
   switch(fsType){
   case 0:
@@ -83,8 +83,8 @@ Interpolator::Interpolator(const System& system){
   // Get Visu Domain
   this->visuDomain = &(fs->getSupport());
 
-  // Interpolate 
-  // NB: interpolate() is faster than 
+  // Interpolate
+  // NB: interpolate() is faster than
   // interpolateOnVisu() (no Octree)
   interpolate();
 }
@@ -99,7 +99,7 @@ Interpolator::Interpolator(const System& system,
 
   // Interpolate
   // NB: Can't use interpolate(), because
-  // we don't have *all* nodes (visu mesh) 
+  // we don't have *all* nodes (visu mesh)
   // with Dofs
   interpolateOnVisu();
 }
@@ -112,8 +112,8 @@ Interpolator::Interpolator(const EigenSystem& system,
   // Get Visu Domain
   this->visuDomain = &(fs->getSupport());
 
-  // Interpolate 
-  // NB: interpolate() is faster than 
+  // Interpolate
+  // NB: interpolate() is faster than
   // interpolateOnVisu() (no Octree)
   interpolate();
 }
@@ -129,12 +129,12 @@ Interpolator::Interpolator(const EigenSystem& system,
 
   // Interpolate
   // NB: Can't use interpolate(), because
-  // we don't have *all* nodes (visu mesh) 
+  // we don't have *all* nodes (visu mesh)
   // with Dofs
   interpolateOnVisu();
 }
 
-Interpolator::Interpolator(double (*f)(fullVector<double>& xyz), 
+Interpolator::Interpolator(double (*f)(fullVector<double>& xyz),
 			   const GroupOfElement& visu){
   // Init
   scalar = true;
@@ -152,7 +152,7 @@ Interpolator::Interpolator(double (*f)(fullVector<double>& xyz),
   evaluateF();
 }
 
-Interpolator::Interpolator(fullVector<double> (*f)(fullVector<double>& xyz), 
+Interpolator::Interpolator(fullVector<double> (*f)(fullVector<double>& xyz),
 			   const GroupOfElement& visu){
   // Init
   scalar = false;
@@ -218,12 +218,12 @@ void Interpolator::interpolate(void){
     nodalVectorValue = new vector<fullVector<double> >(nTotVertex);
     fsVector = static_cast<const FunctionSpaceVector*>(fs);
   }
-    
+
 
   // Iterate on GroupOfElement
   for(unsigned int i = 0; i < nGod; i++){
     // Get Element
-    MElement& element = 
+    MElement& element =
       const_cast<MElement&>(god[i]->getGeoElement());
 
     // Get NodeS
@@ -234,7 +234,7 @@ void Interpolator::interpolate(void){
     for(unsigned int j = 0; j < nNode; j++){
       // Get *GMSH* Id
       const unsigned int id = node[j]->getNum() - 1;
-      
+
       // If not interpolated: interpolate :-P !
       if(!isInterpolated[id]){
 	// Get Dof
@@ -245,8 +245,8 @@ void Interpolator::interpolate(void){
 	vector<double> coef(size);
 	for(unsigned int k = 0; k < size; k++)
 	  // Look in Solution
-	  coef[k] = 
-	    (*sol)(dofM->getGlobalId(*dof[k])); 
+	  coef[k] =
+	    (*sol)(dofM->getGlobalId(*dof[k]));
 
 	// Get Node coordinate
 	fullVector<double> xyz(3);
@@ -256,11 +256,11 @@ void Interpolator::interpolate(void){
 
 	// Interpolate (AT LAST !!)
 	if(scalar)
-	  (*nodalScalarValue)[id] = 
+	  (*nodalScalarValue)[id] =
 	    fsScalar->interpolate(element, coef, xyz);
 
 	else
-	  (*nodalVectorValue)[id] = 
+	  (*nodalVectorValue)[id] =
 	    fsVector->interpolate(element, coef, xyz);
 
 	isInterpolated[id] = true;
@@ -273,7 +273,7 @@ void Interpolator::interpolateOnVisu(void){
   // Init
   const Mesh& visuMesh              = visuDomain->getMesh();
   const unsigned int nTotVertex     = visuMesh.getVertexNumber();
-  const vector<const MVertex*> node = visuMesh.getAllVertex(); 
+  const vector<const MVertex*> node = visuMesh.getAllVertex();
 
   // Scalar or Vector ?
   const FunctionSpaceScalar* fsScalar = NULL;
@@ -288,23 +288,23 @@ void Interpolator::interpolateOnVisu(void){
     nodalVectorValue = new vector<fullVector<double> >(nTotVertex);
     fsVector = static_cast<const FunctionSpaceVector*>(fs);
   }
-    
+
   // Get Model for Octrees
   GModel& model = mesh->getModel();
   const int dim = model.getDim();
 
   // Iterate on *NODES*
   for(unsigned int i = 0; i < nTotVertex; i++){
-    // Search element (in System Mesh) containg this 
+    // Search element (in System Mesh) containg this
     // visu node
     SPoint3   point   = node[i]->point();
     MElement* element = model.getMeshElementByCoord(point, dim, true);
-    
+
     // WARNING: if no element found, set to zero
     if(!element){
       if(scalar)
 	(*nodalScalarValue)[node[i]->getNum() - 1] = 0;
-    
+
       else
 	(*nodalVectorValue)[node[i]->getNum() - 1] = 0;
     }
@@ -312,31 +312,31 @@ void Interpolator::interpolateOnVisu(void){
     else{
       // Get GroupOfDof related to this Element
       const GroupOfDof& god = fs->getGoDFromElement(*element);
-      
+
       // Get Dof
       const vector<const Dof*>& dof  = god.getAll();
       const unsigned int        size = dof.size();
-      
+
       // Get Coef
       vector<double> coef(size);
       for(unsigned int k = 0; k < size; k++)
 	// Look in Solution
-	coef[k] = 
-	  (*sol)(dofM->getGlobalId(*dof[k])); 
-      
+	coef[k] =
+	  (*sol)(dofM->getGlobalId(*dof[k]));
+
       // Get Node coordinate
       fullVector<double> xyz(3);
       xyz(0) = node[i]->x();
       xyz(1) = node[i]->y();
       xyz(2) = node[i]->z();
-      
+
       // Interpolate (AT LAST !!)
       if(scalar)
-	(*nodalScalarValue)[node[i]->getNum() - 1] = 
+	(*nodalScalarValue)[node[i]->getNum() - 1] =
 	  fsScalar->interpolate(*element, coef, xyz);
-      
+
       else
-	(*nodalVectorValue)[node[i]->getNum() - 1] = 
+	(*nodalVectorValue)[node[i]->getNum() - 1] =
 	  fsVector->interpolate(*element, coef, xyz);
     }
   }
@@ -346,7 +346,7 @@ void Interpolator::evaluateF(void){
   // Init
   const Mesh& visuMesh              = visuDomain->getMesh();
   const unsigned int nTotVertex     = visuMesh.getVertexNumber();
-  const vector<const MVertex*> node = visuMesh.getAllVertex(); 
+  const vector<const MVertex*> node = visuMesh.getAllVertex();
 
   // Scalar or Vector ?
   if(scalar)
@@ -354,7 +354,7 @@ void Interpolator::evaluateF(void){
 
   else
     nodalVectorValue = new vector<fullVector<double> >(nTotVertex);
-    
+
   // Iterate on *NODES*
   for(unsigned int i = 0; i < nTotVertex; i++){
     // Get Node coordinate
@@ -365,11 +365,11 @@ void Interpolator::evaluateF(void){
 
     // Evaluate (AT LAST !!)
     if(scalar)
-      (*nodalScalarValue)[node[i]->getNum() - 1] = 
+      (*nodalScalarValue)[node[i]->getNum() - 1] =
 	fScalar(xyz);
-    
+
     else
-      (*nodalVectorValue)[node[i]->getNum() - 1] = 
+      (*nodalVectorValue)[node[i]->getNum() - 1] =
 	fVector(xyz);
   }
 }
@@ -377,9 +377,9 @@ void Interpolator::evaluateF(void){
 const fullVector<double>* Interpolator::
 getSol(const vector<vector<complex<double> > >& eVector,
        unsigned int eigenNumber){
-  
-  // Init 
-  unsigned int size       = eVector[eigenNumber].size(); 
+
+  // Init
+  unsigned int size       = eVector[eigenNumber].size();
   fullVector<double>* sol = new fullVector<double>(size);
 
   // Get Sol
@@ -404,5 +404,5 @@ vector<fullVector<double> >& Interpolator::getNodalVectorValue(void) const{
     throw Exception("Interpolator: try to get Vectorial value in a Scalar Interpolation");
 
   else
-    return *nodalVectorValue;  
+    return *nodalVectorValue;
 }

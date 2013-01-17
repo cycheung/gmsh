@@ -7,22 +7,22 @@
 using namespace std;
 
 PlotBasis::PlotBasis(const BasisLocal& basis,
-		     const GroupOfElement& group, 
+		     const GroupOfElement& group,
 		     Writer& writer){
 
   this->writer = &writer;
-  
+
   nFunction = basis.getNFunction();
   getGeometry(group);
 
   if(basis.isScalar()){
     isScalar = true;
-    interpolate(static_cast<const BasisLocalScalar&>(basis));
+    interpolateScalar(basis);
   }
 
   else{
     isScalar = false;
-    interpolate(static_cast<const BasisLocalVector&>(basis));
+    interpolateVector(basis);
   }
 }
 
@@ -32,14 +32,14 @@ PlotBasis::~PlotBasis(void){
   if(nodalScalarValue){
     for(unsigned int i = 0; i < nFunction; i++)
       delete nodalScalarValue[i];
-   
+
     delete[] nodalScalarValue;
   }
 
   if(nodalVectorValue){
     for(unsigned int i = 0; i < nFunction; i++)
       delete nodalVectorValue[i];
-    
+
     delete[] nodalVectorValue;
   }
 }
@@ -57,13 +57,13 @@ void PlotBasis::plot(const string name) const{
 
   // Plot //
   char fileName[1024];
-  
+
   for(unsigned int i = 0, j = 0; i < nFunction; i++, j++){
     // Basis Name
-    sprintf(fileName, 
+    sprintf(fileName,
 	    "%s%0*d", name.c_str(), dec, i + 1);
-   
-    // Set Values 
+
+    // Set Values
     if(isScalar)
       writer->setValues(*(nodalScalarValue[i]));
 
@@ -85,20 +85,20 @@ void PlotBasis::getGeometry(const GroupOfElement& group){
 
   for(int i = 0; i < E; i++){
     const int N = (*element)[i]->getNumVertices();
-    MElement* myElement = 
+    MElement* myElement =
       const_cast<MElement*>((*element)[i]);
-    
+
     for(int j = 0; j < N; j++)
       setVertex.insert(myElement->getVertex(j));
   }
 
   // Serialize the set into a vector //
-  node = new vector<MVertex*>(setVertex.begin(), 
+  node = new vector<MVertex*>(setVertex.begin(),
 			      setVertex.end());
   N    = node->size();
 }
 
-void PlotBasis::interpolate(const BasisLocalScalar& basis){
+void PlotBasis::interpolateScalar(const BasisLocal& basis){
   // Allocate //
   nodalVectorValue = NULL;
   nodalScalarValue = new vector<double>*[nFunction];
@@ -108,12 +108,12 @@ void PlotBasis::interpolate(const BasisLocalScalar& basis){
 
   // Interpolate //
   for(int n = 0; n < N; n++){
-    fullMatrix<double>* fun = 
+    fullMatrix<double>* fun =
       basis.getFunctions(0,
 			 (*node)[n]->x(),
 			 (*node)[n]->y(),
 			 (*node)[n]->z());
-    
+
     for(unsigned int i = 0; i < nFunction; i++)
       (*nodalScalarValue[i])[n] = (*fun)(i, 0);
 
@@ -121,22 +121,22 @@ void PlotBasis::interpolate(const BasisLocalScalar& basis){
   }
 }
 
-void PlotBasis::interpolate(const BasisLocalVector& basis){
+void PlotBasis::interpolateVector(const BasisLocal& basis){
   // Allocate //
-  nodalScalarValue = NULL;  
+  nodalScalarValue = NULL;
   nodalVectorValue = new vector<fullVector<double> >*[nFunction];
 
   for(unsigned int i = 0; i < nFunction; i++)
     nodalVectorValue[i] = new vector<fullVector<double> >(N);
-  
+
   // Interpolate //
   for(int n = 0; n < N; n++){
-    fullMatrix<double>* fun = 
+    fullMatrix<double>* fun =
       basis.getFunctions(0,
 			 (*node)[n]->x(),
 			 (*node)[n]->y(),
 			 (*node)[n]->z());
-    
+
     for(unsigned int i = 0; i < nFunction; i++){
       fullVector<double> tmp(3);
 

@@ -14,8 +14,12 @@ FormulationLaplace::FormulationLaplace(const GroupOfElement& goe,
 				       unsigned int order){
   // Can't have 0th order //
   if(order == 0)
-    throw 
+    throw
       Exception("Can't have a Laplace formulation of order 0");
+
+  // Function Space & Basis //
+  fspace = new FunctionSpaceNode(goe, order);
+  basis  = &fspace->getBasis(0);
 
   // Gaussian Quadrature Data //
   gC = new fullMatrix<double>();
@@ -27,39 +31,48 @@ FormulationLaplace::FormulationLaplace(const GroupOfElement& goe,
 
   G = gW->size(); // Nbr of Gauss points
 
-  // Function Space //
-  fspace = new FunctionSpaceNode(goe, order);
-
   // PreEvaluate
-  fspace->preEvaluateGradLocalFunctions(*gC);
+  basis->preEvaluateDerivatives(*gC);
+
+  // Fast Assembly //
+  //  nOrientation = fspace->getNOrientation();
+  //  nFunction    = fspace->getEvaluatedGradLocalFunctions(0).size1();
+
+  computeC();
 }
 
 FormulationLaplace::~FormulationLaplace(void){
   delete gC;
   delete gW;
   delete fspace;
+
+  for(unsigned int s = 0; s < nOrientation; s++)
+    delete c[s];
+
+  delete[] c;
+
 }
 
-double FormulationLaplace::weak(int dofI, int dofJ, 
+double FormulationLaplace::weak(int dofI, int dofJ,
 				const GroupOfDof& god) const{
   // Init Some Stuff //
   fullVector<double> phiI(3);
   fullVector<double> phiJ(3);
-  fullMatrix<double> invJac(3, 3);        
+  fullMatrix<double> invJac(3, 3);
   double integral = 0;
 
   // Get Element and Basis Functions //
   const MElement& element = god.getGeoElement();
   MElement&      celement = const_cast<MElement&>(element);
-  
-  const fullMatrix<double>& eFun = 
-    fspace->getEvaluatedGradLocalFunctions(element);
+
+  const fullMatrix<double>& eFun =
+    basis->getPreEvaluatedDerivatives(element);
 
   // Loop over Integration Point //
   for(int g = 0; g < G; g++){
-    double det = celement.getJacobian((*gC)(g, 0), 
-				      (*gC)(g, 1), 
-				      (*gC)(g, 2), 
+    double det = celement.getJacobian((*gC)(g, 0),
+				      (*gC)(g, 1),
+				      (*gC)(g, 2),
 				      invJac);
     invJac.invertInPlace();
 
@@ -69,12 +82,55 @@ double FormulationLaplace::weak(int dofI, int dofJ,
 			invJac);
 
     phiJ = Mapper::grad(eFun(dofJ, g * 3),
-			eFun(dofJ, g * 3 + 1), 
-			eFun(dofJ, g * 3 + 2), 
+			eFun(dofJ, g * 3 + 1),
+			eFun(dofJ, g * 3 + 2),
 			invJac);
-    
+
     integral += phiI * phiJ * fabs(det) * (*gW)(g);
   }
 
   return integral;
+}
+
+void FormulationLaplace::computeC(void){
+  /*
+  unsigned int k;
+  unsigned int l;
+
+  // Alloc //
+  c = new fullMatrix<double>*[nOrientation];
+
+  for(unsigned int s = 0; s < nOrientation; s++)
+    c[s] = new fullMatrix<double>(9 * G, nFunction * nFunction);
+
+  // Fill //
+  for(unsigned int s = 0; s < nOrientation; s++){
+    // Get functions for this Orientation
+    const fullMatrix<double>& phi =
+      fspace->getEvaluatedGradLocalFunctions(s);
+
+    // Reset counter
+    k = 0;
+    l = 0;
+
+    // Loop on Gauss Points
+    for(int g = 0; g < G; g++){
+      for(unsigned int a = 0; a < 3; a++){
+        for(unsigned int b = 0; b < 3; b++){
+          l = 0;
+
+          // Loop on Functions
+          for(unsigned int i = 0; i < nFunction; i++){
+            for(unsigned int j = 0; j < nFunction; j++){
+              (*c[s])(k, l) = (*gW)(g) * phi(i, g + a) * phi(j, g + b);
+              l++;
+            }
+          }
+
+          k++;
+        }
+      }
+    }
+  }
+  */
 }

@@ -24,11 +24,12 @@ class FormulationVibration: public EigenFormulation{
   fullMatrix<double>* gCL;
   fullVector<double>* gWL;
 
-  // Function Space //
+  // Function Space & Basis //
   FunctionSpaceNode* fspace;
+  const Basis*       basis;
 
  public:
-  FormulationVibration(const GroupOfElement& goe, 
+  FormulationVibration(const GroupOfElement& goe,
 		       unsigned int order);
 
   virtual ~FormulationVibration(void);
@@ -51,7 +52,7 @@ class FormulationVibration: public EigenFormulation{
 
    Instantiates a new FormulationVibration of the given order@n
 
-   The given GroupOfElement will be used as the 
+   The given GroupOfElement will be used as the
    geomtrical @em domain
    **
 

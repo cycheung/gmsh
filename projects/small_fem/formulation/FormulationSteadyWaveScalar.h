@@ -36,8 +36,9 @@ class FormulationSteadyWaveScalar: public Formulation{
   fullMatrix<double>* gC2;
   fullVector<double>* gW2;
 
-  // Function Space //
+  // Function Space & Basis //
   FunctionSpaceNode* fspace;
+  const Basis*       basis;
 
  public:
   FormulationSteadyWaveScalar(const GroupOfElement& goe,
@@ -46,7 +47,7 @@ class FormulationSteadyWaveScalar: public Formulation{
 
   virtual ~FormulationSteadyWaveScalar(void);
 
-  virtual double weak(int dofI, int dofJ, 
+  virtual double weak(int dofI, int dofJ,
 		      const GroupOfDof& god) const;
 
   virtual double rhs(int equationI,
@@ -61,10 +62,10 @@ class FormulationSteadyWaveScalar: public Formulation{
    @param k A real number
    @param order A natural number
 
-   Instantiates a new FormulationSteadyWaveScalar of the given 
+   Instantiates a new FormulationSteadyWaveScalar of the given
    @em order and @em wave @em number (@c k)@n
 
-   The given GroupOfElement will be used as the 
+   The given GroupOfElement will be used as the
    geomtrical @em domain
    **
 

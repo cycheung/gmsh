@@ -24,21 +24,30 @@ class FormulationLaplace: public Formulation{
   fullMatrix<double>* gC;
   fullVector<double>* gW;
 
-  // Function Space //
+  // Function Space & Basis//
   FunctionSpaceNode* fspace;
+  const Basis*       basis;
+
+  // 'Fast' Assembly //
+  unsigned int nOrientation;
+  unsigned int nFunction;
+  fullMatrix<double>** c;
 
  public:
   FormulationLaplace(const GroupOfElement& goe, unsigned int order);
 
   virtual ~FormulationLaplace(void);
 
-  virtual double weak(int nodeI, int nodeJ, 
+  virtual double weak(int nodeI, int nodeJ,
 		      const GroupOfDof& god) const;
 
   virtual double rhs(int equationI,
 		     const GroupOfDof& god) const;
 
   virtual const FunctionSpace& fs(void) const;
+
+ private:
+  void computeC(void);
 };
 
 /**
@@ -48,7 +57,7 @@ class FormulationLaplace: public Formulation{
 
    Instantiates a new FormulationLaplace of the given order@n
 
-   The given GroupOfElement will be used as the 
+   The given GroupOfElement will be used as the
    geomtrical @em domain
    **
 

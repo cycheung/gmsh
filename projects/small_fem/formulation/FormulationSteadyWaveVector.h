@@ -36,8 +36,9 @@ class FormulationSteadyWaveVector: public Formulation{
   fullMatrix<double>* gC2;
   fullVector<double>* gW2;
 
-  // Function Space //
+  // Function Space & Basis //
   FunctionSpaceEdge* fspace;
+  const Basis*       basis;
 
  public:
   FormulationSteadyWaveVector(const GroupOfElement& goe,
@@ -46,7 +47,7 @@ class FormulationSteadyWaveVector: public Formulation{
 
   virtual ~FormulationSteadyWaveVector(void);
 
-  virtual double weak(int dofI, int dofJ, 
+  virtual double weak(int dofI, int dofJ,
 		      const GroupOfDof& god) const;
 
   virtual double rhs(int equationI,
@@ -61,10 +62,10 @@ class FormulationSteadyWaveVector: public Formulation{
    @param k A real number
    @param order A natural number
 
-   Instantiates a new FormulationSteadyWaveVector of the given 
+   Instantiates a new FormulationSteadyWaveVector of the given
    @em order and @em wave @em number (@c k)@n
 
-   The given GroupOfElement will be used as the 
+   The given GroupOfElement will be used as the
    geomtrical @em domain
    **
 

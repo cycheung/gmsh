@@ -14,10 +14,14 @@ FormulationPoisson::FormulationPoisson(const GroupOfElement& goe,
 				       unsigned int order){
   // Can't have 0th order //
   if(order == 0)
-    throw 
+    throw
       Exception("Can't have a Poisson formulation of order 0");
 
-  // Gaussian Quadrature Data (LHS) // 
+  // Function Space & Basis //
+  fspace = new FunctionSpaceNode(goe, order);
+  basis  = &fspace->getBasis(0);
+
+  // Gaussian Quadrature Data (LHS) //
   // NB: We need to integrad a grad * grad !
   //     and order(grad f) = order(f) - 1
   gCL = new fullMatrix<double>();
@@ -41,13 +45,9 @@ FormulationPoisson::FormulationPoisson(const GroupOfElement& goe,
 
   GR = gWR->size(); // Nbr of Gauss points
 
-
-  // Function Space //
-  fspace = new FunctionSpaceNode(goe, order);
-
   // PreEvaluate
-  fspace->preEvaluateLocalFunctions(*gCR);
-  fspace->preEvaluateGradLocalFunctions(*gCL);
+  basis->preEvaluateFunctions(*gCR);
+  basis->preEvaluateDerivatives(*gCL);
 }
 
 FormulationPoisson::~FormulationPoisson(void){
@@ -58,27 +58,27 @@ FormulationPoisson::~FormulationPoisson(void){
   delete fspace;
 }
 
-double FormulationPoisson::weak(int dofI, int dofJ, 
+double FormulationPoisson::weak(int dofI, int dofJ,
 				const GroupOfDof& god) const{
 
   // Init Some Stuff //
   fullVector<double> phiI(3);
   fullVector<double> phiJ(3);
-  fullMatrix<double> invJac(3, 3);        
+  fullMatrix<double> invJac(3, 3);
   double integral = 0;
 
   // Get Element and Basis Functions //
   const MElement& element = god.getGeoElement();
   MElement&      celement = const_cast<MElement&>(element);
 
-  const fullMatrix<double>& eFun = 
-    fspace->getEvaluatedGradLocalFunctions(element);
-    
+  const fullMatrix<double>& eFun =
+    basis->getPreEvaluatedDerivatives(element);
+
   // Loop over Integration Point //
   for(int g = 0; g < GL; g++){
-    double det = celement.getJacobian((*gCL)(g, 0), 
-				      (*gCL)(g, 1), 
-				      (*gCL)(g, 2), 
+    double det = celement.getJacobian((*gCL)(g, 0),
+				      (*gCL)(g, 1),
+				      (*gCL)(g, 2),
 				      invJac);
     invJac.invertInPlace();
 
@@ -88,10 +88,10 @@ double FormulationPoisson::weak(int dofI, int dofJ,
 			invJac);
 
     phiJ = Mapper::grad(eFun(dofJ, g * 3),
-			eFun(dofJ, g * 3 + 1), 
-			eFun(dofJ, g * 3 + 2), 
+			eFun(dofJ, g * 3 + 1),
+			eFun(dofJ, g * 3 + 2),
 			invJac);
-    
+
     integral += phiI * phiJ * fabs(det) * (*gWL)(g);
   }
 
@@ -102,24 +102,24 @@ double FormulationPoisson::rhs(int equationI,
 			       const GroupOfDof& god) const{
 
   // Init Some Stuff //
-  fullMatrix<double> jac(3, 3);        
+  fullMatrix<double> jac(3, 3);
   double integral = 0;
 
   // Get Element and Basis Functions //
   const MElement& element = god.getGeoElement();
   MElement&      celement = const_cast<MElement&>(element);
-  
-  const fullMatrix<double>& eFun = 
-    fspace->getEvaluatedLocalFunctions(element);
+
+  const fullMatrix<double>& eFun =
+    basis->getPreEvaluatedFunctions(element);
 
   // Loop over Integration Point //
   for(int g = 0; g < GR; g++){
-    double det = celement.getJacobian((*gCR)(g, 0), 
-				      (*gCR)(g, 1), 
-				      (*gCR)(g, 2), 
+    double det = celement.getJacobian((*gCR)(g, 0),
+				      (*gCR)(g, 1),
+				      (*gCR)(g, 2),
 				      jac);
 
-    integral -= 
+    integral -=
       eFun(equationI, g) * fabs(det) * (*gWR)(g);
   }
 

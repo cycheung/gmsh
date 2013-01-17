@@ -18,20 +18,21 @@ FormulationProjectionScalar(double (*f)(fullVector<double>& xyz),
 
   // Save fspace //
   fspace = &fs;
+  basis  = &fs.getBasis(0);
 
-  // Gaussian Quadrature Data  // 
+  // Gaussian Quadrature Data  //
   // NB: We need to integrad f_i * f_j or f_i * g
   gC = new fullMatrix<double>();
   gW = new fullVector<double>();
 
   // Look for 1st element to get element type
   // (We suppose only one type of Mesh !!)
-  gaussIntegration::get(fs.getSupport().get(0).getType(), 2 * fs.getOrder(), *gC, *gW);
+  gaussIntegration::get(fs.getSupport().get(0).getType(), 2 * basis->getOrder(), *gC, *gW);
 
   G = gW->size(); // Nbr of Gauss points
 
   // PreEvaluate
-  fspace->preEvaluateLocalFunctions(*gC);
+  basis->preEvaluateFunctions(*gC);
 }
 
 FormulationProjectionScalar::~FormulationProjectionScalar(void){
@@ -39,27 +40,27 @@ FormulationProjectionScalar::~FormulationProjectionScalar(void){
   delete gW;
 }
 
-double FormulationProjectionScalar::weak(int dofI, int dofJ, 
+double FormulationProjectionScalar::weak(int dofI, int dofJ,
 				   const GroupOfDof& god) const{
   // Init //
   double det;
   double phiI;
   double phiJ;
-  fullMatrix<double> jac(3, 3);   
+  fullMatrix<double> jac(3, 3);
   double integral = 0;
 
   // Get Element and Basis Functions //
   const MElement& element = god.getGeoElement();
   MElement&      celement = const_cast<MElement&>(element);
-  
-  const fullMatrix<double>& eFun = 
-    fspace->getEvaluatedLocalFunctions(element);
+
+  const fullMatrix<double>& eFun =
+    basis->getPreEvaluatedFunctions(element);
 
   // Loop over Integration Point //
   for(int g = 0; g < G; g++){
-    det = celement.getJacobian((*gC)(g, 0), 
-			       (*gC)(g, 1), 
-			       (*gC)(g, 2), 
+    det = celement.getJacobian((*gC)(g, 0),
+			       (*gC)(g, 1),
+			       (*gC)(g, 2),
 			       jac);
 
     phiI = eFun(dofI, g);
@@ -87,30 +88,30 @@ double FormulationProjectionScalar::rhs(int equationI,
   // Get Element and Basis Functions //
   const MElement& element = god.getGeoElement();
   MElement&      celement = const_cast<MElement&>(element);
-  
-  const fullMatrix<double>& eFun = 
-    fspace->getEvaluatedLocalFunctions(element);
+
+  const fullMatrix<double>& eFun =
+    basis->getPreEvaluatedFunctions(element);
 
   // Loop over Integration Point //
   for(int g = 0; g < G; g++){
-    // Compute phi 
-    det = celement.getJacobian((*gC)(g, 0), 
-			       (*gC)(g, 1), 
-			       (*gC)(g, 2), 
+    // Compute phi
+    det = celement.getJacobian((*gC)(g, 0),
+			       (*gC)(g, 1),
+			       (*gC)(g, 2),
 			       jac);
 
     phi = eFun(equationI, g);
-    
+
     // Compute f in the *physical* coordinate
-    celement.pnt((*gC)(g, 0), 
-		 (*gC)(g, 1), 
-		 (*gC)(g, 2), 
+    celement.pnt((*gC)(g, 0),
+		 (*gC)(g, 1),
+		 (*gC)(g, 2),
 		 pxyz);
-    
+
     xyz(0) = pxyz.x();
     xyz(1) = pxyz.y();
     xyz(2) = pxyz.z();
-    
+
     fxyz = f(xyz);
 
     // Integrate

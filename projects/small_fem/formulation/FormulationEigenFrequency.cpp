@@ -19,10 +19,11 @@ const double FormulationEigenFrequency::eps = 1;
 
 FormulationEigenFrequency::FormulationEigenFrequency(const GroupOfElement& goe,
 						     unsigned int order){
-  // Function Space //
+  // Function Space & Basis //
   fspace = new FunctionSpaceEdge(goe, order);
+  basis  = &fspace->getBasis(0);
 
-  // Gaussian Quadrature Data (Term One) // 
+  // Gaussian Quadrature Data (Term One) //
   // NB: We need to integrad a rot * rot !
   //     and order(rot f) = order(f) - 1
   gC1 = new fullMatrix<double>();
@@ -35,7 +36,7 @@ FormulationEigenFrequency::FormulationEigenFrequency(const GroupOfElement& goe,
 
   // Look for 1st element to get element type
   // (We suppose only one type of Mesh !!)
-  
+
   // if Order == 0 --> we want Nedelec Basis of ordre *almost* one //
   if(order == 0){
     gaussIntegration::get(goe.get(0).getType(), 0, *gC1, *gW1);
@@ -48,12 +49,12 @@ FormulationEigenFrequency::FormulationEigenFrequency(const GroupOfElement& goe,
   }
 
   // Nbr of Gauss points
-  G1 = gW1->size(); 
-  G2 = gW2->size(); 
+  G1 = gW1->size();
+  G2 = gW2->size();
 
   // PreEvaluate
-  fspace->preEvaluateCurlLocalFunctions(*gC1);
-  fspace->preEvaluateLocalFunctions(*gC2);
+  basis->preEvaluateDerivatives(*gC1);
+  basis->preEvaluateFunctions(*gC2);
 }
 
 FormulationEigenFrequency::~FormulationEigenFrequency(void){
@@ -69,7 +70,7 @@ double FormulationEigenFrequency::weakA(int dofI, int dofJ,
   // Init Some Stuff //
   fullVector<double> phiI(3);
   fullVector<double> phiJ(3);
-  fullMatrix<double> jac(3, 3);        
+  fullMatrix<double> jac(3, 3);
 
   double integral = 0;
   double det;
@@ -77,25 +78,25 @@ double FormulationEigenFrequency::weakA(int dofI, int dofJ,
   // Get Element and Basis Functions //
   const MElement& element = god.getGeoElement();
   MElement&      celement = const_cast<MElement&>(element);
-  
-  const fullMatrix<double>& eFun = 
-    fspace->getEvaluatedCurlLocalFunctions(element);
+
+  const fullMatrix<double>& eFun =
+    basis->getPreEvaluatedDerivatives(element);
 
   // Loop over Integration Point //
   for(int g = 0; g < G1; g++){
-    det = celement.getJacobian((*gC1)(g, 0), 
-			       (*gC1)(g, 1), 
-			       (*gC1)(g, 2), 
+    det = celement.getJacobian((*gC1)(g, 0),
+			       (*gC1)(g, 1),
+			       (*gC1)(g, 2),
 			       jac);
 
     phiI = Mapper::curl(eFun(dofI, g * 3),
 			eFun(dofI, g * 3 + 1),
-			eFun(dofI, g * 3 + 2), 
+			eFun(dofI, g * 3 + 2),
 			jac, 1 / det);
-    
+
     phiJ = Mapper::curl(eFun(dofJ, g * 3),
 			eFun(dofJ, g * 3 + 1),
-			eFun(dofJ, g * 3 + 2), 
+			eFun(dofJ, g * 3 + 2),
 			jac, 1 / det);
 
     integral += ((phiI * phiJ) / mu) * fabs(det) * (*gW1)(g);
@@ -109,7 +110,7 @@ double FormulationEigenFrequency::weakB(int dofI, int dofJ,
   // Init Some Stuff //
   fullVector<double> phiI(3);
   fullVector<double> phiJ(3);
-  fullMatrix<double> invJac(3, 3);       
+  fullMatrix<double> invJac(3, 3);
 
   double integral = 0;
   double det;
@@ -117,15 +118,15 @@ double FormulationEigenFrequency::weakB(int dofI, int dofJ,
   // Get Element and Basis Functions //
   const MElement& element = god.getGeoElement();
   MElement&      celement = const_cast<MElement&>(element);
-  
-  const fullMatrix<double>& eFun = 
-    fspace->getEvaluatedLocalFunctions(element);
+
+  const fullMatrix<double>& eFun =
+    basis->getPreEvaluatedFunctions(element);
 
   // Loop over Integration Point //
   for(int g = 0; g < G2; g++){
-    det = celement.getJacobian((*gC2)(g, 0), 
-			       (*gC2)(g, 1), 
-			       (*gC2)(g, 2), 
+    det = celement.getJacobian((*gC2)(g, 0),
+			       (*gC2)(g, 1),
+			       (*gC2)(g, 2),
 			       invJac);
     invJac.invertInPlace();
 
@@ -135,8 +136,8 @@ double FormulationEigenFrequency::weakB(int dofI, int dofJ,
 			invJac);
 
     phiJ = Mapper::grad(eFun(dofJ, g * 3),
-			eFun(dofJ, g * 3 + 1), 
-			eFun(dofJ, g * 3 + 2), 
+			eFun(dofJ, g * 3 + 1),
+			eFun(dofJ, g * 3 + 2),
 			invJac);
 
     integral += ((phiI * phiJ) * eps) * fabs(det) * (*gW2)(g);

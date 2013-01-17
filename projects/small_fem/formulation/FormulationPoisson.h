@@ -29,16 +29,17 @@ class FormulationPoisson: public Formulation{
   fullMatrix<double>* gCR;
   fullVector<double>* gWR;
 
-  // Function Space //
+  // Function Space & Basis //
   FunctionSpaceNode* fspace;
+  const Basis*       basis;
 
  public:
-  FormulationPoisson(const GroupOfElement& goe, 
+  FormulationPoisson(const GroupOfElement& goe,
 		     unsigned int order);
 
   virtual ~FormulationPoisson(void);
 
-  virtual double weak(int nodeI, int nodeJ, 
+  virtual double weak(int nodeI, int nodeJ,
 		      const GroupOfDof& god) const;
 
   virtual double rhs(int equationI,
@@ -54,7 +55,7 @@ class FormulationPoisson: public Formulation{
 
    Instantiates a new FormulationPoisson of the given order@n
 
-   The given GroupOfElement will be used as the 
+   The given GroupOfElement will be used as the
    geomtrical @em domain
    **
 

@@ -22,16 +22,17 @@ FormulationSteadyWaveScalar::FormulationSteadyWaveScalar(const GroupOfElement& g
 							 unsigned int order){
   // Can't have 0th order //
   if(order == 0)
-    throw 
+    throw
       Exception("Can't have a Scalar SteadyWave formulation of order 0");
 
   // Wave Number Squared //
   kSquare = k * k;
 
-  // Function Space //
+  // Function Space & Basis//
   fspace = new FunctionSpaceNode(goe, order);
+  basis  = &fspace->getBasis(0);
 
-  // Gaussian Quadrature Data (Term One) // 
+  // Gaussian Quadrature Data (Term One) //
   // NB: We need to integrad a grad * grad !
   //     and order(rot f) = order(f) - 1
   gC1 = new fullMatrix<double>();
@@ -48,12 +49,12 @@ FormulationSteadyWaveScalar::FormulationSteadyWaveScalar(const GroupOfElement& g
   gaussIntegration::get(goe.get(0).getType(), 2 *  order     , *gC2, *gW2);
 
   // Nbr of Gauss points
-  G1 = gW1->size(); 
-  G2 = gW2->size(); 
+  G1 = gW1->size();
+  G2 = gW2->size();
 
   // PreEvaluate
-  fspace->preEvaluateGradLocalFunctions(*gC1);
-  fspace->preEvaluateLocalFunctions(*gC2);
+  basis->preEvaluateDerivatives(*gC1);
+  basis->preEvaluateFunctions(*gC2);
 }
 
 FormulationSteadyWaveScalar::~FormulationSteadyWaveScalar(void){
@@ -71,8 +72,8 @@ double FormulationSteadyWaveScalar::weak(int dofI, int dofJ,
   fullVector<double> gradPhiJ(3);
   double phiI;
   double phiJ;
-        
-  fullMatrix<double> invJac(3, 3);       
+
+  fullMatrix<double> invJac(3, 3);
 
   double integral1 = 0;
   double integral2 = 0;
@@ -81,20 +82,20 @@ double FormulationSteadyWaveScalar::weak(int dofI, int dofJ,
   // Get Element and Basis Functions (+ Grad) //
   const MElement& element = god.getGeoElement();
   MElement&      celement = const_cast<MElement&>(element);
-  
-  const fullMatrix<double>& eGradFun = 
-    fspace->getEvaluatedGradLocalFunctions(element);
 
-  const fullMatrix<double>& eFun = 
-    fspace->getEvaluatedLocalFunctions(element);
+  const fullMatrix<double>& eGradFun =
+    basis->getPreEvaluatedDerivatives(element);
+
+  const fullMatrix<double>& eFun =
+    basis->getPreEvaluatedFunctions(element);
 
   // Loop over Integration Point (Term 1) //
   for(int g = 0; g < G1; g++){
-    det = celement.getJacobian((*gC1)(g, 0), 
-			       (*gC1)(g, 1), 
-			       (*gC1)(g, 2), 
+    det = celement.getJacobian((*gC1)(g, 0),
+			       (*gC1)(g, 1),
+			       (*gC1)(g, 2),
 			       invJac);
-    
+
     invJac.invertInPlace();
 
     gradPhiI = Mapper::grad(eGradFun(dofI, g * 3),
@@ -103,27 +104,27 @@ double FormulationSteadyWaveScalar::weak(int dofI, int dofJ,
 			    invJac);
 
     gradPhiJ = Mapper::grad(eGradFun(dofJ, g * 3),
-			    eGradFun(dofJ, g * 3 + 1), 
-			    eGradFun(dofJ, g * 3 + 2), 
+			    eGradFun(dofJ, g * 3 + 1),
+			    eGradFun(dofJ, g * 3 + 2),
 			    invJac);
 
-    integral1 += 
+    integral1 +=
       ((gradPhiI * gradPhiJ) / mu) * fabs(det) * (*gW1)(g);
   }
 
 
   // Loop over Integration Point (Term 2) //
   for(int g = 0; g < G2; g++){
-    det = celement.getJacobian((*gC2)(g, 0), 
-			       (*gC2)(g, 1), 
-			       (*gC2)(g, 2), 
+    det = celement.getJacobian((*gC2)(g, 0),
+			       (*gC2)(g, 1),
+			       (*gC2)(g, 2),
 			       invJac);
 
 
     phiI = eFun(dofI, g);
     phiJ = eFun(dofJ, g);
 
-    integral2 += 
+    integral2 +=
       ((phiI * phiJ) * eps * kSquare) * fabs(det) * (*gW2)(g);
   }
 
