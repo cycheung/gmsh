@@ -15,42 +15,42 @@ WriterMsh::~WriterMsh(void){
 }
 
 void WriterMsh::write(const std::string name) const{
-  stringstream fileName; 
+  stringstream fileName;
   fileName << name << ".msh";
-  
+
   out = new ofstream;
   out->open(fileName.str().c_str());
-  
+
   if(!hasDomain){
     *out << "No Domain has been given !" << endl;
   }
-  
+
   else{
     writeHeader();
     writeNodes();
     writeElements();
-    
+
     if(!isNodal){
       lBasis = static_cast<BasisLagrange*>
 	(BasisGenerator::generate((*element)[0]->getType(),
 				  0,
-				  fs->getOrder(),
+				  fs->getBasis(0).getOrder(),
 				  "lagrange")
 	 );
 
       writeInterpolationScheme();
     }
-    
+
     if(hasValue){
       writeNodalValuesHeader(name);
-      
+
       if(isNodal)
 	writeNodalValuesFromNode();
 
       else
 	writeNodalValuesFromSol();
-  
-      writeNodalValuesFooter();  
+
+      writeNodalValuesFooter();
     }
   }
 
@@ -64,7 +64,7 @@ void WriterMsh::write(const std::string name) const{
 void WriterMsh::writeHeader(void) const{
   *out << "$MeshFormat" << endl
        << "2.2 0 8" << endl
-       << "$EndMeshFormat" << endl; 
+       << "$EndMeshFormat" << endl;
 }
 
 void WriterMsh::writeNodes(void) const{
@@ -84,62 +84,62 @@ void WriterMsh::writeNodes(void) const{
 void WriterMsh::writeElements(void) const{
   *out << "$Elements" << endl
        << E << endl;
-  
+
   for(int i = 0; i < E; i++){
-    *out << (*element)[i]->getNum()        << " " 
-	 << (*element)[i]->getTypeForMSH() 
-	 << " 2 1 1" << " "; 
-           // 2 Tags --> (1 physical entity, 1 elementary geometry) 
+    *out << (*element)[i]->getNum()        << " "
+	 << (*element)[i]->getTypeForMSH()
+	 << " 2 1 1" << " ";
+           // 2 Tags --> (1 physical entity, 1 elementary geometry)
 
     const int M = (*element)[i]->getNumVertices();
-    MElement* myElement = 
+    MElement* myElement =
       const_cast<MElement*>((*element)[i]);
 
     for(int j = 0; j < M; j++)
       *out << myElement->getVertex(j)->getNum() << " ";
-    
+
     *out << endl;
   }
-  
+
   *out << "$EndElements" << endl;
 }
 
-void WriterMsh::writeInterpolationScheme(void) const{ 
+void WriterMsh::writeInterpolationScheme(void) const{
   // Some Temp Value
   const fullMatrix<double>& coef = lBasis->getCoefficient();
   const fullMatrix<double>& mono = lBasis->getMonomial();
 
   const unsigned int nRowCoef = coef.size1();
   const unsigned int nColCoef = coef.size2();
-  
+
   const unsigned int nRowMono = mono.size1();
   const unsigned int nColMono = mono.size2();
 
   // Up to now, we suppose *ONE* topology
   *out << "$InterpolationScheme"     << endl
        << "\"interpolation scheme\"" << endl
-       << "1"                        << endl 
-       << (*element)[0]->getType()   << endl 
+       << "1"                        << endl
+       << (*element)[0]->getType()   << endl
 
     // 2 Matrices: Coefficients and Monomials
-       << "2"                        << endl; 
-  
+       << "2"                        << endl;
+
   // Coefficients Matrix
   *out << nRowCoef << " "
        << nColCoef << endl;
-  
+
   for(unsigned int i = 0; i < nRowCoef; i++){
     for(unsigned int j = 0; j < nColCoef; j++){
       *out << coef(i, j);
-      
+
       if(j < nColCoef - 1)
 	*out << " ";
-      
+
       else
 	*out << endl;
     }
   }
-  
+
   // Monomials Matrix
   *out << nRowMono << " "
        << nColMono << endl;
@@ -147,15 +147,15 @@ void WriterMsh::writeInterpolationScheme(void) const{
   for(unsigned int i = 0; i < nRowMono; i++){
     for(unsigned int j = 0; j < nColMono; j++){
       *out << mono(i, j);
-      
+
       if(j < nColMono - 1)
 	*out << " ";
-      
+
       else
 	*out << endl;
     }
   }
- 
+
   // End
   *out << "$EndInterpolationScheme" << endl;
 }
@@ -171,27 +171,27 @@ void WriterMsh::writeNodalValuesHeader(const string name) const{
     *out << "2"                        << endl  // 2 string tag
 	 << "\"" << name << "\""       << endl  // (name)
 	 << "\"interpolation scheme\"" << endl; // (interpolation scheme)
-    
-  *out << "1"                          << endl  // 1 real tag 
+
+  *out << "1"                          << endl  // 1 real tag
        << "0"                          << endl  // (time value)
        << "3"                          << endl  // 3 integer tag
        << "0"                          << endl; // (time step index)
-    
+
   if(isScalar)
     *out << "1" << endl;                // (number of field -- scalar)
   else
     *out << "3" << endl;                // (number of field -- vector)
-  
+
   *out << E << endl;                    // (number of element)
 }
 
 void WriterMsh::writeNodalValuesFromNode(void) const{
   for(int i = 0; i < E; i++){
-    *out << (*element)[i]->getNum()         << " " 
+    *out << (*element)[i]->getNum()         << " "
 	 << (*element)[i]->getNumVertices() << " ";
-    
+
     const int M = (*element)[i]->getNumVertices();
-    MElement* myElement = 
+    MElement* myElement =
       const_cast<MElement*>((*element)[i]);
 
     for(int j = 0; j < M; j++){
@@ -206,7 +206,7 @@ void WriterMsh::writeNodalValuesFromNode(void) const{
 	     << (*nodalVectorValue)[id](1) << " "
 	     << (*nodalVectorValue)[id](2) << " ";
     }
-    
+
     *out << endl;
   }
 }
@@ -218,7 +218,7 @@ void WriterMsh::writeNodalValuesFromSol(void) const{
   // Scalar FS ? //
   const FunctionSpaceScalar* fsScalar = NULL;
   const FunctionSpaceVector* fsVector = NULL;
- 
+
   if(isScalar)
     fsScalar = static_cast<const FunctionSpaceScalar*>(fs);
 
@@ -227,35 +227,35 @@ void WriterMsh::writeNodalValuesFromSol(void) const{
 
   // Iterate on Element //
   for(int i = 0; i < E; i++){
-    *out << (*element)[i]->getNum() << " " 
+    *out << (*element)[i]->getNum() << " "
 	 << nCoef                   << " ";
-    
+
     // Get Element GoD
     const GroupOfDof& god = fs->getGoDFromElement(*(*element)[i]);
 
     // Get Dof
     const vector<const Dof*>& dof  = god.getAll();
     const unsigned int        size = dof.size();
-    
+
     // Get Coef In FS Basis
     vector<double> fsCoef(size);
     for(unsigned int j = 0; j < size; j++)
       // Look in Solution
-      fsCoef[j] = (*sol)(dofM->getGlobalId(*dof[j])); 
+      fsCoef[j] = (*sol)(dofM->getGlobalId(*dof[j]));
 
     // Get Coef In Lagrange Basis
     if(isScalar){
-      vector<double> lCoef = 
+      vector<double> lCoef =
 	lBasis->project(*(*element)[i], fsCoef, *fsScalar);
-      
+
       for(unsigned int j = 0; j < nCoef; j++)
 	*out << lCoef[j] << " ";
     }
 
     else{
-      vector<fullVector<double> > lCoef = 
+      vector<fullVector<double> > lCoef =
 	lBasis->project(*(*element)[i], fsCoef, *fsVector);
-      
+
       for(unsigned int j = 0; j < nCoef; j++)
 	*out << lCoef[j](0) << " "
 	     << lCoef[j](1) << " "

@@ -18,14 +18,15 @@
    @class System
    @brief This class assembles a linear system
 
-   This class assembles a linear system, 
-   described by a Formulation 
-  
+   This class assembles a linear system,
+   described by a Formulation
+
    @warning
    We can @em only assemble Dof related to a MElement@n
 
    @todo
-   Assembly of @em NON Element related Dof
+   Assembly of @em NON Element related Dof@n
+   Allow multiple basis for dirichelt
  */
 
 class System{
@@ -56,13 +57,13 @@ class System{
   bool isAssembled(void) const;
   bool isSolved(void) const;
 
-  void fixCoef(const GroupOfElement& goe, 
+  void fixCoef(const GroupOfElement& goe,
 	       double value);
-  
-  void dirichlet(const GroupOfElement& goe, 
+
+  void dirichlet(const GroupOfElement& goe,
 		 double (*f)(fullVector<double>& xyz));
-  
-  void dirichlet(const GroupOfElement& goe, 
+
+  void dirichlet(const GroupOfElement& goe,
 		 fullVector<double> (*f)(fullVector<double>& xyz));
 
 
@@ -80,7 +81,7 @@ class System{
    @fn System::System
    @param formulation A Formulation that
    gives the way to assemble the system
-   
+
    Instantiated a new System
    ***
 
@@ -89,7 +90,7 @@ class System{
    **
 
    @fn System::getSize
-   @return Returns the number of @em unknowns 
+   @return Returns the number of @em unknowns
    of the the linear system
    **
 
@@ -106,32 +107,32 @@ class System{
    **
 
    @fn System::isAssembled
-   @return Returns: 
+   @return Returns:
    @li @c true, if the System has been assembled
    @li @c false otherwise
    **
 
    @fn System::isSolved
-   @return Returns: 
+   @return Returns:
    @li @c true, if the System has been solved
    @li @c false otherwise
    **
 
    @fn System::fixCoef
-   @param goe A GroupOfElement 
+   @param goe A GroupOfElement
    @param value A real value
-   
-   Fixes the Coefficients (Dof%s), associated the the given 
+
+   Fixes the Coefficients (Dof%s), associated the the given
    GroupOfElement, to the given value
 
-   @note These Coefficients are (Dof%s) weights of the 
+   @note These Coefficients are (Dof%s) weights of the
    Basis Function defined on the given GroupOfElement
    **
 
    @fn System::dirichlet(const GroupOfElement& goe,  double (*f)(fullVector<double>& xyz));
    @param goe A GroupOfElement
    @param f A scalar Function
-   
+
    Imposes a @em scalar Dirichlet Condition (given by @c f) on the
    given GroupOfElement
    **
@@ -139,7 +140,7 @@ class System{
    @fn System::dirichlet(const GroupOfElement& goe, fullVector<double> (*f)(fullVector<double>& xyz));
    @param goe A GroupOfElement
    @param f A vectorial Function
-   
+
    Imposes a @em vectorial Dirichlet Condition (given by @c f) on the
    given GroupOfElement
    **
@@ -150,7 +151,7 @@ class System{
 
    @fn System::solve
    Solves the linear system
-   @note If the System is @em not @em assembled, 
+   @note If the System is @em not @em assembled,
    the assembly method will be called
    **
 */

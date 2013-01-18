@@ -17,7 +17,7 @@ System::System(const Formulation& formulation){
 
   // Get DofManager Data //
   size = fs->dofNumber();
-  
+
   // Create System //
   x      = new fullVector<double>(size);
   linSys = new linearSystemPETSc<double>();
@@ -40,40 +40,40 @@ void System::assemble(void){
   const vector<GroupOfDof*>& group = fs->getAllGroups();
   const int E = fs->groupNumber();
 
-  // Set to put Fixed Dof only ones 
+  // Set to put Fixed Dof only ones
   // (cannot use both  setValue and add Value
   //  in PETSc)
   fixedOnes = new set<const Dof*, DofComparator>();
 
   // Get Sparcity Pattern & PreAllocate//
   for(int i = 0; i < E; i++)
-    sparcity(*(group[i]));  
+    sparcity(*(group[i]));
 
   linSys->preAllocateEntries();
 
   // Assemble System //
   for(int i = 0; i < E; i++)
-    assemble(*(group[i]));  
+    assemble(*(group[i]));
 
   // The system is assembled //
   delete fixedOnes;
-  assembled = true;  
+  assembled = true;
 }
 
 void System::fixCoef(const GroupOfElement& goe, double value){
   const vector<const MElement*>&  element = goe.getAll();
   unsigned int                   nElement = goe.getNumber();
-  
+
   for(unsigned int i = 0; i < nElement; i++){
     vector<Dof>         dof = fs->getKeys(*element[i]);
     const unsigned int nDof = dof.size();
-    
+
     for(unsigned int j = 0; j < nDof; j++)
       dofM->fixValue(dof[j], value);
   }
 }
 
-void System::dirichlet(const GroupOfElement& goe, 
+void System::dirichlet(const GroupOfElement& goe,
 		       double (*f)(fullVector<double>& xyz)){
 
   // Check if Scalar Problem //
@@ -87,7 +87,7 @@ void System::dirichlet(const GroupOfElement& goe,
   if(&(goe.getMesh()) != &(fs->getSupport().getMesh()))
     throw Exception("Dirichlet Domain must come from the FunctionSpace Domain's Mesh");
 
-  FunctionSpaceNode dirFS(goe, fs->getOrder());
+  FunctionSpaceNode dirFS(goe, fs->getBasis(0).getOrder());
 
   // Solve The Projection Of f on the Dirichlet Domain with dirFS //
   FormulationProjectionScalar projection(f, dirFS);
@@ -104,10 +104,10 @@ void System::dirichlet(const GroupOfElement& goe,
   const fullVector<double>& dirSol = sysProj.getSol();
 
   for(unsigned int i = 0; i < nDof; i++)
-    dofM->fixValue(*dof[i], dirSol(dirDofM.getGlobalId(*dof[i]))); 
+    dofM->fixValue(*dof[i], dirSol(dirDofM.getGlobalId(*dof[i])));
 }
 
-void System::dirichlet(const GroupOfElement& goe, 
+void System::dirichlet(const GroupOfElement& goe,
 		       fullVector<double> (*f)(fullVector<double>& xyz)){
 
   // Check if Scalar Problem //
@@ -121,7 +121,7 @@ void System::dirichlet(const GroupOfElement& goe,
   if(&(goe.getMesh()) != &(fs->getSupport().getMesh()))
     throw Exception("Dirichlet Domain must come from the FunctionSpace Domain's Mesh");
 
-  FunctionSpaceEdge dirFS(goe, fs->getOrder());
+  FunctionSpaceEdge dirFS(goe, fs->getBasis(0).getOrder());
 
   // Solve The Projection Of f on the Dirichlet Domain with dirFS //
   FormulationProjectionVector projection(f, dirFS);
@@ -138,7 +138,7 @@ void System::dirichlet(const GroupOfElement& goe,
   const fullVector<double>& dirSol = sysProj.getSol();
 
   for(unsigned int i = 0; i < nDof; i++)
-    dofM->fixValue(*dof[i], dirSol(dirDofM.getGlobalId(*dof[i]))); 
+    dofM->fixValue(*dof[i], dirSol(dirDofM.getGlobalId(*dof[i])));
 }
 
 void System::solve(void){
@@ -174,26 +174,26 @@ void System::assemble(GroupOfDof& group){
       pair<
 	set<const Dof*, DofComparator>::iterator,
 	bool> ones = fixedOnes->insert(dof[i]);
-	
+
       if(ones.second){
 	linSys->addToMatrix(dofI, dofI, 1);
 	linSys->addToRightHandSide(dofI, fixed.second);
-      } 
+      }
     }
-       
+
     else{
       // If unknown Dof
       for(int j = 0; j < N; j++){
 	int dofJ = dofM->getGlobalId(*(dof[j]));
 
-	linSys->addToMatrix(dofI, dofJ, 
+	linSys->addToMatrix(dofI, dofJ,
 			    formulation->weak(i, j, group));
       }
-      
-      linSys->addToRightHandSide(dofI, 
-				 formulation->rhs(i, group)); 
+
+      linSys->addToRightHandSide(dofI,
+				 formulation->rhs(i, group));
     }
-  } 
+  }
 }
 
 void System::sparcity(GroupOfDof& group){
@@ -215,8 +215,8 @@ void System::sparcity(GroupOfDof& group){
 	int dofJ = dofM->getGlobalId(*(dof[j]));
 
 	linSys->insertInSparsityPattern(dofI, dofJ);
-      } 
+      }
     }
-  } 
+  }
 }
 

@@ -16,7 +16,7 @@ EigenSystem::EigenSystem(const EigenFormulation& eFormulation){
 
   // Get DofManager Data //
   size = fs->dofNumber();
-  
+
   // Is the Problem a General EigenValue Problem ? //
   general = eFormulation.isGeneral();
 
@@ -30,13 +30,13 @@ EigenSystem::EigenSystem(const EigenFormulation& eFormulation){
     linSysB = new linearSystemPETSc<double>();
     linSysB->allocate(size);
   }
-  
+
   else{
-    linSysB = NULL;  
+    linSysB = NULL;
   }
 
   // eSys will be created at solving point
-  eSys        = NULL; 
+  eSys        = NULL;
   eigenValue  = NULL;
   eigenVector = NULL;
 
@@ -49,7 +49,7 @@ EigenSystem::EigenSystem(const EigenFormulation& eFormulation){
 EigenSystem::~EigenSystem(void){
   if(eigenVector)
     delete eigenVector;
-  
+
   if(eigenValue)
     delete eigenValue;
 
@@ -70,7 +70,7 @@ void EigenSystem::assemble(void){
   const vector<GroupOfDof*>& group = fs->getAllGroups();
   const int E = fs->groupNumber();
 
-  // Set to put Fixed Dof only ones 
+  // Set to put Fixed Dof only ones
   // (cannot use both  setValue and add Value
   //  in PETSc)
   fixedOnes = new set<const Dof*, DofComparator>();
@@ -78,45 +78,45 @@ void EigenSystem::assemble(void){
   // Get Sparcity Pattern & PreAllocate//
   if(general)
     for(int i = 0; i < E; i++)
-      sparcityGeneral(*(group[i]));  
+      sparcityGeneral(*(group[i]));
 
   else
     for(int i = 0; i < E; i++)
-      sparcity(*(group[i]));  
+      sparcity(*(group[i]));
 
   linSysA->preAllocateEntries();
-  
+
   if(general)
     linSysB->preAllocateEntries();
 
   // Assemble EigenSystem //
   if(general)
     for(int i = 0; i < E; i++)
-      assembleGeneral(*(group[i]));  
+      assembleGeneral(*(group[i]));
 
   else
     for(int i = 0; i < E; i++)
-      assemble(*(group[i]));  
+      assemble(*(group[i]));
 
   // The EigenSystem is assembled //
   delete fixedOnes;
-  assembled = true;  
+  assembled = true;
 }
 
 void EigenSystem::fixCoef(const GroupOfElement& goe, double value){
   const vector<const MElement*>&  element = goe.getAll();
   unsigned int                   nElement = goe.getNumber();
-  
+
   for(unsigned int i = 0; i < nElement; i++){
     vector<Dof>         dof = fs->getKeys(*element[i]);
     const unsigned int nDof = dof.size();
-    
+
     for(unsigned int j = 0; j < nDof; j++)
       dofM->fixValue(dof[j], value);
   }
 }
 
-void EigenSystem::dirichlet(const GroupOfElement& goe, 
+void EigenSystem::dirichlet(const GroupOfElement& goe,
 			    double (*f)(fullVector<double>& xyz)){
 
   // Check if Scalar Problem //
@@ -130,7 +130,7 @@ void EigenSystem::dirichlet(const GroupOfElement& goe,
   if(&(goe.getMesh()) != &(fs->getSupport().getMesh()))
     throw Exception("Dirichlet Domain must come from the FunctionSpace Domain's Mesh");
 
-  FunctionSpaceNode dirFS(goe, fs->getOrder());
+  FunctionSpaceNode dirFS(goe, fs->getBasis(0).getOrder());
 
   // Solve The Projection Of f on the Dirichlet Domain with dirFS //
   FormulationProjectionScalar projection(f, dirFS);
@@ -147,35 +147,35 @@ void EigenSystem::dirichlet(const GroupOfElement& goe,
   const fullVector<double>& dirSol = sysProj.getSol();
 
   for(unsigned int i = 0; i < nDof; i++)
-    dofM->fixValue(*dof[i], dirSol(dirDofM.getGlobalId(*dof[i]))); 
+    dofM->fixValue(*dof[i], dirSol(dirDofM.getGlobalId(*dof[i])));
 }
 
 void EigenSystem::solve(unsigned int nEigenValues){
   // Check nEigenValues
   if(nEigenValues > size)
-    throw 
+    throw
       Exception("I cannot compute more Eigenvalues (%d) than the number of unknowns (%d)",
 		nEigenValues, size);
 
   // Is the EigenSystem assembled ? //
   if(!assembled)
     assemble();
-    
+
   // Solve //
   eSys = new EigenSolver(linSysA, linSysB, false);
   eSys->solve(nEigenValues, "smallest");
-  
+
   // Get Solution //
   nEigenValue = eSys->getNumEigenValues();
-  
+
   eigenValue  = new vector<complex<double> >(nEigenValue);
   eigenVector = new vector<vector<complex<double> > >(nEigenValue);
-  
+
   for(unsigned int i = 0; i < nEigenValue; i++)
     (*eigenValue)[i] = eSys->getEigenValue(i);
 
   for(unsigned int i = 0; i < nEigenValue; i++)
-    (*eigenVector)[i] = eSys->getEigenVector(i);  
+    (*eigenVector)[i] = eSys->getEigenVector(i);
 
   // System solved ! //
   solved = true;
@@ -194,17 +194,17 @@ void EigenSystem::assemble(GroupOfDof& group){
       pair<
 	set<const Dof*, DofComparator>::iterator,
 	bool> ones = fixedOnes->insert(dof[i]);
-	
+
       if(ones.second)
 	linSysA->addToMatrix(dofI, dofI, 1);
     }
-       
+
     else{
       // If unknown Dof
       for(int j = 0; j < N; j++){
 	int dofJ = dofM->getGlobalId(*(dof[j]));
 
-	linSysA->addToMatrix(dofI, dofJ, 
+	linSysA->addToMatrix(dofI, dofJ,
 			     eFormulation->weakA(i, j, group));
       }
     }
@@ -224,26 +224,26 @@ void EigenSystem::assembleGeneral(GroupOfDof& group){
       pair<
 	set<const Dof*, DofComparator>::iterator,
 	bool> ones = fixedOnes->insert(dof[i]);
-	
+
       if(ones.second){
 	linSysA->addToMatrix(dofI, dofI, 1);
 	linSysB->addToMatrix(dofI, dofI, 1);
       }
     }
-       
+
     else{
       // If unknown Dof
       for(int j = 0; j < N; j++){
 	int dofJ = dofM->getGlobalId(*(dof[j]));
 
-	linSysA->addToMatrix(dofI, dofJ, 
+	linSysA->addToMatrix(dofI, dofJ,
 			     eFormulation->weakA(i, j, group));
 
-	linSysB->addToMatrix(dofI, dofJ, 
+	linSysB->addToMatrix(dofI, dofJ,
 			     eFormulation->weakB(i, j, group));
       }
     }
-  } 
+  }
 }
 
 void EigenSystem::sparcity(GroupOfDof& group){
@@ -257,15 +257,15 @@ void EigenSystem::sparcity(GroupOfDof& group){
     if(fixed.first)
       // If fixed Dof
       linSysA->insertInSparsityPattern(dofI, dofI);
-    
+
     else
       // If unknown Dof
       for(int j = 0; j < N; j++){
 	int dofJ = dofM->getGlobalId(*(dof[j]));
-	
+
 	linSysA->insertInSparsityPattern(dofI, dofJ);
-      } 
-  } 
+      }
+  }
 }
 
 void EigenSystem::sparcityGeneral(GroupOfDof& group){
@@ -289,8 +289,8 @@ void EigenSystem::sparcityGeneral(GroupOfDof& group){
 
 	linSysA->insertInSparsityPattern(dofI, dofJ);
 	linSysB->insertInSparsityPattern(dofI, dofJ);
-      } 
+      }
     }
-  } 
+  }
 }
 

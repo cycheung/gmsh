@@ -20,23 +20,24 @@
    @class EigenSystem
    @brief This class assembles an Eigenvalue System
 
-   This class assembles an Eigenvalue system, 
+   This class assembles an Eigenvalue system,
    described by a EigenFormulation.@n
 
    The Eigenvalue Problem can be @em generalized or not:
-   @li An Eigenvalue Problem is a of the type 
+   @li An Eigenvalue Problem is a of the type
    @f$\qquad(\mathbf{A} - \lambda{}\mathbf{I})\mathbf{x} = \mathbf{b}@f$
-   @li An Generalized Eigenvalue Problem is a of the type 
+   @li An Generalized Eigenvalue Problem is a of the type
    @f$\qquad(\mathbf{A} - \lambda{}\mathbf{B})\mathbf{x} = \mathbf{b}@f$
-   
+
    @see EigenFormulation
-   
+
 
    @warning
    We can @em only assemble Dof related to a MElement@n
 
    @todo
-   Assembly of @em NON Element related Dof
+   Assembly of @em NON Element related Dof@n
+   Allow multiple basis for dirichelt
  */
 
 class EigenSystem{
@@ -55,7 +56,7 @@ class EigenSystem{
 
   std::vector<std::complex<double> >* eigenValue;
   std::vector<std::vector<std::complex<double> > >* eigenVector;
-  unsigned int nEigenValue; 
+  unsigned int nEigenValue;
 
   const EigenFormulation* eFormulation;
   const FunctionSpace*    fs;
@@ -67,7 +68,7 @@ class EigenSystem{
 
   unsigned int getSize(void) const;
   unsigned int getEigenValueNumber(void) const;
-  
+
   const std::vector<std::complex<double> >&               getEigenValues(void) const;
   const std::vector<std::vector<std::complex<double> > >& getEigenVectors(void) const;
 
@@ -79,7 +80,7 @@ class EigenSystem{
   bool isGeneral(void) const;
 
   void fixCoef(const GroupOfElement& goe, double value);
-  void dirichlet(const GroupOfElement& goe, 
+  void dirichlet(const GroupOfElement& goe,
 		 double (*f)(fullVector<double>& xyz));
 
   void assemble(void);
@@ -95,9 +96,9 @@ class EigenSystem{
 
 /**
    @fn EigenSystem::EigenSystem
-   @param eFormulation An EigenFormulation that 
+   @param eFormulation An EigenFormulation that
    gives the way to assemble the Eigenvalue System
-   
+
    Instantiated a new EigenSystem
    ***
 
@@ -106,12 +107,12 @@ class EigenSystem{
    **
 
    @fn EigenSystem::getSize
-   @return Returns the number of @em unknowns 
+   @return Returns the number of @em unknowns
    of the the Eigenvalue System
    **
 
    @fn EigenSystem::getEigenValueNumber
-   @return Returns the number of @em computed 
+   @return Returns the number of @em computed
    Eigenvalues
    **
 
@@ -132,24 +133,24 @@ class EigenSystem{
    **
 
    @fn EigenSystem::fixCoef(const GroupOfElement& goe, double value)
-   @param goe A GroupOfElement 
+   @param goe A GroupOfElement
    @param value A real value
-   
-   Fixes the Coefficients (Dof%s) associated the the given 
+
+   Fixes the Coefficients (Dof%s) associated the the given
    GroupOfElement to the given value
 
-   @note These Coefficients are (Dof%s) weights of the 
+   @note These Coefficients are (Dof%s) weights of the
    Basis Function defined on the given GroupOfElement
    **
 
    @fn EigenSystem::isAssembled
-   @return Returns: 
+   @return Returns:
    @li @c true, if the EigenSystem has been assembled
    @li @c false otherwise
    **
 
    @fn EigenSystem::isSolved
-   @return Returns: 
+   @return Returns:
    @li @c true, if the EigenSystem has been solved
    @li @c false otherwise
 
@@ -158,7 +159,7 @@ class EigenSystem{
    **
 
    @fn EigenSystem::isGeneral
-   @return Returns: 
+   @return Returns:
    @li @c true, if the EigenSystem is a Generalized one
    @li @c false otherwise
    **
@@ -188,13 +189,13 @@ inline unsigned int EigenSystem::getSize(void) const{
 inline unsigned int EigenSystem::getEigenValueNumber(void) const{
   return nEigenValue;
 }
-  
-inline const std::vector<std::complex<double> >& 
+
+inline const std::vector<std::complex<double> >&
 EigenSystem::getEigenValues(void) const{
   return *eigenValue;
 }
 
-inline const std::vector<std::vector<std::complex<double> > >& 
+inline const std::vector<std::vector<std::complex<double> > >&
 EigenSystem::getEigenVectors(void) const{
   return *eigenVector;
 }
