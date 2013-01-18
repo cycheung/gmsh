@@ -28,19 +28,7 @@ void Interpolator::initSystem(const System& system){
   nodalVectorValue = NULL;
 
   // Scalar or Vector ?
-  fsType = 0; throw Exception("Fix getType");//fs->getType();
-
-  switch(fsType){
-  case 0:
-  case 3:
-    scalar = true;
-    break;
-
-  case 1:
-  case 2:
-    scalar = false;
-    break;
-  }
+  scalar = fs->getBasis(0).isScalar();
 }
 
 void Interpolator::initSystem(const EigenSystem& system,
@@ -61,19 +49,7 @@ void Interpolator::initSystem(const EigenSystem& system,
   nodalVectorValue = NULL;
 
   // Scalar or Vector ?
-  fsType = 0; throw Exception("Fix getType");//fs->getType();
-
-  switch(fsType){
-  case 0:
-  case 3:
-    scalar = true;
-    break;
-
-  case 1:
-  case 2:
-    scalar = false;
-    break;
-  }
+  scalar = fs->getBasis(0).isScalar();
 }
 
 Interpolator::Interpolator(const System& system){

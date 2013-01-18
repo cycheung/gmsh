@@ -18,7 +18,7 @@
    @class Interpolator
    @brief Interpolating methods for functions and FEM Solutions
 
-   This class allows the interpolation of 
+   This class allows the interpolation of
    functions and FEM Solutions.@n
 
    The interpolation is done on the @em nodes of a given GroupOfElement.@n
@@ -26,6 +26,9 @@
 
    This class can also @em write the interpolation into a file.@n
    The file format is defined by a Writer.
+
+   @todo
+   Allow multiple Basis.
  */
 
 class Interpolator{
@@ -40,8 +43,6 @@ class Interpolator{
   double             (*fScalar)(fullVector<double>& xyz);
   fullVector<double> (*fVector)(fullVector<double>& xyz);
 
-  int fsType;
-  
   bool                              scalar;
   std::vector<double>*              nodalScalarValue;
   std::vector<fullVector<double> >* nodalVectorValue;
@@ -49,7 +50,7 @@ class Interpolator{
 
  public:
    Interpolator(const System& system);
-   Interpolator(const System& system, 
+   Interpolator(const System& system,
 		const GroupOfElement& visu);
 
    Interpolator(const EigenSystem& system,
@@ -58,16 +59,16 @@ class Interpolator{
 		unsigned int eigenNumber,
 		const GroupOfElement& visu);
 
-   Interpolator(double (*f)(fullVector<double>& xyz), 
+   Interpolator(double (*f)(fullVector<double>& xyz),
 	    const GroupOfElement& visu);
-   Interpolator(fullVector<double> (*f)(fullVector<double>& xyz), 
+   Interpolator(fullVector<double> (*f)(fullVector<double>& xyz),
 	    const GroupOfElement& visu);
 
   ~Interpolator(void);
 
   void write(const std::string name, Writer& writer) const;
   bool isScalar(void) const;
-  
+
   std::vector<double>&              getNodalScalarValue(void) const;
   std::vector<fullVector<double> >& getNodalVectorValue(void) const;
 
@@ -77,10 +78,10 @@ class Interpolator{
 		  unsigned int eigenNumber);
 
   void interpolate(void);
-  void interpolateOnVisu(void); 
+  void interpolateOnVisu(void);
   void evaluateF(void);
 
-  static const fullVector<double>* 
+  static const fullVector<double>*
     getSol(const std::vector<std::vector<std::complex<double> > >& eVector,
 	   unsigned int eigenNumber);
 };
@@ -90,7 +91,7 @@ class Interpolator{
    @fn Interpolator::Interpolator(const System&)
    @param system A System
 
-   Instanciate a new Interpolator, 
+   Instanciate a new Interpolator,
    based on the given System%'s @em Solution
 
    @note
@@ -102,7 +103,7 @@ class Interpolator{
    @param system A System
    @param visu The GroupOfElement to use for interpolation
 
-   Instanciate a new Interpolator, 
+   Instanciate a new Interpolator,
    based on the given System%'s @em Soltuion
 
    @note
@@ -113,7 +114,7 @@ class Interpolator{
    @param system An EigenSystem
    @param eigenNumber A natural number
 
-   Instanciate a new Interpolator, 
+   Instanciate a new Interpolator,
    based on the given EigenSystem%'s Eigenvector
    number @c eigenNumber
 
@@ -127,7 +128,7 @@ class Interpolator{
    @param eigenNumber a natural number
    @param visu The GroupOfElement to use for interpolation
 
-   Instanciate a new Interpolator, 
+   Instanciate a new Interpolator,
    based on the given EigenSystem%'s Eigenvector
    number @c eigenNumber
 
@@ -139,7 +140,7 @@ class Interpolator{
    @param f A @em scalar Function
    @param visu The GroupOfElement to use for interpolation
 
-   Instanciate a new Interpolator, 
+   Instanciate a new Interpolator,
    based on the given Funtion
 
    @note
@@ -150,7 +151,7 @@ class Interpolator{
    @param f A @em vectorial Function
    @param visu The GroupOfElement to use for interpolation
 
-   Instanciate a new Interpolator, 
+   Instanciate a new Interpolator,
    based on the given Funtion
 
    @note
@@ -160,9 +161,9 @@ class Interpolator{
    @fn Interpolator::~Interpolator
    Deletes this Interpolator
    **
-   
+
    @fn Interpolator::write
-   @param name The file (@em without extension) where the 
+   @param name The file (@em without extension) where the
    interpolated values will be written
    @param writer The Writer to use
 

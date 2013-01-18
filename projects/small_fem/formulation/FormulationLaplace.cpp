@@ -36,8 +36,8 @@ FormulationLaplace::FormulationLaplace(const GroupOfElement& goe,
   basis->preEvaluateDerivatives(*gC);
 
   // Fast Assembly //
-  //  nOrientation = fspace->getNOrientation();
-  //  nFunction    = fspace->getEvaluatedGradLocalFunctions(0).size1();
+  nOrientation = basis->getNOrientation();
+  nFunction    = basis->getNFunction();
 
   computeC();
 }
@@ -47,12 +47,11 @@ FormulationLaplace::~FormulationLaplace(void){
   delete gW;
   delete basis;
   delete fspace;
-  /*
+
   for(unsigned int s = 0; s < nOrientation; s++)
     delete c[s];
 
   delete[] c;
-  */
 }
 
 double FormulationLaplace::weak(int dofI, int dofJ,
@@ -95,7 +94,6 @@ double FormulationLaplace::weak(int dofI, int dofJ,
 }
 
 void FormulationLaplace::computeC(void){
-  /*
   unsigned int k;
   unsigned int l;
 
@@ -109,7 +107,7 @@ void FormulationLaplace::computeC(void){
   for(unsigned int s = 0; s < nOrientation; s++){
     // Get functions for this Orientation
     const fullMatrix<double>& phi =
-      fspace->getEvaluatedGradLocalFunctions(s);
+      basis->getPreEvaluatedDerivatives(s);
 
     // Reset counter
     k = 0;
@@ -134,5 +132,4 @@ void FormulationLaplace::computeC(void){
       }
     }
   }
-  */
 }
