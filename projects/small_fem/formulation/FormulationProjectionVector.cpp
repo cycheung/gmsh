@@ -1,8 +1,8 @@
 #include <cmath>
 
+#include "BasisGenerator.h"
 #include "GaussIntegration.h"
 #include "Mapper.h"
-#include "Polynomial.h"
 
 #include "FormulationProjectionVector.h"
 
@@ -10,7 +10,7 @@ using namespace std;
 
 FormulationProjectionVector::
 FormulationProjectionVector(fullVector<double> (*f)(fullVector<double>& xyz),
-			    FunctionSpaceEdge& fs){
+			    FunctionSpaceVector& fs){
   // Vector to Project //
   this->f = f;
 

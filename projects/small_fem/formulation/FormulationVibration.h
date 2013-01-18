@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "FunctionSpaceNode.h"
+#include "FunctionSpaceScalar.h"
 #include "EigenFormulation.h"
 
 /**
@@ -25,8 +25,8 @@ class FormulationVibration: public EigenFormulation{
   fullVector<double>* gWL;
 
   // Function Space & Basis //
-  FunctionSpaceNode* fspace;
-  const Basis*       basis;
+  FunctionSpaceScalar* fspace;
+  Basis*               basis;
 
  public:
   FormulationVibration(const GroupOfElement& goe,

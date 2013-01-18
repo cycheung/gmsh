@@ -1,10 +1,8 @@
 #include <cmath>
 
+#include "BasisGenerator.h"
 #include "GaussIntegration.h"
 #include "Mapper.h"
-#include "Polynomial.h"
-
-#include "Exception.h"
 
 #include "FormulationProjectionScalar.h"
 
@@ -12,7 +10,7 @@ using namespace std;
 
 FormulationProjectionScalar::
 FormulationProjectionScalar(double (*f)(fullVector<double>& xyz),
-			    FunctionSpaceNode& fs){
+			    FunctionSpaceScalar& fs){
   // Save f //
   this->f = f;
 

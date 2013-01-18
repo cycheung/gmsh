@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "FunctionSpaceEdge.h"
+#include "FunctionSpaceVector.h"
 #include "fullMatrix.h"
 #include "Formulation.h"
 
@@ -22,15 +22,15 @@ class FormulationProjectionVector: public Formulation{
   fullVector<double>* gW;
 
   // Function Space & Basis //
-  FunctionSpaceEdge* fspace;
-  const Basis*       basis;
+  FunctionSpaceVector* fspace;
+  const Basis*         basis;
 
   // Function to Project //
   fullVector<double> (*f)(fullVector<double>& xyz);
 
  public:
   FormulationProjectionVector(fullVector<double> (*f)(fullVector<double>& xyz),
-			      FunctionSpaceEdge& fs);
+			      FunctionSpaceVector& fs);
 
   virtual ~FormulationProjectionVector(void);
 

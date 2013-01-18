@@ -1,7 +1,7 @@
 #ifndef _FORMULATIONPROJECTIONSCALAR_H_
 #define _FORMULATIONPROJECTIONSCALAR_H_
 
-#include "FunctionSpaceNode.h"
+#include "FunctionSpaceScalar.h"
 #include "fullMatrix.h"
 #include "Formulation.h"
 
@@ -20,15 +20,15 @@ class FormulationProjectionScalar: public Formulation{
   fullVector<double>* gW;
 
   // Function Space & Basis //
-  FunctionSpaceNode* fspace;
-  const Basis*       basis;
+  FunctionSpaceScalar* fspace;
+  const Basis*         basis;
 
   // Function to Project //
   double (*f)(fullVector<double>& xyz);
 
  public:
   FormulationProjectionScalar(double (*f)(fullVector<double>& xyz),
-			      FunctionSpaceNode& fs);
+			      FunctionSpaceScalar& fs);
 
   virtual ~FormulationProjectionScalar(void);
 

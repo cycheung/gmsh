@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "FunctionSpaceNode.h"
+#include "FunctionSpaceScalar.h"
 #include "Formulation.h"
 
 /**
@@ -25,8 +25,8 @@ class FormulationLaplace: public Formulation{
   fullVector<double>* gW;
 
   // Function Space & Basis//
-  FunctionSpaceNode* fspace;
-  const Basis*       basis;
+  FunctionSpaceScalar* fspace;
+  Basis*               basis;
 
   // 'Fast' Assembly //
   unsigned int nOrientation;

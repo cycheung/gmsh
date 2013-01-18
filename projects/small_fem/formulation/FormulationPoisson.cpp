@@ -1,11 +1,10 @@
 #include <cmath>
 
-#include "Exception.h"
-#include "fullMatrix.h"
+#include "BasisGenerator.h"
 #include "GaussIntegration.h"
-#include "Polynomial.h"
 #include "Mapper.h"
 
+#include "Exception.h"
 #include "FormulationPoisson.h"
 
 using namespace std;
@@ -18,8 +17,10 @@ FormulationPoisson::FormulationPoisson(const GroupOfElement& goe,
       Exception("Can't have a Poisson formulation of order 0");
 
   // Function Space & Basis //
-  fspace = new FunctionSpaceNode(goe, order);
-  basis  = &fspace->getBasis(0);
+  basis  = BasisGenerator::generate(goe.get(0).getType(),
+                                    0, order, "hierarchical");
+
+  fspace = new FunctionSpaceScalar(goe, *basis);
 
   // Gaussian Quadrature Data (LHS) //
   // NB: We need to integrad a grad * grad !
@@ -55,6 +56,7 @@ FormulationPoisson::~FormulationPoisson(void){
   delete gWL;
   delete gCR;
   delete gWR;
+  delete basis;
   delete fspace;
 }
 

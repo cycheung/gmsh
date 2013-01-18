@@ -1,7 +1,7 @@
-#include "Exception.h"
-#include "fullMatrix.h"
+#include <cmath>
+
+#include "BasisGenerator.h"
 #include "GaussIntegration.h"
-#include "Polynomial.h"
 #include "Mapper.h"
 
 #include "FormulationEigenFrequency.h"
@@ -20,8 +20,10 @@ const double FormulationEigenFrequency::eps = 1;
 FormulationEigenFrequency::FormulationEigenFrequency(const GroupOfElement& goe,
 						     unsigned int order){
   // Function Space & Basis //
-  fspace = new FunctionSpaceEdge(goe, order);
-  basis  = &fspace->getBasis(0);
+  basis  = BasisGenerator::generate(goe.get(0).getType(),
+                                    1, order, "hierarchical");
+
+  fspace = new FunctionSpaceVector(goe, *basis);
 
   // Gaussian Quadrature Data (Term One) //
   // NB: We need to integrad a rot * rot !
@@ -62,6 +64,7 @@ FormulationEigenFrequency::~FormulationEigenFrequency(void){
   delete gW1;
   delete gC2;
   delete gW2;
+  delete basis;
   delete fspace;
 }
 

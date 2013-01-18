@@ -10,7 +10,8 @@
 #include "WriterDummy.h"
 #include "Exception.h"
 
-#include "FunctionSpaceEdge.h"
+#include "BasisGenerator.h"
+#include "FunctionSpaceVector.h"
 #include "FormulationProjectionVector.h"
 
 #include "Gmsh.h"
@@ -24,10 +25,10 @@ vector<fullVector<double> > fem(GroupOfElement& domain, GroupOfElement& visu,
 				Writer& writer, int order);
 
 vector<fullVector<double> > ana(GroupOfElement& domain,
-				fullVector<double> (*f)(fullVector<double>& xyz), 
+				fullVector<double> (*f)(fullVector<double>& xyz),
 				Writer& writer);
 
-fullMatrix<double> l2(fullMatrix<vector<fullVector<double> > >& fem, 
+fullMatrix<double> l2(fullMatrix<vector<fullVector<double> > >& fem,
 		      vector<fullVector<double> >& ana);
 
 double modSquare(fullVector<double>& v);
@@ -48,7 +49,7 @@ int main(int argc, char** argv){
   GmshInitialize(argc, argv);
 
   // Writer //
-  WriterDummy writer;  
+  WriterDummy writer;
 
   // Get Data //
   const unsigned int M        = argc - 3; // Mesh number (without visu)
@@ -70,47 +71,50 @@ int main(int argc, char** argv){
     cout << "** " << argv[1 + i] << endl << flush;
     Mesh           msh(argv[1 + i]);
     GroupOfElement domain = msh.getFromPhysical(7);
-    
+
 
     // Iterate on Orders
     for(unsigned int j = 0; j < maxOrder; j++)
       sol(j, i) = fem(domain, visu, f, writer, j + 1);
   }
 
-  
+
   // L2 Error //
   fullMatrix<double> l2Error = l2(sol, real);
-  
+
   const unsigned int l2Row      = l2Error.size1();
   const unsigned int l2ColMinus = l2Error.size2() - 1;
 
   cout << "l2 = ..." << endl
        << "    [..." << endl;
-  
+
   for(unsigned int i = 0; i < l2Row; i++){
     cout << "        ";
 
     for(unsigned int j = 0; j < l2ColMinus; j++)
-      cout << scientific << showpos 
+      cout << scientific << showpos
 	   << l2Error(i, j) << " , ";
-    
-    cout << scientific << showpos 
+
+    cout << scientific << showpos
 	 << l2Error(i, l2ColMinus) << " ; ..." << endl;
   }
 
   cout << "    ];" << endl;
-  
+
   GmshFinalize();
   return 0;
 }
 
-vector<fullVector<double> > fem(GroupOfElement& domain, GroupOfElement& visu, 
+vector<fullVector<double> > fem(GroupOfElement& domain, GroupOfElement& visu,
 				fullVector<double> (*f)(fullVector<double>& xyz),
 				Writer& writer, int order){
 
   stringstream stream;
-  
-  FunctionSpaceEdge fSpace(domain, order);
+
+  Basis* basis  = BasisGenerator::generate(domain.get(0).getType(),
+                                           1, order, "hierarchical");
+
+  FunctionSpaceVector fSpace(domain, *basis);
   FormulationProjectionVector projection(f, fSpace);
   System sysProj(projection);
 
@@ -122,15 +126,15 @@ vector<fullVector<double> > fem(GroupOfElement& domain, GroupOfElement& visu,
 
   Interpolator intProj(sysProj, visu);
 
-  intProj.write(stream.str(), writer);  
+  intProj.write(stream.str(), writer);
 
   return intProj.getNodalVectorValue();
 }
 
-vector<fullVector<double> > ana(GroupOfElement& domain, 
-				fullVector<double> (*f)(fullVector<double>& xyz), 
+vector<fullVector<double> > ana(GroupOfElement& domain,
+				fullVector<double> (*f)(fullVector<double>& xyz),
 				Writer& writer){
-  
+
   stringstream stream;
 
   // Analytical Solution
@@ -143,7 +147,7 @@ vector<fullVector<double> > ana(GroupOfElement& domain,
   return projection.getNodalVectorValue();
 }
 
-fullMatrix<double> l2(fullMatrix<vector<fullVector<double> > >& fem, 
+fullMatrix<double> l2(fullMatrix<vector<fullVector<double> > >& fem,
 		      vector<fullVector<double> >& ana){
   // Init //
   const unsigned int nOrder = fem.size1();
@@ -160,15 +164,15 @@ fullMatrix<double> l2(fullMatrix<vector<fullVector<double> > >& fem,
   double anaNorm = 0;
   for(unsigned int k = 0; k < nNode; k++)
     anaNorm += modSquare(ana[k]);
-  
+
   anaNorm = sqrt(anaNorm);
-  
+
   // Norm of FEM Error //
   for(unsigned int i = 0; i < nOrder; i++){
     for(unsigned int j = 0; j < nMesh; j++){
       for(unsigned int k = 0; k < nNode; k++)
 	res(i, j) += modDiffSquare(ana[k], fem(i, j)[k]);
-      
+
       res(i, j) = sqrt(res(i, j)) / anaNorm;
     }
   }

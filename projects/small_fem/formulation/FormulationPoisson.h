@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "FunctionSpaceNode.h"
+#include "FunctionSpaceScalar.h"
 #include "Formulation.h"
 
 /**
@@ -30,8 +30,8 @@ class FormulationPoisson: public Formulation{
   fullVector<double>* gWR;
 
   // Function Space & Basis //
-  FunctionSpaceNode* fspace;
-  const Basis*       basis;
+  FunctionSpaceScalar* fspace;
+  Basis*               basis;
 
  public:
   FormulationPoisson(const GroupOfElement& goe,

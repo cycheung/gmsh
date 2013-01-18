@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "FunctionSpaceNode.h"
+#include "FunctionSpaceScalar.h"
 #include "Formulation.h"
 
 /**
@@ -37,8 +37,8 @@ class FormulationSteadyWaveScalar: public Formulation{
   fullVector<double>* gW2;
 
   // Function Space & Basis //
-  FunctionSpaceNode* fspace;
-  const Basis*       basis;
+  FunctionSpaceScalar* fspace;
+  Basis*               basis;
 
  public:
   FormulationSteadyWaveScalar(const GroupOfElement& goe,

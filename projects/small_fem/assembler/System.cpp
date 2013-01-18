@@ -1,5 +1,7 @@
 #include "FormulationProjectionScalar.h"
 #include "FormulationProjectionVector.h"
+#include "BasisGenerator.h"
+#include "BasisLocal.h"
 #include "Exception.h"
 
 #include "System.h"
@@ -87,7 +89,11 @@ void System::dirichlet(const GroupOfElement& goe,
   if(&(goe.getMesh()) != &(fs->getSupport().getMesh()))
     throw Exception("Dirichlet Domain must come from the FunctionSpace Domain's Mesh");
 
-  FunctionSpaceNode dirFS(goe, fs->getBasis(0).getOrder());
+  BasisLocal* dirBasis = BasisGenerator::generate(goe.get(0).getType(),
+                                                  fs->getBasis(0).getType(),
+                                                  fs->getBasis(0).getOrder(),
+                                                  "hierarchical");
+  FunctionSpaceScalar dirFS(goe, *dirBasis);
 
   // Solve The Projection Of f on the Dirichlet Domain with dirFS //
   FormulationProjectionScalar projection(f, dirFS);
@@ -105,6 +111,8 @@ void System::dirichlet(const GroupOfElement& goe,
 
   for(unsigned int i = 0; i < nDof; i++)
     dofM->fixValue(*dof[i], dirSol(dirDofM.getGlobalId(*dof[i])));
+
+  delete dirBasis;
 }
 
 void System::dirichlet(const GroupOfElement& goe,
@@ -121,7 +129,12 @@ void System::dirichlet(const GroupOfElement& goe,
   if(&(goe.getMesh()) != &(fs->getSupport().getMesh()))
     throw Exception("Dirichlet Domain must come from the FunctionSpace Domain's Mesh");
 
-  FunctionSpaceEdge dirFS(goe, fs->getBasis(0).getOrder());
+  BasisLocal* dirBasis = BasisGenerator::generate(goe.get(0).getType(),
+                                                  fs->getBasis(0).getType(),
+                                                  fs->getBasis(0).getOrder(),
+                                                  "hierarchical");
+
+  FunctionSpaceVector dirFS(goe, *dirBasis);
 
   // Solve The Projection Of f on the Dirichlet Domain with dirFS //
   FormulationProjectionVector projection(f, dirFS);
@@ -139,6 +152,8 @@ void System::dirichlet(const GroupOfElement& goe,
 
   for(unsigned int i = 0; i < nDof; i++)
     dofM->fixValue(*dof[i], dirSol(dirDofM.getGlobalId(*dof[i])));
+
+  delete dirBasis;
 }
 
 void System::solve(void){

@@ -1,6 +1,9 @@
-#include "Exception.h"
 #include "System.h"
 #include "FormulationProjectionScalar.h"
+#include "BasisGenerator.h"
+#include "BasisLocal.h"
+#include "Exception.h"
+
 #include "EigenSystem.h"
 
 using namespace std;
@@ -130,7 +133,11 @@ void EigenSystem::dirichlet(const GroupOfElement& goe,
   if(&(goe.getMesh()) != &(fs->getSupport().getMesh()))
     throw Exception("Dirichlet Domain must come from the FunctionSpace Domain's Mesh");
 
-  FunctionSpaceNode dirFS(goe, fs->getBasis(0).getOrder());
+  BasisLocal* dirBasis = BasisGenerator::generate(goe.get(0).getType(),
+                                                  fs->getBasis(0).getType(),
+                                                  fs->getBasis(0).getOrder(),
+                                                  "hierarchical");
+  FunctionSpaceScalar dirFS(goe, *dirBasis);
 
   // Solve The Projection Of f on the Dirichlet Domain with dirFS //
   FormulationProjectionScalar projection(f, dirFS);
@@ -148,6 +155,8 @@ void EigenSystem::dirichlet(const GroupOfElement& goe,
 
   for(unsigned int i = 0; i < nDof; i++)
     dofM->fixValue(*dof[i], dirSol(dirDofM.getGlobalId(*dof[i])));
+
+  delete dirBasis;
 }
 
 void EigenSystem::solve(unsigned int nEigenValues){

@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "FunctionSpaceEdge.h"
+#include "FunctionSpaceVector.h"
 #include "EigenFormulation.h"
 
 /**
@@ -30,8 +30,8 @@ class FormulationEigenFrequency: public EigenFormulation{
   fullVector<double>* gW2;
 
   // Function Space & Basis //
-  FunctionSpaceEdge* fspace;
-  const Basis*       basis;
+  FunctionSpaceVector* fspace;
+  Basis*               basis;
 
  public:
   FormulationEigenFrequency(const GroupOfElement& goe,

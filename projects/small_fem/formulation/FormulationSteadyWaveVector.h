@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "FunctionSpaceEdge.h"
+#include "FunctionSpaceVector.h"
 #include "Formulation.h"
 
 /**
@@ -37,8 +37,8 @@ class FormulationSteadyWaveVector: public Formulation{
   fullVector<double>* gW2;
 
   // Function Space & Basis //
-  FunctionSpaceEdge* fspace;
-  const Basis*       basis;
+  FunctionSpaceVector* fspace;
+  Basis*               basis;
 
  public:
   FormulationSteadyWaveVector(const GroupOfElement& goe,

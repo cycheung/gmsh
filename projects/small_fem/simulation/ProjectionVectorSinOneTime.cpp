@@ -10,7 +10,8 @@
 #include "WriterDummy.h"
 #include "Exception.h"
 
-#include "FunctionSpaceEdge.h"
+#include "BasisGenerator.h"
+#include "FunctionSpaceVector.h"
 #include "FormulationProjectionVector.h"
 
 #include "Timer.h"
@@ -25,10 +26,10 @@ vector<fullVector<double> > fem(GroupOfElement& domain, GroupOfElement& visu,
 				Writer& writer, int order);
 
 vector<fullVector<double> > ana(GroupOfElement& domain,
-				fullVector<double> (*f)(fullVector<double>& xyz), 
+				fullVector<double> (*f)(fullVector<double>& xyz),
 				Writer& writer);
 
-fullMatrix<double> l2(fullMatrix<vector<fullVector<double> > >& fem, 
+fullMatrix<double> l2(fullMatrix<vector<fullVector<double> > >& fem,
 		      vector<fullVector<double> >& ana);
 
 double modSquare(fullVector<double>& v);
@@ -53,7 +54,7 @@ int main(int argc, char** argv){
   GmshInitialize(argc, argv);
 
   // Writer //
-  WriterMsh writer;  
+  WriterMsh writer;
 
   // Get Data //
   const unsigned int order = atoi(argv[3]);
@@ -78,7 +79,7 @@ int main(int argc, char** argv){
 
   // Compute FEM //
   fullMatrix<vector<fullVector<double> > > sol(1, 1);
-  cout << "## Computing FEM Solution on: " << argv[1] 
+  cout << "## Computing FEM Solution on: " << argv[1]
        << " (Order " << order << ") ..." << endl << flush;
 
   timer.start();
@@ -86,49 +87,52 @@ int main(int argc, char** argv){
   timer.stop();
   cout << "## ... Done !" << endl << flush;
 
-  
+
   // L2 Error //
   cout << "## Computing Error ..." << endl << flush;
   fullMatrix<double> l2Error = l2(sol, real);
   cout << "## ... Done !" << endl << endl << flush;
-  
+
   const unsigned int l2Row      = l2Error.size1();
   const unsigned int l2ColMinus = l2Error.size2() - 1;
 
   cout << "l2 = ..." << endl
        << "    [..." << endl;
-  
+
   for(unsigned int i = 0; i < l2Row; i++){
     cout << "        ";
 
     for(unsigned int j = 0; j < l2ColMinus; j++)
-      cout << scientific << showpos 
+      cout << scientific << showpos
 	   << l2Error(i, j) << " , ";
-    
-    cout << scientific << showpos 
+
+    cout << scientific << showpos
 	 << l2Error(i, l2ColMinus) << " ; ..." << endl;
   }
 
   cout << "    ];" << endl;
-  
+
   // Done //
   GmshFinalize();
 
   cout << endl
-       << "## Time: " 
-       << timer.time() << " " 
+       << "## Time: "
+       << timer.time() << " "
        << timer.unit() << endl;
 
   return 0;
 }
 
-vector<fullVector<double> > fem(GroupOfElement& domain, GroupOfElement& visu, 
+vector<fullVector<double> > fem(GroupOfElement& domain, GroupOfElement& visu,
 				fullVector<double> (*f)(fullVector<double>& xyz),
 				Writer& writer, int order){
 
   stringstream stream;
-  
-  FunctionSpaceEdge fSpace(domain, order);
+
+  Basis* basis  = BasisGenerator::generate(domain.get(0).getType(),
+                                           1, order, "hierarchical");
+
+  FunctionSpaceVector fSpace(domain, *basis);
   FormulationProjectionVector projection(f, fSpace);
   System sysProj(projection);
 
@@ -140,15 +144,15 @@ vector<fullVector<double> > fem(GroupOfElement& domain, GroupOfElement& visu,
 
   Interpolator intProj(sysProj, visu);
 
-  intProj.write(stream.str(), writer);  
+  intProj.write(stream.str(), writer);
 
   return intProj.getNodalVectorValue();
 }
 
-vector<fullVector<double> > ana(GroupOfElement& domain, 
-				fullVector<double> (*f)(fullVector<double>& xyz), 
+vector<fullVector<double> > ana(GroupOfElement& domain,
+				fullVector<double> (*f)(fullVector<double>& xyz),
 				Writer& writer){
-  
+
   stringstream stream;
 
   // Analytical Solution
@@ -161,7 +165,7 @@ vector<fullVector<double> > ana(GroupOfElement& domain,
   return projection.getNodalVectorValue();
 }
 
-fullMatrix<double> l2(fullMatrix<vector<fullVector<double> > >& fem, 
+fullMatrix<double> l2(fullMatrix<vector<fullVector<double> > >& fem,
 		      vector<fullVector<double> >& ana){
   // Init //
   const unsigned int nOrder = fem.size1();
@@ -178,15 +182,15 @@ fullMatrix<double> l2(fullMatrix<vector<fullVector<double> > >& fem,
   double anaNorm = 0;
   for(unsigned int k = 0; k < nNode; k++)
     anaNorm += modSquare(ana[k]);
-  
+
   anaNorm = sqrt(anaNorm);
-  
+
   // Norm of FEM Error //
   for(unsigned int i = 0; i < nOrder; i++){
     for(unsigned int j = 0; j < nMesh; j++){
       for(unsigned int k = 0; k < nNode; k++)
 	res(i, j) += modDiffSquare(ana[k], fem(i, j)[k]);
-      
+
       res(i, j) = sqrt(res(i, j)) / anaNorm;
     }
   }

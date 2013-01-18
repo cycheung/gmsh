@@ -1,9 +1,10 @@
-#include "Exception.h"
-#include "fullMatrix.h"
+#include <cmath>
+
+#include "BasisGenerator.h"
 #include "GaussIntegration.h"
-#include "Polynomial.h"
 #include "Mapper.h"
 
+#include "Exception.h"
 #include "FormulationSteadyWaveScalar.h"
 
 using namespace std;
@@ -29,8 +30,10 @@ FormulationSteadyWaveScalar::FormulationSteadyWaveScalar(const GroupOfElement& g
   kSquare = k * k;
 
   // Function Space & Basis//
-  fspace = new FunctionSpaceNode(goe, order);
-  basis  = &fspace->getBasis(0);
+  basis  = BasisGenerator::generate(goe.get(0).getType(),
+                                    0, order, "hierarchical");
+
+  fspace = new FunctionSpaceScalar(goe, *basis);
 
   // Gaussian Quadrature Data (Term One) //
   // NB: We need to integrad a grad * grad !
@@ -62,6 +65,7 @@ FormulationSteadyWaveScalar::~FormulationSteadyWaveScalar(void){
   delete gW1;
   delete gC2;
   delete gW2;
+  delete basis;
   delete fspace;
 }
 

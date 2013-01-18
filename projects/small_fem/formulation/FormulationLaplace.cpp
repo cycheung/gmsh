@@ -1,11 +1,10 @@
 #include <cmath>
 
-#include "Exception.h"
-#include "fullMatrix.h"
+#include "BasisGenerator.h"
 #include "GaussIntegration.h"
-#include "Polynomial.h"
 #include "Mapper.h"
 
+#include "Exception.h"
 #include "FormulationLaplace.h"
 
 using namespace std;
@@ -18,8 +17,10 @@ FormulationLaplace::FormulationLaplace(const GroupOfElement& goe,
       Exception("Can't have a Laplace formulation of order 0");
 
   // Function Space & Basis //
-  fspace = new FunctionSpaceNode(goe, order);
-  basis  = &fspace->getBasis(0);
+  basis  = BasisGenerator::generate(goe.get(0).getType(),
+                                    0, order, "hierarchical");
+
+  fspace = new FunctionSpaceScalar(goe, *basis);
 
   // Gaussian Quadrature Data //
   gC = new fullMatrix<double>();
@@ -44,13 +45,14 @@ FormulationLaplace::FormulationLaplace(const GroupOfElement& goe,
 FormulationLaplace::~FormulationLaplace(void){
   delete gC;
   delete gW;
+  delete basis;
   delete fspace;
-
+  /*
   for(unsigned int s = 0; s < nOrientation; s++)
     delete c[s];
 
   delete[] c;
-
+  */
 }
 
 double FormulationLaplace::weak(int dofI, int dofJ,
