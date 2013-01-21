@@ -27,9 +27,9 @@ FORMULA.setValue(P *tx(0)/L);
 OL.endif
 OL.if(OL.get(LOADTYPE) == 3)
 # Formule qui adapte P automatiquement en fonction de d (P exprime en 1e4N)
-#FORMULA.setValue(if(tx(0)<(X-d)) {0} else {if(tx(0)<=(X+d)) {P/(2*d)/B} else {0}});
+FORMULA.setValue(if(tx(0)<(X-d)) {0} else {if(tx(0)<=(X+d)) {P/(2*d)/B} else {0}});
 # Formule avec P en N/cm2
-FORMULA.setValue(if(tx(0)<(X-d)) {0} else {if(tx(0)<=(X+d)) {P} else {0}});
+#FORMULA.setValue(if(tx(0)<(X-d)) {0} else {if(tx(0)<=(X+d)) {P} else {0}});
 OL.endif
 OL.if(OL.get(LOADTYPE) == 4)
 FORMULA.setValue(P*tx(1)/B);

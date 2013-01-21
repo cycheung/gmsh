@@ -16,8 +16,11 @@ Mesher.register(native);
 Mesher.in( OL.get(Arguments/FileName).geo );
 Mesher.run( OL.get(Arguments/FileName).geo );
 Mesher.out( OL.get(Arguments/FileName).msh );
-# Tell ONELAB to show geometry and mesh as initial view
-Mesher.frontPage(OL.get(Arguments/FileName).geo,OL.get(Arguments/FileName).msh);
+# Tell ONELAB to show geometry + mesh as initial view
+# Mesher.preCompute();
+# Mesher.frontPage(OL.get(Arguments/FileName).geo, OL.get(Arguments/FileName).msh);
+# Tell ONELAB to show geometry as initial view
+Mesher.frontPage(OL.get(Arguments/FileName).geo);
 
 # Enumeration, i.e. a set of real values each associated with a label
 SKINTYPE.number(2, Parameters/Skin/1,"Skin type"); 
@@ -178,7 +181,7 @@ Post2.in(solution.pos, script2.opt.ol);
 Post2.out(volume.txt, aboveThres.pos );
 Post2.run( solution.pos script2.opt - );
 Post2.merge(aboveThres.pos);
-Post1.up( volmax.txt,-1,8,Solution/VOLUME);
+Post2.up( volmax.txt,-1,8,Solution/VOLUME);
 
 #-6) Display solution curves with either gnuplot or matlab
 POSTPRO.number(2, PostPro/,"Plot results with");

@@ -15,7 +15,8 @@ Mesher.register(native);
 Mesher.in( _OL.get(Arguments/FileName).geo);
 Mesher.run(OL.get(Arguments/FileName).geo);
 Mesher.out(OL.get(Arguments/FileName).msh);
-Mesher.frontPage(OL.get(Arguments/FileName).geo, OL.get(Arguments/FileName).msh);
+Mesher.frontPage(OL.get(Arguments/FileName).geo);
+
 
 #2) Client ElmerGrid pour convertir le maillage pour Elmer
 ElmerGrid.register(interfaced);
