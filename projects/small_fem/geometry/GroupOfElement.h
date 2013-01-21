@@ -7,7 +7,8 @@
 
 #include "Mesh.h"
 #include "MElement.h"
-
+#include "Basis.h"
+#include "Exception.h"
 
 /**
    @class GroupOfElement
@@ -21,24 +22,30 @@ class Mesh;
 class GroupOfElement{
  private:
   const Mesh* mesh;
-  
-  unsigned int                  nElement;
-  std::vector<const MElement*>*  element;
+
+  std::vector<const MElement*>* element;
+  std::vector<unsigned int>*    orientationStat;
 
  public:
-   GroupOfElement(std::multimap<int, const MElement*>::iterator begin, 
+   GroupOfElement(std::multimap<int, const MElement*>::iterator begin,
 		  std::multimap<int, const MElement*>::iterator end,
-		  const Mesh& mesh); 
- 
+		  const Mesh& mesh);
+
   ~GroupOfElement(void);
 
   unsigned int                        getNumber(void)     const;
-  const MElement&                     get(unsigned int i) const;  
-  const std::vector<const MElement*>& getAll(void)        const;  
-  
+  const MElement&                     get(unsigned int i) const;
+  const std::vector<const MElement*>& getAll(void)        const;
+
   const Mesh& getMesh(void) const;
 
+  void orientAllElements(const Basis& basis);
+  std::vector<unsigned int>& getOrientationStats(void) const;
+
   std::string toString(void) const;
+
+ private:
+  bool sortPredicate(const MElement* a, const MElement* b) const;
 };
 
 
@@ -60,7 +67,7 @@ class GroupOfElement{
    **
 
    @fn GroupOfElement::get
-   @param i An interger ranging from 0 
+   @param i An interger ranging from 0
    to GroupOfElement::getNumber() - 1
    @return Returns the ith element of the GroupOfElement
    **
@@ -70,7 +77,28 @@ class GroupOfElement{
    **
 
    @fn GroupOfElement::getMesh
-   @return Returns the associated Mesh  
+   @return Returns the associated Mesh
+   **
+
+   @fn GroupOfElement::orientAllElements
+   @param basis A Basis
+
+   Sort the Element of this GroupOfElement,
+   with respect to the given Basis
+
+   @see Basis::getOrientation()
+   **
+
+   @fn GroupOfElement::getOrientationStats
+   @return A vector where the @c i-th entry is the number
+   of element in GroupOfElement::getAll()
+   with a Basis::getOrientation() equal to @c i
+
+   @warning
+   GroupOfElement::orientAllElement must be called
+   before for this method to have a meaning@n
+
+   If not, an Exception is thrown
    **
 
    @fn GroupOfElement::toString
@@ -83,20 +111,29 @@ class GroupOfElement{
 //////////////////////
 
 inline unsigned int GroupOfElement::getNumber(void) const{
-  return nElement;
+  return element->size();
 }
 
 inline const MElement& GroupOfElement::get(unsigned int i) const{
   return *((*element)[i]);
 }
 
-inline const std::vector<const MElement*>& 
+inline const std::vector<const MElement*>&
 GroupOfElement::getAll(void) const{
   return *element;
 }
 
 inline const Mesh& GroupOfElement::getMesh(void) const{
   return *mesh;
+}
+
+inline std::vector<unsigned int>&
+GroupOfElement::getOrientationStats(void) const{
+  if(orientationStat)
+    return *orientationStat;
+
+  else
+    throw Exception("Orientation of GroupOfElement not computed");
 }
 
 #endif

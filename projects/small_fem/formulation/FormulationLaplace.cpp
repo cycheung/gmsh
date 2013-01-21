@@ -9,7 +9,7 @@
 
 using namespace std;
 
-FormulationLaplace::FormulationLaplace(const GroupOfElement& goe,
+FormulationLaplace::FormulationLaplace(GroupOfElement& goe,
 				       unsigned int order){
   // Can't have 0th order //
   if(order == 0)
@@ -36,6 +36,10 @@ FormulationLaplace::FormulationLaplace(const GroupOfElement& goe,
   basis->preEvaluateDerivatives(*gC);
 
   // Fast Assembly //
+  goe.orientAllElements(*basis);
+  jac = new Jacobian(goe, *gC);
+  jac->computeInvertJacobians();
+
   nOrientation = basis->getNOrientation();
   nFunction    = basis->getNFunction();
 

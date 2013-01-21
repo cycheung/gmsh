@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "FunctionSpaceScalar.h"
+#include "Jacobian.h"
 #include "Formulation.h"
 
 /**
@@ -31,10 +32,11 @@ class FormulationLaplace: public Formulation{
   // 'Fast' Assembly //
   unsigned int nOrientation;
   unsigned int nFunction;
+  Jacobian*   jac;
   fullMatrix<double>** c;
 
  public:
-  FormulationLaplace(const GroupOfElement& goe, unsigned int order);
+  FormulationLaplace(GroupOfElement& goe, unsigned int order);
 
   virtual ~FormulationLaplace(void);
 

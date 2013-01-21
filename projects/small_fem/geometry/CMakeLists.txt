@@ -9,6 +9,8 @@ set(src
   EdgeExtractor.cpp
   FaceExtractor.cpp
 
+  OrientationSort.cpp
+
   Jacobian.cpp
 )
 
