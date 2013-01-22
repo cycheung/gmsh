@@ -1,6 +1,7 @@
 #ifndef _FORMULATIONLAPLACE_H_
 #define _FORMULATIONLAPLACE_H_
 
+#include <map>
 #include <vector>
 
 #include "FunctionSpaceScalar.h"
@@ -30,10 +31,18 @@ class FormulationLaplace: public Formulation{
   Basis*               basis;
 
   // 'Fast' Assembly //
-  unsigned int nOrientation;
-  unsigned int nFunction;
-  Jacobian*   jac;
-  fullMatrix<double>** c;
+  unsigned int    nOrientation;
+  unsigned int    nFunction;
+  unsigned int    nElement;
+  GroupOfElement* goe;
+  Jacobian*       jac;
+
+  std::map<const MElement*, std::pair<unsigned int, unsigned int> >* eMap;
+  std::vector<unsigned int>* orientationStat;
+
+  fullMatrix<double>** cM;
+  fullMatrix<double>** bM;
+  fullMatrix<double>** aM;
 
  public:
   FormulationLaplace(GroupOfElement& goe, unsigned int order);
@@ -50,6 +59,9 @@ class FormulationLaplace: public Formulation{
 
  private:
   void computeC(void);
+  void computeB(void);
+  void computeA(void);
+  void deleteCB(void);
 };
 
 /**

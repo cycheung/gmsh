@@ -39,11 +39,20 @@ FormulationLaplace::FormulationLaplace(GroupOfElement& goe,
   goe.orientAllElements(*basis);
   jac = new Jacobian(goe, *gC);
   jac->computeInvertJacobians();
+  this->goe = &goe;
 
-  nOrientation = basis->getNOrientation();
-  nFunction    = basis->getNFunction();
+  orientationStat = &goe.getOrientationStats();
+  nOrientation    = basis->getNOrientation();
+  nFunction       = basis->getNFunction();
+  nElement        = goe.getNumber();
+
+  eMap = new map<const MElement*, pair<unsigned int, unsigned int> >;
 
   computeC();
+  computeB();
+  computeA();
+
+  deleteCB();
 }
 
 FormulationLaplace::~FormulationLaplace(void){
@@ -53,11 +62,13 @@ FormulationLaplace::~FormulationLaplace(void){
   delete fspace;
 
   for(unsigned int s = 0; s < nOrientation; s++)
-    delete c[s];
+    delete aM[s];
 
-  delete[] c;
+  delete[] aM;
+
+  delete eMap;
 }
-
+/*
 double FormulationLaplace::weak(int dofI, int dofJ,
 				const GroupOfDof& god) const{
   // Init Some Stuff //
@@ -96,16 +107,27 @@ double FormulationLaplace::weak(int dofI, int dofJ,
 
   return integral;
 }
+*/
+
+double FormulationLaplace::weak(int dofI, int dofJ,
+				const GroupOfDof& god) const{
+
+  map<const MElement*, pair<unsigned int, unsigned int> >::iterator
+    index = eMap->find(&god.getGeoElement());
+
+  return (*aM[index->second.first])
+    (index->second.second, dofI * nFunction + dofJ);
+}
 
 void FormulationLaplace::computeC(void){
   unsigned int k;
   unsigned int l;
 
   // Alloc //
-  c = new fullMatrix<double>*[nOrientation];
+  cM = new fullMatrix<double>*[nOrientation];
 
   for(unsigned int s = 0; s < nOrientation; s++)
-    c[s] = new fullMatrix<double>(9 * G, nFunction * nFunction);
+    cM[s] = new fullMatrix<double>(9 * G, nFunction * nFunction);
 
   // Fill //
   for(unsigned int s = 0; s < nOrientation; s++){
@@ -113,20 +135,20 @@ void FormulationLaplace::computeC(void){
     const fullMatrix<double>& phi =
       basis->getPreEvaluatedDerivatives(s);
 
-    // Reset counter
+    // Reset Gauss Point Counter
     k = 0;
-    l = 0;
 
     // Loop on Gauss Points
     for(int g = 0; g < G; g++){
       for(unsigned int a = 0; a < 3; a++){
         for(unsigned int b = 0; b < 3; b++){
+          // Reset Function Counter
           l = 0;
 
           // Loop on Functions
           for(unsigned int i = 0; i < nFunction; i++){
             for(unsigned int j = 0; j < nFunction; j++){
-              (*c[s])(k, l) = (*gW)(g) * phi(i, g + a) * phi(j, g + b);
+              (*cM[s])(k, l) = (*gW)(g) * phi(i, g * 3 + a) * phi(j, g * 3 + b);
               l++;
             }
           }
@@ -136,4 +158,88 @@ void FormulationLaplace::computeC(void){
       }
     }
   }
+}
+
+void FormulationLaplace::computeB(void){
+  unsigned int offset = 0;
+  unsigned int j;
+  unsigned int k;
+
+  // Alloc //
+  bM = new fullMatrix<double>*[nOrientation];
+
+  for(unsigned int s = 0; s < nOrientation; s++)
+    bM[s] = new fullMatrix<double>((*orientationStat)[s], 9 * G);
+
+
+  // Fill //
+  const vector<const MElement*>& element = goe->getAll();
+
+  for(unsigned int s = 0; s < nOrientation; s++){
+    // Reset Element Counter
+    j = 0;
+
+    // Loop on Elements
+    for(unsigned int e = offset; e < offset + (*orientationStat)[s]; e++){
+      // Add to eMap
+      eMap->insert(pair<const MElement*, pair<unsigned int, unsigned int> >
+                     (element[e], pair<unsigned int, unsigned int>(s, j)));
+
+      // Get Jacobians
+      const vector<const pair<const fullMatrix<double>*, double>*>& invJac =
+        jac->getInvertJacobian(*element[e]);
+
+      // Reset Gauss Point Counter
+      k = 0;
+
+      // Loop on Gauss Points
+      for(int g = 0; g < G; g++){
+        for(unsigned int a = 0; a < 3; a++){
+          for(unsigned int b = 0; b < 3; b++){
+            (*bM[s])(j, k) = 0;
+
+            for(unsigned int i = 0; i < 3; i++)
+              (*bM[s])(j, k) +=
+                (*invJac[g]->first)(i, a) *
+                (*invJac[g]->first)(i, b);
+
+            (*bM[s])(j, k) *= fabs(invJac[g]->second);
+            k++;
+          }
+        }
+      }
+
+      // Next Element in Orientation[s]
+      j++;
+    }
+
+    // New Offset
+    offset += (*orientationStat)[s];
+  }
+}
+
+void FormulationLaplace::computeA(void){
+  // Alloc //
+  aM = new fullMatrix<double>*[nOrientation];
+
+  for(unsigned int s = 0; s < nOrientation; s++)
+    aM[s] = new fullMatrix<double>((*orientationStat)[s], nFunction * nFunction);
+
+  // Fill //
+  for(unsigned int s = 0; s < nOrientation; s++)
+    // GEMM doesn't like matrices with 0 Elements
+    if((*orientationStat)[s])
+      aM[s]->gemm(*bM[s], *cM[s]);
+}
+
+void FormulationLaplace::deleteCB(void){
+  for(unsigned int s = 0; s < nOrientation; s++)
+    delete cM[s];
+
+  delete[] cM;
+
+  for(unsigned int s = 0; s < nOrientation; s++)
+    delete bM[s];
+
+  delete[] bM;
 }
