@@ -83,5 +83,23 @@ string GroupOfElement::toString(void) const{
          << "***********************************************"
 	 << endl;
 
+  if(!orientationStat)
+    return stream.str();
+
+
+  stream << "*                                             *"
+	 << endl
+	 << "* This group has the following Orientations:  *"
+	 << endl;
+
+  for(unsigned int i = 0; i < orientationStat->size(); i++)
+    stream << "*   -- Elements with Orientation " << i << " - "
+           << (*orientationStat)[i] << endl;
+
+  stream << "*                                             *"
+	 << endl
+         << "***********************************************"
+	 << endl;
+
   return stream.str();
 }

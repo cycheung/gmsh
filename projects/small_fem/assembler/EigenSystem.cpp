@@ -119,7 +119,7 @@ void EigenSystem::fixCoef(const GroupOfElement& goe, double value){
   }
 }
 
-void EigenSystem::dirichlet(const GroupOfElement& goe,
+void EigenSystem::dirichlet(GroupOfElement& goe,
 			    double (*f)(fullVector<double>& xyz)){
 
   // Check if Scalar Problem //

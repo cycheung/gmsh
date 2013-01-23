@@ -53,6 +53,7 @@ FormulationLaplace::FormulationLaplace(GroupOfElement& goe,
   computeA();
 
   deleteCB();
+  delete jac;
 }
 
 FormulationLaplace::~FormulationLaplace(void){
@@ -68,46 +69,6 @@ FormulationLaplace::~FormulationLaplace(void){
 
   delete eMap;
 }
-/*
-double FormulationLaplace::weak(int dofI, int dofJ,
-				const GroupOfDof& god) const{
-  // Init Some Stuff //
-  fullVector<double> phiI(3);
-  fullVector<double> phiJ(3);
-  fullMatrix<double> invJac(3, 3);
-  double integral = 0;
-
-  // Get Element and Basis Functions //
-  const MElement& element = god.getGeoElement();
-  MElement&      celement = const_cast<MElement&>(element);
-
-  const fullMatrix<double>& eFun =
-    basis->getPreEvaluatedDerivatives(element);
-
-  // Loop over Integration Point //
-  for(int g = 0; g < G; g++){
-    double det = celement.getJacobian((*gC)(g, 0),
-				      (*gC)(g, 1),
-				      (*gC)(g, 2),
-				      invJac);
-    invJac.invertInPlace();
-
-    phiI = Mapper::grad(eFun(dofI, g * 3),
-			eFun(dofI, g * 3 + 1),
-			eFun(dofI, g * 3 + 2),
-			invJac);
-
-    phiJ = Mapper::grad(eFun(dofJ, g * 3),
-			eFun(dofJ, g * 3 + 1),
-			eFun(dofJ, g * 3 + 2),
-			invJac);
-
-    integral += phiI * phiJ * fabs(det) * (*gW)(g);
-  }
-
-  return integral;
-}
-*/
 
 double FormulationLaplace::weak(int dofI, int dofJ,
 				const GroupOfDof& god) const{
@@ -161,7 +122,8 @@ void FormulationLaplace::computeC(void){
 }
 
 void FormulationLaplace::computeB(void){
-  unsigned int offset = 0;
+  const vector<const MElement*>& element = goe->getAll();
+  unsigned int                   offset  = 0;
   unsigned int j;
   unsigned int k;
 
@@ -173,8 +135,6 @@ void FormulationLaplace::computeB(void){
 
 
   // Fill //
-  const vector<const MElement*>& element = goe->getAll();
-
   for(unsigned int s = 0; s < nOrientation; s++){
     // Reset Element Counter
     j = 0;
@@ -204,6 +164,7 @@ void FormulationLaplace::computeB(void){
                 (*invJac[g]->first)(i, b);
 
             (*bM[s])(j, k) *= fabs(invJac[g]->second);
+
             k++;
           }
         }
@@ -243,3 +204,44 @@ void FormulationLaplace::deleteCB(void){
 
   delete[] bM;
 }
+
+/*
+double FormulationLaplace::weak(int dofI, int dofJ,
+				const GroupOfDof& god) const{
+  // Init Some Stuff //
+  fullVector<double> phiI(3);
+  fullVector<double> phiJ(3);
+  fullMatrix<double> invJac(3, 3);
+  double integral = 0;
+
+  // Get Element and Basis Functions //
+  const MElement& element = god.getGeoElement();
+  MElement&      celement = const_cast<MElement&>(element);
+
+  const fullMatrix<double>& eFun =
+    basis->getPreEvaluatedDerivatives(element);
+
+  // Loop over Integration Point //
+  for(int g = 0; g < G; g++){
+    double det = celement.getJacobian((*gC)(g, 0),
+				      (*gC)(g, 1),
+				      (*gC)(g, 2),
+				      invJac);
+    invJac.invertInPlace();
+
+    phiI = Mapper::grad(eFun(dofI, g * 3),
+			eFun(dofI, g * 3 + 1),
+			eFun(dofI, g * 3 + 2),
+			invJac);
+
+    phiJ = Mapper::grad(eFun(dofJ, g * 3),
+			eFun(dofJ, g * 3 + 1),
+			eFun(dofJ, g * 3 + 2),
+			invJac);
+
+    integral += phiI * phiJ * fabs(det) * (*gW)(g);
+  }
+
+  return integral;
+}
+*/

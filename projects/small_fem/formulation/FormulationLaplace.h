@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "FunctionSpaceScalar.h"
+#include "fullMatrix.h"
 #include "Jacobian.h"
 #include "Formulation.h"
 

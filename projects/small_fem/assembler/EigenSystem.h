@@ -80,7 +80,7 @@ class EigenSystem{
   bool isGeneral(void) const;
 
   void fixCoef(const GroupOfElement& goe, double value);
-  void dirichlet(const GroupOfElement& goe,
+  void dirichlet(GroupOfElement& goe,
 		 double (*f)(fullVector<double>& xyz));
 
   void assemble(void);

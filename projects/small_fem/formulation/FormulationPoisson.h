@@ -34,7 +34,7 @@ class FormulationPoisson: public Formulation{
   Basis*               basis;
 
  public:
-  FormulationPoisson(const GroupOfElement& goe,
+  FormulationPoisson(GroupOfElement& goe,
 		     unsigned int order);
 
   virtual ~FormulationPoisson(void);

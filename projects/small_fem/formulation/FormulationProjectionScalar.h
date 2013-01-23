@@ -1,8 +1,11 @@
 #ifndef _FORMULATIONPROJECTIONSCALAR_H_
 #define _FORMULATIONPROJECTIONSCALAR_H_
 
+#include <map>
+
 #include "FunctionSpaceScalar.h"
 #include "fullMatrix.h"
+#include "Jacobian.h"
 #include "Formulation.h"
 
 /**
@@ -26,6 +29,24 @@ class FormulationProjectionScalar: public Formulation{
   // Function to Project //
   double (*f)(fullVector<double>& xyz);
 
+  // 'Fast' Assembly //
+  unsigned int    nOrientation;
+  unsigned int    nFunction;
+  unsigned int    nElement;
+  GroupOfElement* goe;
+  Jacobian*       jac;
+
+  std::map<const MElement*, std::pair<unsigned int, unsigned int> >* eMap;
+  std::vector<unsigned int>* orientationStat;
+
+  fullMatrix<double>** lcM;
+  fullMatrix<double>** lbM;
+  fullMatrix<double>** laM;
+
+  fullMatrix<double>** rcM;
+  fullMatrix<double>** rbM;
+  fullMatrix<double>** raM;
+
  public:
   FormulationProjectionScalar(double (*f)(fullVector<double>& xyz),
 			      FunctionSpaceScalar& fs);
@@ -39,6 +60,13 @@ class FormulationProjectionScalar: public Formulation{
 		     const GroupOfDof& god) const;
 
   virtual const FunctionSpace& fs(void) const;
+
+ private:
+  void computeC(void);
+  void computeB(void);
+  void computeA(void);
+
+  void deleteCB(void);
 };
 
 /**

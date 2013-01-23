@@ -9,7 +9,7 @@
 
 using namespace std;
 
-FormulationPoisson::FormulationPoisson(const GroupOfElement& goe,
+FormulationPoisson::FormulationPoisson(GroupOfElement& goe,
 				       unsigned int order){
   // Can't have 0th order //
   if(order == 0)

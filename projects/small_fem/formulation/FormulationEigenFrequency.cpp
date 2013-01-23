@@ -17,7 +17,7 @@ using namespace std;
 const double FormulationEigenFrequency::mu  = 1;
 const double FormulationEigenFrequency::eps = 1;
 
-FormulationEigenFrequency::FormulationEigenFrequency(const GroupOfElement& goe,
+FormulationEigenFrequency::FormulationEigenFrequency(GroupOfElement& goe,
 						     unsigned int order){
   // Function Space & Basis //
   basis  = BasisGenerator::generate(goe.get(0).getType(),

@@ -34,7 +34,7 @@ class FormulationEigenFrequency: public EigenFormulation{
   Basis*               basis;
 
  public:
-  FormulationEigenFrequency(const GroupOfElement& goe,
+  FormulationEigenFrequency(GroupOfElement& goe,
 			    unsigned int order);
 
   virtual ~FormulationEigenFrequency(void);

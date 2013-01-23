@@ -29,7 +29,7 @@ class FormulationVibration: public EigenFormulation{
   Basis*               basis;
 
  public:
-  FormulationVibration(const GroupOfElement& goe,
+  FormulationVibration(GroupOfElement& goe,
 		       unsigned int order);
 
   virtual ~FormulationVibration(void);

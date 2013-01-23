@@ -33,7 +33,9 @@ int main(int argc, char** argv){
   unsigned int order = atoi(argv[2]);
 
   // Get Domain //
-  GroupOfElement domain = msh.getFromPhysical(7);
+  GroupOfElement domain    = msh.getFromPhysical(7);
+  GroupOfElement boundary0 = msh.getFromPhysical(6);
+  GroupOfElement boundary1 = msh.getFromPhysical(5);
 
   // Laplace //
   Timer timer;
@@ -45,8 +47,8 @@ int main(int argc, char** argv){
   cout << "Laplace (" << order << "): "
        << sysLaplace.getSize() << endl;
 
-  sysLaplace.dirichlet(msh.getFromPhysical(6), f1);
-  sysLaplace.dirichlet(msh.getFromPhysical(5), f2);
+  sysLaplace.dirichlet(boundary0, f1);
+  sysLaplace.dirichlet(boundary1, f2);
 
   sysLaplace.assemble();
   sysLaplace.solve();

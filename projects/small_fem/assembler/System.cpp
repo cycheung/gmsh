@@ -4,6 +4,7 @@
 #include "BasisLocal.h"
 #include "Exception.h"
 
+#include "Timer.h"
 #include "System.h"
 
 using namespace std;
@@ -38,6 +39,10 @@ System::~System(void){
 }
 
 void System::assemble(void){
+  // Timer
+  Timer timer;
+  timer.start();
+
   // Get GroupOfDofs //
   const vector<GroupOfDof*>& group = fs->getAllGroups();
   const int E = fs->groupNumber();
@@ -60,6 +65,12 @@ void System::assemble(void){
   // The system is assembled //
   delete fixedOnes;
   assembled = true;
+
+  // Timer //
+  timer.stop();
+  cout << "Assembly Time: "
+       << timer.time() << " "
+       << timer.unit() << endl << flush;
 }
 
 void System::fixCoef(const GroupOfElement& goe, double value){
@@ -75,7 +86,7 @@ void System::fixCoef(const GroupOfElement& goe, double value){
   }
 }
 
-void System::dirichlet(const GroupOfElement& goe,
+void System::dirichlet(GroupOfElement& goe,
 		       double (*f)(fullVector<double>& xyz)){
 
   // Check if Scalar Problem //
@@ -115,7 +126,7 @@ void System::dirichlet(const GroupOfElement& goe,
   delete dirBasis;
 }
 
-void System::dirichlet(const GroupOfElement& goe,
+void System::dirichlet(GroupOfElement& goe,
 		       fullVector<double> (*f)(fullVector<double>& xyz)){
 
   // Check if Scalar Problem //

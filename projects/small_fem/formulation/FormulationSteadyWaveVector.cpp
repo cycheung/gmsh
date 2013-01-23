@@ -17,7 +17,7 @@ using namespace std;
 const double FormulationSteadyWaveVector::mu  = 1;
 const double FormulationSteadyWaveVector::eps = 1;
 
-FormulationSteadyWaveVector::FormulationSteadyWaveVector(const GroupOfElement& goe,
+FormulationSteadyWaveVector::FormulationSteadyWaveVector(GroupOfElement& goe,
 							 double k,
 							 unsigned int order){
   // Wave Number Squared //

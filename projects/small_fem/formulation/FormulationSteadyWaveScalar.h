@@ -41,7 +41,7 @@ class FormulationSteadyWaveScalar: public Formulation{
   Basis*               basis;
 
  public:
-  FormulationSteadyWaveScalar(const GroupOfElement& goe,
+  FormulationSteadyWaveScalar(GroupOfElement& goe,
 			      double k,
 			      unsigned int order);
 

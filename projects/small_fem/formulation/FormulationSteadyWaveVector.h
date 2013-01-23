@@ -41,7 +41,7 @@ class FormulationSteadyWaveVector: public Formulation{
   Basis*               basis;
 
  public:
-  FormulationSteadyWaveVector(const GroupOfElement& goe,
+  FormulationSteadyWaveVector(GroupOfElement& goe,
 			      double k,
 			      unsigned int order);
 
