@@ -69,7 +69,7 @@ FormulationSteadyWaveScalar::~FormulationSteadyWaveScalar(void){
   delete fspace;
 }
 
-double FormulationSteadyWaveScalar::weak(int dofI, int dofJ,
+double FormulationSteadyWaveScalar::weak(unsigned int dofI, unsigned int dofJ,
 					 const GroupOfDof& god) const{
   // Init Some Stuff //
   fullVector<double> gradPhiI(3);

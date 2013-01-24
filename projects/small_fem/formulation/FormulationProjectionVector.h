@@ -1,11 +1,12 @@
 #ifndef _FORMULATIONPROJECTIONVECTOR_H_
 #define _FORMULATIONPROJECTIONVECTOR_H_
 
-#include <vector>
-
 #include "FunctionSpaceVector.h"
 #include "fullMatrix.h"
-#include "Jacobian.h"
+
+#include "TermHCurl.h"
+#include "TermProjectionHCurl.h"
+
 #include "Formulation.h"
 
 /**
@@ -17,35 +18,16 @@
 
 class FormulationProjectionVector: public Formulation{
  private:
-  // Gaussian Quadrature Data //
-  int G;
-  fullMatrix<double>* gC;
-  fullVector<double>* gW;
+  // Function to Project //
+  fullVector<double> (*f)(fullVector<double>& xyz);
 
   // Function Space & Basis //
   FunctionSpaceVector* fspace;
   const Basis*         basis;
 
-  // Function to Project //
-  fullVector<double> (*f)(fullVector<double>& xyz);
-
-  // 'Fast' Assembly //
-  unsigned int    nOrientation;
-  unsigned int    nFunction;
-  unsigned int    nElement;
-  GroupOfElement* goe;
-  Jacobian*       jac;
-
-  std::map<const MElement*, std::pair<unsigned int, unsigned int> >* eMap;
-  std::vector<unsigned int>* orientationStat;
-
-  fullMatrix<double>** lcM;
-  fullMatrix<double>** lbM;
-  fullMatrix<double>** laM;
-
-  fullMatrix<double>** rcM;
-  fullMatrix<double>** rbM;
-  fullMatrix<double>** raM;
+  // Local Terms //
+  TermHCurl*           localTerms1;
+  TermProjectionHCurl* localTerms2;
 
  public:
   FormulationProjectionVector(fullVector<double> (*f)(fullVector<double>& xyz),
@@ -53,20 +35,13 @@ class FormulationProjectionVector: public Formulation{
 
   virtual ~FormulationProjectionVector(void);
 
-  virtual double weak(int dofI, int dofJ,
+  virtual double weak(unsigned int dofI, unsigned int dofJ,
 		      const GroupOfDof& god) const;
 
-  virtual double rhs(int equationI,
+  virtual double rhs(unsigned int equationI,
 		     const GroupOfDof& god) const;
 
   virtual const FunctionSpace& fs(void) const;
-
- private:
-  void computeC(void);
-  void computeB(void);
-  void computeA(void);
-
-  void deleteCB(void);
 };
 
 /**
@@ -79,26 +54,11 @@ class FormulationProjectionVector: public Formulation{
 
    FormulationProjectionVector will use the given FunctionSpace
    for the projection
-
-   @warning The given FunctionSpace will be ask to
-   @em PreEvaluate
-   (@em see FunctionSpaceVector::preEvaluateLocalFunctions()
-   and similar)
-   some Functions
    **
 
    @fn FormulationProjectionVector::~FormulationProjectionVector
    Deletes the this FormulationProjectionVector
    **
 */
-
-
-//////////////////////
-// Inline Functions //
-//////////////////////
-
-inline const FunctionSpace& FormulationProjectionVector::fs(void) const{
-  return *fspace;
-}
 
 #endif

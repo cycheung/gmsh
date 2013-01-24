@@ -12,8 +12,9 @@ Jacobian::Jacobian(const GroupOfElement& goe,
 		    point.size1());
 
   // Get Elements //
-  element  = &goe.getAll();
-  nElement = element->size();
+  this->goe = &goe;
+  element   = &goe.getAll();
+  nElement  = element->size();
 
   // Get Point //
   this->point = &point;

@@ -72,7 +72,7 @@ FormulationSteadyWaveVector::~FormulationSteadyWaveVector(void){
   delete fspace;
 }
 
-double FormulationSteadyWaveVector::weak(int dofI, int dofJ,
+double FormulationSteadyWaveVector::weak(unsigned int dofI, unsigned int dofJ,
 					 const GroupOfDof& god) const{
   // Init Some Stuff //
   fullVector<double> curlPhiI(3);

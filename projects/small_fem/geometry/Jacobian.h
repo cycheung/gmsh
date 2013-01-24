@@ -38,6 +38,7 @@
 
 class Jacobian{
  private:
+  const GroupOfElement*               goe;
   const std::vector<const MElement*>* element;
   const fullMatrix<double>*           point;
   unsigned int                        nElement;
@@ -64,8 +65,8 @@ class Jacobian{
   const std::vector<const std::pair<const fullMatrix<double>*, double>*>&
     getInvertJacobian(const MElement& element) const;
 
-  const std::vector<const MElement*>& getAllElements(void) const;
-  const fullMatrix<double>&           getAllPoints(void) const;
+  const GroupOfElement&     getAllElements(void) const;
+  const fullMatrix<double>& getAllPoints(void) const;
 
  private:
   void deleteJac(void);
@@ -154,7 +155,8 @@ class Jacobian{
    **
 
    @fn Jacobian::getAllElements
-   @return Returns the elements where the jacobians
+   @return Returns the Group Of Elements
+   (see GroupOfElement) where the jacobians
    will be computed
    **
 
@@ -168,9 +170,9 @@ class Jacobian{
 // Inline Functions //
 //////////////////////
 
-inline const std::vector<const MElement*>&
+inline const GroupOfElement&
 Jacobian::getAllElements(void) const{
-  return *element;
+  return *goe;
 }
 
 inline const fullMatrix<double>& Jacobian::

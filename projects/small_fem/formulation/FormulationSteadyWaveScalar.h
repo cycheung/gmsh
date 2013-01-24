@@ -47,10 +47,10 @@ class FormulationSteadyWaveScalar: public Formulation{
 
   virtual ~FormulationSteadyWaveScalar(void);
 
-  virtual double weak(int dofI, int dofJ,
+  virtual double weak(unsigned int dofI, unsigned int dofJ,
 		      const GroupOfDof& god) const;
 
-  virtual double rhs(int equationI,
+  virtual double rhs(unsigned int equationI,
 		     const GroupOfDof& god) const;
 
   virtual const FunctionSpace& fs(void) const;
@@ -77,7 +77,7 @@ class FormulationSteadyWaveScalar: public Formulation{
 // Inline Functions //
 //////////////////////
 
-inline double FormulationSteadyWaveScalar::rhs(int equationI,
+inline double FormulationSteadyWaveScalar::rhs(unsigned int equationI,
 					       const GroupOfDof& god) const{
   return 0;
 }

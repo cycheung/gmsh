@@ -60,7 +60,7 @@ FormulationPoisson::~FormulationPoisson(void){
   delete fspace;
 }
 
-double FormulationPoisson::weak(int dofI, int dofJ,
+double FormulationPoisson::weak(unsigned int dofI, unsigned int dofJ,
 				const GroupOfDof& god) const{
 
   // Init Some Stuff //
@@ -100,7 +100,7 @@ double FormulationPoisson::weak(int dofI, int dofJ,
   return integral;
 }
 
-double FormulationPoisson::rhs(int equationI,
+double FormulationPoisson::rhs(unsigned int equationI,
 			       const GroupOfDof& god) const{
 
   // Init Some Stuff //

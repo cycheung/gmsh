@@ -39,10 +39,10 @@ class FormulationPoisson: public Formulation{
 
   virtual ~FormulationPoisson(void);
 
-  virtual double weak(int nodeI, int nodeJ,
+  virtual double weak(unsigned int dofI, unsigned int dofJ,
 		      const GroupOfDof& god) const;
 
-  virtual double rhs(int equationI,
+  virtual double rhs(unsigned int equationI,
 		     const GroupOfDof& god) const;
 
   virtual const FunctionSpace& fs(void) const;

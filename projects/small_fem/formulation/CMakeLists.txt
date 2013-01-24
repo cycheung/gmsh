@@ -10,6 +10,12 @@ set(src
   EigenFormulation.cpp
   FormulationEigenFrequency.cpp
   FormulationVibration.cpp
+
+  Term.cpp
+  TermHOne.cpp
+  TermHCurl.cpp
+  TermProjectionHOne.cpp
+  TermProjectionHCurl.cpp
 )
 
 

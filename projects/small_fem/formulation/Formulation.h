@@ -24,17 +24,18 @@
 
    @todo
    Add quadrature laws as a paramaeter of a Formulation@n
-   Allow evaluation of non GroupOfDof related Dof.
+   Allow evaluation of non GroupOfDof related Dof.@n
+   virtual weak() is not a good idea with 'fast' assembly
  */
 
 class Formulation{
  public:
   virtual ~Formulation(void);
 
-  virtual double weak(int dofI, int dofJ,
+  virtual double weak(unsigned int dofI, unsigned int dofJ,
 		      const GroupOfDof& god) const = 0;
 
-  virtual double rhs(int equationI,
+  virtual double rhs(unsigned int equationI,
 		     const GroupOfDof& god) const = 0;
 
   virtual const FunctionSpace& fs(void) const = 0;

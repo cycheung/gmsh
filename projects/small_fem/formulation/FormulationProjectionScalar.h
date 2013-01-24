@@ -1,11 +1,12 @@
 #ifndef _FORMULATIONPROJECTIONSCALAR_H_
 #define _FORMULATIONPROJECTIONSCALAR_H_
 
-#include <map>
-
 #include "FunctionSpaceScalar.h"
 #include "fullMatrix.h"
-#include "Jacobian.h"
+
+#include "TermHOne.h"
+#include "TermProjectionHOne.h"
+
 #include "Formulation.h"
 
 /**
@@ -17,35 +18,16 @@
 
 class FormulationProjectionScalar: public Formulation{
  private:
-  // Gaussian Quadrature Data //
-  int G;
-  fullMatrix<double>* gC;
-  fullVector<double>* gW;
+  // Function to Project //
+  double (*f)(fullVector<double>& xyz);
 
   // Function Space & Basis //
   FunctionSpaceScalar* fspace;
   const Basis*         basis;
 
-  // Function to Project //
-  double (*f)(fullVector<double>& xyz);
-
-  // 'Fast' Assembly //
-  unsigned int    nOrientation;
-  unsigned int    nFunction;
-  unsigned int    nElement;
-  GroupOfElement* goe;
-  Jacobian*       jac;
-
-  std::map<const MElement*, std::pair<unsigned int, unsigned int> >* eMap;
-  std::vector<unsigned int>* orientationStat;
-
-  fullMatrix<double>** lcM;
-  fullMatrix<double>** lbM;
-  fullMatrix<double>** laM;
-
-  fullMatrix<double>** rcM;
-  fullMatrix<double>** rbM;
-  fullMatrix<double>** raM;
+  // Local Terms //
+  TermHOne*           localTerms1;
+  TermProjectionHOne* localTerms2;
 
  public:
   FormulationProjectionScalar(double (*f)(fullVector<double>& xyz),
@@ -53,20 +35,13 @@ class FormulationProjectionScalar: public Formulation{
 
   virtual ~FormulationProjectionScalar(void);
 
-  virtual double weak(int dofI, int dofJ,
+  virtual double weak(unsigned int dofI, unsigned int dofJ,
 		      const GroupOfDof& god) const;
 
-  virtual double rhs(int equationI,
+  virtual double rhs(unsigned int equationI,
 		     const GroupOfDof& god) const;
 
   virtual const FunctionSpace& fs(void) const;
-
- private:
-  void computeC(void);
-  void computeB(void);
-  void computeA(void);
-
-  void deleteCB(void);
 };
 
 /**
@@ -79,26 +54,11 @@ class FormulationProjectionScalar: public Formulation{
 
    FormulationProjectionScalar will use the given FunctionSpace
    for the projection
-
-   @warning The given FunctionSpace will be ask to
-   @em PreEvaluate
-   (@em see FunctionSpaceScalar::preEvaluateLocalFunctions()
-   and similar)
-   some Functions
    **
 
    @fn FormulationProjectionScalar::~FormulationProjectionScalar
    Deletes the this FormulationProjectionScalar
    **
 */
-
-
-//////////////////////
-// Inline Functions //
-//////////////////////
-
-inline const FunctionSpace& FormulationProjectionScalar::fs(void) const{
-  return *fspace;
-}
 
 #endif
