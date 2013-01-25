@@ -101,7 +101,7 @@ void TermProjectionHOne::computeC(void){
     // Loop on Gauss Points
     for(unsigned int g = 0; g < nG; g++)
       for(unsigned int i = 0; i < nFunction; i++)
-          (*cM[s])(g, i) = (*gW)(g) *phi(i, g);
+        (*cM[s])(g, i) = (*gW)(g) * phi(i, g);
   }
 }
 

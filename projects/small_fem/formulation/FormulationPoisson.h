@@ -1,37 +1,33 @@
 #ifndef _FORMULATIONPOISSON_H_
 #define _FORMULATIONPOISSON_H_
 
-#include <vector>
-
 #include "FunctionSpaceScalar.h"
+#include "fullMatrix.h"
+
+#include "TermHCurl.h"
+#include "TermProjectionHOne.h"
+
 #include "Formulation.h"
 
 /**
    @class FormulationPoisson
    @brief Formulation for the Poisson problem
 
-   Formulation for the @em Poisson problem.
-
-   @todo
-   Remove ALL const_cast%S by correcting MElement constness@n
-   Allow Hybrid Mesh
+   Formulation for the @em Poisson problem
  */
 
 class FormulationPoisson: public Formulation{
  private:
-  // Gaussian Quadrature Data (LHS) //
-  int GL;
-  fullMatrix<double>* gCL;
-  fullVector<double>* gWL;
-
-  // Gaussian Quadrature Data (RHS) //
-  int GR;
-  fullMatrix<double>* gCR;
-  fullVector<double>* gWR;
+  // Source Term //
+  static const unsigned int sourceOrder;
 
   // Function Space & Basis //
   FunctionSpaceScalar* fspace;
   Basis*               basis;
+
+  // Local Terms //
+  TermHCurl*          localTermsL;
+  TermProjectionHOne* localTermsR;
 
  public:
   FormulationPoisson(GroupOfElement& goe,
@@ -46,6 +42,9 @@ class FormulationPoisson: public Formulation{
 		     const GroupOfDof& god) const;
 
   virtual const FunctionSpace& fs(void) const;
+
+ private:
+  static double gSource(fullVector<double>& xyz);
 };
 
 /**
@@ -61,15 +60,6 @@ class FormulationPoisson: public Formulation{
 
    @fn FormulationPoisson::~FormulationPoisson
    Deletes this FormulationPoisson
-   **
 */
-
-//////////////////////
-// Inline Functions //
-//////////////////////
-
-inline const FunctionSpace& FormulationPoisson::fs(void) const{
-  return *fspace;
-}
 
 #endif

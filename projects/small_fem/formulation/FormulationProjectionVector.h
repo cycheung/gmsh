@@ -2,6 +2,7 @@
 #define _FORMULATIONPROJECTIONVECTOR_H_
 
 #include "FunctionSpaceVector.h"
+#include "fullMatrix.h"
 
 #include "TermHCurl.h"
 #include "TermProjectionHCurl.h"

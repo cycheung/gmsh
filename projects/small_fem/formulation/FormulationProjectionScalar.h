@@ -2,6 +2,7 @@
 #define _FORMULATIONPROJECTIONSCALAR_H_
 
 #include "FunctionSpaceScalar.h"
+#include "fullMatrix.h"
 
 #include "TermHOne.h"
 #include "TermProjectionHOne.h"
