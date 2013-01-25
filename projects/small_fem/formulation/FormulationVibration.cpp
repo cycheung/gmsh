@@ -1,8 +1,6 @@
-#include <cmath>
-
 #include "BasisGenerator.h"
 #include "GaussIntegration.h"
-#include "Mapper.h"
+#include "Jacobian.h"
 
 #include "Exception.h"
 #include "FormulationVibration.h"
@@ -22,65 +20,50 @@ FormulationVibration::FormulationVibration(GroupOfElement& goe,
 
   fspace = new FunctionSpaceScalar(goe, *basis);
 
-  // Gaussian Quadrature Data (LHS) //
+  // Gaussian Quadrature Data //
   // NB: We need to integrad a grad * grad !
   //     and order(grad f) = order(f) - 1
-  gCL = new fullMatrix<double>();
-  gWL = new fullVector<double>();
+  fullMatrix<double> gC;
+  fullVector<double> gW;
 
   // Look for 1st element to get element type
   // (We suppose only one type of Mesh !!)
-  gaussIntegration::get(goe.get(0).getType(), (order - 1) + (order - 1), *gCL, *gWL);
+  gaussIntegration::get(goe.get(0).getType(), (order - 1) + (order - 1), gC, gW);
 
-  GL = gWL->size(); // Nbr of Gauss points
+  // Local Terms //
+  basis->preEvaluateDerivatives(gC);
+  goe.orientAllElements(*basis);
 
-  // PreEvaluate
-  basis->preEvaluateDerivatives(*gCL);
+  Jacobian jac(goe, gC);
+  jac.computeInvertJacobians();
+
+  localTerms = new TermHCurl(jac, *basis, gW);
 }
 
 FormulationVibration::~FormulationVibration(void){
-  delete gCL;
-  delete gWL;
   delete basis;
   delete fspace;
+
+  delete localTerms;
 }
 
-double FormulationVibration::weakA(int dofI, int dofJ,
+double FormulationVibration::weakA(unsigned int dofI, unsigned int dofJ,
 				   const GroupOfDof& god) const{
 
-  // Init Some Stuff //
-  fullVector<double> phiI(3);
-  fullVector<double> phiJ(3);
-  fullMatrix<double> invJac(3, 3);
-  double integral = 0;
+  return localTerms->getTerm(dofI, dofJ, god);
+}
 
-  // Get Element and Basis Functions //
-  const MElement& element = god.getGeoElement();
-  MElement&      celement = const_cast<MElement&>(element);
+double FormulationVibration::weakB(unsigned int dofI, unsigned int dofJ,
+					  const GroupOfDof& god) const{
+  throw
+    Exception
+    ("Vibration is a Non General Eigenvalue problem, and don't need a B matrix");
+}
 
-  const fullMatrix<double>& eFun =
-    basis->getPreEvaluatedDerivatives(element);
+bool FormulationVibration::isGeneral(void) const{
+  return false;
+}
 
-  // Loop over Integration Point //
-  for(int g = 0; g < GL; g++){
-    double det = celement.getJacobian((*gCL)(g, 0),
-				      (*gCL)(g, 1),
-				      (*gCL)(g, 2),
-				      invJac);
-    invJac.invertInPlace();
-
-    phiI = Mapper::grad(eFun(dofI, g * 3),
-			eFun(dofI, g * 3 + 1),
-			eFun(dofI, g * 3 + 2),
-			invJac);
-
-    phiJ = Mapper::grad(eFun(dofJ, g * 3),
-			eFun(dofJ, g * 3 + 1),
-			eFun(dofJ, g * 3 + 2),
-			invJac);
-
-    integral += phiI * phiJ * fabs(det) * (*gWL)(g);
-  }
-
-  return integral;
+const FunctionSpace& FormulationVibration::fs(void) const{
+  return *fspace;
 }

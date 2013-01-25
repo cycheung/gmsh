@@ -1,32 +1,27 @@
 #ifndef _FORMULATIONVIBRATION_H_
 #define _FORMULATIONVIBRATION_H_
 
-#include <vector>
-
 #include "FunctionSpaceScalar.h"
+
+#include "TermHCurl.h"
+
 #include "EigenFormulation.h"
 
 /**
    @class FormulationVibration
    @brief EigenFormulation for the Vibration problem
 
-   EigenFormulation for the @em Vibration problem.
-
-   @todo
-   Remove ALL const_cast%S by correcting MElement constness@n
-   Allow Hybrid Mesh
+   EigenFormulation for the @em Vibration problem
  */
 
 class FormulationVibration: public EigenFormulation{
  private:
-  // Gaussian Quadrature Data (LHS) //
-  int GL;
-  fullMatrix<double>* gCL;
-  fullVector<double>* gWL;
-
   // Function Space & Basis //
   FunctionSpaceScalar* fspace;
   Basis*               basis;
+
+  // Local Terms //
+  TermHCurl* localTerms;
 
  public:
   FormulationVibration(GroupOfElement& goe,
@@ -36,10 +31,10 @@ class FormulationVibration: public EigenFormulation{
 
   virtual bool isGeneral(void) const;
 
-  virtual double weakA(int dofI, int dofJ,
+  virtual double weakA(unsigned int dofI, unsigned int dofJ,
 		       const GroupOfDof& god) const;
 
-  virtual double weakB(int dofI, int dofJ,
+  virtual double weakB(unsigned int dofI, unsigned int dofJ,
 		       const GroupOfDof& god) const;
 
   virtual const FunctionSpace& fs(void) const;
@@ -58,24 +53,6 @@ class FormulationVibration: public EigenFormulation{
 
    @fn FormulationVibration::~FormulationVibration
    Deletes this FormulationVibration
-   **
 */
-
-//////////////////////
-// Inline Functions //
-//////////////////////
-
-inline bool FormulationVibration::isGeneral(void) const{
-  return false;
-}
-
-inline double FormulationVibration::weakB(int dofI, int dofJ,
-					  const GroupOfDof& god) const{
-  return 42;
-}
-
-inline const FunctionSpace& FormulationVibration::fs(void) const{
-  return *fspace;
-}
 
 #endif
