@@ -2,7 +2,6 @@
 #define _FORMULATIONPROJECTIONVECTOR_H_
 
 #include "FunctionSpaceVector.h"
-#include "fullMatrix.h"
 
 #include "TermHCurl.h"
 #include "TermProjectionHCurl.h"
@@ -13,7 +12,7 @@
    @class FormulationProjectionVector
    @brief Formulation for the Projection of Vectorial Function problem
 
-   Vectorial Formulation for the @em L2 @em Projection problem.
+   Vectorial Formulation for the @em L2 @em Projection problem
  */
 
 class FormulationProjectionVector: public Formulation{

@@ -14,6 +14,7 @@ set(src
   Term.cpp
   TermHOne.cpp
   TermHCurl.cpp
+  TermHDiv.cpp
   TermProjectionHOne.cpp
   TermProjectionHCurl.cpp
 )

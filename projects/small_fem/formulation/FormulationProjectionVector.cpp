@@ -29,7 +29,6 @@ FormulationProjectionVector(fullVector<double> (*f)(fullVector<double>& xyz),
   // (We suppose only one type of Mesh !!)
   gaussIntegration::get(goe.get(0).getType(), 2 * basis->getOrder(), gC, gW);
 
-
   // Local Terms //
   basis->preEvaluateFunctions(gC);
   goe.orientAllElements(*basis);

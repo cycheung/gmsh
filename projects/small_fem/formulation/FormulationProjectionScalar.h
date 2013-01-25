@@ -2,7 +2,6 @@
 #define _FORMULATIONPROJECTIONSCALAR_H_
 
 #include "FunctionSpaceScalar.h"
-#include "fullMatrix.h"
 
 #include "TermHOne.h"
 #include "TermProjectionHOne.h"
@@ -13,7 +12,7 @@
    @class FormulationProjectionScalar
    @brief Formulation for the Projection of a Scalar Function problem
 
-   Scalar Formulation for the @em L2 @em Projection problem.
+   Scalar Formulation for the @em L2 @em Projection problem
  */
 
 class FormulationProjectionScalar: public Formulation{

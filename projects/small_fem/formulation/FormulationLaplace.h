@@ -2,7 +2,7 @@
 #define _FORMULATIONLAPLACE_H_
 
 #include "FunctionSpaceScalar.h"
-#include "fullMatrix.h"
+
 #include "TermHCurl.h"
 
 #include "Formulation.h"

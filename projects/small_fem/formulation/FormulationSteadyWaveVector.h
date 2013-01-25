@@ -1,20 +1,18 @@
 #ifndef _FORMULATIONSTEADYWAVEVECTOR_H_
 #define _FORMULATIONSTEADYWAVEVECTOR_H_
 
-#include <vector>
-
 #include "FunctionSpaceVector.h"
+
+#include "TermHDiv.h"
+#include "TermHCurl.h"
+
 #include "Formulation.h"
 
 /**
    @class FormulationSteadyWaveVector
    @brief Vectorial Formulation for the Steady Wave problem
 
-   Vectorial Formulation for the @em Steady @em Wave problem.
-
-   @todo
-   Remove ALL const_cast%S by correcting MElement constness@n
-   Allow Hybrid Mesh
+   Vectorial Formulation for the @em Steady @em Wave problem
  */
 
 class FormulationSteadyWaveVector: public Formulation{
@@ -26,19 +24,13 @@ class FormulationSteadyWaveVector: public Formulation{
   // Wave Number Squared //
   double kSquare;
 
-  // Gaussian Quadrature Data (Term One) //
-  int G1;
-  fullMatrix<double>* gC1;
-  fullVector<double>* gW1;
-
-  // Gaussian Quadrature Data (Term Two) //
-  int G2;
-  fullMatrix<double>* gC2;
-  fullVector<double>* gW2;
-
   // Function Space & Basis //
   FunctionSpaceVector* fspace;
   Basis*               basis;
+
+  // Local Terms //
+  TermHDiv*  localTerms1;
+  TermHCurl* localTerms2;
 
  public:
   FormulationSteadyWaveVector(GroupOfElement& goe,
@@ -72,18 +64,5 @@ class FormulationSteadyWaveVector: public Formulation{
    @fn FormulationSteadyWaveVector::~FormulationSteadyWaveVector
    Deletes this FormulationSteadyWaveVector
 */
-
-//////////////////////
-// Inline Functions //
-//////////////////////
-
-inline double FormulationSteadyWaveVector::rhs(unsigned int equationI,
-					       const GroupOfDof& god) const{
-  return 0;
-}
-
-inline const FunctionSpace& FormulationSteadyWaveVector::fs(void) const{
-  return *fspace;
-}
 
 #endif

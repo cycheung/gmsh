@@ -1,20 +1,18 @@
 #ifndef _FORMULATIONSTEADYWAVESCALAR_H_
 #define _FORMULATIONSTEADYWAVESCALAR_H_
 
-#include <vector>
-
 #include "FunctionSpaceScalar.h"
+
+#include "TermHCurl.h"
+#include "TermHOne.h"
+
 #include "Formulation.h"
 
 /**
    @class FormulationSteadyWaveScalar
    @brief Scalar Formulation for the Steady Wave problem
 
-   Scalar Formulation for the @em Steady @em Wave problem.
-
-   @todo
-   Remove ALL const_cast%S by correcting MElement constness@n
-   Allow Hybrid Mesh
+   Scalar Formulation for the @em Steady @em Wave problem
  */
 
 class FormulationSteadyWaveScalar: public Formulation{
@@ -26,19 +24,13 @@ class FormulationSteadyWaveScalar: public Formulation{
   // Wave Number Squared //
   double kSquare;
 
-  // Gaussian Quadrature Data (Term One) //
-  int G1;
-  fullMatrix<double>* gC1;
-  fullVector<double>* gW1;
-
-  // Gaussian Quadrature Data (Term Two) //
-  int G2;
-  fullMatrix<double>* gC2;
-  fullVector<double>* gW2;
-
   // Function Space & Basis //
   FunctionSpaceScalar* fspace;
   Basis*               basis;
+
+  // Local Terms //
+  TermHCurl* localTerms1;
+  TermHOne*  localTerms2;
 
  public:
   FormulationSteadyWaveScalar(GroupOfElement& goe,
@@ -72,18 +64,5 @@ class FormulationSteadyWaveScalar: public Formulation{
    @fn FormulationSteadyWaveScalar::~FormulationSteadyWaveScalar
    Deletes this FormulationSteadyWaveScalar
 */
-
-//////////////////////
-// Inline Functions //
-//////////////////////
-
-inline double FormulationSteadyWaveScalar::rhs(unsigned int equationI,
-					       const GroupOfDof& god) const{
-  return 0;
-}
-
-inline const FunctionSpace& FormulationSteadyWaveScalar::fs(void) const{
-  return *fspace;
-}
 
 #endif
