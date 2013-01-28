@@ -2,6 +2,7 @@
 #include "GaussIntegration.h"
 #include "Jacobian.h"
 
+#include "Timer.h"
 #include "FormulationSteadyWaveVector.h"
 
 using namespace std;
@@ -53,6 +54,9 @@ FormulationSteadyWaveVector::FormulationSteadyWaveVector(GroupOfElement& goe,
   }
 
   // Local Terms //
+  Timer timer;
+  timer.start();
+
   basis->preEvaluateDerivatives(gC1);
   basis->preEvaluateFunctions(gC2);
   goe.orientAllElements(*basis);
@@ -64,6 +68,9 @@ FormulationSteadyWaveVector::FormulationSteadyWaveVector(GroupOfElement& goe,
 
   localTerms1 = new TermHDiv(jac1, *basis, gW1);
   localTerms2 = new TermHCurl(jac2, *basis, gW2);
+
+  timer.stop();
+  cout << "Precomputing Time: " << timer.time() << " " << timer.unit() << endl;
 }
 
 FormulationSteadyWaveVector::~FormulationSteadyWaveVector(void){
