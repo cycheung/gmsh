@@ -162,7 +162,7 @@ void TermHDiv::computeB(void){
 
     for(unsigned int e = offset; e < offset + (*orientationStat)[s]; e++){
       // Get Jacobians
-      const vector<const pair<const fullMatrix<double>*, double>*>& invJac =
+      const vector<const pair<const fullMatrix<double>*, double>*>& MJac =
         jac->getJacobian(*element[e]);
 
       // Loop on Gauss Points
@@ -175,10 +175,10 @@ void TermHDiv::computeB(void){
 
             for(unsigned int i = 0; i < 3; i++)
               (*bM[s])(j, k) +=
-                (*invJac[g]->first)(i, a) *
-                (*invJac[g]->first)(i, b);
+                (*MJac[g]->first)(i, a) *
+                (*MJac[g]->first)(i, b);
 
-            (*bM[s])(j, k) /= fabs(invJac[g]->second);
+            (*bM[s])(j, k) /= fabs(MJac[g]->second);
 
             k++;
           }

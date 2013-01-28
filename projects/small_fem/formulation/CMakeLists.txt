@@ -7,6 +7,8 @@ set(src
   FormulationSteadyWaveVector.cpp
   FormulationSteadyWaveScalar.cpp
 
+  SlowFormulationSteadyWaveVector.cpp
+
   EigenFormulation.cpp
   FormulationEigenFrequency.cpp
   FormulationVibration.cpp

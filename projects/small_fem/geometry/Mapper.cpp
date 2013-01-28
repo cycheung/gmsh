@@ -6,79 +6,54 @@ Mapper::Mapper(void){
 Mapper::~Mapper(void){
 }
 
-// WARNING                //
-// invJac is Transposed ! //
+//   WARNING                  //
+// Jacobians are transposed ! //
 
-fullVector<double> Mapper::map(const fullVector<double>& UVW,
-			       const fullVector<double>& originXYZ,
-			       const fullMatrix<double>& jac){
-  fullVector<double> XYZ(3);
+void Mapper::hCurl(const fullMatrix<double>& hCurlUVW,
+                   unsigned int              row,
+                   unsigned int              col,
+                   const fullMatrix<double>& invJac,
+                   fullVector<double>&       hCurlXYZ){
 
-  jac.multWithATranspose(UVW, 1, 0, XYZ);
-  XYZ.axpy(originXYZ, +1);
+  hCurlXYZ(0) =
+    invJac(0, 0) * hCurlUVW(row, col * 3)     +
+    invJac(0, 1) * hCurlUVW(row, col * 3 + 1) +
+    invJac(0, 2) * hCurlUVW(row, col * 3 + 2);
 
-  return XYZ;
+  hCurlXYZ(1) =
+    invJac(1, 0) * hCurlUVW(row, col * 3)     +
+    invJac(1, 1) * hCurlUVW(row, col * 3 + 1) +
+    invJac(1, 2) * hCurlUVW(row, col * 3 + 2);
+
+  hCurlXYZ(2) =
+    invJac(2, 0) * hCurlUVW(row, col * 3)     +
+    invJac(2, 1) * hCurlUVW(row, col * 3 + 1) +
+    invJac(2, 2) * hCurlUVW(row, col * 3 + 2);
 }
 
-fullVector<double> Mapper::invMap(const fullVector<double>& XYZ, 
-				  const fullVector<double>& originXYZ,
-				  const fullMatrix<double>& invJac){
-  fullVector<double> UVW(3);
-  fullVector<double> sub(XYZ);
-  sub.axpy(originXYZ, -1);
+void Mapper::hDiv(const fullMatrix<double>& hDivUVW,
+                  unsigned int              row,
+                  unsigned int              col,
+                  const fullMatrix<double>& jac,
+                  double                    det,
+                  fullVector<double>&       hDivXYZ){
 
-  invJac.multWithATranspose(sub, 1, 0, UVW);
-  
-  return UVW;
-}
+  hDivXYZ(0) =
+    jac(0, 0) * hDivUVW(row, col * 3)     +
+    jac(1, 0) * hDivUVW(row, col * 3 + 1) +
+    jac(2, 0) * hDivUVW(row, col * 3 + 2);
 
-fullVector<double> Mapper::grad(const fullVector<double>& gradUVW, 
-				const fullMatrix<double>& invJac){
-  fullVector<double> gradXYZ(3);
-  
-  invJac.mult(gradUVW, gradXYZ);
-  return gradXYZ;
-}
+  hDivXYZ(1) =
+    jac(0, 1) * hDivUVW(row, col * 3)     +
+    jac(1, 1) * hDivUVW(row, col * 3 + 1) +
+    jac(2, 1) * hDivUVW(row, col * 3 + 2);
 
-fullVector<double> Mapper::grad(double gradU,
-				double gradV,
-				double gradW, 
-				const fullMatrix<double>& invJac){
-  
-  fullVector<double> gradXYZ(3);
-  fullVector<double> gradUVW(3);
-  
-  gradUVW(0) = gradU;
-  gradUVW(1) = gradV;
-  gradUVW(2) = gradW;
+  hDivXYZ(2) =
+    jac(0, 2) * hDivUVW(row, col * 3)     +
+    jac(1, 2) * hDivUVW(row, col * 3 + 1) +
+    jac(2, 2) * hDivUVW(row, col * 3 + 2);
 
-  invJac.mult(gradUVW, gradXYZ);
-  return gradXYZ;
-}
-
-fullVector<double> Mapper::curl(const fullVector<double>& curlUVW, 
-				const fullMatrix<double>& jac,
-				double invDet){
-  fullVector<double> curlXYZ(3);
-  
-  jac.multWithATranspose(curlUVW, invDet, 0, curlXYZ);
-  
-  return curlXYZ;
-}
-
-fullVector<double> Mapper::curl(double curlU,
-				double curlV,
-				double curlW, 
-				const fullMatrix<double>& jac,
-				double invDet){
-  fullVector<double> curlXYZ(3);
-  fullVector<double> curlUVW(3);
-  
-  curlUVW(0) = curlU;
-  curlUVW(1) = curlV;
-  curlUVW(2) = curlW;
-  
-  jac.multWithATranspose(curlUVW, invDet, 0, curlXYZ);
-  
-  return curlXYZ;
+  hDivXYZ(0) /= det;
+  hDivXYZ(1) /= det;
+  hDivXYZ(2) /= det;
 }
