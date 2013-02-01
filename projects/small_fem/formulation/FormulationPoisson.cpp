@@ -58,8 +58,8 @@ FormulationPoisson::FormulationPoisson(GroupOfElement& goe,
   jacL.computeInvertJacobians();
   jacR.computeJacobians();
 
-  localTermsL = new TermHCurl(jacL, *basis, gWL);
-  localTermsR = new TermProjectionHOne(jacR, *basis, gWR, gCR, gSource);
+  localTermsL = new TermGradGrad(jacL, *basis, gWL);
+  localTermsR = new TermProjectionField(jacR, *basis, gWR, gCR, gSource);
 }
 
 FormulationPoisson::~FormulationPoisson(void){

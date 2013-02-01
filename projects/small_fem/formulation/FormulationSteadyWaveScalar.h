@@ -3,8 +3,8 @@
 
 #include "FunctionSpaceScalar.h"
 
-#include "TermHCurl.h"
-#include "TermHOne.h"
+#include "TermGradGrad.h"
+#include "TermFieldField.h"
 
 #include "Formulation.h"
 
@@ -29,8 +29,8 @@ class FormulationSteadyWaveScalar: public Formulation{
   Basis*               basis;
 
   // Local Terms //
-  TermHCurl* localTerms1;
-  TermHOne*  localTerms2;
+  TermGradGrad*   localTerms1;
+  TermFieldField* localTerms2;
 
  public:
   FormulationSteadyWaveScalar(GroupOfElement& goe,

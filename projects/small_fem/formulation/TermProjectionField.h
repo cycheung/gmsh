@@ -1,5 +1,5 @@
-#ifndef _TERMPROJECTIONHCURL_H_
-#define _TERMPROJECTIONHCURL_H_
+#ifndef _TERMPROJECTIONFIELD_H_
+#define _TERMPROJECTIONFIELD_H_
 
 #include <vector>
 
@@ -8,16 +8,17 @@
 #include "Term.h"
 
 /**
-   @interface TermProjectionHCurl
-   @brief Term for @f$ H(\mathbf{\mathrm{curl}}) @f$ Projections
+   @class TermProjectionField
+   @brief Term of the Field (in physical space) Field (in reference space) type
 
-   Term for @f$ H(\mathbf{\mathrm{curl}}) @f$ Projections
+   Term of the Field (in physical space)
+   Field (in reference space) type
  */
 
-class TermProjectionHCurl: public Term{
+class TermProjectionField: public Term{
  private:
   // Function to Project //
-  fullVector<double> (*f)(fullVector<double>& xyz);
+  double (*f)(fullVector<double>& xyz);
 
   // Integration Points //
   const fullVector<double>* gW;
@@ -25,7 +26,7 @@ class TermProjectionHCurl: public Term{
   unsigned int              nG;
 
   // Basis & Jacobians //
-  const fullMatrix<double>** phi;
+  const Basis*    basis;
   const Jacobian* jac;
 
   unsigned int               nOrientation;
@@ -36,13 +37,13 @@ class TermProjectionHCurl: public Term{
   fullMatrix<double>** bM;
 
  public:
-  TermProjectionHCurl(const Jacobian& jac,
+  TermProjectionField(const Jacobian& jac,
                       const Basis& basis,
                       const fullVector<double>& integrationWeights,
                       const fullMatrix<double>& integrationPoints,
-                      fullVector<double> (*f)(fullVector<double>& xyz));
+                      double (*f)(fullVector<double>& xyz));
 
-  virtual ~TermProjectionHCurl(void);
+  virtual ~TermProjectionField(void);
 
  private:
   void clean(void);

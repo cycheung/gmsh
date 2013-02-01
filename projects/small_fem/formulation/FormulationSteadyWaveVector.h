@@ -3,8 +3,8 @@
 
 #include "FunctionSpaceVector.h"
 
-#include "TermHDiv.h"
-#include "TermHCurl.h"
+#include "TermCurlCurl.h"
+#include "TermGradGrad.h"
 
 #include "Formulation.h"
 
@@ -29,8 +29,8 @@ class FormulationSteadyWaveVector: public Formulation{
   Basis*               basis;
 
   // Local Terms //
-  TermHDiv*  localTerms1;
-  TermHCurl* localTerms2;
+  TermCurlCurl* localTerms1;
+  TermGradGrad* localTerms2;
 
  public:
   FormulationSteadyWaveVector(GroupOfElement& goe,

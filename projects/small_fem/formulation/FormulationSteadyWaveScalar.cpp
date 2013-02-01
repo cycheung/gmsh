@@ -59,8 +59,8 @@ FormulationSteadyWaveScalar::FormulationSteadyWaveScalar(GroupOfElement& goe,
   jac1.computeInvertJacobians();
   jac2.computeJacobians();
 
-  localTerms1 = new TermHCurl(jac1, *basis, gW1);
-  localTerms2 = new TermHOne(jac2, *basis, gW2);
+  localTerms1 = new TermGradGrad(jac1, *basis, gW1);
+  localTerms2 = new TermFieldField(jac2, *basis, gW2);
 }
 
 FormulationSteadyWaveScalar::~FormulationSteadyWaveScalar(void){

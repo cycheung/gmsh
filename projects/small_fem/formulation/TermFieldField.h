@@ -1,5 +1,5 @@
-#ifndef _TERMHCURL_H_
-#define _TERMHCURL_H_
+#ifndef _TERMFIELDFIELD_H_
+#define _TERMFIELDFIELD_H_
 
 #include <vector>
 
@@ -8,20 +8,20 @@
 #include "Term.h"
 
 /**
-   @interface TermHCurl
-   @brief Term for @f$ H(\mathbf{\mathrm{curl}}) @f$ Terms
+   @class TermFieldField
+   @brief A Term of the Field Field type
 
-   Term for @f$ H(\mathbf{\mathrm{curl}}) @f$ Terms
+   A Term of the Field Field type
  */
 
-class TermHCurl: public Term{
+class TermFieldField: public Term{
  private:
   // Integration Points //
   const fullVector<double>* gW;
   unsigned int              nG;
 
   // Basis & Jacobians //
-  const fullMatrix<double>** phi;
+  const Basis*    basis;
   const Jacobian* jac;
 
   unsigned int               nOrientation;
@@ -32,11 +32,11 @@ class TermHCurl: public Term{
   fullMatrix<double>** bM;
 
  public:
-  TermHCurl(const Jacobian& jac,
-            const Basis& basis,
-            const fullVector<double>& integrationWeights);
+  TermFieldField(const Jacobian& jac,
+                 const Basis& basis,
+                 const fullVector<double>& integrationWeights);
 
-  virtual ~TermHCurl(void);
+  virtual ~TermFieldField(void);
 
  private:
   void clean(void);

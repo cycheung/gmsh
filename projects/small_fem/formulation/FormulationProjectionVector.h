@@ -4,8 +4,8 @@
 #include "FunctionSpaceVector.h"
 #include "fullMatrix.h"
 
-#include "TermHCurl.h"
-#include "TermProjectionHCurl.h"
+#include "TermGradGrad.h"
+#include "TermProjectionGrad.h"
 
 #include "Formulation.h"
 
@@ -26,8 +26,8 @@ class FormulationProjectionVector: public Formulation{
   const Basis*         basis;
 
   // Local Terms //
-  TermHCurl*           localTerms1;
-  TermProjectionHCurl* localTerms2;
+  TermGradGrad*       localTerms1;
+  TermProjectionGrad* localTerms2;
 
  public:
   FormulationProjectionVector(fullVector<double> (*f)(fullVector<double>& xyz),

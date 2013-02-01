@@ -1,50 +1,29 @@
 #include "Exception.h"
-#include "TermHCurl.h"
+#include "TermFieldField.h"
 
 using namespace std;
 
-TermHCurl::TermHCurl(const Jacobian& jac,
-                     const Basis& basis,
-                     const fullVector<double>& integrationWeights){
+TermFieldField::TermFieldField(const Jacobian& jac,
+                               const Basis& basis,
+                               const fullVector<double>& integrationWeights){
 
   // Basis Check //
-  bool derivative;
-
-  switch(basis.getType()){
-  case 0:
-    derivative = true;
-    break;
-
-  case 1:
-    derivative = false;
-    break;
-
-  default:
+  if(basis.getType() != 0)
     throw
       Exception
-      ("A H(curl) term must use a 1form basis, or a (gradient of) 0form basis");
-  }
+      ("A Field Field Term must use a 0form basis");
 
-  // Gauss Weights //
+  // Gauss Points //
   gW = &integrationWeights;
   nG = gW->size();
 
   // Basis & Orientations //
-  nOrientation = basis.getNOrientation();
-  nFunction    = basis.getNFunction();
-
+  this->basis     = &basis;
+  nOrientation    = basis.getNOrientation();
+  nFunction       = basis.getNFunction();
   orientationStat = &jac.getAllElements().getOrientationStats();
-  phi             = new const fullMatrix<double>*[nOrientation];
 
-  if(derivative)
-    for(unsigned int s = 0; s < nOrientation; s++)
-      phi[s] = &basis.getPreEvaluatedDerivatives(s);
-
-  else
-    for(unsigned int s = 0; s < nOrientation; s++)
-      phi[s] = &basis.getPreEvaluatedFunctions(s);
-
-  // Jacobians //
+  // Compute Jacobians //
   this->jac = &jac;
 
   // Element Map //
@@ -59,7 +38,7 @@ TermHCurl::TermHCurl(const Jacobian& jac,
   clean();
 }
 
-TermHCurl::~TermHCurl(void){
+TermFieldField::~TermFieldField(void){
   for(unsigned int s = 0; s < nOrientation; s++)
     delete aM[s];
 
@@ -67,7 +46,7 @@ TermHCurl::~TermHCurl(void){
   delete   eMap;
 }
 
-void TermHCurl::clean(void){
+void TermFieldField::clean(void){
   for(unsigned int s = 0; s < nOrientation; s++)
     delete cM[s];
 
@@ -77,11 +56,9 @@ void TermHCurl::clean(void){
     delete bM[s];
 
   delete[] bM;
-
-  delete[] phi;
 }
 
-void TermHCurl::buildEMap(void){
+void TermFieldField::buildEMap(void){
   const vector<const MElement*>& element = jac->getAllElements().getAll();
 
   eMap = new map<const MElement*, pair<unsigned int, unsigned int> >;
@@ -103,55 +80,46 @@ void TermHCurl::buildEMap(void){
   }
 }
 
-void TermHCurl::computeC(void){
-  unsigned int k;
+void TermFieldField::computeC(void){
   unsigned int l;
 
   // Alloc //
   cM = new fullMatrix<double>*[nOrientation];
 
   for(unsigned int s = 0; s < nOrientation; s++)
-    cM[s] = new fullMatrix<double>(9 * nG, nFunction * nFunction);
+    cM[s] = new fullMatrix<double>(nG, nFunction * nFunction);
 
   // Fill //
   for(unsigned int s = 0; s < nOrientation; s++){
+    // Get functions for this Orientation
+    const fullMatrix<double>& phi =
+      basis->getPreEvaluatedFunctions(s);
+
     // Loop on Gauss Points
-    k = 0;
-
     for(unsigned int g = 0; g < nG; g++){
-      for(unsigned int a = 0; a < 3; a++){
-        for(unsigned int b = 0; b < 3; b++){
-          // Loop on Functions
-          l = 0;
 
-          for(unsigned int i = 0; i < nFunction; i++){
-            for(unsigned int j = 0; j < nFunction; j++){
-              (*cM[s])(k, l) =
-                (*gW)(g) *
-                (*phi[s])(i, g * 3 + a) *
-                (*phi[s])(j, g * 3 + b);
+      // Loop on Functions
+      l = 0;
 
-              l++;
-            }
-          }
-
-          k++;
+      for(unsigned int i = 0; i < nFunction; i++){
+        for(unsigned int j = 0; j < nFunction; j++){
+          (*cM[s])(g, l) = (*gW)(g) *phi(i, g) * phi(j, g);
+          l++;
         }
       }
     }
   }
 }
 
-void TermHCurl::computeB(void){
+void TermFieldField::computeB(void){
   unsigned int offset = 0;
   unsigned int j;
-  unsigned int k;
 
   // Alloc //
   bM = new fullMatrix<double>*[nOrientation];
 
   for(unsigned int s = 0; s < nOrientation; s++)
-    bM[s] = new fullMatrix<double>((*orientationStat)[s], 9 * nG);
+    bM[s] = new fullMatrix<double>((*orientationStat)[s], nG);
 
   // Fill //
   const vector<const MElement*>& element = jac->getAllElements().getAll();
@@ -162,28 +130,11 @@ void TermHCurl::computeB(void){
 
     for(unsigned int e = offset; e < offset + (*orientationStat)[s]; e++){
       // Get Jacobians
-      const vector<const pair<const fullMatrix<double>*, double>*>& invJac =
-        jac->getInvertJacobian(*element[e]);
+      const vector<const pair<const fullMatrix<double>*, double>*>& jacM =
+        jac->getJacobian(*element[e]);
 
-      // Loop on Gauss Points
-      k = 0;
-
-      for(unsigned int g = 0; g < nG; g++){
-        for(unsigned int a = 0; a < 3; a++){
-          for(unsigned int b = 0; b < 3; b++){
-            (*bM[s])(j, k) = 0;
-
-            for(unsigned int i = 0; i < 3; i++)
-              (*bM[s])(j, k) +=
-                (*invJac[g]->first)(i, a) *
-                (*invJac[g]->first)(i, b);
-
-            (*bM[s])(j, k) *= fabs(invJac[g]->second);
-
-            k++;
-          }
-        }
-      }
+      for(unsigned int g = 0; g < nG; g++)
+        (*bM[s])(j, g) = fabs(jacM[g]->second);;
 
       // Next Element in Orientation[s]
       j++;
@@ -194,7 +145,7 @@ void TermHCurl::computeB(void){
   }
 }
 
-void TermHCurl::computeA(void){
+void TermFieldField::computeA(void){
   // Alloc //
   aM = new fullMatrix<double>*[nOrientation];
 

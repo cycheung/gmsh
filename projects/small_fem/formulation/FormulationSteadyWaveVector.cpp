@@ -66,8 +66,8 @@ FormulationSteadyWaveVector::FormulationSteadyWaveVector(GroupOfElement& goe,
   jac1.computeJacobians();
   jac2.computeInvertJacobians();
 
-  localTerms1 = new TermHDiv(jac1, *basis, gW1);
-  localTerms2 = new TermHCurl(jac2, *basis, gW2);
+  localTerms1 = new TermCurlCurl(jac1, *basis, gW1);
+  localTerms2 = new TermGradGrad(jac2, *basis, gW2);
 
   timer.stop();
   cout << "Precomputing Time: " << timer.time() << " " << timer.unit() << endl;

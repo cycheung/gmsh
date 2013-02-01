@@ -36,8 +36,8 @@ FormulationProjectionScalar(double (*f)(fullVector<double>& xyz),
   Jacobian jac(goe, gC);
   jac.computeJacobians();
 
-  localTerms1 = new TermHOne(jac, *basis, gW);
-  localTerms2 = new TermProjectionHOne(jac, *basis, gW, gC, f);
+  localTerms1 = new TermFieldField(jac, *basis, gW);
+  localTerms2 = new TermProjectionField(jac, *basis, gW, gC, f);
 }
 
 FormulationProjectionScalar::~FormulationProjectionScalar(void){

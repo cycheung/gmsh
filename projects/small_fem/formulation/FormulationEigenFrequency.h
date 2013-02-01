@@ -3,8 +3,8 @@
 
 #include "FunctionSpaceVector.h"
 
-#include "TermHDiv.h"
-#include "TermHCurl.h"
+#include "TermCurlCurl.h"
+#include "TermGradGrad.h"
 
 #include "EigenFormulation.h"
 
@@ -26,8 +26,8 @@ class FormulationEigenFrequency: public EigenFormulation{
   Basis*               basis;
 
   // Local Terms //
-  TermHDiv*  localTerms1;
-  TermHCurl* localTerms2;
+  TermCurlCurl* localTerms1;
+  TermGradGrad* localTerms2;
 
  public:
   FormulationEigenFrequency(GroupOfElement& goe,

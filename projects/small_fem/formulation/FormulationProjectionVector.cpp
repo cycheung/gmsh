@@ -36,8 +36,8 @@ FormulationProjectionVector(fullVector<double> (*f)(fullVector<double>& xyz),
   Jacobian jac(goe, gC);
   jac.computeInvertJacobians();
 
-  localTerms1 = new TermHCurl(jac, *basis, gW);
-  localTerms2 = new TermProjectionHCurl(jac, *basis, gW, gC, f);
+  localTerms1 = new TermGradGrad(jac, *basis, gW);
+  localTerms2 = new TermProjectionGrad(jac, *basis, gW, gC, f);
 }
 
 FormulationProjectionVector::~FormulationProjectionVector(void){

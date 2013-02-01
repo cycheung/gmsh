@@ -1,5 +1,5 @@
-#ifndef _TERMHDIV_H_
-#define _TERMHDIV_H_
+#ifndef _TERMGRADGRAD_H_
+#define _TERMGRADGRAD_H_
 
 #include <vector>
 
@@ -8,13 +8,13 @@
 #include "Term.h"
 
 /**
-   @interface TermHDiv
-   @brief Term for @f$ H(\mathbf{\mathrm{div}}) @f$ Terms
+   @class TermGradGrad
+   @brief Term of the @c Grad @c Grad type
 
-   Term for @f$ H(\mathbf{\mathrm{div}}) @f$ Terms
+   Term of the @c Grad @c Grad type
  */
 
-class TermHDiv: public Term{
+class TermGradGrad: public Term{
  private:
   // Integration Points //
   const fullVector<double>* gW;
@@ -32,11 +32,11 @@ class TermHDiv: public Term{
   fullMatrix<double>** bM;
 
  public:
-  TermHDiv(const Jacobian& jac,
-            const Basis& basis,
-            const fullVector<double>& integrationWeights);
+  TermGradGrad(const Jacobian& jac,
+               const Basis& basis,
+               const fullVector<double>& integrationWeights);
 
-  virtual ~TermHDiv(void);
+  virtual ~TermGradGrad(void);
 
  private:
   void clean(void);

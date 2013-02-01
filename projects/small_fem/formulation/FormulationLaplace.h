@@ -3,7 +3,7 @@
 
 #include "FunctionSpaceScalar.h"
 
-#include "TermHCurl.h"
+#include "TermGradGrad.h"
 
 #include "Formulation.h"
 
@@ -21,7 +21,7 @@ class FormulationLaplace: public Formulation{
   Basis*               basis;
 
   // Local Terms //
-  TermHCurl* localTerms;
+  TermGradGrad* localTerms;
 
  public:
   FormulationLaplace(GroupOfElement& goe, unsigned int order);

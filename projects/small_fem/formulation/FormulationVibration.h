@@ -3,7 +3,7 @@
 
 #include "FunctionSpaceScalar.h"
 
-#include "TermHCurl.h"
+#include "TermGradGrad.h"
 
 #include "EigenFormulation.h"
 
@@ -21,7 +21,7 @@ class FormulationVibration: public EigenFormulation{
   Basis*               basis;
 
   // Local Terms //
-  TermHCurl* localTerms;
+  TermGradGrad* localTerms;
 
  public:
   FormulationVibration(GroupOfElement& goe,

@@ -1,50 +1,34 @@
 #include "Exception.h"
-#include "TermHDiv.h"
+#include "TermProjectionField.h"
 
 using namespace std;
 
-TermHDiv::TermHDiv(const Jacobian& jac,
-                     const Basis& basis,
-                     const fullVector<double>& integrationWeights){
-
+TermProjectionField::TermProjectionField(const Jacobian& jac,
+                                         const Basis& basis,
+                                         const fullVector<double>& integrationWeights,
+                                         const fullMatrix<double>& integrationPoints,
+                                         double (*f)(fullVector<double>& xyz)){
   // Basis Check //
-  bool derivative;
-
-  switch(basis.getType()){
-  case 1:
-    derivative = true;
-    break;
-
-  case 2:
-    derivative = false;
-    break;
-
-  default:
+  if(basis.getType() != 0)
     throw
       Exception
-      ("A H(div) term must use a 2form basis, or a (curl of) 1form basis");
-  }
+      ("A Field Term must use a 0form basis");
 
-  // Gauss Weights //
+  // Function to Project //
+  this->f = f;
+
+  // Gauss Points //
   gW = &integrationWeights;
+  gC = &integrationPoints;
   nG = gW->size();
 
   // Basis & Orientations //
-  nOrientation = basis.getNOrientation();
-  nFunction    = basis.getNFunction();
-
+  this->basis     = &basis;
+  nOrientation    = basis.getNOrientation();
+  nFunction       = basis.getNFunction();
   orientationStat = &jac.getAllElements().getOrientationStats();
-  phi             = new const fullMatrix<double>*[nOrientation];
 
-  if(derivative)
-    for(unsigned int s = 0; s < nOrientation; s++)
-      phi[s] = &basis.getPreEvaluatedDerivatives(s);
-
-  else
-    for(unsigned int s = 0; s < nOrientation; s++)
-      phi[s] = &basis.getPreEvaluatedFunctions(s);
-
-  // Jacobians //
+  // Compute Jacobians //
   this->jac = &jac;
 
   // Element Map //
@@ -59,7 +43,7 @@ TermHDiv::TermHDiv(const Jacobian& jac,
   clean();
 }
 
-TermHDiv::~TermHDiv(void){
+TermProjectionField::~TermProjectionField(void){
   for(unsigned int s = 0; s < nOrientation; s++)
     delete aM[s];
 
@@ -67,7 +51,7 @@ TermHDiv::~TermHDiv(void){
   delete   eMap;
 }
 
-void TermHDiv::clean(void){
+void TermProjectionField::clean(void){
   for(unsigned int s = 0; s < nOrientation; s++)
     delete cM[s];
 
@@ -77,11 +61,9 @@ void TermHDiv::clean(void){
     delete bM[s];
 
   delete[] bM;
-
-  delete[] phi;
 }
 
-void TermHDiv::buildEMap(void){
+void TermProjectionField::buildEMap(void){
   const vector<const MElement*>& element = jac->getAllElements().getAll();
 
   eMap = new map<const MElement*, pair<unsigned int, unsigned int> >;
@@ -103,55 +85,39 @@ void TermHDiv::buildEMap(void){
   }
 }
 
-void TermHDiv::computeC(void){
-  unsigned int k;
-  unsigned int l;
-
+void TermProjectionField::computeC(void){
   // Alloc //
   cM = new fullMatrix<double>*[nOrientation];
 
   for(unsigned int s = 0; s < nOrientation; s++)
-    cM[s] = new fullMatrix<double>(9 * nG, nFunction * nFunction);
+    cM[s] = new fullMatrix<double>(nG, nFunction);
 
   // Fill //
   for(unsigned int s = 0; s < nOrientation; s++){
+    // Get functions for this Orientation
+    const fullMatrix<double>& phi =
+      basis->getPreEvaluatedFunctions(s);
+
     // Loop on Gauss Points
-    k = 0;
-
-    for(unsigned int g = 0; g < nG; g++){
-      for(unsigned int a = 0; a < 3; a++){
-        for(unsigned int b = 0; b < 3; b++){
-          // Loop on Functions
-          l = 0;
-
-          for(unsigned int i = 0; i < nFunction; i++){
-            for(unsigned int j = 0; j < nFunction; j++){
-              (*cM[s])(k, l) =
-                (*gW)(g) *
-                (*phi[s])(i, g * 3 + a) *
-                (*phi[s])(j, g * 3 + b);
-
-              l++;
-            }
-          }
-
-          k++;
-        }
-      }
-    }
+    for(unsigned int g = 0; g < nG; g++)
+      for(unsigned int i = 0; i < nFunction; i++)
+        (*cM[s])(g, i) = (*gW)(g) * phi(i, g);
   }
 }
 
-void TermHDiv::computeB(void){
+void TermProjectionField::computeB(void){
   unsigned int offset = 0;
   unsigned int j;
-  unsigned int k;
+
+  fullVector<double> xyz(3);
+  SPoint3            pxyz;
+  double             fxyz;
 
   // Alloc //
   bM = new fullMatrix<double>*[nOrientation];
 
   for(unsigned int s = 0; s < nOrientation; s++)
-    bM[s] = new fullMatrix<double>((*orientationStat)[s], 9 * nG);
+    bM[s] = new fullMatrix<double>((*orientationStat)[s], nG);
 
   // Fill //
   const vector<const MElement*>& element = jac->getAllElements().getAll();
@@ -162,27 +128,24 @@ void TermHDiv::computeB(void){
 
     for(unsigned int e = offset; e < offset + (*orientationStat)[s]; e++){
       // Get Jacobians
-      const vector<const pair<const fullMatrix<double>*, double>*>& MJac =
+      const vector<const pair<const fullMatrix<double>*, double>*>& jacM =
         jac->getJacobian(*element[e]);
 
-      // Loop on Gauss Points
-      k = 0;
-
       for(unsigned int g = 0; g < nG; g++){
-        for(unsigned int a = 0; a < 3; a++){
-          for(unsigned int b = 0; b < 3; b++){
-            (*bM[s])(j, k) = 0;
+        // Compute f in the *physical* coordinate
+        const_cast<MElement*>(element[e])
+          ->pnt((*gC)(g, 0),
+                (*gC)(g, 1),
+                (*gC)(g, 2),
+                pxyz);
 
-            for(unsigned int i = 0; i < 3; i++)
-              (*bM[s])(j, k) +=
-                (*MJac[g]->first)(i, a) *
-                (*MJac[g]->first)(i, b);
+        xyz(0) = pxyz.x();
+        xyz(1) = pxyz.y();
+        xyz(2) = pxyz.z();
 
-            (*bM[s])(j, k) /= fabs(MJac[g]->second);
+        fxyz = f(xyz);
 
-            k++;
-          }
-        }
+        (*bM[s])(j, g) = fabs(jacM[g]->second) * fxyz;
       }
 
       // Next Element in Orientation[s]
@@ -194,12 +157,12 @@ void TermHDiv::computeB(void){
   }
 }
 
-void TermHDiv::computeA(void){
+void TermProjectionField::computeA(void){
   // Alloc //
   aM = new fullMatrix<double>*[nOrientation];
 
   for(unsigned int s = 0; s < nOrientation; s++)
-    aM[s] = new fullMatrix<double>((*orientationStat)[s], nFunction * nFunction);
+    aM[s] = new fullMatrix<double>((*orientationStat)[s], nFunction);
 
   // Fill //
   for(unsigned int s = 0; s < nOrientation; s++)

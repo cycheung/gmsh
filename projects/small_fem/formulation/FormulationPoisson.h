@@ -4,8 +4,8 @@
 #include "FunctionSpaceScalar.h"
 #include "fullMatrix.h"
 
-#include "TermHCurl.h"
-#include "TermProjectionHOne.h"
+#include "TermGradGrad.h"
+#include "TermProjectionField.h"
 
 #include "Formulation.h"
 
@@ -26,8 +26,8 @@ class FormulationPoisson: public Formulation{
   Basis*               basis;
 
   // Local Terms //
-  TermHCurl*          localTermsL;
-  TermProjectionHOne* localTermsR;
+  TermGradGrad*        localTermsL;
+  TermProjectionField* localTermsR;
 
  public:
   FormulationPoisson(GroupOfElement& goe,

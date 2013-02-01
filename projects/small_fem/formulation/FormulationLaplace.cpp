@@ -35,7 +35,7 @@ FormulationLaplace::FormulationLaplace(GroupOfElement& goe,
   Jacobian jac(goe, gC);
   jac.computeInvertJacobians();
 
-  localTerms = new TermHCurl(jac, *basis, gW);
+  localTerms = new TermGradGrad(jac, *basis, gW);
 }
 
 FormulationLaplace::~FormulationLaplace(void){

@@ -1,5 +1,5 @@
-#ifndef _TERMHONE_H_
-#define _TERMHONE_H_
+#ifndef _TERMCURLCURL_H_
+#define _TERMCURLCURL_H_
 
 #include <vector>
 
@@ -8,20 +8,20 @@
 #include "Term.h"
 
 /**
-   @interface TermHOne
-   @brief Term for @f$ H^1 @f$ Terms
+   @class TermCurlCurl
+   @brief Term of the @c Curl @c Curl type
 
-   Term for @f$ H^1 @f$ Terms
+   Term of the @c Curl @c Curl type
  */
 
-class TermHOne: public Term{
+class TermCurlCurl: public Term{
  private:
   // Integration Points //
   const fullVector<double>* gW;
   unsigned int              nG;
 
   // Basis & Jacobians //
-  const Basis*    basis;
+  const fullMatrix<double>** phi;
   const Jacobian* jac;
 
   unsigned int               nOrientation;
@@ -32,11 +32,11 @@ class TermHOne: public Term{
   fullMatrix<double>** bM;
 
  public:
-  TermHOne(const Jacobian& jac,
-           const Basis& basis,
-           const fullVector<double>& integrationWeights);
+  TermCurlCurl(const Jacobian& jac,
+               const Basis& basis,
+               const fullVector<double>& integrationWeights);
 
-  virtual ~TermHOne(void);
+  virtual ~TermCurlCurl(void);
 
  private:
   void clean(void);

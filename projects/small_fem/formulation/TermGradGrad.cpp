@@ -1,13 +1,12 @@
 #include "Exception.h"
-#include "TermProjectionHCurl.h"
+#include "TermGradGrad.h"
 
 using namespace std;
 
-TermProjectionHCurl::TermProjectionHCurl(const Jacobian& jac,
-                                         const Basis& basis,
-                                         const fullVector<double>& integrationWeights,
-                                         const fullMatrix<double>& integrationPoints,
-                                         fullVector<double> (*f)(fullVector<double>& xyz)){
+TermGradGrad::TermGradGrad(const Jacobian& jac,
+                           const Basis& basis,
+                           const fullVector<double>& integrationWeights){
+
   // Basis Check //
   bool derivative;
 
@@ -23,15 +22,11 @@ TermProjectionHCurl::TermProjectionHCurl(const Jacobian& jac,
   default:
     throw
       Exception
-      ("A H(curl) term must use a 1form basis, or a (gradient of) 0form basis");
+      ("A Grad Grad Term must use a 1form basis, or a (gradient of) 0form basis");
   }
-
-  // Function to Project //
-  this->f = f;
 
   // Gauss Weights //
   gW = &integrationWeights;
-  gC = &integrationPoints;
   nG = gW->size();
 
   // Basis & Orientations //
@@ -64,7 +59,7 @@ TermProjectionHCurl::TermProjectionHCurl(const Jacobian& jac,
   clean();
 }
 
-TermProjectionHCurl::~TermProjectionHCurl(void){
+TermGradGrad::~TermGradGrad(void){
   for(unsigned int s = 0; s < nOrientation; s++)
     delete aM[s];
 
@@ -72,7 +67,7 @@ TermProjectionHCurl::~TermProjectionHCurl(void){
   delete   eMap;
 }
 
-void TermProjectionHCurl::clean(void){
+void TermGradGrad::clean(void){
   for(unsigned int s = 0; s < nOrientation; s++)
     delete cM[s];
 
@@ -86,7 +81,7 @@ void TermProjectionHCurl::clean(void){
   delete[] phi;
 }
 
-void TermProjectionHCurl::buildEMap(void){
+void TermGradGrad::buildEMap(void){
   const vector<const MElement*>& element = jac->getAllElements().getAll();
 
   eMap = new map<const MElement*, pair<unsigned int, unsigned int> >;
@@ -108,7 +103,7 @@ void TermProjectionHCurl::buildEMap(void){
   }
 }
 
-void TermProjectionHCurl::computeC(void){
+void TermGradGrad::computeC(void){
   unsigned int k;
   unsigned int l;
 
@@ -116,7 +111,7 @@ void TermProjectionHCurl::computeC(void){
   cM = new fullMatrix<double>*[nOrientation];
 
   for(unsigned int s = 0; s < nOrientation; s++)
-    cM[s] = new fullMatrix<double>(3 * nG, nFunction);
+    cM[s] = new fullMatrix<double>(9 * nG, nFunction * nFunction);
 
   // Fill //
   for(unsigned int s = 0; s < nOrientation; s++){
@@ -125,37 +120,38 @@ void TermProjectionHCurl::computeC(void){
 
     for(unsigned int g = 0; g < nG; g++){
       for(unsigned int a = 0; a < 3; a++){
-        // Loop on Functions
-        l = 0;
+        for(unsigned int b = 0; b < 3; b++){
+          // Loop on Functions
+          l = 0;
 
-        for(unsigned int i = 0; i < nFunction; i++){
-          (*cM[s])(k, l) =
-            (*gW)(g) *
-            (*phi[s])(i, g * 3 + a);
+          for(unsigned int i = 0; i < nFunction; i++){
+            for(unsigned int j = 0; j < nFunction; j++){
+              (*cM[s])(k, l) =
+                (*gW)(g) *
+                (*phi[s])(i, g * 3 + a) *
+                (*phi[s])(j, g * 3 + b);
 
-          l++;
+              l++;
+            }
+          }
+
+          k++;
         }
-
-
-        k++;
       }
     }
   }
 }
 
-void TermProjectionHCurl::computeB(void){
+void TermGradGrad::computeB(void){
   unsigned int offset = 0;
   unsigned int j;
-
-  fullVector<double> xyz(3);
-  SPoint3            pxyz;
-  fullVector<double> fxyz;
+  unsigned int k;
 
   // Alloc //
   bM = new fullMatrix<double>*[nOrientation];
 
   for(unsigned int s = 0; s < nOrientation; s++)
-    bM[s] = new fullMatrix<double>((*orientationStat)[s], 3 * nG);
+    bM[s] = new fullMatrix<double>((*orientationStat)[s], 9 * nG);
 
   // Fill //
   const vector<const MElement*>& element = jac->getAllElements().getAll();
@@ -170,32 +166,23 @@ void TermProjectionHCurl::computeB(void){
         jac->getInvertJacobian(*element[e]);
 
       // Loop on Gauss Points
+      k = 0;
+
       for(unsigned int g = 0; g < nG; g++){
-        const_cast<MElement*>(element[e])
-          ->pnt((*gC)(g, 0),
-                (*gC)(g, 1),
-                (*gC)(g, 2),
-                pxyz);
+        for(unsigned int a = 0; a < 3; a++){
+          for(unsigned int b = 0; b < 3; b++){
+            (*bM[s])(j, k) = 0;
 
-        xyz(0) = pxyz.x();
-        xyz(1) = pxyz.y();
-        xyz(2) = pxyz.z();
+            for(unsigned int i = 0; i < 3; i++)
+              (*bM[s])(j, k) +=
+                (*invJac[g]->first)(i, a) *
+                (*invJac[g]->first)(i, b);
 
-        fxyz = f(xyz);
+            (*bM[s])(j, k) *= fabs(invJac[g]->second);
 
-        (*bM[s])(j, g * 3)     = 0;
-        (*bM[s])(j, g * 3 + 1) = 0;
-        (*bM[s])(j, g * 3 + 2) = 0;
-
-        for(unsigned int i = 0; i < 3; i++){
-          (*bM[s])(j, g * 3)     += (*invJac[g]->first)(i, 0) * fxyz(i);
-          (*bM[s])(j, g * 3 + 1) += (*invJac[g]->first)(i, 1) * fxyz(i);
-          (*bM[s])(j, g * 3 + 2) += (*invJac[g]->first)(i, 2) * fxyz(i);
+            k++;
+          }
         }
-
-        (*bM[s])(j, g * 3)     *= fabs(invJac[g]->second);
-        (*bM[s])(j, g * 3 + 1) *= fabs(invJac[g]->second);
-        (*bM[s])(j, g * 3 + 2) *= fabs(invJac[g]->second);
       }
 
       // Next Element in Orientation[s]
@@ -207,13 +194,12 @@ void TermProjectionHCurl::computeB(void){
   }
 }
 
-
-void TermProjectionHCurl::computeA(void){
+void TermGradGrad::computeA(void){
   // Alloc //
   aM = new fullMatrix<double>*[nOrientation];
 
   for(unsigned int s = 0; s < nOrientation; s++)
-    aM[s] = new fullMatrix<double>((*orientationStat)[s], nFunction);
+    aM[s] = new fullMatrix<double>((*orientationStat)[s], nFunction * nFunction);
 
   // Fill //
   for(unsigned int s = 0; s < nOrientation; s++)

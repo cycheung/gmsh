@@ -14,11 +14,11 @@ set(src
   FormulationVibration.cpp
 
   Term.cpp
-  TermHOne.cpp
-  TermHCurl.cpp
-  TermHDiv.cpp
-  TermProjectionHOne.cpp
-  TermProjectionHCurl.cpp
+  TermFieldField.cpp
+  TermGradGrad.cpp
+  TermCurlCurl.cpp
+  TermProjectionField.cpp
+  TermProjectionGrad.cpp
 )
 
 

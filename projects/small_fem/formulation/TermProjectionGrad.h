@@ -1,5 +1,5 @@
-#ifndef _TERMPROJECTIONHONE_H_
-#define _TERMPROJECTIONHONE_H_
+#ifndef _TERMPROJECTIONGRAD_H_
+#define _TERMPROJECTIONGRAD_H_
 
 #include <vector>
 
@@ -8,16 +8,17 @@
 #include "Term.h"
 
 /**
-   @interface TermProjectionHOne
-   @brief Term for @f$ H^1 @f$ Projection
+   @class TermProjectionGrad
+   @brief Term of the Field (in physical space) Grad (in reference space) type
 
-   Term for @f$ H^1 @f$ Projection
+   Term of the Field (in physical space)
+   Grad (in reference space) type
  */
 
-class TermProjectionHOne: public Term{
+class TermProjectionGrad: public Term{
  private:
   // Function to Project //
-  double (*f)(fullVector<double>& xyz);
+  fullVector<double> (*f)(fullVector<double>& xyz);
 
   // Integration Points //
   const fullVector<double>* gW;
@@ -25,7 +26,7 @@ class TermProjectionHOne: public Term{
   unsigned int              nG;
 
   // Basis & Jacobians //
-  const Basis*    basis;
+  const fullMatrix<double>** phi;
   const Jacobian* jac;
 
   unsigned int               nOrientation;
@@ -36,13 +37,13 @@ class TermProjectionHOne: public Term{
   fullMatrix<double>** bM;
 
  public:
-  TermProjectionHOne(const Jacobian& jac,
+  TermProjectionGrad(const Jacobian& jac,
                      const Basis& basis,
                      const fullVector<double>& integrationWeights,
                      const fullMatrix<double>& integrationPoints,
-                     double (*f)(fullVector<double>& xyz));
+                     fullVector<double> (*f)(fullVector<double>& xyz));
 
-  virtual ~TermProjectionHOne(void);
+  virtual ~TermProjectionGrad(void);
 
  private:
   void clean(void);

@@ -4,8 +4,8 @@
 #include "FunctionSpaceScalar.h"
 #include "fullMatrix.h"
 
-#include "TermHOne.h"
-#include "TermProjectionHOne.h"
+#include "TermFieldField.h"
+#include "TermProjectionField.h"
 
 #include "Formulation.h"
 
@@ -26,8 +26,8 @@ class FormulationProjectionScalar: public Formulation{
   const Basis*         basis;
 
   // Local Terms //
-  TermHOne*           localTerms1;
-  TermProjectionHOne* localTerms2;
+  TermFieldField*      localTerms1;
+  TermProjectionField* localTerms2;
 
  public:
   FormulationProjectionScalar(double (*f)(fullVector<double>& xyz),

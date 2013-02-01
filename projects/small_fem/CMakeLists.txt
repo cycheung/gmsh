@@ -37,7 +37,7 @@ add_subdirectory(solver)
 
 ## TO BE REMOVED !!!
 ####################
-add_subdirectory(../../FunctionSpace 
+add_subdirectory(../../FunctionSpace
   "${CMAKE_CURRENT_BINARY_DIR}/FunctionSpace")
 ####################
 
@@ -63,7 +63,7 @@ include_directories(
 )
 
 ## Compiler Flags
-add_definitions(-pedantic -Wall -g)
+add_definitions(-pedantic -Wall -g -O2)
 
 ## Build SmallFEM Library
 add_library(sf STATIC ${sources})
@@ -72,16 +72,16 @@ target_link_libraries(sf -lrt)
 
 
 ## Build Simulations
-add_executable(laplace simulation/Laplace.cpp) 
-add_executable(poisson simulation/Poisson.cpp) 
+add_executable(laplace simulation/Laplace.cpp)
+add_executable(poisson simulation/Poisson.cpp)
 
-add_executable(projvectsin simulation/ProjectionVectorSin.cpp) 
-add_executable(projvectone simulation/ProjectionVectorSinOneTime.cpp) 
+add_executable(projvectsin simulation/ProjectionVectorSin.cpp)
+add_executable(projvectone simulation/ProjectionVectorSinOneTime.cpp)
 
-add_executable(projscalsin simulation/ProjectionScalarSin.cpp) 
-add_executable(projscalone simulation/ProjectionScalarSinOneTime.cpp) 
+add_executable(projscalsin simulation/ProjectionScalarSin.cpp)
+add_executable(projscalone simulation/ProjectionScalarSinOneTime.cpp)
 
-add_executable(btest simulation/BasisTest.cpp) 
+add_executable(btest simulation/BasisTest.cpp)
 
 add_executable(swavev    simulation/SteadyWaveVector.cpp)
 add_executable(swaves    simulation/SteadyWaveScalar.cpp)
