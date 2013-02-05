@@ -8,6 +8,8 @@
 #include "FormulationSteadyWaveVector.h"
 #include "SlowFormulationSteadyWaveVector.h"
 
+#include "SystemInstrumented.h"
+#include "Timer.h"
 #include "Gmsh.h"
 
 using namespace std;
@@ -35,6 +37,8 @@ fullVector<double> fWall(fullVector<double>& xyz){
 }
 
 int main(int argc, char** argv){
+  Timer timer;
+
   GmshInitialize(argc, argv);
 
   // Writer //
@@ -51,6 +55,7 @@ int main(int argc, char** argv){
   const unsigned int order = atoi(argv[3]);
 
   // SteadyWaveVector //
+  timer.start();
   Formulation* sWave;
 
   if(argc == 5 && !strcmp(argv[4], "slow")){
@@ -62,7 +67,9 @@ int main(int argc, char** argv){
     cout << "Fast Version" << endl;
     sWave = new FormulationSteadyWaveVector(domain, puls * 1, order);
   }
+  timer.stop();
 
+  //SystemInstrumented sys(*sWave);
   System sys(*sWave);
 
   sys.dirichlet(source, fSource);
@@ -74,7 +81,13 @@ int main(int argc, char** argv){
 
   sys.assemble();
   sys.solve();
-
+  /*
+  cout << "Precomputing: " << timer.time() << endl;
+  cout << "PreAlloc: "      << sys.preAlloc << endl;
+  cout << "Dof Lookup: "    << sys.dofLookTime << endl;
+  cout << "Getting Terms: " << sys.totLHSTime    + sys.totRHSTime    << endl;
+  cout << "Adding Terms: "  << sys.totAddLHSTime + sys.totAddRHSTime << endl;
+  */
   if(argc == 5 && strcmp(argv[4], "slow")){
     // Interpolated View //
     // Visu Mesh

@@ -3,6 +3,7 @@ set(src
   DofManager.cpp
   GroupOfDof.cpp
   System.cpp
+  SystemInstrumented.cpp
   EigenSystem.cpp
 )
 

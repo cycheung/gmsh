@@ -4,7 +4,6 @@
 #include "GaussIntegration.h"
 #include "Mapper.h"
 
-#include "Timer.h"
 #include "SlowFormulationSteadyWaveVector.h"
 
 using namespace std;
@@ -60,9 +59,6 @@ SlowFormulationSteadyWaveVector::SlowFormulationSteadyWaveVector(GroupOfElement&
   G2 = gW2->size();
 
   // PreEvaluate Functions //
-  Timer timer;
-  timer.start();
-
   basis->preEvaluateDerivatives(*gC1);
   basis->preEvaluateFunctions(*gC2);
 
@@ -74,9 +70,6 @@ SlowFormulationSteadyWaveVector::SlowFormulationSteadyWaveVector(GroupOfElement&
 
   jac1->computeJacobians();
   jac2->computeInvertJacobians();
-
-  timer.stop();
-  cout << "Precomputing Time: " << timer.time() << " " << timer.unit() << endl;
 }
 
 SlowFormulationSteadyWaveVector::~SlowFormulationSteadyWaveVector(void){

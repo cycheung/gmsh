@@ -4,11 +4,12 @@
 #include "BasisLocal.h"
 #include "Exception.h"
 
-#include "System.h"
+#include "Timer.h"
+#include "SystemInstrumented.h"
 
 using namespace std;
 
-System::System(const Formulation& formulation){
+SystemInstrumented::SystemInstrumented(const Formulation& formulation){
   // Get Formulation //
   this->formulation = &formulation;
   this->fs          = &(formulation.fs());
@@ -28,16 +29,32 @@ System::System(const Formulation& formulation){
   // The system is not assembled and not solved //
   assembled = false;
   solved    = false;
+
+  // Timers //
+  totLHSTime = 0;
+  totLHSCall = 0;
+
+  totAddLHSTime = 0;
+  totAddLHSCall = 0;
+
+  totRHSTime = 0;
+  totRHSCall = 0;
+
+  totAddRHSTime = 0;
+  totAddRHSCall = 0;
+
+  dofLookTime = 0;
+  dofLookCall = 0;
 }
 
-System::~System(void){
+SystemInstrumented::~SystemInstrumented(void){
   delete x;
   delete linSys;
   delete dofM;
   // System is not responsible for deleting 'Formulations'
 }
 
-void System::assemble(void){
+void SystemInstrumented::assemble(void){
   // Get GroupOfDofs //
   const vector<GroupOfDof*>& group = fs->getAllGroups();
   const int E = fs->groupNumber();
@@ -48,10 +65,16 @@ void System::assemble(void){
   fixedOnes = new set<const Dof*, DofComparator>();
 
   // Get Sparcity Pattern & PreAllocate//
+  Timer timer;
+  timer.start();
+
   for(int i = 0; i < E; i++)
     sparcity(*(group[i]));
 
   linSys->preAllocateEntries();
+
+  timer.stop();
+  preAlloc = timer.time();
 
   // Assemble System //
   for(int i = 0; i < E; i++)
@@ -62,7 +85,7 @@ void System::assemble(void){
   assembled = true;
 }
 
-void System::fixCoef(const GroupOfElement& goe, double value){
+void SystemInstrumented::fixCoef(const GroupOfElement& goe, double value){
   const vector<const MElement*>&  element = goe.getAll();
   unsigned int                   nElement = goe.getNumber();
 
@@ -75,7 +98,7 @@ void System::fixCoef(const GroupOfElement& goe, double value){
   }
 }
 
-void System::dirichlet(GroupOfElement& goe,
+void SystemInstrumented::dirichlet(GroupOfElement& goe,
 		       double (*f)(fullVector<double>& xyz)){
 
   // Check if Scalar Problem //
@@ -97,7 +120,7 @@ void System::dirichlet(GroupOfElement& goe,
 
   // Solve The Projection Of f on the Dirichlet Domain with dirFS //
   FormulationProjectionScalar projection(f, dirFS);
-  System sysProj(projection);
+  SystemInstrumented sysProj(projection);
 
   sysProj.assemble();
   sysProj.solve();
@@ -115,7 +138,7 @@ void System::dirichlet(GroupOfElement& goe,
   delete dirBasis;
 }
 
-void System::dirichlet(GroupOfElement& goe,
+void SystemInstrumented::dirichlet(GroupOfElement& goe,
 		       fullVector<double> (*f)(fullVector<double>& xyz)){
 
   // Check if Scalar Problem //
@@ -138,7 +161,7 @@ void System::dirichlet(GroupOfElement& goe,
 
   // Solve The Projection Of f on the Dirichlet Domain with dirFS //
   FormulationProjectionVector projection(f, dirFS);
-  System sysProj(projection);
+  SystemInstrumented sysProj(projection);
 
   sysProj.assemble();
   sysProj.solve();
@@ -156,7 +179,7 @@ void System::dirichlet(GroupOfElement& goe,
   delete dirBasis;
 }
 
-void System::solve(void){
+void SystemInstrumented::solve(void){
   // Is the System assembled ? //
   if(!assembled)
     assemble();
@@ -176,16 +199,24 @@ void System::solve(void){
   solved = true;
 }
 
-void System::assemble(GroupOfDof& group){
+void SystemInstrumented::assemble(GroupOfDof& group){
+  Timer timer;
+  double a;
+  double b;
+
   const vector<const Dof*>& dof = group.getAll();
   const int N = group.getNumber();
 
   for(int i = 0; i < N; i++){
+    timer.start();
     pair<bool, double> fixed = dofM->getValue(*(dof[i]));
     int dofI = dofM->getGlobalId(*(dof[i]));
+    timer.stop();
+
+    dofLookTime += timer.time();
+    dofLookCall++;
 
     if(fixed.first){
-      // If fixed Dof
       pair<
 	set<const Dof*, DofComparator>::iterator,
 	bool> ones = fixedOnes->insert(dof[i]);
@@ -194,24 +225,51 @@ void System::assemble(GroupOfDof& group){
 	linSys->addToMatrix(dofI, dofI, 1);
 	linSys->addToRightHandSide(dofI, fixed.second);
       }
-    }
+   }
 
     else{
       // If unknown Dof
       for(int j = 0; j < N; j++){
+        timer.start();
 	int dofJ = dofM->getGlobalId(*(dof[j]));
+        timer.stop();
 
-	linSys->addToMatrix(dofI, dofJ,
-			    formulation->weak(i, j, group));
+        dofLookTime += timer.time();
+        dofLookCall++;
+
+        timer.start();
+        a = formulation->weak(i, j, group);
+        timer.stop();
+
+        totLHSTime += timer.time();
+        totLHSCall++;
+
+        timer.start();
+	linSys->addToMatrix(dofI, dofJ, a);
+        timer.stop();
+
+        totAddLHSTime += timer.time();
+        totAddLHSCall++;
       }
 
-      linSys->addToRightHandSide(dofI,
-				 formulation->rhs(i, group));
+      timer.start();
+      b = formulation->rhs(i, group);
+      timer.stop();
+
+      totRHSTime += timer.time();
+      totRHSCall++;
+
+      timer.start();
+      linSys->addToRightHandSide(dofI, b);
+      timer.stop();
+
+      totAddRHSTime += timer.time();
+      totAddRHSCall++;
     }
   }
 }
 
-void System::sparcity(GroupOfDof& group){
+void SystemInstrumented::sparcity(GroupOfDof& group){
   const vector<const Dof*>& dof = group.getAll();
   const int N = group.getNumber();
 

@@ -3,24 +3,44 @@ close all;
 clear all;
 
 %% Get Data
-data = dlmread("logTimeBlas.csv", ";");
+data = dlmread("timing.csv", ";");
 
-off = 0; % Stops before end of data
+% Order
+order    = data(1, 3:end);
+unknowns = data(2, 3:end);
 
-order    = data(2:end - off, 1);
-unknowns = data(2:end - off, 2);
-fast     = data(2:end - off, 3);
-slow     = data(2:end - off, 4);
+% Slow
+sPrecmpt = data(3, 3:end);
+sAlloc   = data(4, 3:end);
+sDof     = data(5, 3:end);
+sTerm    = data(6, 3:end);
+sAdd     = data(7, 3:end);
+slow     = [sPrecmpt' sAlloc' sDof' sTerm' sAdd'];
+
+% Fast
+fPrecmpt = data(8,  3:end);
+fAlloc   = data(9,  3:end);
+fDof     = data(10, 3:end);
+fTerm    = data(11, 3:end);
+fAdd     = data(12, 3:end);
+fast     = [fPrecmpt' fAlloc' fDof' fTerm' fAdd'];
 
 %% Time
 figure;
-bar(order, [fast slow]);
+hold on;
+bar(order - 0.125, slow, 0.125, 'stacked');
+bar(order + 0.125, fast, 0.125, 'stacked');
+hold off;
+
 title("Fast and Slow Assembly Algorithm");
 xlabel("Interplation Order [-]");
 ylabel("Time [s]");
 
-legend([{"With BLAS 3 Operations"},
-        {"Without BLAS 3 Operations"}]);
+legend([{"Precomputing"},
+        {"Preallocation"},
+        {"Dof Lookup"},
+        {"Term Computation"},
+        {"Term Addition"}], 'location', 'northwest');
 grid;
 
 %% Unknowns

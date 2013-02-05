@@ -2,16 +2,10 @@
 
 for i in {1..5}
 do
-    for j in {1..5}
-    do
-        ./swavev mesh.msh 5 $i
-    done
+    ./swavev mesh.msh $i $i
 done
 
 for i in {1..5}
 do
-    for j in {1..5}
-    do
-        ./swavev mesh.msh 5 $i slow
-    done
+    ./swavev mesh.msh $i $i slow
 done

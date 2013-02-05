@@ -63,7 +63,15 @@ include_directories(
 )
 
 ## Compiler Flags
-add_definitions(-pedantic -Wall -g -O2)
+add_definitions(-pedantic -Wall -O2)
+#add_definitions(
+#  -pg
+#  -g
+#  -fno-omit-frame-pointer)
+#  -fno-inline-functions
+#  -fno-inline-functions-called-once
+#  -fno-optimize-sibling-calls)
+
 
 ## Build SmallFEM Library
 add_library(sf STATIC ${sources})
@@ -92,6 +100,8 @@ add_executable(test simulation/Test.cpp)
 
 
 ## Link (Note: 'lib' is gmsh static library)
+#set(CMAKE_EXE_LINKER_FLAGS "-pg")
+
 target_link_libraries(laplace sf lib ${GMSH_EXTERNAL_LIBRARIES})
 target_link_libraries(poisson sf lib ${GMSH_EXTERNAL_LIBRARIES})
 
