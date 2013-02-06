@@ -64,12 +64,12 @@ void SystemInstrumented::assemble(void){
   //  in PETSc)
   fixedOnes = new set<const Dof*, DofComparator>();
 
-  // Get Sparcity Pattern & PreAllocate//
+  // Get Sparsity Pattern & PreAllocate//
   Timer timer;
   timer.start();
 
   for(int i = 0; i < E; i++)
-    sparcity(*(group[i]));
+    sparsity(*(group[i]));
 
   linSys->preAllocateEntries();
 
@@ -269,7 +269,7 @@ void SystemInstrumented::assemble(GroupOfDof& group){
   }
 }
 
-void SystemInstrumented::sparcity(GroupOfDof& group){
+void SystemInstrumented::sparsity(GroupOfDof& group){
   const vector<const Dof*>& dof = group.getAll();
   const int N = group.getNumber();
 

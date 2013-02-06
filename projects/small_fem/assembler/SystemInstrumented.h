@@ -91,7 +91,7 @@ class SystemInstrumented{
 
  private:
   void assemble(GroupOfDof& group);
-  void sparcity(GroupOfDof& group);
+  void sparsity(GroupOfDof& group);
 };
 
 

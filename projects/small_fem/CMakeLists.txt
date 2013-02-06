@@ -63,14 +63,8 @@ include_directories(
 )
 
 ## Compiler Flags
-add_definitions(-pedantic -Wall -O2)
-#add_definitions(
-#  -pg
-#  -g
-#  -fno-omit-frame-pointer)
-#  -fno-inline-functions
-#  -fno-inline-functions-called-once
-#  -fno-optimize-sibling-calls)
+add_definitions(-pedantic -Wall -O3)
+#add_definitions(-g)# -pg)
 
 
 ## Build SmallFEM Library
