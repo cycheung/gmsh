@@ -115,9 +115,13 @@ void SystemAbstract::assemble(linearSystemPETSc<double>& sys,
   const vector<const Dof*>& dof = group.getAll();
   const unsigned int N = group.getNumber();
 
+  pair<bool, double> fixed;
+  unsigned int dofI;
+  unsigned int dofJ;
+
   for(unsigned int i = 0; i < N; i++){
-    pair<bool, double> fixed = dofM->getValue(*(dof[i]));
-    unsigned int dofI = dofM->getGlobalId(*(dof[i]));
+    fixed = dofM->getValue(*(dof[i]));
+    dofM->getGlobalId(*(dof[i]));
 
     if(fixed.first){
       // If known Dof
@@ -128,7 +132,7 @@ void SystemAbstract::assemble(linearSystemPETSc<double>& sys,
     else{
       // If unknown Dof
       for(unsigned int j = 0; j < N; j++){
-	unsigned int dofJ = dofM->getGlobalId(*(dof[j]));
+	dofM->getGlobalId(*(dof[j]));
 
 	sys.addToMatrix(dofI, dofJ, (formulation->*term)(i, j, group));
       }
@@ -144,9 +148,13 @@ void SystemAbstract::sparsity(linearSystemPETSc<double>& sys,
   const vector<const Dof*>& dof = group.getAll();
   const unsigned int N = group.getNumber();
 
+  pair<bool, double> fixed;
+  unsigned int dofI;
+  unsigned int dofJ;
+
   for(unsigned int i = 0; i < N; i++){
-    pair<bool, double> fixed = dofM->getValue(*(dof[i]));
-    unsigned int dofI = dofM->getGlobalId(*(dof[i]));
+    fixed = dofM->getValue(*(dof[i]));
+    dofI = dofM->getGlobalId(*(dof[i]));
 
     if(fixed.first){
       // If fixed Dof
@@ -156,7 +164,7 @@ void SystemAbstract::sparsity(linearSystemPETSc<double>& sys,
     else{
       // If unknown Dof
       for(unsigned int j = 0; j < N; j++){
-	unsigned int dofJ = dofM->getGlobalId(*(dof[j]));
+	dofJ = dofM->getGlobalId(*(dof[j]));
 
 	sys.insertInSparsityPattern(dofI, dofJ);
       }
