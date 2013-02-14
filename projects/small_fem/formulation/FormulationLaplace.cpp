@@ -56,6 +56,16 @@ double FormulationLaplace::rhs(unsigned int equationI,
   return 0;
 }
 
+bool FormulationLaplace::isGeneral(void) const{
+  return false;
+}
+
+double FormulationLaplace::weakB(unsigned int dofI,
+                                 unsigned int dofJ,
+                                 const GroupOfDof& god) const{
+  return 0;
+}
+
 const FunctionSpace& FormulationLaplace::fs(void) const{
   return *fspace;
 }

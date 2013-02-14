@@ -145,6 +145,16 @@ double SlowFormulationSteadyWaveVector::rhs(unsigned int equationI,
   return 0;
 }
 
+bool SlowFormulationSteadyWaveVector::isGeneral(void) const{
+  return false;
+}
+
+double SlowFormulationSteadyWaveVector::weakB(unsigned int dofI,
+                                              unsigned int dofJ,
+                                              const GroupOfDof& god) const{
+  return 0;
+}
+
 const FunctionSpace& SlowFormulationSteadyWaveVector::fs(void) const{
   return *fspace;
 }

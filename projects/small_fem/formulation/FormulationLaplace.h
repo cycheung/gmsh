@@ -28,8 +28,13 @@ class FormulationLaplace: public Formulation{
 
   virtual ~FormulationLaplace(void);
 
+  virtual bool isGeneral(void) const;
+
   virtual double weak(unsigned int dofI, unsigned int dofJ,
 		      const GroupOfDof& god) const;
+
+  virtual double weakB(unsigned int dofI, unsigned int dofJ,
+                       const GroupOfDof& god) const;
 
   virtual double rhs(unsigned int equationI,
 		     const GroupOfDof& god) const;

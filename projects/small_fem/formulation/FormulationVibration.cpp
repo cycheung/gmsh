@@ -47,21 +47,24 @@ FormulationVibration::~FormulationVibration(void){
   delete localTerms;
 }
 
-double FormulationVibration::weakA(unsigned int dofI, unsigned int dofJ,
-				   const GroupOfDof& god) const{
+double FormulationVibration::weak(unsigned int dofI, unsigned int dofJ,
+                                  const GroupOfDof& god) const{
 
   return localTerms->getTerm(dofI, dofJ, god);
 }
 
-double FormulationVibration::weakB(unsigned int dofI, unsigned int dofJ,
-					  const GroupOfDof& god) const{
-  throw
-    Exception
-    ("Vibration is a Non General Eigenvalue problem, and don't need a B matrix");
-}
-
 bool FormulationVibration::isGeneral(void) const{
   return false;
+}
+
+double FormulationVibration::weakB(unsigned int dofI, unsigned int dofJ,
+                                   const GroupOfDof& god) const{
+  return 0;
+}
+
+double FormulationVibration::rhs(unsigned int equationI,
+                                 const GroupOfDof& god) const{
+  return 0;
 }
 
 const FunctionSpace& FormulationVibration::fs(void) const{

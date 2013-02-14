@@ -57,6 +57,16 @@ double FormulationProjectionVector::rhs(unsigned int equationI,
   return localTerms2->getTerm(0, equationI, god);
 }
 
+bool FormulationProjectionVector::isGeneral(void) const{
+  return false;
+}
+
+double FormulationProjectionVector::weakB(unsigned int dofI,
+                                          unsigned int dofJ,
+                                          const GroupOfDof& god) const{
+  return 0;
+}
+
 const FunctionSpace& FormulationProjectionVector::fs(void) const{
   return *fspace;
 }

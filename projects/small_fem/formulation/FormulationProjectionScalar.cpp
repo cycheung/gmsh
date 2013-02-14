@@ -57,6 +57,16 @@ double FormulationProjectionScalar::rhs(unsigned int equationI,
   return localTerms2->getTerm(0, equationI, god);
 }
 
+bool FormulationProjectionScalar::isGeneral(void) const{
+  return false;
+}
+
+double FormulationProjectionScalar::weakB(unsigned int dofI,
+                                          unsigned int dofJ,
+                                          const GroupOfDof& god) const{
+  return 0;
+}
+
 const FunctionSpace& FormulationProjectionScalar::fs(void) const{
   return *fspace;
 }

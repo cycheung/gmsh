@@ -82,6 +82,16 @@ double FormulationPoisson::rhs(unsigned int equationI,
   return localTermsR->getTerm(0, equationI, god);
 }
 
+bool FormulationPoisson::isGeneral(void) const{
+  return false;
+}
+
+double FormulationPoisson::weakB(unsigned int dofI,
+                                 unsigned int dofJ,
+                                 const GroupOfDof& god) const{
+  return 0;
+}
+
 const FunctionSpace& FormulationPoisson::fs(void) const{
   return *fspace;
 }

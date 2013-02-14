@@ -82,7 +82,17 @@ double FormulationSteadyWaveVector::weak(unsigned int dofI, unsigned int dofJ,
 }
 
 double FormulationSteadyWaveVector::rhs(unsigned int equationI,
-					       const GroupOfDof& god) const{
+                                        const GroupOfDof& god) const{
+  return 0;
+}
+
+bool FormulationSteadyWaveVector::isGeneral(void) const{
+  return false;
+}
+
+double FormulationSteadyWaveVector::weakB(unsigned int dofI,
+                                          unsigned int dofJ,
+                                          const GroupOfDof& god) const{
   return 0;
 }
 

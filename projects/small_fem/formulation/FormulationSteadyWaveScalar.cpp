@@ -79,7 +79,17 @@ double FormulationSteadyWaveScalar::weak(unsigned int dofI, unsigned int dofJ,
 }
 
 double FormulationSteadyWaveScalar::rhs(unsigned int equationI,
-					       const GroupOfDof& god) const{
+                                        const GroupOfDof& god) const{
+  return 0;
+}
+
+bool FormulationSteadyWaveScalar::isGeneral(void) const{
+  return false;
+}
+
+double FormulationSteadyWaveScalar::weakB(unsigned int dofI,
+                                          unsigned int dofJ,
+                                          const GroupOfDof& god) const{
   return 0;
 }
 

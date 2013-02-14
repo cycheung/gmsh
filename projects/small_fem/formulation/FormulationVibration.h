@@ -5,16 +5,16 @@
 
 #include "TermGradGrad.h"
 
-#include "EigenFormulation.h"
+#include "Formulation.h"
 
 /**
    @class FormulationVibration
-   @brief EigenFormulation for the Vibration problem
+   @brief Formulation for the Vibration problem
 
-   EigenFormulation for the @em Vibration problem
+   Formulation for the @em Vibration problem
  */
 
-class FormulationVibration: public EigenFormulation{
+class FormulationVibration: public Formulation{
  private:
   // Function Space & Basis //
   FunctionSpaceScalar* fspace;
@@ -31,11 +31,14 @@ class FormulationVibration: public EigenFormulation{
 
   virtual bool isGeneral(void) const;
 
-  virtual double weakA(unsigned int dofI, unsigned int dofJ,
-		       const GroupOfDof& god) const;
+  virtual double weak(unsigned int dofI, unsigned int dofJ,
+                      const GroupOfDof& god) const;
 
   virtual double weakB(unsigned int dofI, unsigned int dofJ,
 		       const GroupOfDof& god) const;
+
+  virtual double rhs(unsigned int equationI,
+		     const GroupOfDof& god) const;
 
   virtual const FunctionSpace& fs(void) const;
 };

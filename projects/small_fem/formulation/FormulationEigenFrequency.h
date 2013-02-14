@@ -6,16 +6,16 @@
 #include "TermCurlCurl.h"
 #include "TermGradGrad.h"
 
-#include "EigenFormulation.h"
+#include "Formulation.h"
 
 /**
    @class FormulationEigenFrequency
-   @brief EigenFormulation for the Eigenfrequencies Problem
+   @brief Formulation for the Eigenfrequencies Problem
 
-   EigenFormulation for the Eigenfrequencies Problem
- */
+   Formulation for the Eigenfrequencies Problem
+*/
 
-class FormulationEigenFrequency: public EigenFormulation{
+class FormulationEigenFrequency: public Formulation{
  private:
   // Physical Values //
   static const double mu;
@@ -37,11 +37,14 @@ class FormulationEigenFrequency: public EigenFormulation{
 
   virtual bool isGeneral(void) const;
 
-  virtual double weakA(unsigned int dofI, unsigned int dofJ,
-		       const GroupOfDof& god) const;
+  virtual double weak(unsigned int dofI, unsigned int dofJ,
+                      const GroupOfDof& god) const;
 
   virtual double weakB(unsigned int dofI, unsigned int dofJ,
 		       const GroupOfDof& god) const;
+
+  virtual double rhs(unsigned int equationI,
+		     const GroupOfDof& god) const;
 
   virtual const FunctionSpace& fs(void) const;
 };

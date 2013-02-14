@@ -32,8 +32,13 @@ class Formulation{
  public:
   virtual ~Formulation(void);
 
+  virtual bool isGeneral(void) const = 0;
+
   virtual double weak(unsigned int dofI, unsigned int dofJ,
 		      const GroupOfDof& god) const = 0;
+
+  virtual double weakB(unsigned int dofI, unsigned int dofJ,
+		       const GroupOfDof& god) const = 0;
 
   virtual double rhs(unsigned int equationI,
 		     const GroupOfDof& god) const = 0;
@@ -46,11 +51,27 @@ class Formulation{
    Deletes this Formulation
    **
 
+   @fn Formulation::isGeneral
+   @return Returns
+   @li @c true, if the problem is a @em generalized Eigenvalue problem
+   @li @c false, if not
+   **
+
    @fn Formulation::weak
    @param dofI The @em first index of the formulation term
    @param dofJ The @em second index of the formulation term
    @param god The @em GroupOfDof associated with the formulation term
    @return The value of the requested formulation term
+   **
+
+   @fn Formulation::weakB
+   @param dofI The @em first index of the formulation term
+   @param dofJ The @em second index of the formulation term
+   @param god The @em GroupOfDof associated with the formulation term
+
+   This method is only valid when Formulation::isGeneral() is @c true
+
+   @return The value of the requested @em second formulation term
    **
 
    @fn Formulation::rhs
@@ -60,9 +81,8 @@ class Formulation{
    @return The value of the @em ith equation Right Hand Side
    **
 
-  @fn Formulation::fs
-  @return Returns the Function Space used by this Formulation
-  **
+   @fn Formulation::fs
+   @return Returns the Function Space used by this Formulation
 */
 
 #endif

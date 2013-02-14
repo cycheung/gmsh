@@ -70,8 +70,8 @@ FormulationEigenFrequency::~FormulationEigenFrequency(void){
   delete localTerms2;
 }
 
-double FormulationEigenFrequency::weakA(unsigned int dofI, unsigned int dofJ,
-					const GroupOfDof& god) const{
+double FormulationEigenFrequency::weak(unsigned int dofI, unsigned int dofJ,
+                                       const GroupOfDof& god) const{
 
   return localTerms1->getTerm(dofI, dofJ, god) / mu;
 }
@@ -80,6 +80,11 @@ double FormulationEigenFrequency::weakB(unsigned int dofI, unsigned int dofJ,
 					const GroupOfDof& god) const{
 
   return localTerms2->getTerm(dofI, dofJ, god) * eps;
+}
+
+double FormulationEigenFrequency::rhs(unsigned int dofI,
+                                      const GroupOfDof& god) const{
+  return 0;
 }
 
 bool FormulationEigenFrequency::isGeneral(void) const{

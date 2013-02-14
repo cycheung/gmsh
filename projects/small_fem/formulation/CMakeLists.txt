@@ -6,12 +6,10 @@ set(src
   FormulationProjectionScalar.cpp
   FormulationSteadyWaveVector.cpp
   FormulationSteadyWaveScalar.cpp
-
-  SlowFormulationSteadyWaveVector.cpp
-
-  EigenFormulation.cpp
   FormulationEigenFrequency.cpp
   FormulationVibration.cpp
+
+  SlowFormulationSteadyWaveVector.cpp
 
   Term.cpp
   TermFieldField.cpp
