@@ -29,9 +29,6 @@ class TermProjectionGrad: public Term{
   const fullMatrix<double>** phi;
   const Jacobian* jac;
 
-  unsigned int               nOrientation;
-  std::vector<unsigned int>* orientationStat;
-
   // FE Matrix
   fullMatrix<double>** cM;
   fullMatrix<double>** bM;
@@ -47,7 +44,6 @@ class TermProjectionGrad: public Term{
 
  private:
   void clean(void);
-  void buildEMap(void);
 
   void computeC(void);
   void computeB(void);

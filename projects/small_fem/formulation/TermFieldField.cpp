@@ -26,9 +26,6 @@ TermFieldField::TermFieldField(const Jacobian& jac,
   // Compute Jacobians //
   this->jac = &jac;
 
-  // Element Map //
-  buildEMap();
-
   // Compute //
   computeC();
   computeB();
@@ -43,7 +40,6 @@ TermFieldField::~TermFieldField(void){
     delete aM[s];
 
   delete[] aM;
-  delete   eMap;
 }
 
 void TermFieldField::clean(void){
@@ -56,29 +52,6 @@ void TermFieldField::clean(void){
     delete bM[s];
 
   delete[] bM;
-}
-
-void TermFieldField::buildEMap(void){
-  const vector<pair<const MElement*, ElementData> >&
-    element = jac->getAllElements().getAll();
-
-  eMap = new map<const MElement*, pair<unsigned int, unsigned int> >;
-
-  unsigned int offset = 0;
-  unsigned int j;
-
-  for(unsigned int s = 0; s < nOrientation; s++){
-    j = 0;
-
-    for(unsigned int e = offset; e < offset + (*orientationStat)[s]; e++){
-      eMap->insert(pair<const MElement*, pair<unsigned int, unsigned int> >
-                       (element[e].first, pair<unsigned int, unsigned int>(s, j)));
-      j++;
-    }
-
-    // New Offset
-    offset += (*orientationStat)[s];
-  }
 }
 
 void TermFieldField::computeC(void){

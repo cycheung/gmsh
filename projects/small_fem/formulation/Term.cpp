@@ -5,3 +5,19 @@ Term::Term(void){
 
 Term::~Term(void){
 }
+
+
+double Term::getTerm(unsigned int dofI,
+                     unsigned int dofJ,
+                     unsigned int elementId) const{
+  unsigned int i   = 0;
+  unsigned int ctr = elementId;
+  unsigned int off = (*orientationStat)[0];
+
+  for(; elementId >= off && i < nOrientation; i++){
+    off += (*orientationStat)[i + 1];
+    ctr -= (*orientationStat)[i];
+  }
+
+  return (*aM[i])(ctr, dofI * nFunction + dofJ);
+}

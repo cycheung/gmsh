@@ -6,7 +6,6 @@
 #include "WriterMsh.h"
 
 #include "FormulationSteadyWaveVector.h"
-#include "SlowFormulationSteadyWaveVector.h"
 
 #include "SystemInstrumented.h"
 #include "Timer.h"
@@ -61,21 +60,11 @@ int main(int argc, char** argv){
 
   // SteadyWaveVector //
   //preCpt.start();
-  Formulation* sWave;
-
-  if(argc == 5 && !strcmp(argv[4], "slow")){
-    cout << "Slow Version" << endl;
-    sWave = new SlowFormulationSteadyWaveVector(domain, puls * 1, order);
-  }
-
-  else{
-    cout << "Fast Version" << endl;
-    sWave = new FormulationSteadyWaveVector(domain, puls * 1, order);
-  }
+  FormulationSteadyWaveVector sWave(domain, puls * 1, order);
   //preCpt.stop();
 
-  //SystemInstrumented sys(*sWave);
-  System sys(*sWave);
+  //SystemInstrumented sys(sWave);
+  System sys(sWave);
 
   sys.dirichlet(source, fSource);
   sys.dirichlet(wall,   fWall);
@@ -94,7 +83,7 @@ int main(int argc, char** argv){
   cout << "Adding Terms: "  << sys.totAddLHSTime + sys.totAddRHSTime << endl;
   */
 
-  if(argc == 5 && strcmp(argv[4], "slow")){
+  if(argc == 5){
     // Interpolated View //
     // Visu Mesh
     Mesh visuMsh(argv[4]);

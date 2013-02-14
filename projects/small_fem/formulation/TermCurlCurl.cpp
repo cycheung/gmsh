@@ -6,7 +6,6 @@ using namespace std;
 TermCurlCurl::TermCurlCurl(const Jacobian& jac,
                            const Basis& basis,
                            const fullVector<double>& integrationWeights){
-
   // Basis Check //
   bool derivative;
 
@@ -47,9 +46,6 @@ TermCurlCurl::TermCurlCurl(const Jacobian& jac,
   // Jacobians //
   this->jac = &jac;
 
-  // Element Map //
-  buildEMap();
-
   // Compute //
   computeC();
   computeB();
@@ -64,7 +60,6 @@ TermCurlCurl::~TermCurlCurl(void){
     delete aM[s];
 
   delete[] aM;
-  delete   eMap;
 }
 
 void TermCurlCurl::clean(void){
@@ -79,29 +74,6 @@ void TermCurlCurl::clean(void){
   delete[] bM;
 
   delete[] phi;
-}
-
-void TermCurlCurl::buildEMap(void){
-  const vector<pair<const MElement*, ElementData> >&
-    element = jac->getAllElements().getAll();
-
-  eMap = new map<const MElement*, pair<unsigned int, unsigned int> >;
-
-  unsigned int offset = 0;
-  unsigned int j;
-
-  for(unsigned int s = 0; s < nOrientation; s++){
-    j = 0;
-
-    for(unsigned int e = offset; e < offset + (*orientationStat)[s]; e++){
-      eMap->insert(pair<const MElement*, pair<unsigned int, unsigned int> >
-                       (element[e].first, pair<unsigned int, unsigned int>(s, j)));
-      j++;
-    }
-
-    // New Offset
-    offset += (*orientationStat)[s];
-  }
 }
 
 void TermCurlCurl::computeC(void){

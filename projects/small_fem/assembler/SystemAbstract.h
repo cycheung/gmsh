@@ -29,7 +29,7 @@ class SystemAbstract{
   typedef
     double (Formulation::*formulationPtr)(unsigned int dofI,
                                           unsigned int dofJ,
-                                          const GroupOfDof& god) const;
+                                          unsigned int elementId) const;
 
  protected:
   bool assembled;
@@ -63,6 +63,7 @@ class SystemAbstract{
 
  protected:
   void assemble(linearSystemPETSc<double>& sys,
+                unsigned int elementId,
                 const GroupOfDof& group,
                 formulationPtr& term);
 

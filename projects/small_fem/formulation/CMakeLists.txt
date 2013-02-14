@@ -9,7 +9,7 @@ set(src
   FormulationEigenFrequency.cpp
   FormulationVibration.cpp
 
-  SlowFormulationSteadyWaveVector.cpp
+#  SlowFormulationSteadyWaveVector.cpp
 
   Term.cpp
   TermFieldField.cpp

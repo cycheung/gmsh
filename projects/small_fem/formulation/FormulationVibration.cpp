@@ -48,9 +48,9 @@ FormulationVibration::~FormulationVibration(void){
 }
 
 double FormulationVibration::weak(unsigned int dofI, unsigned int dofJ,
-                                  const GroupOfDof& god) const{
+                                  unsigned int elementId) const{
 
-  return localTerms->getTerm(dofI, dofJ, god);
+  return localTerms->getTerm(dofI, dofJ, elementId);
 }
 
 bool FormulationVibration::isGeneral(void) const{
@@ -58,12 +58,12 @@ bool FormulationVibration::isGeneral(void) const{
 }
 
 double FormulationVibration::weakB(unsigned int dofI, unsigned int dofJ,
-                                   const GroupOfDof& god) const{
+                                   unsigned int elementId) const{
   return 0;
 }
 
 double FormulationVibration::rhs(unsigned int equationI,
-                                 const GroupOfDof& god) const{
+                                 unsigned int elementId) const{
   return 0;
 }
 

@@ -15,8 +15,9 @@
 
 class Term{
  protected:
-  std::map<const MElement*, std::pair<unsigned int, unsigned int> >* eMap;
   unsigned int nFunction;
+  unsigned int nOrientation;
+  std::vector<unsigned int>* orientationStat;
 
   fullMatrix<double>** aM;
 
@@ -24,24 +25,9 @@ class Term{
   Term(void);
   virtual ~Term(void);
 
-  double getTerm(unsigned int i,
-                 unsigned int j,
-                 const GroupOfDof& god) const;
+  double getTerm(unsigned int dofI,
+                 unsigned int dofJ,
+                 unsigned int elementId) const;
 };
-
-//////////////////////
-// Inline Functions //
-//////////////////////
-
-inline double Term::getTerm(unsigned int i,
-                            unsigned int j,
-                            const GroupOfDof& god) const{
-
-  std::map<const MElement*, std::pair<unsigned int, unsigned int> >::iterator
-    index = eMap->find(&god.getGeoElement());
-
-  return (*aM[index->second.first])
-    (index->second.second, i * nFunction + j);
-}
 
 #endif

@@ -75,14 +75,14 @@ FormulationSteadyWaveVector::~FormulationSteadyWaveVector(void){
 }
 
 double FormulationSteadyWaveVector::weak(unsigned int dofI, unsigned int dofJ,
-                                         const GroupOfDof& god) const{
+                                         unsigned int elementId) const{
   return
-    localTerms1->getTerm(dofI, dofJ, god) / mu -
-    localTerms2->getTerm(dofI, dofJ, god) * eps * kSquare;
+    localTerms1->getTerm(dofI, dofJ, elementId) / mu -
+    localTerms2->getTerm(dofI, dofJ, elementId) * eps * kSquare;
 }
 
 double FormulationSteadyWaveVector::rhs(unsigned int equationI,
-                                        const GroupOfDof& god) const{
+                                        unsigned int elementId) const{
   return 0;
 }
 
@@ -92,7 +92,7 @@ bool FormulationSteadyWaveVector::isGeneral(void) const{
 
 double FormulationSteadyWaveVector::weakB(unsigned int dofI,
                                           unsigned int dofJ,
-                                          const GroupOfDof& god) const{
+                                          unsigned int elementId) const{
   return 0;
 }
 

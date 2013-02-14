@@ -31,7 +31,7 @@ System::~System(void){
 }
 
 void System::assemble(void){
-  // Get GroupOfDofs //
+  // Get Elements //
   const unsigned int E = fs->getSupport().getNumber();
   const vector<pair<const MElement*, ElementData> >&
     element = fs->getSupport().getAll();
@@ -48,6 +48,7 @@ void System::assemble(void){
 
   for(unsigned int i = 0; i < E; i++)
     SystemAbstract::assemble(*linSys,
+                             i,
                              element[i].second.getGroupOfDof(),
                              term);
 

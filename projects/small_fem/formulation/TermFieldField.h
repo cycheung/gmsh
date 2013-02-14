@@ -24,9 +24,6 @@ class TermFieldField: public Term{
   const Basis*    basis;
   const Jacobian* jac;
 
-  unsigned int               nOrientation;
-  std::vector<unsigned int>* orientationStat;
-
   // FE Matrix
   fullMatrix<double>** cM;
   fullMatrix<double>** bM;
@@ -40,7 +37,6 @@ class TermFieldField: public Term{
 
  private:
   void clean(void);
-  void buildEMap(void);
 
   void computeC(void);
   void computeB(void);

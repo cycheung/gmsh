@@ -71,15 +71,15 @@ FormulationPoisson::~FormulationPoisson(void){
 }
 
 double FormulationPoisson::weak(unsigned int dofI, unsigned int dofJ,
-                                const GroupOfDof& god) const{
+                                unsigned int elementId) const{
 
-  return localTermsL->getTerm(dofI, dofJ, god);
+  return localTermsL->getTerm(dofI, dofJ, elementId);
 }
 
 double FormulationPoisson::rhs(unsigned int equationI,
-                               const GroupOfDof& god) const{
+                               unsigned int elementId) const{
 
-  return localTermsR->getTerm(0, equationI, god);
+  return localTermsR->getTerm(0, equationI, elementId);
 }
 
 bool FormulationPoisson::isGeneral(void) const{
@@ -88,7 +88,7 @@ bool FormulationPoisson::isGeneral(void) const{
 
 double FormulationPoisson::weakB(unsigned int dofI,
                                  unsigned int dofJ,
-                                 const GroupOfDof& god) const{
+                                 unsigned int elementId) const{
   return 0;
 }
 

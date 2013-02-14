@@ -104,12 +104,14 @@ void SystemEigen::assemble(void){
 
   for(unsigned int i = 0; i < E; i++)
     SystemAbstract::assemble(*linSysA,
+                             i,
                              element[i].second.getGroupOfDof(),
                              termA);
 
   if(general)
     for(unsigned int i = 0; i < E; i++)
       SystemAbstract::assemble(*linSysB,
+                               i,
                                element[i].second.getGroupOfDof(),
                                termB);
 

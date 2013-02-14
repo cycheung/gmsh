@@ -45,14 +45,14 @@ FormulationLaplace::~FormulationLaplace(void){
 }
 
 double FormulationLaplace::weak(unsigned int dofI, unsigned int dofJ,
-				const GroupOfDof& god) const{
+				unsigned int elementId) const{
 
-  return localTerms->getTerm(dofI, dofJ, god);
+  return localTerms->getTerm(dofI, dofJ, elementId);
 }
 
 
 double FormulationLaplace::rhs(unsigned int equationI,
-                               const GroupOfDof& god) const{
+                               unsigned int elementId) const{
   return 0;
 }
 
@@ -62,7 +62,7 @@ bool FormulationLaplace::isGeneral(void) const{
 
 double FormulationLaplace::weakB(unsigned int dofI,
                                  unsigned int dofJ,
-                                 const GroupOfDof& god) const{
+                                 unsigned int elementId) const{
   return 0;
 }
 

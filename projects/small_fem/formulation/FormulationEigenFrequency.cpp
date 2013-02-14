@@ -71,19 +71,19 @@ FormulationEigenFrequency::~FormulationEigenFrequency(void){
 }
 
 double FormulationEigenFrequency::weak(unsigned int dofI, unsigned int dofJ,
-                                       const GroupOfDof& god) const{
+                                       unsigned int elementId) const{
 
-  return localTerms1->getTerm(dofI, dofJ, god) / mu;
+  return localTerms1->getTerm(dofI, dofJ, elementId) / mu;
 }
 
 double FormulationEigenFrequency::weakB(unsigned int dofI, unsigned int dofJ,
-					const GroupOfDof& god) const{
+					unsigned int elementId) const{
 
-  return localTerms2->getTerm(dofI, dofJ, god) * eps;
+  return localTerms2->getTerm(dofI, dofJ, elementId) * eps;
 }
 
 double FormulationEigenFrequency::rhs(unsigned int dofI,
-                                      const GroupOfDof& god) const{
+                                      unsigned int elementId) const{
   return 0;
 }
 

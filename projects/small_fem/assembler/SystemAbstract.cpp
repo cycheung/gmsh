@@ -109,6 +109,7 @@ void SystemAbstract::dirichlet(GroupOfElement& goe,
 }
 
 void SystemAbstract::assemble(linearSystemPETSc<double>& sys,
+                              unsigned int elementId,
                               const GroupOfDof& group,
                               formulationPtr& term){
 
@@ -121,7 +122,7 @@ void SystemAbstract::assemble(linearSystemPETSc<double>& sys,
 
   for(unsigned int i = 0; i < N; i++){
     fixed = dofM->getValue(*(dof[i]));
-    dofM->getGlobalId(*(dof[i]));
+    dofI  = dofM->getGlobalId(*(dof[i]));
 
     if(fixed.first){
       // If known Dof
@@ -132,12 +133,14 @@ void SystemAbstract::assemble(linearSystemPETSc<double>& sys,
     else{
       // If unknown Dof
       for(unsigned int j = 0; j < N; j++){
-	dofM->getGlobalId(*(dof[j]));
+	dofJ = dofM->getGlobalId(*(dof[j]));
 
-	sys.addToMatrix(dofI, dofJ, (formulation->*term)(i, j, group));
+	sys.addToMatrix(dofI, dofJ,
+                        (formulation->*term)(i, j, elementId));
       }
 
-      sys.addToRightHandSide(dofI, formulation->rhs(i, group));
+      sys.addToRightHandSide(dofI,
+                             formulation->rhs(i, elementId));
     }
   }
 }
@@ -154,7 +157,7 @@ void SystemAbstract::sparsity(linearSystemPETSc<double>& sys,
 
   for(unsigned int i = 0; i < N; i++){
     fixed = dofM->getValue(*(dof[i]));
-    dofI = dofM->getGlobalId(*(dof[i]));
+    dofI  = dofM->getGlobalId(*(dof[i]));
 
     if(fixed.first){
       // If fixed Dof

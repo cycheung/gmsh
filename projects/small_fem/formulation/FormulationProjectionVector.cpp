@@ -46,15 +46,15 @@ FormulationProjectionVector::~FormulationProjectionVector(void){
 }
 
 double FormulationProjectionVector::weak(unsigned int dofI, unsigned int dofJ,
-                                         const GroupOfDof& god) const{
+                                         unsigned int elementId) const{
 
-  return localTerms1->getTerm(dofI, dofJ, god);
+  return localTerms1->getTerm(dofI, dofJ, elementId);
 }
 
 double FormulationProjectionVector::rhs(unsigned int equationI,
-					const GroupOfDof& god) const{
+					unsigned int elementId) const{
 
-  return localTerms2->getTerm(0, equationI, god);
+  return localTerms2->getTerm(0, equationI, elementId);
 }
 
 bool FormulationProjectionVector::isGeneral(void) const{
@@ -63,7 +63,7 @@ bool FormulationProjectionVector::isGeneral(void) const{
 
 double FormulationProjectionVector::weakB(unsigned int dofI,
                                           unsigned int dofJ,
-                                          const GroupOfDof& god) const{
+                                          unsigned int elementId) const{
   return 0;
 }
 

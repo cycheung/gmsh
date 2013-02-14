@@ -46,15 +46,15 @@ FormulationProjectionScalar::~FormulationProjectionScalar(void){
 }
 
 double FormulationProjectionScalar::weak(unsigned int dofI, unsigned int dofJ,
-                                         const GroupOfDof& god) const{
+                                         unsigned int elementId) const{
 
-  return localTerms1->getTerm(dofI, dofJ, god);
+  return localTerms1->getTerm(dofI, dofJ, elementId);
 }
 
 double FormulationProjectionScalar::rhs(unsigned int equationI,
-					const GroupOfDof& god) const{
+					unsigned int elementId) const{
 
-  return localTerms2->getTerm(0, equationI, god);
+  return localTerms2->getTerm(0, equationI, elementId);
 }
 
 bool FormulationProjectionScalar::isGeneral(void) const{
@@ -63,7 +63,7 @@ bool FormulationProjectionScalar::isGeneral(void) const{
 
 double FormulationProjectionScalar::weakB(unsigned int dofI,
                                           unsigned int dofJ,
-                                          const GroupOfDof& god) const{
+                                          unsigned int elementId) const{
   return 0;
 }
 

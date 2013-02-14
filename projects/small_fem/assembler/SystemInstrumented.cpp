@@ -47,13 +47,14 @@ void SystemInstrumented::assemble(void){
 
   // Assemble System //
   for(unsigned int i = 0; i < E; i++)
-    assemble(element[i].second.getGroupOfDof());
+    assemble(element[i].second.getGroupOfDof(), i);
 
   // The system is assembled //
   assembled = true;
 }
 
-void SystemInstrumented::assemble(const GroupOfDof& group){
+void SystemInstrumented::assemble(const GroupOfDof& group,
+                                  unsigned int elementId){
   Timer timer;
   double a;
   double b;
@@ -86,7 +87,7 @@ void SystemInstrumented::assemble(const GroupOfDof& group){
         dofLookCall++;
 
         timer.start();
-        a = formulation->weak(i, j, group);
+        a = formulation->weak(i, j, elementId);
         timer.stop();
 
         totLHSTime += timer.time();
@@ -101,7 +102,7 @@ void SystemInstrumented::assemble(const GroupOfDof& group){
       }
 
       timer.start();
-      b = formulation->rhs(i, group);
+      b = formulation->rhs(i, elementId);
       timer.stop();
 
       totRHSTime += timer.time();

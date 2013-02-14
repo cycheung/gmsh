@@ -36,7 +36,8 @@ class SystemInstrumented: public System{
   virtual void assemble(void);
 
  private:
-  void assemble(const GroupOfDof& group);
+  void assemble(const GroupOfDof& group,
+                unsigned int elementId);
 };
 
 
