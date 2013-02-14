@@ -33,24 +33,21 @@ System::~System(void){
 void System::assemble(void){
   // Get GroupOfDofs //
   const vector<GroupOfDof*>& group = fs->getAllGroups();
-  const int E = fs->groupNumber();
-
-  // Set to put Fixed Dof only ones
-  // (cannot use both 'setValue' and 'addValue' in PETSc)
-  fixedOnes = new set<const Dof*, DofComparator>();
+  const unsigned int E = fs->groupNumber();
 
   // Get Sparsity Pattern & PreAllocate//
-  for(int i = 0; i < E; i++)
-    sparsity(*(group[i]));
+  for(unsigned int i = 0; i < E; i++)
+    AbstractSystem::sparsity(*linSys, *(group[i]));
 
   linSys->preAllocateEntries();
 
   // Assemble System //
-  for(int i = 0; i < E; i++)
-    assemble(*(group[i]));
+  formulationPtr term = &Formulation::weak;
+
+  for(unsigned int i = 0; i < E; i++)
+    AbstractSystem::assemble(*linSys, *(group[i]), term);
 
   // The system is assembled //
-  delete fixedOnes;
   assembled = true;
 }
 
@@ -73,63 +70,4 @@ void System::solve(void){
 
   // System solved ! //
   solved = true;
-}
-
-void System::assemble(GroupOfDof& group){
-  const vector<const Dof*>& dof = group.getAll();
-  const int N = group.getNumber();
-
-  for(int i = 0; i < N; i++){
-    pair<bool, double> fixed = dofM->getValue(*(dof[i]));
-    int dofI = dofM->getGlobalId(*(dof[i]));
-
-    if(fixed.first){
-      // If fixed Dof
-      pair<
-	set<const Dof*, DofComparator>::iterator,
-	bool> ones = fixedOnes->insert(dof[i]);
-
-      if(ones.second){
-	linSys->addToMatrix(dofI, dofI, 1);
-	linSys->addToRightHandSide(dofI, fixed.second);
-      }
-    }
-
-    else{
-      // If unknown Dof
-      for(int j = 0; j < N; j++){
-	int dofJ = dofM->getGlobalId(*(dof[j]));
-
-	linSys->addToMatrix(dofI, dofJ,
-			    formulation->weak(i, j, group));
-      }
-
-      linSys->addToRightHandSide(dofI,
-				 formulation->rhs(i, group));
-    }
-  }
-}
-
-void System::sparsity(GroupOfDof& group){
-  const vector<const Dof*>& dof = group.getAll();
-  const int N = group.getNumber();
-
-  for(int i = 0; i < N; i++){
-    pair<bool, double> fixed = dofM->getValue(*(dof[i]));
-    int dofI = dofM->getGlobalId(*(dof[i]));
-
-    if(fixed.first){
-      // If fixed Dof
-      linSys->insertInSparsityPattern(dofI, dofI);
-    }
-
-    else{
-      // If unknown Dof
-      for(int j = 0; j < N; j++){
-	int dofJ = dofM->getGlobalId(*(dof[j]));
-
-	linSys->insertInSparsityPattern(dofI, dofJ);
-      }
-    }
-  }
 }

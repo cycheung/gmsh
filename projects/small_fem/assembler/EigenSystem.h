@@ -2,9 +2,6 @@
 #define _EIGENSYSTEM_H_
 
 #include "AbstractSystem.h"
-#include "EigenFormulation.h"
-
-#include "linearSystemPETSc.h"
 #include "EigenSolver.h"
 
 /**
@@ -12,7 +9,7 @@
    @brief This class assembles an Eigenvalue System
 
    This class assembles an Eigenvalue system,
-   described by a EigenFormulation.@n
+   described by a Formulation.@n
 
    The Eigenvalue Problem can be @em generalized or not:
    @li An Eigenvalue Problem is a of the type
@@ -20,21 +17,11 @@
    @li An Generalized Eigenvalue Problem is a of the type
    @f$\qquad(\mathbf{A} - \lambda{}\mathbf{B})\mathbf{x} = \mathbf{b}@f$
 
-   @see EigenFormulation
-
-
-   @warning
-   We can @em only assemble Dof related to a MElement@n
-
-   @todo
-   Assembly of @em NON Element related Dof@n
-   Allow multiple basis for dirichelt
+   @see Formulation::isGeneral()
  */
 
 class EigenSystem: public AbstractSystem{
  private:
-  const EigenFormulation* eFormulation;
-
   bool general;
 
   linearSystemPETSc<double>* linSysA;
@@ -46,7 +33,7 @@ class EigenSystem: public AbstractSystem{
   unsigned int nEigenValues;
 
  public:
-  EigenSystem(const EigenFormulation& eFormulation);
+  EigenSystem(const Formulation& formulation);
   virtual ~EigenSystem(void);
 
   bool isGeneral(void) const;
@@ -59,18 +46,12 @@ class EigenSystem: public AbstractSystem{
 
   virtual void assemble(void);
   virtual void solve(void);
-
- private:
-  void assemble(GroupOfDof& group);
-  void assembleGeneral(GroupOfDof& group);
-  void sparcity(GroupOfDof& group);
-  void sparcityGeneral(GroupOfDof& group);
 };
 
 
 /**
    @fn EigenSystem::EigenSystem
-   @param eFormulation An EigenFormulation that
+   @param formulation An Formulation that
    gives the way to assemble the Eigenvalue System
 
    Instantiated a new EigenSystem

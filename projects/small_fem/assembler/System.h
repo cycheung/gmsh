@@ -2,9 +2,6 @@
 #define _SYSTEM_H_
 
 #include "AbstractSystem.h"
-#include "Formulation.h"
-
-#include "linearSystemPETSc.h"
 
 /**
    @class System
@@ -12,18 +9,10 @@
 
    This class assembles a linear system,
    described by a Formulation
-
-   @warning
-   We can @em only assemble Dof related to a MElement@n
-
-   @todo
-   Assembly of @em NON Element related Dof@n
-   Allow multiple basis for dirichelt
  */
 
 class System: public AbstractSystem{
  protected:
-  const Formulation*         formulation;
   linearSystemPETSc<double>* linSys;
   fullVector<double>*        x;
 
@@ -35,10 +24,6 @@ class System: public AbstractSystem{
 
   virtual void assemble(void);
   virtual void solve(void);
-
- private:
-  void assemble(GroupOfDof& group);
-  void sparsity(GroupOfDof& group);
 };
 
 

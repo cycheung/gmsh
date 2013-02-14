@@ -107,3 +107,59 @@ void AbstractSystem::dirichlet(GroupOfElement& goe,
 
   delete dirBasis;
 }
+
+void AbstractSystem::assemble(linearSystemPETSc<double>& sys,
+                              GroupOfDof& group,
+                              formulationPtr& term){
+
+  const vector<const Dof*>& dof = group.getAll();
+  const unsigned int N = group.getNumber();
+
+  for(unsigned int i = 0; i < N; i++){
+    pair<bool, double> fixed = dofM->getValue(*(dof[i]));
+    unsigned int dofI = dofM->getGlobalId(*(dof[i]));
+
+    if(fixed.first){
+      // If known Dof
+      sys.addToMatrix(dofI, dofI, 1);
+      sys.addToRightHandSide(dofI, fixed.second);
+    }
+
+    else{
+      // If unknown Dof
+      for(unsigned int j = 0; j < N; j++){
+	unsigned int dofJ = dofM->getGlobalId(*(dof[j]));
+
+	sys.addToMatrix(dofI, dofJ, (formulation->*term)(i, j, group));
+      }
+
+      sys.addToRightHandSide(dofI, formulation->rhs(i, group));
+    }
+  }
+}
+
+void AbstractSystem::sparsity(linearSystemPETSc<double>& sys,
+                              GroupOfDof& group){
+
+  const vector<const Dof*>& dof = group.getAll();
+  const unsigned int N = group.getNumber();
+
+  for(unsigned int i = 0; i < N; i++){
+    pair<bool, double> fixed = dofM->getValue(*(dof[i]));
+    unsigned int dofI = dofM->getGlobalId(*(dof[i]));
+
+    if(fixed.first){
+      // If fixed Dof
+      sys.insertInSparsityPattern(dofI, dofI);
+    }
+
+    else{
+      // If unknown Dof
+      for(unsigned int j = 0; j < N; j++){
+	unsigned int dofJ = dofM->getGlobalId(*(dof[j]));
+
+	sys.insertInSparsityPattern(dofI, dofJ);
+      }
+    }
+  }
+}

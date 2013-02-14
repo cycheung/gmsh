@@ -5,19 +5,9 @@
 
 /**
    @class SystemInstrumented
-   @brief This class assembles a linear system (with Timer%s)
+   @brief This class is a System with Timer%s
 
-   This class assembles a linear system,
-   described by a Formulation.
-
-   This class got also Timer%s.
-
-   @warning
-   We can @em only assemble Dof related to a MElement@n
-
-   @todo
-   Assembly of @em NON Element related Dof@n
-   Allow multiple basis for dirichelt
+   This class is a System with Timer%s
  */
 
 class SystemInstrumented: public System{
@@ -44,11 +34,9 @@ class SystemInstrumented: public System{
   virtual ~SystemInstrumented(void);
 
   virtual void assemble(void);
-  virtual void solve(void);
 
  private:
   void assemble(GroupOfDof& group);
-  void sparsity(GroupOfDof& group);
 };
 
 

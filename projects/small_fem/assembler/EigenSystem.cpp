@@ -2,17 +2,17 @@
 
 using namespace std;
 
-EigenSystem::EigenSystem(const EigenFormulation& eFormulation){
-  // Get EigenFormulation //
-  this->eFormulation = &eFormulation;
-  this->fs           = &(eFormulation.fs());
+EigenSystem::EigenSystem(const Formulation& formulation){
+  // Get Formulation //
+  this->formulation = &formulation;
+  this->fs          = &(formulation.fs());
 
   // Get Dof Manager //
   dofM = new DofManager();
   dofM->addToGlobalIdSpace(fs->getAllGroups());
 
   // Is the Problem a General EigenValue Problem ? //
-  general = eFormulation.isGeneral();
+  general = formulation.isGeneral();
 
   // Create EigenSystem //
   // Get Size
@@ -78,38 +78,35 @@ setNumberOfEigenValues(unsigned int nEigenValues){
 void EigenSystem::assemble(void){
   // Get GroupOfDofs //
   const vector<GroupOfDof*>& group = fs->getAllGroups();
-  const int E = fs->groupNumber();
-
-  // Set to put Fixed Dof only ones
-  // (cannot use both  setValue and add Value
-  //  in PETSc)
-  fixedOnes = new set<const Dof*, DofComparator>();
+  const unsigned int E = fs->groupNumber();
 
   // Get Sparcity Pattern & PreAllocate//
-  if(general)
-    for(int i = 0; i < E; i++)
-      sparcityGeneral(*(group[i]));
-
-  else
-    for(int i = 0; i < E; i++)
-      sparcity(*(group[i]));
+  // linSysA
+  for(unsigned int i = 0; i < E; i++)
+    AbstractSystem::sparsity(*linSysA, *(group[i]));
 
   linSysA->preAllocateEntries();
 
-  if(general)
+  // linSysB
+  if(general){
+    for(unsigned int i = 0; i < E; i++)
+      AbstractSystem::sparsity(*linSysB, *(group[i]));
+
     linSysB->preAllocateEntries();
+  }
 
   // Assemble EigenSystem //
-  if(general)
-    for(int i = 0; i < E; i++)
-      assembleGeneral(*(group[i]));
+  formulationPtr termA = &Formulation::weak;
+  formulationPtr termB = &Formulation::weakB;
 
-  else
-    for(int i = 0; i < E; i++)
-      assemble(*(group[i]));
+  for(unsigned int i = 0; i < E; i++)
+    AbstractSystem::assemble(*linSysA, *(group[i]), termA);
+
+  if(general)
+    for(unsigned int i = 0; i < E; i++)
+      AbstractSystem::assemble(*linSysB, *(group[i]), termB);
 
   // The EigenSystem is assembled //
-  delete fixedOnes;
   assembled = true;
 }
 
@@ -142,117 +139,3 @@ void EigenSystem::solve(void){
   // System solved ! //
   solved = true;
 }
-
-void EigenSystem::assemble(GroupOfDof& group){
-  const vector<const Dof*>& dof = group.getAll();
-  const int N = group.getNumber();
-
-  for(int i = 0; i < N; i++){
-    pair<bool, double> fixed = dofM->getValue(*(dof[i]));
-    int dofI = dofM->getGlobalId(*(dof[i]));
-
-    if(fixed.first){
-      // If fixed Dof
-      pair<
-	set<const Dof*, DofComparator>::iterator,
-	bool> ones = fixedOnes->insert(dof[i]);
-
-      if(ones.second)
-	linSysA->addToMatrix(dofI, dofI, 1);
-    }
-
-    else{
-      // If unknown Dof
-      for(int j = 0; j < N; j++){
-	int dofJ = dofM->getGlobalId(*(dof[j]));
-
-	linSysA->addToMatrix(dofI, dofJ,
-			     eFormulation->weakA(i, j, group));
-      }
-    }
-  }
-}
-
-void EigenSystem::assembleGeneral(GroupOfDof& group){
-  const vector<const Dof*>& dof = group.getAll();
-  const int N = group.getNumber();
-
-  for(int i = 0; i < N; i++){
-    pair<bool, double> fixed = dofM->getValue(*(dof[i]));
-    int dofI = dofM->getGlobalId(*(dof[i]));
-
-    if(fixed.first){
-      // If fixed Dof
-      pair<
-	set<const Dof*, DofComparator>::iterator,
-	bool> ones = fixedOnes->insert(dof[i]);
-
-      if(ones.second){
-	linSysA->addToMatrix(dofI, dofI, 1);
-	linSysB->addToMatrix(dofI, dofI, 1);
-      }
-    }
-
-    else{
-      // If unknown Dof
-      for(int j = 0; j < N; j++){
-	int dofJ = dofM->getGlobalId(*(dof[j]));
-
-	linSysA->addToMatrix(dofI, dofJ,
-			     eFormulation->weakA(i, j, group));
-
-	linSysB->addToMatrix(dofI, dofJ,
-			     eFormulation->weakB(i, j, group));
-      }
-    }
-  }
-}
-
-void EigenSystem::sparcity(GroupOfDof& group){
-  const vector<const Dof*>& dof = group.getAll();
-  const int N = group.getNumber();
-
-  for(int i = 0; i < N; i++){
-    pair<bool, double> fixed = dofM->getValue(*(dof[i]));
-    int dofI = dofM->getGlobalId(*(dof[i]));
-
-    if(fixed.first)
-      // If fixed Dof
-      linSysA->insertInSparsityPattern(dofI, dofI);
-
-    else
-      // If unknown Dof
-      for(int j = 0; j < N; j++){
-	int dofJ = dofM->getGlobalId(*(dof[j]));
-
-	linSysA->insertInSparsityPattern(dofI, dofJ);
-      }
-  }
-}
-
-void EigenSystem::sparcityGeneral(GroupOfDof& group){
-  const vector<const Dof*>& dof = group.getAll();
-  const int N = group.getNumber();
-
-  for(int i = 0; i < N; i++){
-    pair<bool, double> fixed = dofM->getValue(*(dof[i]));
-    int dofI = dofM->getGlobalId(*(dof[i]));
-
-    if(fixed.first){
-      // If fixed Dof
-      linSysA->insertInSparsityPattern(dofI, dofI);
-      linSysB->insertInSparsityPattern(dofI, dofI);
-    }
-
-    else{
-      // If unknown Dof
-      for(int j = 0; j < N; j++){
-	int dofJ = dofM->getGlobalId(*(dof[j]));
-
-	linSysA->insertInSparsityPattern(dofI, dofJ);
-	linSysB->insertInSparsityPattern(dofI, dofJ);
-      }
-    }
-  }
-}
-

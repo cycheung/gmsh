@@ -4,26 +4,38 @@
 #include "Dof.h"
 #include "DofManager.h"
 #include "FunctionSpace.h"
+#include "Formulation.h"
 #include "GroupOfElement.h"
 #include "fullMatrix.h"
 
-#include <set>
+#include "linearSystemPETSc.h"
 
 /**
    @interface Common Interface for Linear Systems
    @brief Common Interface for Linear Systems Assemblers
 
-   This is a common Interface for
-   Linear Systems Assemblers
+   This is a common Interface for Linear Systems Assemblers
+
+   @warning
+   We can @em only assemble Dof related to a MElement@n
+
+   @todo
+   Assembly of @em NON Element related Dof@n
+   Allow multiple basis for dirichelt
  */
 
 class AbstractSystem{
  protected:
+  typedef
+    double (Formulation::*formulationPtr)(unsigned int dofI,
+                                          unsigned int dofJ,
+                                          const GroupOfDof& god) const;
+
+ protected:
   bool assembled;
   bool solved;
 
-  std::set<const Dof*, DofComparator>* fixedOnes;
-
+  const Formulation*   formulation;
   const FunctionSpace* fs;
   DofManager*          dofM;
 
@@ -48,7 +60,16 @@ class AbstractSystem{
 
   virtual void assemble(void) = 0;
   virtual void solve(void)    = 0;
+
+ protected:
+  void assemble(linearSystemPETSc<double>& sys,
+                GroupOfDof& group,
+                formulationPtr& term);
+
+  void sparsity(linearSystemPETSc<double>& sys,
+                GroupOfDof& group);
 };
+
 
 /**
    @fn AbstractSystem::~AbstractSystem

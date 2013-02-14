@@ -29,19 +29,14 @@ SystemInstrumented::~SystemInstrumented(void){
 void SystemInstrumented::assemble(void){
   // Get GroupOfDofs //
   const vector<GroupOfDof*>& group = fs->getAllGroups();
-  const int E = fs->groupNumber();
-
-  // Set to put Fixed Dof only ones
-  // (cannot use both  setValue and add Value
-  //  in PETSc)
-  fixedOnes = new set<const Dof*, DofComparator>();
+  const unsigned int E = fs->groupNumber();
 
   // Get Sparsity Pattern & PreAllocate//
   Timer timer;
   timer.start();
 
-  for(int i = 0; i < E; i++)
-    sparsity(*(group[i]));
+  for(unsigned int i = 0; i < E; i++)
+    AbstractSystem::sparsity(*linSys, *(group[i]));
 
   linSys->preAllocateEntries();
 
@@ -49,33 +44,11 @@ void SystemInstrumented::assemble(void){
   preAlloc = timer.time();
 
   // Assemble System //
-  for(int i = 0; i < E; i++)
+  for(unsigned int i = 0; i < E; i++)
     assemble(*(group[i]));
 
   // The system is assembled //
-  delete fixedOnes;
   assembled = true;
-}
-
-void SystemInstrumented::solve(void){
-  // Is the System assembled ? //
-  if(!assembled)
-    assemble();
-
-  // Solve //
-  linSys->systemSolve();
-
-  // Write Sol
-  const unsigned int size = fs->dofNumber();
-  double xi;
-
-  for(unsigned int i = 0; i < size; i++){
-    linSys->getFromSolution(i, xi);
-    (*x)(i) = xi;
-  }
-
-  // System solved ! //
-  solved = true;
 }
 
 void SystemInstrumented::assemble(GroupOfDof& group){
@@ -84,33 +57,27 @@ void SystemInstrumented::assemble(GroupOfDof& group){
   double b;
 
   const vector<const Dof*>& dof = group.getAll();
-  const int N = group.getNumber();
+  const unsigned int N = group.getNumber();
 
-  for(int i = 0; i < N; i++){
+  for(unsigned int i = 0; i < N; i++){
     timer.start();
     pair<bool, double> fixed = dofM->getValue(*(dof[i]));
-    int dofI = dofM->getGlobalId(*(dof[i]));
+    unsigned int dofI = dofM->getGlobalId(*(dof[i]));
     timer.stop();
 
     dofLookTime += timer.time();
     dofLookCall++;
 
     if(fixed.first){
-      pair<
-	set<const Dof*, DofComparator>::iterator,
-	bool> ones = fixedOnes->insert(dof[i]);
-
-      if(ones.second){
-	linSys->addToMatrix(dofI, dofI, 1);
-	linSys->addToRightHandSide(dofI, fixed.second);
-      }
+      linSys->addToMatrix(dofI, dofI, 1);
+      linSys->addToRightHandSide(dofI, fixed.second);
    }
 
     else{
       // If unknown Dof
-      for(int j = 0; j < N; j++){
+      for(unsigned int j = 0; j < N; j++){
         timer.start();
-	int dofJ = dofM->getGlobalId(*(dof[j]));
+	unsigned int dofJ = dofM->getGlobalId(*(dof[j]));
         timer.stop();
 
         dofLookTime += timer.time();
@@ -144,30 +111,6 @@ void SystemInstrumented::assemble(GroupOfDof& group){
 
       totAddRHSTime += timer.time();
       totAddRHSCall++;
-    }
-  }
-}
-
-void SystemInstrumented::sparsity(GroupOfDof& group){
-  const vector<const Dof*>& dof = group.getAll();
-  const int N = group.getNumber();
-
-  for(int i = 0; i < N; i++){
-    pair<bool, double> fixed = dofM->getValue(*(dof[i]));
-    int dofI = dofM->getGlobalId(*(dof[i]));
-
-    if(fixed.first){
-      // If fixed Dof
-      linSys->insertInSparsityPattern(dofI, dofI);
-    }
-
-    else{
-      // If unknown Dof
-      for(int j = 0; j < N; j++){
-	int dofJ = dofM->getGlobalId(*(dof[j]));
-
-	linSys->insertInSparsityPattern(dofI, dofJ);
-      }
     }
   }
 }
