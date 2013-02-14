@@ -46,11 +46,12 @@ int main(int argc, char** argv){
   sysVibration.assemble();
 
   cout << "Solving..." << endl << flush;
-  sysVibration.solve(nWave);
+  sysVibration.setNumberOfEigenValues(nWave);
+  sysVibration.solve();
 
   // Display //
   const unsigned int nEigenValue =
-    sysVibration.getEigenValueNumber();
+    sysVibration.getEigenValuesNumber();
 
   const vector<complex<double> >& eigenValue =
     sysVibration.getEigenValues();
@@ -68,21 +69,21 @@ int main(int argc, char** argv){
   // Used for '0' pading in sprintf
   int tmp = nEigenValue;
   int dec = 0;
-  
+
   while(tmp != 0){
     dec++;
     tmp /= 10;
   }
-  
+
   char fileName[1024];
 
   if(argc == 5){
     // With VisuMesh
     Mesh           visuMesh(argv[4]);
     GroupOfElement visu = visuMesh.getFromPhysical(7);
-    
+
     for(unsigned int i = 0; i < nEigenValue; i++){
-      sprintf(fileName, 
+      sprintf(fileName,
 	      "%s%0*d", "vibration_mode", dec, i + 1);
 
       Interpolator intVibration(sysVibration, i, visu);
@@ -93,7 +94,7 @@ int main(int argc, char** argv){
   else{
     // Without VisuMesh
     for(unsigned int i = 0; i < nEigenValue; i++){
-      sprintf(fileName, 
+      sprintf(fileName,
 	      "%s%0*d", "vibration_mode", dec, i + 1);
 
       writer.setValues(sysVibration, i);

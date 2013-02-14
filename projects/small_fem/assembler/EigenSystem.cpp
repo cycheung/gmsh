@@ -1,9 +1,3 @@
-#include "System.h"
-#include "FormulationProjectionScalar.h"
-#include "BasisGenerator.h"
-#include "BasisLocal.h"
-#include "Exception.h"
-
 #include "EigenSystem.h"
 
 using namespace std;
@@ -17,13 +11,13 @@ EigenSystem::EigenSystem(const EigenFormulation& eFormulation){
   dofM = new DofManager();
   dofM->addToGlobalIdSpace(fs->getAllGroups());
 
-  // Get DofManager Data //
-  size = fs->dofNumber();
-
   // Is the Problem a General EigenValue Problem ? //
   general = eFormulation.isGeneral();
 
   // Create EigenSystem //
+  // Get Size
+  const unsigned int size = fs->dofNumber();
+
   // Linear System A
   linSysA = new linearSystemPETSc<double>();
   linSysA->allocate(size);
@@ -44,9 +38,9 @@ EigenSystem::EigenSystem(const EigenFormulation& eFormulation){
   eigenVector = NULL;
 
   // The EigenSystem is not assembled and not solved//
-  nEigenValue = 0;
-  assembled   = false;
-  solved      = false;
+  nEigenValues = 0;
+  assembled    = false;
+  solved       = false;
 }
 
 EigenSystem::~EigenSystem(void){
@@ -66,6 +60,19 @@ EigenSystem::~EigenSystem(void){
 
   delete dofM;
   // EigenSystem is not responsible for deleting 'Formulations'
+}
+
+void EigenSystem::
+setNumberOfEigenValues(unsigned int nEigenValues){
+  const unsigned int nDof = fs->dofNumber();
+
+  if(nEigenValues > nDof)
+    throw
+      Exception("I cannot compute more Eigenvalues (%d) than the number of unknowns (%d)",
+		nEigenValues, nDof);
+
+  else
+    this->nEigenValues = nEigenValues;
 }
 
 void EigenSystem::assemble(void){
@@ -106,67 +113,11 @@ void EigenSystem::assemble(void){
   assembled = true;
 }
 
-void EigenSystem::fixCoef(const GroupOfElement& goe, double value){
-  const vector<pair<const MElement*, ElementData> >&
-    element = goe.getAll();
-
-  const unsigned int nElement = goe.getNumber();
-
-  for(unsigned int i = 0; i < nElement; i++){
-    vector<Dof>         dof = fs->getKeys(*element[i].first);
-    const unsigned int nDof = dof.size();
-
-    for(unsigned int j = 0; j < nDof; j++)
-      dofM->fixValue(dof[j], value);
-  }
-}
-
-void EigenSystem::dirichlet(GroupOfElement& goe,
-			    double (*f)(fullVector<double>& xyz)){
-
-  // Check if Scalar Problem //
-  if(!fs->isScalar())
-    throw Exception("Cannot impose Vectorial Dirichlet Conditions on a Scalar Problem");
-
-  // New FunctionSpace, on the Dirichlet Domain: dirFS //
-  // WARNING: The support of the dirFS *MUST* have the fs Mesh
-  //  --> So we have the same Dof Numbering
-
-  if(&(goe.getMesh()) != &(fs->getSupport().getMesh()))
-    throw Exception("Dirichlet Domain must come from the FunctionSpace Domain's Mesh");
-
-  BasisLocal* dirBasis = BasisGenerator::generate(goe.get(0).getType(),
-                                                  fs->getBasis(0).getType(),
-                                                  fs->getBasis(0).getOrder(),
-                                                  "hierarchical");
-  FunctionSpaceScalar dirFS(goe, *dirBasis);
-
-  // Solve The Projection Of f on the Dirichlet Domain with dirFS //
-  FormulationProjectionScalar projection(f, dirFS);
-  System sysProj(projection);
-
-  sysProj.assemble();
-  sysProj.solve();
-
-  // Fix This System Dofs with sysProj Solution //
-  const vector<const Dof*> dof = dirFS.getAllDofs();
-  const unsigned int      nDof = dof.size();
-
-  const DofManager&        dirDofM = sysProj.getDofManager();
-  const fullVector<double>& dirSol = sysProj.getSol();
-
-  for(unsigned int i = 0; i < nDof; i++)
-    dofM->fixValue(*dof[i], dirSol(dirDofM.getGlobalId(*dof[i])));
-
-  delete dirBasis;
-}
-
-void EigenSystem::solve(unsigned int nEigenValues){
+void EigenSystem::solve(void){
   // Check nEigenValues
-  if(nEigenValues > size)
+  if(!nEigenValues)
     throw
-      Exception("I cannot compute more Eigenvalues (%d) than the number of unknowns (%d)",
-		nEigenValues, size);
+      Exception("The number of eigenvalues to compute is zero");
 
   // Is the EigenSystem assembled ? //
   if(!assembled)
@@ -177,15 +128,15 @@ void EigenSystem::solve(unsigned int nEigenValues){
   eSys->solve(nEigenValues, "smallest");
 
   // Get Solution //
-  nEigenValue = eSys->getNumEigenValues();
+  nEigenValues = eSys->getNumEigenValues();
 
-  eigenValue  = new vector<complex<double> >(nEigenValue);
-  eigenVector = new vector<vector<complex<double> > >(nEigenValue);
+  eigenValue  = new vector<complex<double> >(nEigenValues);
+  eigenVector = new vector<vector<complex<double> > >(nEigenValues);
 
-  for(unsigned int i = 0; i < nEigenValue; i++)
+  for(unsigned int i = 0; i < nEigenValues; i++)
     (*eigenValue)[i] = eSys->getEigenValue(i);
 
-  for(unsigned int i = 0; i < nEigenValue; i++)
+  for(unsigned int i = 0; i < nEigenValues; i++)
     (*eigenVector)[i] = eSys->getEigenVector(i);
 
   // System solved ! //

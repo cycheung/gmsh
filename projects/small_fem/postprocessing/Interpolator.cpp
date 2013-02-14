@@ -14,7 +14,7 @@ using namespace std;
 void Interpolator::initSystem(const System& system){
   // Save some data
   this->dofM = &(system.getDofManager());
-  this->fs   = &(system.getFormulation().fs());
+  this->fs   = &(system.getFunctionSpace());
 
   // Get Mesh
   this->mesh = &(fs->getSupport().getMesh());
@@ -35,7 +35,7 @@ void Interpolator::initSystem(const EigenSystem& system,
 			      unsigned int eigenNumber){
   // Save some data
   this->dofM = &(system.getDofManager());
-  this->fs   = &(system.getFormulation().fs());
+  this->fs   = &(system.getFunctionSpace());
 
   // Get Mesh
   this->mesh = &(fs->getSupport().getMesh());

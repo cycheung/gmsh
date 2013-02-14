@@ -17,9 +17,9 @@ using namespace std;
 int main(int argc, char** argv){
   // Init //
   GmshInitialize(argc, argv);
-  
+
   // Get Domain //
-  Mesh msh(argv[1]); 
+  Mesh msh(argv[1]);
   GroupOfElement domain = msh.getFromPhysical(7);
 
   // Get Some Data //
@@ -28,7 +28,7 @@ int main(int argc, char** argv){
   const unsigned int order = atoi(argv[2]);
   const unsigned int nWave = atoi(argv[3]);
 
-  // EigenFrequency //  
+  // EigenFrequency //
   FormulationEigenFrequency cavity(domain, order);
   EigenSystem sysCavity(cavity);
 
@@ -40,23 +40,24 @@ int main(int argc, char** argv){
   sysCavity.assemble();
 
   cout << "Solving..." << endl << flush;
-  sysCavity.solve(nWave);
+  sysCavity.setNumberOfEigenValues(nWave);
+  sysCavity.solve();
 
   // Display //
-  const unsigned int nEigenValue = 
-    sysCavity.getEigenValueNumber();
-  
-  const vector<complex<double> >& eigenValue = 
+  const unsigned int nEigenValue =
+    sysCavity.getEigenValuesNumber();
+
+  const vector<complex<double> >& eigenValue =
     sysCavity.getEigenValues();
 
-  cout << "Number of found Eigenvalues: " << nEigenValue 
+  cout << "Number of found Eigenvalues: " << nEigenValue
        << endl;
 
-  cout << endl 
+  cout << endl
        << "Number\tEigen Value\tEigen Wave Number" << endl;
-  
+
   for(unsigned int i = 0; i < nEigenValue; i++)
-    cout << "#" << i + 1        << "\t" 
+    cout << "#" << i + 1        << "\t"
 	 << eigenValue[i]       << "\t"
 	 << sqrt(eigenValue[i]) << endl;
 
@@ -65,21 +66,21 @@ int main(int argc, char** argv){
   // Used for '0' pading in sprintf
   int tmp = nEigenValue;
   int dec = 0;
-  
+
   while(tmp != 0){
     dec++;
     tmp /= 10;
   }
-  
+
   char fileName[1024];
 
   if(argc == 5){
     // With VisuMesh
     Mesh           visuMesh(argv[4]);
     GroupOfElement visu = visuMesh.getFromPhysical(7);
-  
+
     for(unsigned int i = 0; i < nEigenValue; i++){
-      sprintf(fileName, 
+      sprintf(fileName,
 	      "%s%0*d", "cavity_mode", dec, i + 1);
 
       Interpolator intCavity(sysCavity, i, visu);
@@ -92,7 +93,7 @@ int main(int argc, char** argv){
     for(unsigned int i = 0; i < nEigenValue; i++){
       stringstream stream;
       stream << "cavity_mode" << i + 1;
-      
+
       writer.setValues(sysCavity, i);
       writer.write(stream.str());
     }
