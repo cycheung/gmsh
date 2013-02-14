@@ -28,7 +28,7 @@ void SystemAbstract::fixCoef(const GroupOfElement& goe, double value){
 }
 
 void SystemAbstract::dirichlet(GroupOfElement& goe,
-		       double (*f)(fullVector<double>& xyz)){
+                               double (*f)(fullVector<double>& xyz)){
 
   // Check if Scalar Problem //
   if(!fs->isScalar())
@@ -68,7 +68,7 @@ void SystemAbstract::dirichlet(GroupOfElement& goe,
 }
 
 void SystemAbstract::dirichlet(GroupOfElement& goe,
-		       fullVector<double> (*f)(fullVector<double>& xyz)){
+                               fullVector<double> (*f)(fullVector<double>& xyz)){
 
   // Check if Scalar Problem //
   if(fs->isScalar())
@@ -109,7 +109,7 @@ void SystemAbstract::dirichlet(GroupOfElement& goe,
 }
 
 void SystemAbstract::assemble(linearSystemPETSc<double>& sys,
-                              GroupOfDof& group,
+                              const GroupOfDof& group,
                               formulationPtr& term){
 
   const vector<const Dof*>& dof = group.getAll();
@@ -139,7 +139,7 @@ void SystemAbstract::assemble(linearSystemPETSc<double>& sys,
 }
 
 void SystemAbstract::sparsity(linearSystemPETSc<double>& sys,
-                              GroupOfDof& group){
+                              const GroupOfDof& group){
 
   const vector<const Dof*>& dof = group.getAll();
   const unsigned int N = group.getNumber();

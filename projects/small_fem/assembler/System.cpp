@@ -32,12 +32,14 @@ System::~System(void){
 
 void System::assemble(void){
   // Get GroupOfDofs //
-  const vector<GroupOfDof*>& group = fs->getAllGroups();
-  const unsigned int E = fs->groupNumber();
+  const unsigned int E = fs->getSupport().getNumber();
+  const vector<pair<const MElement*, ElementData> >&
+    element = fs->getSupport().getAll();
 
   // Get Sparsity Pattern & PreAllocate//
   for(unsigned int i = 0; i < E; i++)
-    SystemAbstract::sparsity(*linSys, *(group[i]));
+    SystemAbstract::sparsity(*linSys,
+                             element[i].second.getGroupOfDof());
 
   linSys->preAllocateEntries();
 
@@ -45,7 +47,9 @@ void System::assemble(void){
   formulationPtr term = &Formulation::weak;
 
   for(unsigned int i = 0; i < E; i++)
-    SystemAbstract::assemble(*linSys, *(group[i]), term);
+    SystemAbstract::assemble(*linSys,
+                             element[i].second.getGroupOfDof(),
+                             term);
 
   // The system is assembled //
   assembled = true;

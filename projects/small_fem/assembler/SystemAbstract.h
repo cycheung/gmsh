@@ -63,11 +63,11 @@ class SystemAbstract{
 
  protected:
   void assemble(linearSystemPETSc<double>& sys,
-                GroupOfDof& group,
+                const GroupOfDof& group,
                 formulationPtr& term);
 
   void sparsity(linearSystemPETSc<double>& sys,
-                GroupOfDof& group);
+                const GroupOfDof& group);
 };
 
 

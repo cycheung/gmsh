@@ -27,16 +27,18 @@ SystemInstrumented::~SystemInstrumented(void){
 }
 
 void SystemInstrumented::assemble(void){
-  // Get GroupOfDofs //
-  const vector<GroupOfDof*>& group = fs->getAllGroups();
-  const unsigned int E = fs->groupNumber();
+  // Get Elements //
+  const unsigned int E = fs->getSupport().getNumber();
+  const vector<pair<const MElement*, ElementData> >&
+    element = fs->getSupport().getAll();
 
   // Get Sparsity Pattern & PreAllocate//
   Timer timer;
   timer.start();
 
   for(unsigned int i = 0; i < E; i++)
-    SystemAbstract::sparsity(*linSys, *(group[i]));
+    SystemAbstract::sparsity(*linSys,
+                             element[i].second.getGroupOfDof());
 
   linSys->preAllocateEntries();
 
@@ -45,13 +47,13 @@ void SystemInstrumented::assemble(void){
 
   // Assemble System //
   for(unsigned int i = 0; i < E; i++)
-    assemble(*(group[i]));
+    assemble(element[i].second.getGroupOfDof());
 
   // The system is assembled //
   assembled = true;
 }
 
-void SystemInstrumented::assemble(GroupOfDof& group){
+void SystemInstrumented::assemble(const GroupOfDof& group){
   Timer timer;
   double a;
   double b;
