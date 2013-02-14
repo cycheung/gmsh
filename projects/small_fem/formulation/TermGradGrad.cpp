@@ -82,7 +82,8 @@ void TermGradGrad::clean(void){
 }
 
 void TermGradGrad::buildEMap(void){
-  const vector<const MElement*>& element = jac->getAllElements().getAll();
+  const vector<pair<const MElement*, ElementData> >&
+    element = jac->getAllElements().getAll();
 
   eMap = new map<const MElement*, pair<unsigned int, unsigned int> >;
 
@@ -94,7 +95,7 @@ void TermGradGrad::buildEMap(void){
 
     for(unsigned int e = offset; e < offset + (*orientationStat)[s]; e++){
       eMap->insert(pair<const MElement*, pair<unsigned int, unsigned int> >
-                       (element[e], pair<unsigned int, unsigned int>(s, j)));
+                       (element[e].first, pair<unsigned int, unsigned int>(s, j)));
       j++;
     }
 
@@ -154,7 +155,8 @@ void TermGradGrad::computeB(void){
     bM[s] = new fullMatrix<double>((*orientationStat)[s], 9 * nG);
 
   // Fill //
-  const vector<const MElement*>& element = jac->getAllElements().getAll();
+  const vector<pair<const MElement*, ElementData> >&
+    element = jac->getAllElements().getAll();
 
   for(unsigned int s = 0; s < nOrientation; s++){
     // Loop On Element
@@ -163,7 +165,7 @@ void TermGradGrad::computeB(void){
     for(unsigned int e = offset; e < offset + (*orientationStat)[s]; e++){
       // Get Jacobians
       const vector<const pair<const fullMatrix<double>*, double>*>& invJac =
-        jac->getInvertJacobian(*element[e]);
+        jac->getInvertJacobian(*element[e].first);
 
       // Loop on Gauss Points
       k = 0;

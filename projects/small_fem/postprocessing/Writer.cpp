@@ -66,7 +66,7 @@ void Writer::setValues(const System& system){
     hasValue = false;
   }
 
-  setDomain(fs->getSupport().getAll());
+  setDomain(fs->getSupport());
 }
 
 void Writer::setValues(const EigenSystem& system, unsigned int eigenNumber){
@@ -81,7 +81,7 @@ void Writer::setValues(const EigenSystem& system, unsigned int eigenNumber){
   dofM = &(system.getDofManager());
   sol  = getSol(system.getEigenVectors(), eigenNumber);
 
-  if(system.isSolved()){    
+  if(system.isSolved()){
     ownSol   = true;
     hasValue = true;
     isScalar = fs->isScalar();
@@ -92,32 +92,32 @@ void Writer::setValues(const EigenSystem& system, unsigned int eigenNumber){
     hasValue = false;
   }
 
-  setDomain(fs->getSupport().getAll());
+  setDomain(fs->getSupport());
 }
 
-void Writer::setDomain(const std::vector<const MElement*>& element){
+void Writer::setDomain(const GroupOfElement& domain){
   // Erease Old Domain (if one) //
   if(hasDomain)
     delete node;
 
   // Get Elements //
-  this->element = &element;
-  this->E       = element.size();
-  
+  element = &domain.getAll();
+  E       = domain.getNumber();
+
   // Get All Vertices //
   set<MVertex*, MVertexLessThanNum> setVertex;
 
   for(int i = 0; i < E; i++){
-    const int N = element[i]->getNumVertices();
-    MElement* myElement = 
-      const_cast<MElement*>(element[i]);
+    const int N = (*element)[i].first->getNumVertices();
+    MElement* myElement =
+      const_cast<MElement*>((*element)[i].first);
 
     for(int j = 0; j < N; j++)
       setVertex.insert(myElement->getVertex(j));
   }
 
   // Serialize the set into a vector //
-  node = new vector<MVertex*>(setVertex.begin(), 
+  node = new vector<MVertex*>(setVertex.begin(),
 			      setVertex.end());
   N    = node->size();
 
@@ -128,9 +128,9 @@ void Writer::setDomain(const std::vector<const MElement*>& element){
 const fullVector<double>* Writer::
 getSol(const vector<vector<complex<double> > >& eVector,
        unsigned int eigenNumber){
-  
-  // Init 
-  unsigned int size       = eVector[eigenNumber].size(); 
+
+  // Init
+  unsigned int size       = eVector[eigenNumber].size();
   fullVector<double>* sol = new fullVector<double>(size);
 
   // Get Sol

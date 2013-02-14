@@ -107,16 +107,16 @@ void Jacobian::computeJacobians(void){
       mJac        = new fullMatrix<double>(3, 3);
 
       tmpJac_pair->second = const_cast<MElement*>
-        ((*element)[i])->getJacobian((*point)(j, 0),
-                                     (*point)(j, 1),
-                                     (*point)(j, 2),
-                                     *mJac);
+        ((*element)[i].first)->getJacobian((*point)(j, 0),
+                                           (*point)(j, 1),
+                                           (*point)(j, 2),
+                                           *mJac);
       tmpJac_pair->first = mJac;
       (*tmpJac_t)[j]     = tmpJac_pair;
     }
 
     // Insert in Jac
-    jac->insert(pair<const MElement*, jac_t*>((*element)[i], tmpJac_t));
+    jac->insert(pair<const MElement*, jac_t*>((*element)[i].first, tmpJac_t));
   }
 }
 
@@ -176,10 +176,10 @@ void Jacobian::computeInvertFromScratch(void){
       mIJac       = new fullMatrix<double>(3, 3);
 
       tmpJac_pair->second =  const_cast<MElement*>
-        ((*element)[i])->getJacobian((*point)(j, 0),
-                                     (*point)(j, 1),
-                                     (*point)(j, 2),
-                                     *mIJac);
+        ((*element)[i].first)->getJacobian((*point)(j, 0),
+                                           (*point)(j, 1),
+                                           (*point)(j, 2),
+                                           *mIJac);
       mIJac->invertInPlace();
 
       tmpJac_pair->first = mIJac;
@@ -187,7 +187,7 @@ void Jacobian::computeInvertFromScratch(void){
     }
 
     // Insert in InvJac
-    invJac->insert(pair<const MElement*, jac_t*>((*element)[i], tmpJac_t));
+    invJac->insert(pair<const MElement*, jac_t*>((*element)[i].first, tmpJac_t));
   }
 }
 

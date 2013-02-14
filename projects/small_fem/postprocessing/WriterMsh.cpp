@@ -32,7 +32,7 @@ void WriterMsh::write(const std::string name) const{
 
     if(!isNodal){
       lBasis = static_cast<BasisLagrange*>
-	(BasisGenerator::generate((*element)[0]->getType(),
+	(BasisGenerator::generate((*element)[0].first->getType(),
 				  0,
 				  fs->getBasis(0).getOrder(),
 				  "lagrange")
@@ -86,14 +86,14 @@ void WriterMsh::writeElements(void) const{
        << E << endl;
 
   for(int i = 0; i < E; i++){
-    *out << (*element)[i]->getNum()        << " "
-	 << (*element)[i]->getTypeForMSH()
+    *out << (*element)[i].first->getNum()        << " "
+	 << (*element)[i].first->getTypeForMSH()
 	 << " 2 1 1" << " ";
            // 2 Tags --> (1 physical entity, 1 elementary geometry)
 
-    const int M = (*element)[i]->getNumVertices();
+    const int M = (*element)[i].first->getNumVertices();
     MElement* myElement =
-      const_cast<MElement*>((*element)[i]);
+      const_cast<MElement*>((*element)[i].first);
 
     for(int j = 0; j < M; j++)
       *out << myElement->getVertex(j)->getNum() << " ";
@@ -116,13 +116,13 @@ void WriterMsh::writeInterpolationScheme(void) const{
   const unsigned int nColMono = mono.size2();
 
   // Up to now, we suppose *ONE* topology
-  *out << "$InterpolationScheme"     << endl
-       << "\"interpolation scheme\"" << endl
-       << "1"                        << endl
-       << (*element)[0]->getType()   << endl
+  *out << "$InterpolationScheme"         << endl
+       << "\"interpolation scheme\""     << endl
+       << "1"                            << endl
+       << (*element)[0].first->getType() << endl
 
     // 2 Matrices: Coefficients and Monomials
-       << "2"                        << endl;
+       << "2"                            << endl;
 
   // Coefficients Matrix
   *out << nRowCoef << " "
@@ -187,12 +187,12 @@ void WriterMsh::writeNodalValuesHeader(const string name) const{
 
 void WriterMsh::writeNodalValuesFromNode(void) const{
   for(int i = 0; i < E; i++){
-    *out << (*element)[i]->getNum()         << " "
-	 << (*element)[i]->getNumVertices() << " ";
+    *out << (*element)[i].first->getNum()         << " "
+	 << (*element)[i].first->getNumVertices() << " ";
 
-    const int M = (*element)[i]->getNumVertices();
+    const int M = (*element)[i].first->getNumVertices();
     MElement* myElement =
-      const_cast<MElement*>((*element)[i]);
+      const_cast<MElement*>((*element)[i].first);
 
     for(int j = 0; j < M; j++){
       const int id = myElement->getVertex(j)->getNum() - 1;
@@ -227,11 +227,11 @@ void WriterMsh::writeNodalValuesFromSol(void) const{
 
   // Iterate on Element //
   for(int i = 0; i < E; i++){
-    *out << (*element)[i]->getNum() << " "
-	 << nCoef                   << " ";
+    *out << (*element)[i].first->getNum() << " "
+	 << nCoef                         << " ";
 
     // Get Element GoD
-    const GroupOfDof& god = fs->getGoDFromElement(*(*element)[i]);
+    const GroupOfDof& god = fs->getGoDFromElement(*(*element)[i].first);
 
     // Get Dof
     const vector<const Dof*>& dof  = god.getAll();
@@ -246,7 +246,7 @@ void WriterMsh::writeNodalValuesFromSol(void) const{
     // Get Coef In Lagrange Basis
     if(isScalar){
       vector<double> lCoef =
-	lBasis->project(*(*element)[i], fsCoef, *fsScalar);
+	lBasis->project(*(*element)[i].first, fsCoef, *fsScalar);
 
       for(unsigned int j = 0; j < nCoef; j++)
 	*out << lCoef[j] << " ";
@@ -254,7 +254,7 @@ void WriterMsh::writeNodalValuesFromSol(void) const{
 
     else{
       vector<fullVector<double> > lCoef =
-	lBasis->project(*(*element)[i], fsCoef, *fsVector);
+	lBasis->project(*(*element)[i].first, fsCoef, *fsVector);
 
       for(unsigned int j = 0; j < nCoef; j++)
 	*out << lCoef[j](0) << " "

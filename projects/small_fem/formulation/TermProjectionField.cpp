@@ -64,7 +64,8 @@ void TermProjectionField::clean(void){
 }
 
 void TermProjectionField::buildEMap(void){
-  const vector<const MElement*>& element = jac->getAllElements().getAll();
+  const vector<pair<const MElement*, ElementData> >&
+    element = jac->getAllElements().getAll();
 
   eMap = new map<const MElement*, pair<unsigned int, unsigned int> >;
 
@@ -76,7 +77,7 @@ void TermProjectionField::buildEMap(void){
 
     for(unsigned int e = offset; e < offset + (*orientationStat)[s]; e++){
       eMap->insert(pair<const MElement*, pair<unsigned int, unsigned int> >
-                       (element[e], pair<unsigned int, unsigned int>(s, j)));
+                       (element[e].first, pair<unsigned int, unsigned int>(s, j)));
       j++;
     }
 
@@ -120,7 +121,8 @@ void TermProjectionField::computeB(void){
     bM[s] = new fullMatrix<double>((*orientationStat)[s], nG);
 
   // Fill //
-  const vector<const MElement*>& element = jac->getAllElements().getAll();
+  const vector<pair<const MElement*, ElementData> >&
+    element = jac->getAllElements().getAll();
 
   for(unsigned int s = 0; s < nOrientation; s++){
     // Loop On Element
@@ -129,11 +131,11 @@ void TermProjectionField::computeB(void){
     for(unsigned int e = offset; e < offset + (*orientationStat)[s]; e++){
       // Get Jacobians
       const vector<const pair<const fullMatrix<double>*, double>*>& jacM =
-        jac->getJacobian(*element[e]);
+        jac->getJacobian(*element[e].first);
 
       for(unsigned int g = 0; g < nG; g++){
         // Compute f in the *physical* coordinate
-        const_cast<MElement*>(element[e])
+        const_cast<MElement*>(element[e].first)
           ->pnt((*gC)(g, 0),
                 (*gC)(g, 1),
                 (*gC)(g, 2),

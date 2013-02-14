@@ -2,6 +2,7 @@
 #define _WRITER_H_
 
 #include "fullMatrix.h"
+#include "GroupOfElement.h"
 #include "MElement.h"
 #include "MVertex.h"
 #include "System.h"
@@ -13,7 +14,7 @@
 /**
    @interface Writer
    @brief Common interface to Write Data into a file
-   
+
    This is the common @em interface for Writer%s.@n
 
    A Writer is a class that can @em write a set of @em data
@@ -21,7 +22,7 @@
 
    Those data @em may be defined on a given @em domain.@n
 
-   The @em exact meaning of the @em data and of the @em domain 
+   The @em exact meaning of the @em data and of the @em domain
    @em must be specified by the actual @em implementation.
 
    @note
@@ -39,8 +40,8 @@ class Writer{
   int  N;
   int  E;
 
-  const std::vector<const MElement*>* element;
-  const std::vector<MVertex*>*        node;
+  const std::vector<std::pair<const MElement*, ElementData> >* element;
+  const std::vector<MVertex*>*                                 node;
 
   // Nodal Values //
   const std::vector<double>*              nodalScalarValue;
@@ -61,12 +62,12 @@ class Writer{
   void setValues(const System& system);
   void setValues(const EigenSystem& system, unsigned int eigenNumber);
 
-  void setDomain(const std::vector<const MElement*>& element);
+  void setDomain(const GroupOfElement& domain);
 
  protected:
   Writer(void);
 
-  static const fullVector<double>* 
+  static const fullVector<double>*
     getSol(const std::vector<std::vector<std::complex<double> > >& eVector,
 	   unsigned int eigenNumber);
 };
@@ -78,27 +79,27 @@ class Writer{
    **
 
    @fn Writer::write
-   @param name The name of the file to write into 
+   @param name The name of the file to write into
    (@em without extensions)
-   
+
    Writes the Writer's Data into the given file
    **
 
    @fn void Writer::setValues(const std::vector<double>& value)
    @param value A set of value (double)
-   
+
    Sets this Writer's Data to the given values
    **
 
    @fn void Writer::setValues(const std::vector<fullVector<double> >& value)
    @param value A set of value (fullVector<double>)
-   
+
    Sets this Writer's Data to the given values
    **
 
    @fn void Writer::setValues(const System&)
    @param system A System
-   
+
    Uses the given System Solution for Data
 
    @warning
@@ -120,14 +121,15 @@ class Writer{
    **
 
    @fn Writer::setDomain
-   @param element A set of MElement%s
-   
-   Set this Writer's Domain to the given elements
+   @param domain A GroupOfElement
+
+   Set this Writer's Domain with the given group of elements
+   (GroupOfElement)
    **
 
    @internal
    @fn Writer::Writer
-   This constructor 
+   This constructor
    @endinternal
    **
  */

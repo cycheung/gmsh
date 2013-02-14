@@ -63,8 +63,8 @@ include_directories(
 )
 
 ## Compiler Flags
-add_definitions(-pedantic -Wall -O3)
-#add_definitions(-g)# -pg)
+add_definitions(-pedantic -Wall -O3 -g)
+#add_definitions(-pg)
 
 
 ## Build SmallFEM Library

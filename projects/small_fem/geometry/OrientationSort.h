@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "MElement.h"
+#include "ElementData.h"
 #include "Basis.h"
 
 /**
@@ -24,7 +25,8 @@ class OrientationSort{
 
   const Basis& getBasis(void) const;
 
-  bool operator()(const MElement* a, const MElement* b) const;
+  bool operator()(const std::pair<const MElement*, ElementData>& a,
+                  const std::pair<const MElement*, ElementData>& b) const;
 };
 
 /**
@@ -64,11 +66,12 @@ inline const Basis& OrientationSort::getBasis(void) const{
 }
 
 inline bool OrientationSort::operator()
-(const MElement* a, const MElement* b) const{
-  return
-    basis->getOrientation(*a) <
-    basis->getOrientation(*b);
-}
+(const std::pair<const MElement*, ElementData>& a,
+ const std::pair<const MElement*, ElementData>& b) const{
 
+  return
+    basis->getOrientation(*a.first) <
+    basis->getOrientation(*b.first);
+}
 
 #endif

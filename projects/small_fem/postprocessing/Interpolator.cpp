@@ -159,7 +159,7 @@ Interpolator::~Interpolator(void){
 
 void Interpolator::write(const std::string name, Writer& writer) const{
   // Set Writer
-  writer.setDomain(visuDomain->getAll());
+  writer.setDomain(*visuDomain);
 
   if(scalar)
     writer.setValues(*nodalScalarValue);

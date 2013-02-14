@@ -6,7 +6,7 @@
 /**
    @class Dof
    @brief This class represents Degrees Of Freedom
-   
+
    This class represents Degrees Of Freedom.@n
 
    A Dof is defined by a pair of to integers called (@c entity, @c type).@n
@@ -16,21 +16,21 @@
 
 class Dof{
  private:
-  unsigned int entity;
+  unsigned long int entity;
   unsigned int type;
 
  public:
    Dof(void);
-   Dof(const Dof& other); 
-   Dof(unsigned int entity, unsigned int type);
+   Dof(const Dof& other);
+   Dof(unsigned long int entity, unsigned int type);
   ~Dof(void);
 
-  unsigned int getEntity(void) const;
-  unsigned int getType(void) const;
+  unsigned long int getEntity(void) const;
+  unsigned int      getType(void)   const;
 
-  void setEntity(unsigned int entity);
+  void setEntity(unsigned long int entity);
   void setType(unsigned int type);
-  void setDof(unsigned int entity, unsigned int type);
+  void setDof(unsigned long int entity, unsigned int type);
 
   bool operator<(const Dof& other) const;
   bool operator>(const Dof& other) const;
@@ -57,10 +57,10 @@ class Dof{
    @param entity A natural number
    @param type A natural number
 
-   Instanciates a new Dof with the given 
+   Instanciates a new Dof with the given
    pair (@c entity, @c type)
    **
- 
+
    @fn Dof::~Dof
    Deletes this Dof
    **
@@ -76,13 +76,13 @@ class Dof{
    @fn Dof::setEntity
    @param entity A natural number
 
-   Sets this Dof @c entity to the given value 
+   Sets this Dof @c entity to the given value
    **
 
    @fn Dof::setType
    @param type A natural number
 
-   Sets this Dof @c type to the given value 
+   Sets this Dof @c type to the given value
    **
 
    @fn Dof::setDof
@@ -105,7 +105,7 @@ class Dof{
    @li @c true if the current Dof is @em greater than @c other
    @li @c false otherwise
    **
-  
+
    @fn bool Dof::operator==(const Dof& other) const
    @param other An other Dof to compare the current one
    @return Returns :
@@ -122,7 +122,7 @@ class Dof{
 // Inline Functions //
 //////////////////////
 
-inline unsigned int Dof::getEntity(void) const{
+inline unsigned long int Dof::getEntity(void) const{
   return entity;
 }
 
@@ -130,7 +130,7 @@ inline unsigned int Dof::getType(void) const{
   return type;
 }
 
-inline void Dof::setEntity(unsigned int entity){
+inline void Dof::setEntity(unsigned long int entity){
   this->entity = entity;
 }
 
@@ -138,7 +138,8 @@ inline void Dof::setType(unsigned int type){
   this->type = type;
 }
 
-inline void Dof::setDof(unsigned int entity, unsigned int type){
+inline void Dof::setDof(unsigned long int entity,
+                        unsigned int type){
   this->entity = entity;
   this->type   = type;
 }

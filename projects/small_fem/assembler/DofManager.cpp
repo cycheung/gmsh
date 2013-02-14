@@ -33,8 +33,8 @@ void DofManager::addToGlobalIdSpace(const vector<GroupOfDof*>& god){
 
     for(unsigned int j = 0; j < nDof; j++){
       pair<map<const Dof*, int, DofComparator>::iterator,
-	   bool> newDof = 
-	
+	   bool> newDof =
+
 	globalId->insert(pair<const Dof*, int>(dof[j], nextId));
 
       if(newDof.second)
@@ -46,35 +46,35 @@ void DofManager::addToGlobalIdSpace(const vector<GroupOfDof*>& god){
 }
 
 int DofManager::getGlobalId(const Dof& dof) const{
-  const map<const Dof*, int, DofComparator>::iterator it = 
+  const map<const Dof*, int, DofComparator>::iterator it =
     globalId->find(&dof);
 
   if(it == globalId->end())
-    throw 
+    throw
       Exception("Their is no Dof %s", dof.toString().c_str());
 
   else
-    return it->second; 
+    return it->second;
 }
 
 bool DofManager::fixValue(const Dof& dof, double value){
   // Get *REAL* Dof
-  map<const Dof*, int, DofComparator>::const_iterator it = 
+  map<const Dof*, int, DofComparator>::const_iterator it =
     globalId->find(const_cast<Dof*>(&dof));
 
   // Check if 'dof' exists
   if(it == globalId->end())
     return false; // 'dof' doesn't exist
 
-  // Insert *REAL* Dof 
+  // Insert *REAL* Dof
   return fixedDof->insert(std::pair<const Dof*, double>(it->first, value)).second;
 }
 
 pair<bool, double> DofManager::getValue(const Dof& dof) const{
-  map<const Dof*, double, DofComparator>::iterator end = 
+  map<const Dof*, double, DofComparator>::iterator end =
     fixedDof->end();
 
-  map<const Dof*, double, DofComparator>::iterator it = 
+  map<const Dof*, double, DofComparator>::iterator it =
     fixedDof->find(&dof);
 
   if(it == end)
@@ -86,16 +86,16 @@ pair<bool, double> DofManager::getValue(const Dof& dof) const{
 
 string DofManager::toString(void) const{
   stringstream s;
-  map<const Dof*, int, DofComparator>::iterator i = 
+  map<const Dof*, int, DofComparator>::iterator i =
     globalId->begin();
-  
-  map<const Dof*, int, DofComparator>::iterator end = 
-    globalId->end();
-  
-  for(; i != end; i++)
-    s << "("  << (*i).first->toString() 
 
-      << ": " << (*i).second 
+  map<const Dof*, int, DofComparator>::iterator end =
+    globalId->end();
+
+  for(; i != end; i++)
+    s << "("  << (*i).first->toString()
+
+      << ": " << (*i).second
       << ")"  << endl;
 
   return s.str();

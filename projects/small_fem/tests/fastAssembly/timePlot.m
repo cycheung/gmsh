@@ -43,6 +43,8 @@ legend([{"Precomputing"},
         {"Term Addition"}], 'location', 'northwest');
 grid;
 
+%print 'time.svg'
+
 %% Unknowns
 figure;
 plot(order, unknowns);

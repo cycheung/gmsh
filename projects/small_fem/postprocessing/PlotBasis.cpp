@@ -84,9 +84,9 @@ void PlotBasis::getGeometry(const GroupOfElement& group){
   set<MVertex*, MVertexLessThanNum> setVertex;
 
   for(int i = 0; i < E; i++){
-    const int N = (*element)[i]->getNumVertices();
+    const int N = (*element)[i].first->getNumVertices();
     MElement* myElement =
-      const_cast<MElement*>((*element)[i]);
+      const_cast<MElement*>((*element)[i].first);
 
     for(int j = 0; j < N; j++)
       setVertex.insert(myElement->getVertex(j));

@@ -43,8 +43,7 @@ void System::assemble(void){
   const int E = fs->groupNumber();
 
   // Set to put Fixed Dof only ones
-  // (cannot use both  setValue and add Value
-  //  in PETSc)
+  // (cannot use both 'setValue' and 'addValue' in PETSc)
   fixedOnes = new set<const Dof*, DofComparator>();
 
   // Get Sparsity Pattern & PreAllocate//
@@ -63,11 +62,13 @@ void System::assemble(void){
 }
 
 void System::fixCoef(const GroupOfElement& goe, double value){
-  const vector<const MElement*>&  element = goe.getAll();
-  unsigned int                   nElement = goe.getNumber();
+  const vector<pair<const MElement*, ElementData> >&
+    element = goe.getAll();
+
+  const unsigned int nElement = goe.getNumber();
 
   for(unsigned int i = 0; i < nElement; i++){
-    vector<Dof>         dof = fs->getKeys(*element[i]);
+    vector<Dof>         dof = fs->getKeys(*element[i].first);
     const unsigned int nDof = dof.size();
 
     for(unsigned int j = 0; j < nDof; j++)

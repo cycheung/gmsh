@@ -39,7 +39,7 @@ int main(int argc, char** argv){
 
   // Writer for .msh
   WriterMsh writer;
-  writer.setDomain(goe.getAll());
+  writer.setDomain(goe);
 
   // Plot Basis //
   TriLagrangeBasis b(atoi(argv[2]));
@@ -48,10 +48,10 @@ int main(int argc, char** argv){
 
   PlotBasis plot(b, goe, writer);
   plot.plot("basis");
-  
+
   // Stop Gmsh //
   GmshFinalize();
-  
+
   return 0;
 }
 

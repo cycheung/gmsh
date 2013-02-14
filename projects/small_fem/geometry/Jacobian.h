@@ -38,11 +38,12 @@
 
 class Jacobian{
  private:
-  const GroupOfElement*               goe;
-  const std::vector<const MElement*>* element;
-  const fullMatrix<double>*           point;
-  unsigned int                        nElement;
-  unsigned int                        nPoint;
+  const GroupOfElement*     goe;
+  const fullMatrix<double>* point;
+  unsigned int              nElement;
+  unsigned int              nPoint;
+
+  const std::vector<std::pair<const MElement*, ElementData> >* element;
 
   typedef std::pair<const fullMatrix<double>*, double> jac_pair;
   typedef std::vector<const jac_pair*>                 jac_t;

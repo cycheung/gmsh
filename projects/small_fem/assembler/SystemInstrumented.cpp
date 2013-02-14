@@ -86,11 +86,13 @@ void SystemInstrumented::assemble(void){
 }
 
 void SystemInstrumented::fixCoef(const GroupOfElement& goe, double value){
-  const vector<const MElement*>&  element = goe.getAll();
-  unsigned int                   nElement = goe.getNumber();
+  const vector<pair<const MElement*, ElementData> >&
+    element = goe.getAll();
+
+  const unsigned int nElement = goe.getNumber();
 
   for(unsigned int i = 0; i < nElement; i++){
-    vector<Dof>         dof = fs->getKeys(*element[i]);
+    vector<Dof>         dof = fs->getKeys(*element[i].first);
     const unsigned int nDof = dof.size();
 
     for(unsigned int j = 0; j < nDof; j++)
