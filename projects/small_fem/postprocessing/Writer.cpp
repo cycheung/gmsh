@@ -69,7 +69,7 @@ void Writer::setValues(const System& system){
   setDomain(fs->getSupport());
 }
 
-void Writer::setValues(const EigenSystem& system, unsigned int eigenNumber){
+void Writer::setValues(const SystemEigen& system, unsigned int eigenNumber){
   // Delete old Sol if any, and if Own
   if(ownSol)
     delete sol;

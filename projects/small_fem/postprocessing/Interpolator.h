@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "System.h"
-#include "EigenSystem.h"
+#include "SystemEigen.h"
 #include "Writer.h"
 #include "fullMatrix.h"
 
@@ -53,9 +53,9 @@ class Interpolator{
    Interpolator(const System& system,
 		const GroupOfElement& visu);
 
-   Interpolator(const EigenSystem& system,
+   Interpolator(const SystemEigen& system,
 		unsigned int eigenNumber);
-   Interpolator(const EigenSystem& system,
+   Interpolator(const SystemEigen& system,
 		unsigned int eigenNumber,
 		const GroupOfElement& visu);
 
@@ -74,7 +74,7 @@ class Interpolator{
 
  private:
   void initSystem(const System& system);
-  void initSystem(const EigenSystem& system,
+  void initSystem(const SystemEigen& system,
 		  unsigned int eigenNumber);
 
   void interpolate(void);
@@ -110,26 +110,26 @@ class Interpolator{
    The interpolation will be done on the given GroupOfElement
    **
 
-   @fn Interpolator::Interpolator(const EigenSystem&, unsigned int)
-   @param system An EigenSystem
+   @fn Interpolator::Interpolator(const SystemEigen&, unsigned int)
+   @param system An SystemEigen
    @param eigenNumber A natural number
 
    Instanciate a new Interpolator,
-   based on the given EigenSystem%'s Eigenvector
+   based on the given SystemEigen%'s Eigenvector
    number @c eigenNumber
 
    @note
    The interpolation will be done on the  @em support of the
-   EigenSystem%'s EigenFormulation%'s FunctionSpace.
+   SystemEigen%'s EigenFormulation%'s FunctionSpace.
    **
 
-   @fn Interpolator::Interpolator(const EigenSystem&, unsigned int, const GroupOfElement&)
+   @fn Interpolator::Interpolator(const SystemEigen&, unsigned int, const GroupOfElement&)
    @param system A System
    @param eigenNumber a natural number
    @param visu The GroupOfElement to use for interpolation
 
    Instanciate a new Interpolator,
-   based on the given EigenSystem%'s Eigenvector
+   based on the given SystemEigen%'s Eigenvector
    number @c eigenNumber
 
    @note

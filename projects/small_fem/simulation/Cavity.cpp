@@ -3,7 +3,7 @@
 #include <iostream>
 
 #include "Mesh.h"
-#include "EigenSystem.h"
+#include "SystemEigen.h"
 
 #include "WriterMsh.h"
 #include "Interpolator.h"
@@ -30,7 +30,7 @@ int main(int argc, char** argv){
 
   // EigenFrequency //
   FormulationEigenFrequency cavity(domain, order);
-  EigenSystem sysCavity(cavity);
+  SystemEigen sysCavity(cavity);
 
   sysCavity.fixCoef(msh.getFromPhysical(5), 0);
 

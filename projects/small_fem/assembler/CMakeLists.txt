@@ -3,10 +3,10 @@ set(src
   DofManager.cpp
   GroupOfDof.cpp
 
-  AbstractSystem.cpp
+  SystemAbstract.cpp
   System.cpp
+  SystemEigen.cpp
   SystemInstrumented.cpp
-  EigenSystem.cpp
 )
 
 add_sources(assembler "${src}")

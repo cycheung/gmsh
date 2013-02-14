@@ -31,7 +31,7 @@ void Interpolator::initSystem(const System& system){
   scalar = fs->getBasis(0).isScalar();
 }
 
-void Interpolator::initSystem(const EigenSystem& system,
+void Interpolator::initSystem(const SystemEigen& system,
 			      unsigned int eigenNumber){
   // Save some data
   this->dofM = &(system.getDofManager());
@@ -80,7 +80,7 @@ Interpolator::Interpolator(const System& system,
   interpolateOnVisu();
 }
 
-Interpolator::Interpolator(const EigenSystem& system,
+Interpolator::Interpolator(const SystemEigen& system,
 			   unsigned int eigenNumber){
   // Init
   initSystem(system, eigenNumber);
@@ -94,7 +94,7 @@ Interpolator::Interpolator(const EigenSystem& system,
   interpolate();
 }
 
-Interpolator::Interpolator(const EigenSystem& system,
+Interpolator::Interpolator(const SystemEigen& system,
 			   unsigned int eigenNumber,
 			   const GroupOfElement& visu){
   // Init

@@ -4,15 +4,15 @@
 #include "BasisLocal.h"
 #include "Exception.h"
 
-#include "AbstractSystem.h"
+#include "SystemAbstract.h"
 #include "System.h"
 
 using namespace std;
 
-AbstractSystem::~AbstractSystem(void){
+SystemAbstract::~SystemAbstract(void){
 }
 
-void AbstractSystem::fixCoef(const GroupOfElement& goe, double value){
+void SystemAbstract::fixCoef(const GroupOfElement& goe, double value){
   const vector<pair<const MElement*, ElementData> >&
     element = goe.getAll();
 
@@ -27,7 +27,7 @@ void AbstractSystem::fixCoef(const GroupOfElement& goe, double value){
   }
 }
 
-void AbstractSystem::dirichlet(GroupOfElement& goe,
+void SystemAbstract::dirichlet(GroupOfElement& goe,
 		       double (*f)(fullVector<double>& xyz)){
 
   // Check if Scalar Problem //
@@ -67,7 +67,7 @@ void AbstractSystem::dirichlet(GroupOfElement& goe,
   delete dirBasis;
 }
 
-void AbstractSystem::dirichlet(GroupOfElement& goe,
+void SystemAbstract::dirichlet(GroupOfElement& goe,
 		       fullVector<double> (*f)(fullVector<double>& xyz)){
 
   // Check if Scalar Problem //
@@ -108,7 +108,7 @@ void AbstractSystem::dirichlet(GroupOfElement& goe,
   delete dirBasis;
 }
 
-void AbstractSystem::assemble(linearSystemPETSc<double>& sys,
+void SystemAbstract::assemble(linearSystemPETSc<double>& sys,
                               GroupOfDof& group,
                               formulationPtr& term){
 
@@ -138,7 +138,7 @@ void AbstractSystem::assemble(linearSystemPETSc<double>& sys,
   }
 }
 
-void AbstractSystem::sparsity(linearSystemPETSc<double>& sys,
+void SystemAbstract::sparsity(linearSystemPETSc<double>& sys,
                               GroupOfDof& group){
 
   const vector<const Dof*>& dof = group.getAll();

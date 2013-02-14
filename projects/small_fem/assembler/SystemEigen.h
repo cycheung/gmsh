@@ -1,11 +1,11 @@
-#ifndef _EIGENSYSTEM_H_
-#define _EIGENSYSTEM_H_
+#ifndef _SYSTEMEIGEN_H_
+#define _SYSTEMEIGEN_H_
 
-#include "AbstractSystem.h"
+#include "SystemAbstract.h"
 #include "EigenSolver.h"
 
 /**
-   @class EigenSystem
+   @class SystemEigen
    @brief This class assembles an Eigenvalue System
 
    This class assembles an Eigenvalue system,
@@ -20,7 +20,7 @@
    @see Formulation::isGeneral()
  */
 
-class EigenSystem: public AbstractSystem{
+class SystemEigen: public SystemAbstract{
  private:
   bool general;
 
@@ -33,8 +33,8 @@ class EigenSystem: public AbstractSystem{
   unsigned int nEigenValues;
 
  public:
-  EigenSystem(const Formulation& formulation);
-  virtual ~EigenSystem(void);
+  SystemEigen(const Formulation& formulation);
+  virtual ~SystemEigen(void);
 
   bool isGeneral(void) const;
 
@@ -50,37 +50,37 @@ class EigenSystem: public AbstractSystem{
 
 
 /**
-   @fn EigenSystem::EigenSystem
+   @fn SystemEigen::SystemEigen
    @param formulation An Formulation that
    gives the way to assemble the Eigenvalue System
 
-   Instantiated a new EigenSystem
+   Instantiated a new SystemEigen
    ***
 
-   @fn EigenSystem::~EigenSystem
-   Deletes this EigenSystem
+   @fn SystemEigen::~SystemEigen
+   Deletes this SystemEigen
    **
 
-   @fn EigenSystem::isGeneral
+   @fn SystemEigen::isGeneral
    @return Returns:
-   @li @c true, if the EigenSystem is a Generalized one
+   @li @c true, if the SystemEigen is a Generalized one
    @li @c false otherwise
    **
 
-   @fn EigenSystem::getEigenValueNumber
+   @fn SystemEigen::getEigenValueNumber
    @return Returns the number of @em computed
    Eigenvalues
    **
 
-   @fn EigenSystem::getEigenValues
+   @fn SystemEigen::getEigenValues
    @return Returns the @em computed Eigenvalues
    **
 
-   @fn EigenSystem::getEigenVectors
+   @fn SystemEigen::getEigenVectors
    @return Returns the @em computed Eigenvectors
    **
 
-   @fn EigenSystem::setNumberOfEigenValues
+   @fn SystemEigen::setNumberOfEigenValues
    @param nEigenValues A natural number
    Set the number of eigenvalues computed by
    the solving method to the given number
@@ -90,21 +90,21 @@ class EigenSystem: public AbstractSystem{
 // Inline Functions //
 //////////////////////
 
-inline bool EigenSystem::isGeneral(void) const{
+inline bool SystemEigen::isGeneral(void) const{
   return general;
 }
 
-inline unsigned int EigenSystem::getEigenValuesNumber(void) const{
+inline unsigned int SystemEigen::getEigenValuesNumber(void) const{
   return nEigenValues;
 }
 
 inline const std::vector<std::complex<double> >&
-EigenSystem::getEigenValues(void) const{
+SystemEigen::getEigenValues(void) const{
   return *eigenValue;
 }
 
 inline const std::vector<std::vector<std::complex<double> > >&
-EigenSystem::getEigenVectors(void) const{
+SystemEigen::getEigenVectors(void) const{
   return *eigenVector;
 }
 

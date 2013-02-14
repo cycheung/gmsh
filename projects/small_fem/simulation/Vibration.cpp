@@ -3,7 +3,7 @@
 #include <iostream>
 
 #include "Mesh.h"
-#include "EigenSystem.h"
+#include "SystemEigen.h"
 
 #include "WriterMsh.h"
 #include "WriterDummy.h"
@@ -36,7 +36,7 @@ int main(int argc, char** argv){
 
   // Vibration //
   FormulationVibration vibration(domain, order);
-  EigenSystem sysVibration(vibration);
+  SystemEigen sysVibration(vibration);
 
   //sysVibration.fixCoef(msh.getFromPhysical(5), 0);
 

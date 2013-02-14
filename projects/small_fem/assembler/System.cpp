@@ -37,7 +37,7 @@ void System::assemble(void){
 
   // Get Sparsity Pattern & PreAllocate//
   for(unsigned int i = 0; i < E; i++)
-    AbstractSystem::sparsity(*linSys, *(group[i]));
+    SystemAbstract::sparsity(*linSys, *(group[i]));
 
   linSys->preAllocateEntries();
 
@@ -45,7 +45,7 @@ void System::assemble(void){
   formulationPtr term = &Formulation::weak;
 
   for(unsigned int i = 0; i < E; i++)
-    AbstractSystem::assemble(*linSys, *(group[i]), term);
+    SystemAbstract::assemble(*linSys, *(group[i]), term);
 
   // The system is assembled //
   assembled = true;

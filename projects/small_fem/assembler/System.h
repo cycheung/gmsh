@@ -1,7 +1,7 @@
 #ifndef _SYSTEM_H_
 #define _SYSTEM_H_
 
-#include "AbstractSystem.h"
+#include "SystemAbstract.h"
 
 /**
    @class System
@@ -11,7 +11,7 @@
    described by a Formulation
  */
 
-class System: public AbstractSystem{
+class System: public SystemAbstract{
  protected:
   linearSystemPETSc<double>* linSys;
   fullVector<double>*        x;

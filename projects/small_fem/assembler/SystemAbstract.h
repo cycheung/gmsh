@@ -1,5 +1,5 @@
-#ifndef _ABSTRACTSYSTEM_H_
-#define _ABSTRACTSYSTEM_H_
+#ifndef _SYSTEMABSTRACT_H_
+#define _SYSTEMABSTRACT_H_
 
 #include "Dof.h"
 #include "DofManager.h"
@@ -11,7 +11,7 @@
 #include "linearSystemPETSc.h"
 
 /**
-   @interface Common Interface for Linear Systems
+   @interface SystemAbstract
    @brief Common Interface for Linear Systems Assemblers
 
    This is a common Interface for Linear Systems Assemblers
@@ -24,7 +24,7 @@
    Allow multiple basis for dirichelt
  */
 
-class AbstractSystem{
+class SystemAbstract{
  protected:
   typedef
     double (Formulation::*formulationPtr)(unsigned int dofI,
@@ -40,7 +40,7 @@ class AbstractSystem{
   DofManager*          dofM;
 
  public:
-  virtual ~AbstractSystem(void);
+  virtual ~SystemAbstract(void);
 
   bool isAssembled(void) const;
   bool isSolved(void)    const;
@@ -72,36 +72,36 @@ class AbstractSystem{
 
 
 /**
-   @fn AbstractSystem::~AbstractSystem
-   Deletes this AbstractSystem
+   @fn SystemAbstract::~SystemAbstract
+   Deletes this SystemAbstract
    **
 
-   @fn AbstractSystem::isAssembled
+   @fn SystemAbstract::isAssembled
    @return Returns:
    @li @c true, if the system has been assembled
    @li @c false otherwise
    **
 
-   @fn AbstractSystem::isSolved
+   @fn SystemAbstract::isSolved
    @return Returns:
    @li @c true, if the system has been solved
    @li @c false otherwise
    **
 
-   @fn AbstractSystem::getSize
+   @fn SystemAbstract::getSize
    @return Returns the number of @em unknowns
    of the the linear system
    **
 
-   @fn AbstractSystem::getDofManager
+   @fn SystemAbstract::getDofManager
    @return Returns the DofManager used by the system
    **
 
-   @fn AbstractSystem::getFunctionSpace
+   @fn SystemAbstract::getFunctionSpace
    @return Returns the FunctionSpace used by the system
    **
 
-   @fn AbstractSystem::fixCoef
+   @fn SystemAbstract::fixCoef
    @param goe A GroupOfElement
    @param value A real value
 
@@ -112,7 +112,7 @@ class AbstractSystem{
    Basis Function defined on the given GroupOfElement
    **
 
-   @fn AbstractSystem::dirichlet(const GroupOfElement& goe,  double (*f)(fullVector<double>& xyz));
+   @fn SystemAbstract::dirichlet(const GroupOfElement& goe,  double (*f)(fullVector<double>& xyz));
    @param goe A GroupOfElement
    @param f A scalar Function
 
@@ -120,7 +120,7 @@ class AbstractSystem{
    given GroupOfElement
    **
 
-   @fn AbstractSystem::dirichlet(const GroupOfElement& goe, fullVector<double> (*f)(fullVector<double>& xyz));
+   @fn SystemAbstract::dirichlet(const GroupOfElement& goe, fullVector<double> (*f)(fullVector<double>& xyz));
    @param goe A GroupOfElement
    @param f A vectorial Function
 
@@ -128,13 +128,13 @@ class AbstractSystem{
    given GroupOfElement
    **
 
-   @fn AbstractSystem::assemble
+   @fn SystemAbstract::assemble
    Assembles the linear system
    **
 
-   @fn AbstractSystem::solve
+   @fn SystemAbstract::solve
    Solves the linear system
-   @note If the AbstractSystem is @em not @em assembled,
+   @note If the SystemAbstract is @em not @em assembled,
    the assembly method will be called
 */
 
@@ -142,24 +142,24 @@ class AbstractSystem{
 // Inline Functions //
 //////////////////////
 
-inline bool AbstractSystem::isAssembled(void) const{
+inline bool SystemAbstract::isAssembled(void) const{
   return assembled;
 }
 
-inline bool AbstractSystem::isSolved(void) const{
+inline bool SystemAbstract::isSolved(void) const{
   return solved;
 }
 
-inline unsigned int AbstractSystem::getSize(void) const{
+inline unsigned int SystemAbstract::getSize(void) const{
   return fs->dofNumber();
 }
 
-inline const DofManager& AbstractSystem::
+inline const DofManager& SystemAbstract::
 getDofManager(void) const{
   return *dofM;
 }
 
-inline const FunctionSpace& AbstractSystem::
+inline const FunctionSpace& SystemAbstract::
 getFunctionSpace(void) const{
   return *fs;
 }

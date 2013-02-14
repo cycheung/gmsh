@@ -6,7 +6,7 @@
 #include "MElement.h"
 #include "MVertex.h"
 #include "System.h"
-#include "EigenSystem.h"
+#include "SystemEigen.h"
 
 #include <string>
 #include <vector>
@@ -60,7 +60,7 @@ class Writer{
   void setValues(const std::vector<double>& value);
   void setValues(const std::vector<fullVector<double> >& value);
   void setValues(const System& system);
-  void setValues(const EigenSystem& system, unsigned int eigenNumber);
+  void setValues(const SystemEigen& system, unsigned int eigenNumber);
 
   void setDomain(const GroupOfElement& domain);
 
@@ -107,17 +107,17 @@ class Writer{
    of the FunctionSpace of the Formulation of the System
    **
 
-   @fn void Writer::setValues(const EigenSystem& system, unsigned int)
-   @param system An EigenSystem
+   @fn void Writer::setValues(const SystemEigen& system, unsigned int)
+   @param system An SystemEigen
    @param eigenNumber A natural number
 
-   Uses the given EigenSystem Eigenvector for Data
+   Uses the given SystemEigen Eigenvector for Data
 
    @note The used Eigenvector is defined by @c eigenNumber
 
    @warning
    Writer::setDomain() will be called with the Support
-   of the FunctionSpace of the EigenFormulation of the EigenSystem
+   of the FunctionSpace of the EigenFormulation of the SystemEigen
    **
 
    @fn Writer::setDomain

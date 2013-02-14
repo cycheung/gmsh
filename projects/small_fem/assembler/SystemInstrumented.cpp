@@ -36,7 +36,7 @@ void SystemInstrumented::assemble(void){
   timer.start();
 
   for(unsigned int i = 0; i < E; i++)
-    AbstractSystem::sparsity(*linSys, *(group[i]));
+    SystemAbstract::sparsity(*linSys, *(group[i]));
 
   linSys->preAllocateEntries();
 

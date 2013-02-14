@@ -1,8 +1,8 @@
-#include "EigenSystem.h"
+#include "SystemEigen.h"
 
 using namespace std;
 
-EigenSystem::EigenSystem(const Formulation& formulation){
+SystemEigen::SystemEigen(const Formulation& formulation){
   // Get Formulation //
   this->formulation = &formulation;
   this->fs          = &(formulation.fs());
@@ -14,7 +14,7 @@ EigenSystem::EigenSystem(const Formulation& formulation){
   // Is the Problem a General EigenValue Problem ? //
   general = formulation.isGeneral();
 
-  // Create EigenSystem //
+  // Create SystemEigen //
   // Get Size
   const unsigned int size = fs->dofNumber();
 
@@ -37,13 +37,13 @@ EigenSystem::EigenSystem(const Formulation& formulation){
   eigenValue  = NULL;
   eigenVector = NULL;
 
-  // The EigenSystem is not assembled and not solved//
+  // The SystemEigen is not assembled and not solved//
   nEigenValues = 0;
   assembled    = false;
   solved       = false;
 }
 
-EigenSystem::~EigenSystem(void){
+SystemEigen::~SystemEigen(void){
   if(eigenVector)
     delete eigenVector;
 
@@ -59,10 +59,10 @@ EigenSystem::~EigenSystem(void){
     delete linSysB;
 
   delete dofM;
-  // EigenSystem is not responsible for deleting 'Formulations'
+  // SystemEigen is not responsible for deleting 'Formulations'
 }
 
-void EigenSystem::
+void SystemEigen::
 setNumberOfEigenValues(unsigned int nEigenValues){
   const unsigned int nDof = fs->dofNumber();
 
@@ -75,7 +75,7 @@ setNumberOfEigenValues(unsigned int nEigenValues){
     this->nEigenValues = nEigenValues;
 }
 
-void EigenSystem::assemble(void){
+void SystemEigen::assemble(void){
   // Get GroupOfDofs //
   const vector<GroupOfDof*>& group = fs->getAllGroups();
   const unsigned int E = fs->groupNumber();
@@ -83,40 +83,40 @@ void EigenSystem::assemble(void){
   // Get Sparcity Pattern & PreAllocate//
   // linSysA
   for(unsigned int i = 0; i < E; i++)
-    AbstractSystem::sparsity(*linSysA, *(group[i]));
+    SystemAbstract::sparsity(*linSysA, *(group[i]));
 
   linSysA->preAllocateEntries();
 
   // linSysB
   if(general){
     for(unsigned int i = 0; i < E; i++)
-      AbstractSystem::sparsity(*linSysB, *(group[i]));
+      SystemAbstract::sparsity(*linSysB, *(group[i]));
 
     linSysB->preAllocateEntries();
   }
 
-  // Assemble EigenSystem //
+  // Assemble SystemEigen //
   formulationPtr termA = &Formulation::weak;
   formulationPtr termB = &Formulation::weakB;
 
   for(unsigned int i = 0; i < E; i++)
-    AbstractSystem::assemble(*linSysA, *(group[i]), termA);
+    SystemAbstract::assemble(*linSysA, *(group[i]), termA);
 
   if(general)
     for(unsigned int i = 0; i < E; i++)
-      AbstractSystem::assemble(*linSysB, *(group[i]), termB);
+      SystemAbstract::assemble(*linSysB, *(group[i]), termB);
 
-  // The EigenSystem is assembled //
+  // The SystemEigen is assembled //
   assembled = true;
 }
 
-void EigenSystem::solve(void){
+void SystemEigen::solve(void){
   // Check nEigenValues
   if(!nEigenValues)
     throw
       Exception("The number of eigenvalues to compute is zero");
 
-  // Is the EigenSystem assembled ? //
+  // Is the SystemEigen assembled ? //
   if(!assembled)
     assemble();
 
