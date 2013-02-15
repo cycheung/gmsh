@@ -1,0 +1,9 @@
+Timposed = Variable Time
+     Real
+    -1.0    35
+     0.200  35
+     0.210  51
+     0.250  51
+     0.251  18
+     2.0    18
+End
