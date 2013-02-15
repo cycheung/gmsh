@@ -52,3 +52,28 @@ Plugin(MinMax).OverTime=1;
 Plugin(MinMax).Argument=0;
 Plugin(MinMax).Run;
 Save View [7] "volmax.txt";
+
+// View 8
+Plugin(MathEval).Expression0= "Step(v0-OL.get(Parameters/Skin/OVERTEMP))*6.2831853e9*x";
+Plugin(MathEval).TimeStep=-1;
+Plugin(MathEval).View=0;
+Plugin(MathEval).OtherTimeStep=-1;
+Plugin(MathEval).OtherView=-1;
+Plugin(MathEval).ForceInterpolation=0;
+Plugin(MathEval).PhysicalRegion=1;
+Plugin(MathEval).Run;
+
+// View 9
+Plugin(Integrate).View=8;
+Plugin(Integrate).OverTime=-1;
+Plugin(Integrate).Dimension=2;
+Plugin(Integrate).Run; 
+
+Save View [9] "volderm.txt" ;
+
+// View 10 and 11
+Plugin(MinMax).View=9;
+Plugin(MinMax).OverTime=1;
+Plugin(MinMax).Argument=0;
+Plugin(MinMax).Run;
+Save View [11] "voldermmax.txt";

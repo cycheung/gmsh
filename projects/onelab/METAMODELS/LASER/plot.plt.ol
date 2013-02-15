@@ -24,7 +24,7 @@ set size 1.0, 1.0
 set origin 0.0, 0.0
 set grid
 
-if (INTERACT==-1) set title "Temperature on axis at different depths (every 12.5 {{/Symbol m}m})"
+if (INTERACT==-1) set title "Temperature on axis at various depths (every 12.5 {{/Symbol m}m})"
 set size 0.5,0.5
 set origin 0.0,0.5
 set ylabel "Temperature [{\260}C]";
@@ -33,14 +33,13 @@ set ytics nomirror
 set y2tics
 set y2label "Activated volume [mm^3]"
 plot "temp.txt" u 1:($2) lt 1 t "",\
-     "temp.txt" u 1:($10) lt 2 t "",\
-     "temp.txt" u 1:($18) lt 3 t "",\
-     "temp.txt" u 1:($26) lt 4 t "",\
-     "temp.txt" u 1:($34) lt 5 t "", \
-     320-273 w l  lt rgb "black" t "threshold ",\
-     "volume.txt" u 2:8 axis x1y2 lt 8 lw 2 t "act. vol."
-
-     #"volume.txt" u 2:8 axis x1y2 smooth bezier lw 2 lt 1 t "act. vol. "
+     "temp.txt" u 1:($11) lt 2 t "",\
+     "temp.txt" u 1:($20) lt 3 t "",\
+     "temp.txt" u 1:($29) lt 4 t "",\
+     "temp.txt" u 1:($38) lt 5 t "", \
+     OL.get(Parameters/Skin/OVERTEMP) w l  lt rgb "black" t "threshold ",\
+     "volume.txt" u 2:8 axis x1y2 lt 8 lw 1 t "act. vol.",\
+     "volderm.txt" u 2:8 axis x1y2 lt 8 lw 2 t ""
 
 set ytics mirror
 unset y2tics
@@ -55,7 +54,7 @@ nbfiles= OL.get(PostPro/ZSURF,choices.size())
 nbfiles=5
 filename(n) = sprintf("templaser%d.txt", n)
 plot for [i=0:nbfiles-1] filename(i) u ($5)*1000:8 w l t "", \
-     320-273 w l  lt rgb "black" t "threshold "
+     OL.get(Parameters/Skin/OVERTEMP) w l  lt rgb "black" t "threshold "
 
 skinWidth = (OL.get(Parameters/Skin/EPIDERMIS)+OL.get(Parameters/Skin/DERMIS))/1000
 dermis = OL.get(Parameters/Skin/EPIDERMIS)

@@ -70,7 +70,6 @@ OL.endif
 # Available LASER models, another enumeration
 LASERTYPE.number(2, Parameters/Laser/1,"Laser type");  
 LASERTYPE.valueLabels(
-    1,"Imposed temperature", 
     2,"Imposed flux", 
     3,"Controlled temperature");
 
@@ -78,39 +77,38 @@ LASERSHAPE.number(1, Parameters/Laser/2,"Laser shape");
 LASERSHAPE.valueLabels(1,"Gaussian", 2,"Flat-top");
 
 # Parameters describing the laser stimulator
-STIMTIME.number(0.110, Parameters/Laser/, "Stimulus duration [s]");
+STIMTIME.number(0.21, Parameters/Laser/, "End of stimulation time [s]");
+PROBETIME.number(OL.get(STIMTIME), PostPro/, "Probe time [s]");
 ABSORPTION.number(2e4, Parameters/Laser/, "Absorption coefficient [1/m]");
 LASERTEMP.number(50, Parameters/Laser/, "Imposed temperature [C]");
 LASERPOWER.number(4.0, Parameters/Laser/, "Power [W]");
 TSKINFILE.string(,Parameters/Laser/, "Imposed temp. file");
 QSKINFILE.string(,Parameters/Laser/, "Imposed laser power file");
-TSKINFILE.addChoices(tskin.sif);
+TSKINFILE.addChoices(tskin.sif, TMoureaux.sif);
 QSKINFILE.addChoices(pin.sif);
 
 # Visibility of the parameters in the onelab interactive window
 # can be controlled with conditional statements
 # so that only the relevant parameters appear.
-OL.if( OL.get(LASERTYPE) == 1)
-LASERTEMP.setVisible(1);
-TSKINFILE.setVisible(1);
-LASERPOWER.setVisible(0);
-QSKINFILE.setVisible(0);
-ABSORPTION.setVisible(0);
-LASERSHAPE.setVisible(0);
-REFLECTIVITY.setVisible(0);
-OL.endif
 OL.if( OL.get(LASERTYPE) == 2)
 LASERTEMP.setVisible(0);
 TSKINFILE.setVisible(0);
 LASERPOWER.setVisible(1);
+  OL.iftrue(Parameters/Laser/QSKINFILE)
+  LASERPOWER.setVisible(0);
+  OL.endif
 QSKINFILE.setVisible(1);
 ABSORPTION.setVisible(1);
 LASERSHAPE.setVisible(1);
 REFLECTIVITY.setVisible(1);
 OL.endif
+
 OL.if( OL.get(LASERTYPE) == 3)
 LASERTEMP.setVisible(1);
-TSKINFILE.setVisible(0);
+TSKINFILE.setVisible(1);
+  OL.iftrue(Parameters/Laser/TSKINFILE)
+  LASERTEMP.setVisible(0);
+  OL.endif
 LASERPOWER.setVisible(1);
 QSKINFILE.setVisible(0);
 ABSORPTION.setVisible(1);
@@ -118,13 +116,12 @@ LASERSHAPE.setVisible(1);
 REFLECTIVITY.setVisible(1);
 OL.endif
 
-PROBETIME.number(OL.get(STIMTIME), PostPro/, "Probe time [s]");
 
 ZSURF.number( , PostPro/,"Z coordinates");
 ZSURF.setValue(OL.eval( (OL.get(Parameters/Skin/DERMIS)+OL.get(Parameters/Skin/EPIDERMIS))* 1e-3)); 
 
 # "OL.get" return the value on server 
-# of a parameter of type onelab::number or onelab::string
+#  of a parameter of type onelab::number or onelab::string
 # "OL.eval" allows evaluating analytical expressions involving onelab::numbers
 
 # The parameter ZSURF is attributed a list of choices
@@ -152,7 +149,8 @@ ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.1750 * 1e-3) );
 ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.1875 * 1e-3) );
 ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.2000 * 1e-3) );
 
-VOLUME.number(,Solution/,"Vol. above threshold [mm3]");
+VOLUME.number(,Solution/,"Skin above threshold [mm3]");
+VOLDERM.number(,Solution/,"Derm above threshold [mm3]");
 
 #-2) ElmerGrid converts the mesh for Elmer
 ElmerGrid.register(interfaced);
@@ -181,7 +179,8 @@ Post2.in(solution.pos, script2.opt.ol);
 Post2.out(volume.txt, aboveThres.pos );
 Post2.run( solution.pos script2.opt - );
 Post2.merge(aboveThres.pos);
-Post2.up( volmax.txt,-1,8,Solution/VOLUME);
+Post2.up(volmax.txt,-1,8,Solution/VOLUME,
+         voldermmax.txt,-1,8,Solution/VOLDERM);
 
 #-6) Display solution curves with either gnuplot or matlab
 POSTPRO.number(2, PostPro/,"Plot results with");
@@ -192,6 +191,7 @@ OL.if( OL.get(POSTPRO) == 1)
 Matlab.register(interfaced); 
 Matlab.run(-nosplash -desktop -r plotMatlab);
 OL.endif
+
 OL.if( OL.get(POSTPRO) == 2)
 Gnuplot.register(interfaced);
 Gnuplot.in(temp.txt, plot.plt.ol);

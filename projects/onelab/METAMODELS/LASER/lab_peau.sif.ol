@@ -1,9 +1,9 @@
 # in a name.xxx.ol file onelab parameter definition lines must be enclosed 
 # between "OL.begin" and "OL.end" or start with "OL.line"
 OL.block
-NumStep.number(11,Parameters/Elmer/1, "Time steps during stimulus"); 
-TimeStep.number(, Parameters/Elmer/2,"Time step [s]");
-TimeStep.setValue(OL.eval(OL.get(Parameters/Laser/STIMTIME)/OL.get(NumStep)));
+#NumStep.number(11,Parameters/Elmer/1, "Time steps until end stim."); 
+TimeStep.number(1, Parameters/Elmer/2,"Time step [ms]");
+#TimeStep.setValue(OL.eval(OL.get(Parameters/Laser/STIMTIME)/OL.get(NumStep)));
 TimeEnd.number(0.5,Parameters/Elmer/3,"Simulation end time [s]");
 OL.endblock
 
@@ -14,8 +14,8 @@ End
 Simulation
   Coordinate System =  Axi Symmetric 
   Simulation Type = Transient 
-  Timestep Intervals (1) = OL.eval(floor(OL.get(TimeEnd)/OL.get(TimeStep)))
-  Timestep sizes (1) = OL.get(TimeStep) 
+  Timestep Intervals (1) = OL.eval(floor(OL.get(TimeEnd)/OL.get(TimeStep)*1000))
+  Timestep sizes (1) = OL.eval(OL.get(TimeStep)/1000)
   Timestepping Method = Implicit Euler
   ! BDF Order = 1
   Output Intervals = 1
@@ -66,6 +66,8 @@ Solver 1
   Exported Variable 3 DOFs = 1
   Exported Variable 4 = String "Pin"
   Exported Variable 4 DOFs = 1
+  Exported Variable 5 = String "Timposed"
+  Exported Variable 5 DOFs = 1
   NonLinear Update Exported Variables = Logical True
 End
 Solver 2
@@ -103,6 +105,9 @@ $tlaser  = OL.get(Parameters/Laser/STIMTIME)
 $hp      = OL.get(PostPro/ZSURF)
 $ylaser  = hp
 $temp    = OL.get(Parameters/Laser/LASERTEMP)
+$power   = OL.get(Parameters/Laser/LASERPOWER)
+$dT      = 4.0
+$bb      = 0.1
 
 !*********** Materials ************
 Material 1 !dermis
@@ -118,6 +123,8 @@ End
 Initial Condition 1
   Temperature = Variable Coordinate 2
   Real MATC "OL.get(Parameters/Skin/TAMBIANT) + (1-tx/hp)*(OL.get(Parameters/Skin/BODYTEMP) - OL.get(Parameters/Skin/TAMBIANT))"
+
+Timposed = Real OL.get(Parameters/Skin/TAMBIANT)
 
   Teneur = Variable Coordinate 1, Coordinate 2
 OL.if( OL.get(Parameters/Skin/SKINTYPE) == 1) # hairy
@@ -142,6 +149,7 @@ OL.endif
 
 End
 
+
 !*********** Volume heat source ************
 Body Force 1
 
@@ -152,20 +160,39 @@ OL.iftrue(Parameters/Laser/QSKINFILE)
   Heat Source = Variable Pin, Qvolume
   Real MATC " tx(0) * tx(1)"
 OL.else
-  Pin = Variable Time
-        Real MATC "OL.get(Parameters/Laser/LASERPOWER) "
+  Pin = Variable Time, Tsensor, Timposed
+        Real MATC " power "
   Heat Source = Variable Time, Pin, Qvolume
   Real MATC " if(tx(0)<=tlaser) {tx(1) * tx(2)} else {0} "
 OL.endif
 OL.endif
 
+
+#Remarks:
+#$function soften(X) { _soften = min( 1.0+(bb-1.0)/(1.0-aa)*(X(1)/X(2)-aa)  1.0) }
+#It seems one cannot have Variables in function definitions
+#real constants should be written e.g. 1.0 and not 1.
+# Attention: This is correct 
+#  Real MATC "power * min((1.0+(bb-1.0)*(tx(1)-tx(2)+dT)/dT) 1.0)"
+# This not (bug?)
+#  Real MATC "power * min((1.0+(bb-1.0)/dT*(tx(1)-tx(2)+dT)) 1.0)"
+
 OL.if( OL.get(Parameters/Laser/LASERTYPE) == 3)
   # temperature controlled power density
   # Heat Source = Variable Qvolume, Time, Tsensor/Temperature
-  Pin = Variable Time
-  Real MATC "OL.get(Parameters/Laser/LASERPOWER)"
-  Heat Source = Variable Pin, Qvolume, Time, Tsensor
-  Real MATC " if(tx(2)<=tlaser) { if(tx(3)<temp){tx(0)*tx(1)} else{0} } else {0} "
+OL.iftrue(Parameters/Laser/TSKINFILE)
+   OL.include(OL.get(Parameters/Laser/TSKINFILE));
+OL.else
+   Timposed = Variable Time
+     Real
+     0.     OL.get(Parameters/Laser/LASERTEMP)
+     OL.get(Parameters/Laser/STIMTIME) OL.get(Parameters/Laser/LASERTEMP)
+   End
+OL.endif
+  Pin = Variable Time, Tsensor, Timposed
+  Real MATC "power * min((1.0+(bb-1.0)*(tx(1)-tx(2)+dT)/dT) 1.0)"
+  Heat Source = Variable Pin, Qvolume
+  Real MATC "if(tx(0)>0) {tx(0) * tx(1)} else {0}"
 OL.endif
 End
 

@@ -3,7 +3,7 @@ nbDepth = #ListDepth[];
 
 Plugin(ExtractElements).MinVal=0;
 Plugin(ExtractElements).MaxVal=0;
-Plugin(ExtractElements).TimeStep=OL.eval(OL.get(PostPro/PROBETIME)/OL.get(Parameters/Elmer/TimeStep)-1);
+Plugin(ExtractElements).TimeStep=OL.eval(OL.get(PostPro/PROBETIME)/OL.get(Parameters/Elmer/TimeStep)*1000-1);
 Plugin(ExtractElements).Visible=1;
 Plugin(ExtractElements).Dimension=2;
 Plugin(ExtractElements).View=0;
