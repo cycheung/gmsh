@@ -1,10 +1,7 @@
 #ifndef _TERM_H_
 #define _TERM_H_
 
-#include <map>
-
 #include "fullMatrix.h"
-#include "GroupOfDof.h"
 
 /**
    @interface Term
@@ -21,6 +18,11 @@ class Term{
 
   fullMatrix<double>** aM;
 
+  mutable bool         once;
+  mutable unsigned int lastId;
+  mutable unsigned int lastI;
+  mutable unsigned int lastCtr;
+
  public:
   Term(void);
   virtual ~Term(void);
@@ -28,6 +30,28 @@ class Term{
   double getTerm(unsigned int dofI,
                  unsigned int dofJ,
                  unsigned int elementId) const;
+
+ private:
+  double getTermOutCache(unsigned int dofI,
+                         unsigned int dofJ,
+                         unsigned int elementId) const;
 };
+
+/////////////////////
+// Inline Function //
+/////////////////////
+
+inline double Term::getTerm(unsigned int dofI,
+                            unsigned int dofJ,
+                            unsigned int elementId) const{
+
+  if(!once || elementId != lastId)
+    // If Out Of Cache --> Fetch
+    return getTermOutCache(dofI, dofJ, elementId);
+
+  else
+    // Else, rock baby yeah !
+    return (*aM[lastI])(lastCtr, dofI * nFunction + dofJ);
+}
 
 #endif
