@@ -1,6 +1,6 @@
 #include "BasisGenerator.h"
 #include "GaussIntegration.h"
-#include "Jacobian.h"
+#include "GroupOfJacobian.h"
 
 #include "Exception.h"
 #include "FormulationSteadyWaveScalar.h"
@@ -31,6 +31,7 @@ FormulationSteadyWaveScalar::FormulationSteadyWaveScalar(GroupOfElement& goe,
   basis  = BasisGenerator::generate(goe.get(0).getType(),
                                     0, order, "hierarchical");
 
+  goe.orientAllElements(*basis);
   fspace = new FunctionSpaceScalar(goe, *basis);
 
   // Gaussian Quadrature Data (Term One) //
@@ -52,12 +53,9 @@ FormulationSteadyWaveScalar::FormulationSteadyWaveScalar(GroupOfElement& goe,
   // Local Terms //
   basis->preEvaluateDerivatives(gC1);
   basis->preEvaluateFunctions(gC2);
-  goe.orientAllElements(*basis);
 
-  Jacobian jac1(goe, gC1);
-  Jacobian jac2(goe, gC2);
-  jac1.computeInvertJacobians();
-  jac2.computeJacobians();
+  GroupOfJacobian jac1(goe, gC1, "invert");
+  GroupOfJacobian jac2(goe, gC2, "jacobian");
 
   localTerms1 = new TermGradGrad(jac1, *basis, gW1);
   localTerms2 = new TermFieldField(jac2, *basis, gW2);

@@ -2,9 +2,7 @@
 #define _FORMULATIONLAPLACE_H_
 
 #include "FunctionSpaceScalar.h"
-
 #include "TermGradGrad.h"
-
 #include "Formulation.h"
 
 /**
@@ -55,7 +53,6 @@ class FormulationLaplace: public Formulation{
 
    @fn FormulationLaplace::~FormulationLaplace
    Deletes this FormulationLaplace
-   **
 */
 
 #endif

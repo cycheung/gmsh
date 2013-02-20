@@ -76,24 +76,21 @@ setNumberOfEigenValues(unsigned int nEigenValues){
 }
 
 void SystemEigen::assemble(void){
-  // Get Elements //
+  // Get GroupOfDofs //
   const unsigned int E = fs->getSupport().getNumber();
-  const vector<pair<const MElement*, ElementData> >&
-    element = fs->getSupport().getAll();
+  const vector<GroupOfDof*>& group = fs->getAllGroups();
 
   // Get Sparcity Pattern & PreAllocate//
   // linSysA
   for(unsigned int i = 0; i < E; i++)
-    SystemAbstract::sparsity(*linSysA,
-                             element[i].second.getGroupOfDof());
+    SystemAbstract::sparsity(*linSysA, *group[i]);
 
   linSysA->preAllocateEntries();
 
   // linSysB
   if(general){
     for(unsigned int i = 0; i < E; i++)
-      SystemAbstract::sparsity(*linSysB,
-                               element[i].second.getGroupOfDof());
+      SystemAbstract::sparsity(*linSysB, *group[i]);
 
     linSysB->preAllocateEntries();
   }
@@ -103,17 +100,11 @@ void SystemEigen::assemble(void){
   formulationPtr termB = &Formulation::weakB;
 
   for(unsigned int i = 0; i < E; i++)
-    SystemAbstract::assemble(*linSysA,
-                             i,
-                             element[i].second.getGroupOfDof(),
-                             termA);
+    SystemAbstract::assemble(*linSysA, i, *group[i], termA);
 
   if(general)
     for(unsigned int i = 0; i < E; i++)
-      SystemAbstract::assemble(*linSysB,
-                               i,
-                               element[i].second.getGroupOfDof(),
-                               termB);
+      SystemAbstract::assemble(*linSysB, i, *group[i], termB);
 
   // The SystemEigen is assembled //
   assembled = true;

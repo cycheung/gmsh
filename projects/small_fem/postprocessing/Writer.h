@@ -37,11 +37,11 @@ class Writer{
   bool isScalar;
   bool isNodal;
 
-  int  N;
-  int  E;
+  unsigned int N;
+  unsigned int E;
 
-  const std::vector<std::pair<const MElement*, ElementData> >* element;
-  const std::vector<MVertex*>*                                 node;
+  const std::vector<const MElement*>* element;
+  const std::vector<MVertex*>*        node;
 
   // Nodal Values //
   const std::vector<double>*              nodalScalarValue;

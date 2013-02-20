@@ -1,9 +1,7 @@
 #ifndef _TERMPROJECTIONFIELD_H_
 #define _TERMPROJECTIONFIELD_H_
 
-#include <vector>
-
-#include "Jacobian.h"
+#include "GroupOfJacobian.h"
 #include "Basis.h"
 #include "Term.h"
 
@@ -16,25 +14,8 @@
  */
 
 class TermProjectionField: public Term{
- private:
-  // Function to Project //
-  double (*f)(fullVector<double>& xyz);
-
-  // Integration Points //
-  const fullVector<double>* gW;
-  const fullMatrix<double>* gC;
-  unsigned int              nG;
-
-  // Basis & Jacobians //
-  const Basis*    basis;
-  const Jacobian* jac;
-
-  // FE Matrix
-  fullMatrix<double>** cM;
-  fullMatrix<double>** bM;
-
  public:
-  TermProjectionField(const Jacobian& jac,
+  TermProjectionField(const GroupOfJacobian& goj,
                       const Basis& basis,
                       const fullVector<double>& integrationWeights,
                       const fullMatrix<double>& integrationPoints,
@@ -43,11 +24,14 @@ class TermProjectionField: public Term{
   virtual ~TermProjectionField(void);
 
  private:
-  void clean(void);
+  void computeC(const Basis& basis,
+                const fullVector<double>& gW,
+                fullMatrix<double>**& cM);
 
-  void computeC(void);
-  void computeB(void);
-  void computeA(void);
+  void computeB(const GroupOfJacobian& goj,
+                const fullMatrix<double>& gC,
+                double (*f)(fullVector<double>& xyz),
+                fullMatrix<double>**& bM);
 };
 
 #endif

@@ -1,6 +1,6 @@
 #include "BasisGenerator.h"
 #include "GaussIntegration.h"
-#include "Jacobian.h"
+#include "GroupOfJacobian.h"
 #include "GroupOfElement.h"
 
 #include "FormulationProjectionScalar.h"
@@ -10,9 +10,6 @@ using namespace std;
 FormulationProjectionScalar::
 FormulationProjectionScalar(double (*f)(fullVector<double>& xyz),
 			    FunctionSpaceScalar& fs){
-  // Save f //
-  this->f = f;
-
   // Save fspace //
   fspace = &fs;
   basis  = &fs.getBasis(0);
@@ -33,8 +30,7 @@ FormulationProjectionScalar(double (*f)(fullVector<double>& xyz),
   basis->preEvaluateFunctions(gC);
   goe.orientAllElements(*basis);
 
-  Jacobian jac(goe, gC);
-  jac.computeJacobians();
+  GroupOfJacobian jac(goe, gC, "jacobian");
 
   localTerms1 = new TermFieldField(jac, *basis, gW);
   localTerms2 = new TermProjectionField(jac, *basis, gW, gC, f);

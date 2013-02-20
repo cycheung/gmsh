@@ -35,6 +35,13 @@ class Term{
   double getTermOutCache(unsigned int dofI,
                          unsigned int dofJ,
                          unsigned int elementId) const;
+
+ protected:
+  void computeA(fullMatrix<double>**& bM,
+                fullMatrix<double>**& cM);
+
+  void clean(fullMatrix<double>**& bM,
+             fullMatrix<double>**& cM);
 };
 
 /////////////////////

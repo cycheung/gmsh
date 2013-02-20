@@ -2,7 +2,6 @@ set(src
   Mapper.cpp
   Mesh.cpp
   GroupOfElement.cpp
-  ElementData.cpp
 
   GeoExtractor.cpp
   ElementExtractor.cpp
@@ -12,6 +11,7 @@ set(src
 
   OrientationSort.cpp
 
+  GroupOfJacobian.cpp
   Jacobian.cpp
 )
 

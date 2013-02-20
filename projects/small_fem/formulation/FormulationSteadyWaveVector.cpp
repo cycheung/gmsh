@@ -1,6 +1,6 @@
 #include "BasisGenerator.h"
 #include "GaussIntegration.h"
-#include "Jacobian.h"
+#include "GroupOfJacobian.h"
 
 #include "FormulationSteadyWaveVector.h"
 
@@ -25,6 +25,7 @@ FormulationSteadyWaveVector::FormulationSteadyWaveVector(GroupOfElement& goe,
   basis  = BasisGenerator::generate(goe.get(0).getType(),
                                     1, order, "hierarchical");
 
+  goe.orientAllElements(*basis);
   fspace = new FunctionSpaceVector(goe, *basis);
 
   // Gaussian Quadrature Data (Term One) //
@@ -55,12 +56,9 @@ FormulationSteadyWaveVector::FormulationSteadyWaveVector(GroupOfElement& goe,
   // Local Terms //
   basis->preEvaluateDerivatives(gC1);
   basis->preEvaluateFunctions(gC2);
-  goe.orientAllElements(*basis);
 
-  Jacobian jac1(goe, gC1);
-  Jacobian jac2(goe, gC2);
-  jac1.computeJacobians();
-  jac2.computeInvertJacobians();
+  GroupOfJacobian jac1(goe, gC1, "jacobian");
+  GroupOfJacobian jac2(goe, gC2, "invert");
 
   localTerms1 = new TermCurlCurl(jac1, *basis, gW1);
   localTerms2 = new TermGradGrad(jac2, *basis, gW2);

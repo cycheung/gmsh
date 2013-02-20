@@ -29,11 +29,11 @@ class PlotBasis{
   unsigned int nFunction;
   bool         isScalar;
 
-  int N;
-  int E;
+  unsigned int N;
+  unsigned int E;
 
-  const std::vector<std::pair<const MElement*, ElementData> >* element;
-  const std::vector<MVertex*>*                                 node;
+  const std::vector<const MElement*>* element;
+  const std::vector<MVertex*>*        node;
 
   std::vector<double>**              nodalScalarValue;
   std::vector<fullVector<double> >** nodalVectorValue;

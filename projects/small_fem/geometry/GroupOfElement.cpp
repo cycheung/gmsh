@@ -13,14 +13,14 @@ GroupOfElement::GroupOfElement
  const Mesh& mesh){
 
   // Get Element //
-  list<pair<const MElement*, ElementData> > lst;
+  list<const MElement*> lst;
 
   for(; begin != end; begin++)
-    lst.push_back(pair<const MElement*, ElementData>(begin->second, ElementData()));
+    lst.push_back(begin->second);
 
   // Alloc //
   this->mesh = &mesh;
-  element = new vector<pair<const MElement*, ElementData> >(lst.begin(), lst.end());
+  element = new vector<const MElement*>(lst.begin(), lst.end());
 
   orientationStat = NULL;
 }
@@ -55,7 +55,7 @@ orientAllElements(const Basis& basis){
 
   // Compute
   for(unsigned int i = 0; i < nElement; i++)
-    (*orientationStat)[basis.getOrientation(*(*element)[i].first)]++;
+    (*orientationStat)[basis.getOrientation(*(*element)[i])]++;
 
   // The last line is cool isn't it :-) ?
 }
@@ -76,7 +76,7 @@ string GroupOfElement::toString(void) const{
 
   for(unsigned int i = 0; i < element->size(); i++)
     stream << "*   -- Element #"
-	   << mesh->getGlobalId(*(*element)[i].first)
+	   << mesh->getGlobalId(*(*element)[i])
 	   << endl;
 
   stream << "*                                             *"

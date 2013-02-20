@@ -3,19 +3,19 @@
 
 using namespace std;
 
-TermCurlCurl::TermCurlCurl(const Jacobian& jac,
+TermCurlCurl::TermCurlCurl(const GroupOfJacobian& goj,
                            const Basis& basis,
                            const fullVector<double>& integrationWeights){
   // Basis Check //
-  bool derivative;
+  bFunction getFunction;
 
   switch(basis.getType()){
   case 1:
-    derivative = true;
+    getFunction = &Basis::getPreEvaluatedDerivatives;
     break;
 
   case 2:
-    derivative = false;
+    getFunction = &Basis::getPreEvaluatedFunctions;
     break;
 
   default:
@@ -24,59 +24,32 @@ TermCurlCurl::TermCurlCurl(const Jacobian& jac,
       ("A Curl Curl Term must use a 2form basis, or a (curl of) 1form basis");
   }
 
-  // Gauss Weights //
-  gW = &integrationWeights;
-  nG = gW->size();
-
-  // Basis & Orientations //
-  nOrientation = basis.getNOrientation();
-  nFunction    = basis.getNFunction();
-
-  orientationStat = &jac.getAllElements().getOrientationStats();
-  phi             = new const fullMatrix<double>*[nOrientation];
-
-  if(derivative)
-    for(unsigned int s = 0; s < nOrientation; s++)
-      phi[s] = &basis.getPreEvaluatedDerivatives(s);
-
-  else
-    for(unsigned int s = 0; s < nOrientation; s++)
-      phi[s] = &basis.getPreEvaluatedFunctions(s);
-
-  // Jacobians //
-  this->jac = &jac;
+  // Orientations & Functions //
+  orientationStat = &goj.getAllElements().getOrientationStats();
+  nOrientation    = basis.getNOrientation();
+  nFunction       = basis.getNFunction();
 
   // Compute //
-  computeC();
-  computeB();
-  computeA();
+  fullMatrix<double>** cM;
+  fullMatrix<double>** bM;
+
+  computeC(basis, getFunction, integrationWeights, cM);
+  computeB(goj, integrationWeights.size(), bM);
+  computeA(bM, cM);
 
   // Clean up //
-  clean();
+  clean(bM, cM);
 }
 
 TermCurlCurl::~TermCurlCurl(void){
-  for(unsigned int s = 0; s < nOrientation; s++)
-    delete aM[s];
-
-  delete[] aM;
 }
 
-void TermCurlCurl::clean(void){
-  for(unsigned int s = 0; s < nOrientation; s++)
-    delete cM[s];
+void TermCurlCurl::computeC(const Basis& basis,
+                            const bFunction& getFunction,
+                            const fullVector<double>& gW,
+                            fullMatrix<double>**& cM){
 
-  delete[] cM;
-
-  for(unsigned int s = 0; s < nOrientation; s++)
-    delete bM[s];
-
-  delete[] bM;
-
-  delete[] phi;
-}
-
-void TermCurlCurl::computeC(void){
+  const unsigned int nG = gW.size();
   unsigned int k;
   unsigned int l;
 
@@ -88,6 +61,10 @@ void TermCurlCurl::computeC(void){
 
   // Fill //
   for(unsigned int s = 0; s < nOrientation; s++){
+    // Get functions for this Orientation
+    const fullMatrix<double>& phi =
+      (basis.*getFunction)(s);
+
     // Loop on Gauss Points
     k = 0;
 
@@ -100,9 +77,7 @@ void TermCurlCurl::computeC(void){
           for(unsigned int i = 0; i < nFunction; i++){
             for(unsigned int j = 0; j < nFunction; j++){
               (*cM[s])(k, l) =
-                (*gW)(g) *
-                (*phi[s])(i, g * 3 + a) *
-                (*phi[s])(j, g * 3 + b);
+                gW(g) * phi(i, g * 3 + a) * phi(j, g * 3 + b);
 
               l++;
             }
@@ -115,7 +90,9 @@ void TermCurlCurl::computeC(void){
   }
 }
 
-void TermCurlCurl::computeB(void){
+void TermCurlCurl::computeB(const GroupOfJacobian& goj,
+                            unsigned int nG,
+                            fullMatrix<double>**& bM){
   unsigned int offset = 0;
   unsigned int j;
   unsigned int k;
@@ -127,9 +104,6 @@ void TermCurlCurl::computeB(void){
     bM[s] = new fullMatrix<double>((*orientationStat)[s], 9 * nG);
 
   // Fill //
-  const vector<pair<const MElement*, ElementData> >&
-    element = jac->getAllElements().getAll();
-
   for(unsigned int s = 0; s < nOrientation; s++){
     // Loop On Element
     j = 0;
@@ -137,7 +111,7 @@ void TermCurlCurl::computeB(void){
     for(unsigned int e = offset; e < offset + (*orientationStat)[s]; e++){
       // Get Jacobians
       const vector<const pair<const fullMatrix<double>*, double>*>& MJac =
-        jac->getJacobian(*element[e].first);
+        goj.getJacobian(e).getJacobianMatrix();
 
       // Loop on Gauss Points
       k = 0;
@@ -149,8 +123,7 @@ void TermCurlCurl::computeB(void){
 
             for(unsigned int i = 0; i < 3; i++)
               (*bM[s])(j, k) +=
-                (*MJac[g]->first)(i, a) *
-                (*MJac[g]->first)(i, b);
+                (*MJac[g]->first)(i, a) * (*MJac[g]->first)(i, b);
 
             (*bM[s])(j, k) /= fabs(MJac[g]->second);
 
@@ -166,18 +139,4 @@ void TermCurlCurl::computeB(void){
     // New Offset
     offset += (*orientationStat)[s];
   }
-}
-
-void TermCurlCurl::computeA(void){
-  // Alloc //
-  aM = new fullMatrix<double>*[nOrientation];
-
-  for(unsigned int s = 0; s < nOrientation; s++)
-    aM[s] = new fullMatrix<double>((*orientationStat)[s], nFunction * nFunction);
-
-  // Fill //
-  for(unsigned int s = 0; s < nOrientation; s++)
-    // GEMM doesn't like matrices with 0 Elements
-    if((*orientationStat)[s])
-      aM[s]->gemm(*bM[s], *cM[s]);
 }

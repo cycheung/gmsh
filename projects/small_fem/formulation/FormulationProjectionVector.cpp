@@ -1,6 +1,6 @@
 #include "BasisGenerator.h"
 #include "GaussIntegration.h"
-#include "Jacobian.h"
+#include "GroupOfJacobian.h"
 #include "GroupOfElement.h"
 
 #include "FormulationProjectionVector.h"
@@ -10,9 +10,6 @@ using namespace std;
 FormulationProjectionVector::
 FormulationProjectionVector(fullVector<double> (*f)(fullVector<double>& xyz),
 			    FunctionSpaceVector& fs){
-  // Save f //
-  this->f = f;
-
   // Save fspace //
   fspace = &fs;
   basis  = &fs.getBasis(0);
@@ -33,8 +30,7 @@ FormulationProjectionVector(fullVector<double> (*f)(fullVector<double>& xyz),
   basis->preEvaluateFunctions(gC);
   goe.orientAllElements(*basis);
 
-  Jacobian jac(goe, gC);
-  jac.computeInvertJacobians();
+  GroupOfJacobian jac(goe, gC, "invert");
 
   localTerms1 = new TermGradGrad(jac, *basis, gW);
   localTerms2 = new TermProjectionGrad(jac, *basis, gW, gC, f);

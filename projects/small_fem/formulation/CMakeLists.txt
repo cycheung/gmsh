@@ -9,8 +9,6 @@ set(src
   FormulationEigenFrequency.cpp
   FormulationVibration.cpp
 
-#  SlowFormulationSteadyWaveVector.cpp
-
   Term.cpp
   TermFieldField.cpp
   TermGradGrad.cpp
@@ -18,6 +16,5 @@ set(src
   TermProjectionField.cpp
   TermProjectionGrad.cpp
 )
-
 
 add_sources(formulation "${src}")

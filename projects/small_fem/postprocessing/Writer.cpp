@@ -107,12 +107,12 @@ void Writer::setDomain(const GroupOfElement& domain){
   // Get All Vertices //
   set<MVertex*, MVertexLessThanNum> setVertex;
 
-  for(int i = 0; i < E; i++){
-    const int N = (*element)[i].first->getNumVertices();
+  for(unsigned int i = 0; i < E; i++){
+    const unsigned int N = (*element)[i]->getNumVertices();
     MElement* myElement =
-      const_cast<MElement*>((*element)[i].first);
+      const_cast<MElement*>((*element)[i]);
 
-    for(int j = 0; j < N; j++)
+    for(unsigned int j = 0; j < N; j++)
       setVertex.insert(myElement->getVertex(j));
   }
 

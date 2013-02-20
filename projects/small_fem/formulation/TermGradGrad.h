@@ -1,9 +1,7 @@
 #ifndef _TERMGRADGRAD_H_
 #define _TERMGRADGRAD_H_
 
-#include <vector>
-
-#include "Jacobian.h"
+#include "GroupOfJacobian.h"
 #include "Basis.h"
 #include "Term.h"
 
@@ -16,31 +14,24 @@
 
 class TermGradGrad: public Term{
  private:
-  // Integration Points //
-  const fullVector<double>* gW;
-  unsigned int              nG;
-
-  // Basis & Jacobians //
-  const fullMatrix<double>** phi;
-  const Jacobian* jac;
-
-  // FE Matrix
-  fullMatrix<double>** cM;
-  fullMatrix<double>** bM;
+  typedef const fullMatrix<double>& (Basis::*bFunction)(unsigned int s)const;
 
  public:
-  TermGradGrad(const Jacobian& jac,
+  TermGradGrad(const GroupOfJacobian& goj,
                const Basis& basis,
                const fullVector<double>& integrationWeights);
 
   virtual ~TermGradGrad(void);
 
  private:
-  void clean(void);
+  void computeC(const Basis& basis,
+                const bFunction& getFunction,
+                const fullVector<double>& gW,
+                fullMatrix<double>**& cM);
 
-  void computeC(void);
-  void computeB(void);
-  void computeA(void);
+  void computeB(const GroupOfJacobian& goj,
+                unsigned int nG,
+                fullMatrix<double>**& bM);
 };
 
 #endif

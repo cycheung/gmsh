@@ -7,7 +7,6 @@
 
 #include "Mesh.h"
 #include "MElement.h"
-#include "ElementData.h"
 
 #include "Basis.h"
 #include "Exception.h"
@@ -25,8 +24,8 @@ class GroupOfElement{
  private:
   const Mesh* mesh;
 
-  std::vector<std::pair<const MElement*, ElementData> >* element;
-  std::vector<unsigned int>*                     orientationStat;
+  std::vector<const MElement*>* element;
+  std::vector<unsigned int>*    orientationStat;
 
  public:
    GroupOfElement(std::multimap<int, const MElement*>::iterator begin,
@@ -38,12 +37,10 @@ class GroupOfElement{
   unsigned int    getNumber(void)     const;
   const MElement& get(unsigned int i) const;
 
-  const std::vector<std::pair<const MElement*, ElementData> >&
+  const std::vector<const MElement*>&
     getAll(void) const;
 
   const Mesh& getMesh(void) const;
-
-  ElementData& getElementData(unsigned int i) const;
 
   void orientAllElements(const Basis& basis);
   std::vector<unsigned int>& getOrientationStats(void) const;
@@ -118,21 +115,16 @@ inline unsigned int GroupOfElement::getNumber(void) const{
 }
 
 inline const MElement& GroupOfElement::get(unsigned int i) const{
-  return *((*element)[i].first);
+  return *(*element)[i];
 }
 
-inline const std::vector<std::pair<const MElement*, ElementData> >&
+inline const std::vector<const MElement*>&
 GroupOfElement::getAll(void) const{
   return *element;
 }
 
 inline const Mesh& GroupOfElement::getMesh(void) const{
   return *mesh;
-}
-
-inline ElementData& GroupOfElement::
-getElementData(unsigned int i) const{
-  return (*element)[i].second;
 }
 
 inline std::vector<unsigned int>&

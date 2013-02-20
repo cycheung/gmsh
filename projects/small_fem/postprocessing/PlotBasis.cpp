@@ -83,12 +83,11 @@ void PlotBasis::getGeometry(const GroupOfElement& group){
   // Get All Vertices //
   set<MVertex*, MVertexLessThanNum> setVertex;
 
-  for(int i = 0; i < E; i++){
-    const int N = (*element)[i].first->getNumVertices();
-    MElement* myElement =
-      const_cast<MElement*>((*element)[i].first);
+  for(unsigned int i = 0; i < E; i++){
+    const unsigned int N = (*element)[i]->getNumVertices();
+    MElement* myElement = const_cast<MElement*>((*element)[i]);
 
-    for(int j = 0; j < N; j++)
+    for(unsigned int j = 0; j < N; j++)
       setVertex.insert(myElement->getVertex(j));
   }
 
@@ -107,7 +106,7 @@ void PlotBasis::interpolateScalar(const BasisLocal& basis){
     nodalScalarValue[i] = new vector<double>(N);
 
   // Interpolate //
-  for(int n = 0; n < N; n++){
+  for(unsigned int n = 0; n < N; n++){
     fullMatrix<double>* fun =
       basis.getFunctions(0,
 			 (*node)[n]->x(),
@@ -130,7 +129,7 @@ void PlotBasis::interpolateVector(const BasisLocal& basis){
     nodalVectorValue[i] = new vector<fullVector<double> >(N);
 
   // Interpolate //
-  for(int n = 0; n < N; n++){
+  for(unsigned int n = 0; n < N; n++){
     fullMatrix<double>* fun =
       basis.getFunctions(0,
 			 (*node)[n]->x(),

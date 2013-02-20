@@ -1,6 +1,6 @@
 #include "BasisGenerator.h"
 #include "GaussIntegration.h"
-#include "Jacobian.h"
+#include "GroupOfJacobian.h"
 
 #include "Exception.h"
 #include "FormulationLaplace.h"
@@ -18,6 +18,7 @@ FormulationLaplace::FormulationLaplace(GroupOfElement& goe,
   basis  = BasisGenerator::generate(goe.get(0).getType(),
                                     0, order, "hierarchical");
 
+  goe.orientAllElements(*basis);
   fspace = new FunctionSpaceScalar(goe, *basis);
 
   // Gaussian Quadrature Data //
@@ -30,10 +31,8 @@ FormulationLaplace::FormulationLaplace(GroupOfElement& goe,
 
   // Local Terms //
   basis->preEvaluateDerivatives(gC);
-  goe.orientAllElements(*basis);
 
-  Jacobian jac(goe, gC);
-  jac.computeInvertJacobians();
+  GroupOfJacobian jac(goe, gC, "invert");
 
   localTerms = new TermGradGrad(jac, *basis, gW);
 }

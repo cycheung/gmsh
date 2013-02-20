@@ -27,18 +27,16 @@ SystemInstrumented::~SystemInstrumented(void){
 }
 
 void SystemInstrumented::assemble(void){
-  // Get Elements //
+  // Get Groups //
   const unsigned int E = fs->getSupport().getNumber();
-  const vector<pair<const MElement*, ElementData> >&
-    element = fs->getSupport().getAll();
+  const vector<GroupOfDof*>& group = fs->getAllGroups();
 
   // Get Sparsity Pattern & PreAllocate//
   Timer timer;
   timer.start();
 
   for(unsigned int i = 0; i < E; i++)
-    SystemAbstract::sparsity(*linSys,
-                             element[i].second.getGroupOfDof());
+    SystemAbstract::sparsity(*linSys, *group[i]);
 
   linSys->preAllocateEntries();
 
@@ -47,7 +45,7 @@ void SystemInstrumented::assemble(void){
 
   // Assemble System //
   for(unsigned int i = 0; i < E; i++)
-    assemble(element[i].second.getGroupOfDof(), i);
+    assemble(*group[i], i);
 
   // The system is assembled //
   assembled = true;

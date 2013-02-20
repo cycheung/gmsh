@@ -18,9 +18,6 @@
 
 class FormulationProjectionScalar: public Formulation{
  private:
-  // Function to Project //
-  double (*f)(fullVector<double>& xyz);
-
   // Function Space & Basis //
   FunctionSpaceScalar* fspace;
   const Basis*         basis;
@@ -63,7 +60,6 @@ class FormulationProjectionScalar: public Formulation{
 
    @fn FormulationProjectionScalar::~FormulationProjectionScalar
    Deletes the this FormulationProjectionScalar
-   **
 */
 
 #endif

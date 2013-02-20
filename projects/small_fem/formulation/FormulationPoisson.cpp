@@ -1,6 +1,6 @@
 #include "BasisGenerator.h"
 #include "GaussIntegration.h"
-#include "Jacobian.h"
+#include "GroupOfJacobian.h"
 
 #include "Exception.h"
 #include "FormulationPoisson.h"
@@ -26,6 +26,7 @@ FormulationPoisson::FormulationPoisson(GroupOfElement& goe,
   basis  = BasisGenerator::generate(goe.get(0).getType(),
                                     0, order, "hierarchical");
 
+  goe.orientAllElements(*basis);
   fspace = new FunctionSpaceScalar(goe, *basis);
 
   // Gaussian Quadrature Data (LHS) //
@@ -51,12 +52,9 @@ FormulationPoisson::FormulationPoisson(GroupOfElement& goe,
   // Local Terms //
   basis->preEvaluateDerivatives(gCL);
   basis->preEvaluateFunctions(gCR);
-  goe.orientAllElements(*basis);
 
-  Jacobian jacL(goe, gCL);
-  Jacobian jacR(goe, gCR);
-  jacL.computeInvertJacobians();
-  jacR.computeJacobians();
+  GroupOfJacobian jacL(goe, gCL, "invert");
+  GroupOfJacobian jacR(goe, gCR, "jacobian");
 
   localTermsL = new TermGradGrad(jacL, *basis, gWL);
   localTermsR = new TermProjectionField(jacR, *basis, gWR, gCR, gSource);

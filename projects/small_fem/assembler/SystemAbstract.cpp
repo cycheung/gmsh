@@ -13,13 +13,11 @@ SystemAbstract::~SystemAbstract(void){
 }
 
 void SystemAbstract::fixCoef(const GroupOfElement& goe, double value){
-  const vector<pair<const MElement*, ElementData> >&
-    element = goe.getAll();
-
-  const unsigned int nElement = goe.getNumber();
+  const vector<const MElement*>& element = goe.getAll();
+  const unsigned int            nElement = goe.getNumber();
 
   for(unsigned int i = 0; i < nElement; i++){
-    vector<Dof>         dof = fs->getKeys(*element[i].first);
+    vector<Dof>         dof = fs->getKeys(*element[i]);
     const unsigned int nDof = dof.size();
 
     for(unsigned int j = 0; j < nDof; j++)
@@ -45,6 +43,7 @@ void SystemAbstract::dirichlet(GroupOfElement& goe,
                                                   fs->getBasis(0).getType(),
                                                   fs->getBasis(0).getOrder(),
                                                   "hierarchical");
+  goe.orientAllElements(*dirBasis); // TO BE REMOVED
   FunctionSpaceScalar dirFS(goe, *dirBasis);
 
   // Solve The Projection Of f on the Dirichlet Domain with dirFS //
@@ -85,7 +84,7 @@ void SystemAbstract::dirichlet(GroupOfElement& goe,
                                                   fs->getBasis(0).getType(),
                                                   fs->getBasis(0).getOrder(),
                                                   "hierarchical");
-
+  goe.orientAllElements(*dirBasis); // TO BE REMOVED
   FunctionSpaceVector dirFS(goe, *dirBasis);
 
   // Solve The Projection Of f on the Dirichlet Domain with dirFS //

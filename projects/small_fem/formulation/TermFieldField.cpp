@@ -3,58 +3,40 @@
 
 using namespace std;
 
-TermFieldField::TermFieldField(const Jacobian& jac,
+TermFieldField::TermFieldField(const GroupOfJacobian& goj,
                                const Basis& basis,
                                const fullVector<double>& integrationWeights){
-
   // Basis Check //
   if(basis.getType() != 0)
     throw
       Exception
       ("A Field Field Term must use a 0form basis");
 
-  // Gauss Points //
-  gW = &integrationWeights;
-  nG = gW->size();
-
-  // Basis & Orientations //
-  this->basis     = &basis;
+  // Orientations & Functions //
+  orientationStat = &goj.getAllElements().getOrientationStats();
   nOrientation    = basis.getNOrientation();
   nFunction       = basis.getNFunction();
-  orientationStat = &jac.getAllElements().getOrientationStats();
-
-  // Compute Jacobians //
-  this->jac = &jac;
 
   // Compute //
-  computeC();
-  computeB();
-  computeA();
+  fullMatrix<double>** cM;
+  fullMatrix<double>** bM;
+
+  computeC(basis, integrationWeights, cM);
+  computeB(goj, integrationWeights.size(), bM);
+  computeA(bM, cM);
 
   // Clean up //
-  clean();
+  clean(bM, cM);
 }
 
 TermFieldField::~TermFieldField(void){
-  for(unsigned int s = 0; s < nOrientation; s++)
-    delete aM[s];
-
-  delete[] aM;
 }
 
-void TermFieldField::clean(void){
-  for(unsigned int s = 0; s < nOrientation; s++)
-    delete cM[s];
+void TermFieldField::computeC(const Basis& basis,
+                              const fullVector<double>& gW,
+                              fullMatrix<double>**& cM){
 
-  delete[] cM;
-
-  for(unsigned int s = 0; s < nOrientation; s++)
-    delete bM[s];
-
-  delete[] bM;
-}
-
-void TermFieldField::computeC(void){
+  const unsigned int nG = gW.size();
   unsigned int l;
 
   // Alloc //
@@ -67,7 +49,7 @@ void TermFieldField::computeC(void){
   for(unsigned int s = 0; s < nOrientation; s++){
     // Get functions for this Orientation
     const fullMatrix<double>& phi =
-      basis->getPreEvaluatedFunctions(s);
+      basis.getPreEvaluatedFunctions(s);
 
     // Loop on Gauss Points
     for(unsigned int g = 0; g < nG; g++){
@@ -77,7 +59,7 @@ void TermFieldField::computeC(void){
 
       for(unsigned int i = 0; i < nFunction; i++){
         for(unsigned int j = 0; j < nFunction; j++){
-          (*cM[s])(g, l) = (*gW)(g) *phi(i, g) * phi(j, g);
+          (*cM[s])(g, l) = gW(g) * phi(i, g) * phi(j, g);
           l++;
         }
       }
@@ -85,7 +67,9 @@ void TermFieldField::computeC(void){
   }
 }
 
-void TermFieldField::computeB(void){
+void TermFieldField::computeB(const GroupOfJacobian& goj,
+                              unsigned int nG,
+                              fullMatrix<double>**& bM){
   unsigned int offset = 0;
   unsigned int j;
 
@@ -96,9 +80,6 @@ void TermFieldField::computeB(void){
     bM[s] = new fullMatrix<double>((*orientationStat)[s], nG);
 
   // Fill //
-  const vector<pair<const MElement*, ElementData> >&
-    element = jac->getAllElements().getAll();
-
   for(unsigned int s = 0; s < nOrientation; s++){
     // Loop On Element
     j = 0;
@@ -106,8 +87,9 @@ void TermFieldField::computeB(void){
     for(unsigned int e = offset; e < offset + (*orientationStat)[s]; e++){
       // Get Jacobians
       const vector<const pair<const fullMatrix<double>*, double>*>& jacM =
-        jac->getJacobian(*element[e].first);
+        goj.getJacobian(e).getJacobianMatrix();
 
+      // Loop on Gauss Points
       for(unsigned int g = 0; g < nG; g++)
         (*bM[s])(j, g) = fabs(jacM[g]->second);;
 
@@ -118,18 +100,4 @@ void TermFieldField::computeB(void){
     // New Offset
     offset += (*orientationStat)[s];
   }
-}
-
-void TermFieldField::computeA(void){
-  // Alloc //
-  aM = new fullMatrix<double>*[nOrientation];
-
-  for(unsigned int s = 0; s < nOrientation; s++)
-    aM[s] = new fullMatrix<double>((*orientationStat)[s], nFunction * nFunction);
-
-  // Fill //
-  for(unsigned int s = 0; s < nOrientation; s++)
-    // GEMM doesn't like matrices with 0 Elements
-    if((*orientationStat)[s])
-      aM[s]->gemm(*bM[s], *cM[s]);
 }
