@@ -63,15 +63,15 @@ include_directories(
 )
 
 ## Compiler Flags
-add_definitions(-pedantic -Wall -O3 -g)
-#add_definitions(-pg)
-
+add_definitions(-pedantic -Wall -O3)
+# add_definitions(-g)
+# add_definitions(-pg)
+# set(CMAKE_EXE_LINKER_FLAGS "-pg")
 
 ## Build SmallFEM Library
 add_library(sf STATIC ${sources})
 set_target_properties(sf PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(sf -lrt)
-
 
 ## Build Simulations
 add_executable(laplace simulation/Laplace.cpp)
@@ -92,10 +92,7 @@ add_executable(vibration simulation/Vibration.cpp)
 
 add_executable(test simulation/Test.cpp)
 
-
 ## Link (Note: 'lib' is gmsh static library)
-#set(CMAKE_EXE_LINKER_FLAGS "-pg")
-
 target_link_libraries(laplace sf lib ${GMSH_EXTERNAL_LIBRARIES})
 target_link_libraries(poisson sf lib ${GMSH_EXTERNAL_LIBRARIES})
 
