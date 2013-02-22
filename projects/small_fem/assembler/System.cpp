@@ -9,14 +9,11 @@ System::System(const Formulation& formulation){
 
   // Get Dof Manager //
   dofM = new DofManager();
-  dofM->addToGlobalIdSpace(fs->getAllGroups());
+  dofM->addToDofManager(fs->getAllGroups());
 
-  // Create System //
-  const unsigned int size = fs->dofNumber();
-
-  x      = new fullVector<double>(size);
-  linSys = new linearSystemPETSc<double>();
-  linSys->allocate(size);
+  // Solution Vector //
+  x      = new fullVector<double>(fs->dofNumber());
+  linSys = NULL;
 
   // The system is not assembled and not solved //
   assembled = false;
@@ -25,12 +22,20 @@ System::System(const Formulation& formulation){
 
 System::~System(void){
   delete x;
-  delete linSys;
   delete dofM;
+  if(linSys)
+    delete linSys;
   // System is not responsible for deleting 'Formulations'
 }
 
 void System::assemble(void){
+  // Enumerate //
+  dofM->generateGlobalIdSpace(true);
+
+  // Init System //
+  linSys = new linearSystemPETSc<double>();
+  linSys->allocate(fs->dofNumber());
+
   // Get GroupOfDofs //
   const unsigned int E = fs->getSupport().getNumber();
   const vector<GroupOfDof*>& group = fs->getAllGroups();

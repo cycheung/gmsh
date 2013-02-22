@@ -8,11 +8,8 @@ using namespace std;
 
 DofManager::DofManager(void){
   // Alloc Struct //
-  globalId = new map<const Dof*, int, DofComparator>;
+  globalId = new map<const Dof*, unsigned int, DofComparator>;
   fixedDof = new map<const Dof*, double, DofComparator>;
-
-  // Dofs Numbering //
-  nextId = 0;
 }
 
 DofManager::~DofManager(void){
@@ -20,7 +17,7 @@ DofManager::~DofManager(void){
   delete fixedDof;
 }
 
-void DofManager::addToGlobalIdSpace(const vector<GroupOfDof*>& god){
+void DofManager::addToDofManager(const vector<GroupOfDof*>& god){
   // Number Dof //
   const unsigned int nGoD = god.size();
 
@@ -31,23 +28,51 @@ void DofManager::addToGlobalIdSpace(const vector<GroupOfDof*>& god){
     // Number Them
     const unsigned int nDof = dof.size();
 
-    for(unsigned int j = 0; j < nDof; j++){
-      pair<map<const Dof*, int, DofComparator>::iterator,
-	   bool> newDof =
-
-	globalId->insert(pair<const Dof*, int>(dof[j], nextId));
-
-      if(newDof.second)
-	nextId++;
-    }
-    // NB: If the jth Dof was already in 'globalId', nothing append !
+    for(unsigned int j = 0; j < nDof; j++)
+      globalId->insert(pair<const Dof*, unsigned int>(dof[j], 0));
   }
-
 }
 
-int DofManager::getGlobalId(const Dof& dof) const{
-  const map<const Dof*, int, DofComparator>::iterator it =
-    globalId->find(&dof);
+void DofManager::generateGlobalIdSpace(bool withFixedValue){
+  if(withFixedValue)
+    generateGlobalIdSpace();
+
+  else
+    generateGlobalIdSpaceWithoutFixedDof();
+}
+
+void DofManager::generateGlobalIdSpace(void){
+  const map<const Dof*, unsigned int, DofComparator>::iterator
+    end = globalId->end();
+
+  map<const Dof*, unsigned int, DofComparator>::iterator
+    it = globalId->begin();
+
+  for(unsigned int id = 0; it != end; it++, id++)
+    it->second = id;
+}
+
+void DofManager::generateGlobalIdSpaceWithoutFixedDof(void){
+  const map<const Dof*, unsigned int, DofComparator>::iterator
+    end = globalId->end();
+
+  map<const Dof*, unsigned int, DofComparator>::iterator
+    it = globalId->begin();
+
+  unsigned int id = 0;
+
+  for(; it != end; it++){
+    // Check if unknown
+    if(!getValue(*it->first).first){
+      it->second = id;
+      id++;
+    }
+  }
+}
+
+unsigned int DofManager::getGlobalId(const Dof& dof) const{
+  const map<const Dof*, unsigned int, DofComparator>::
+    iterator it = globalId->find(&dof);
 
   if(it == globalId->end())
     throw
@@ -59,7 +84,7 @@ int DofManager::getGlobalId(const Dof& dof) const{
 
 bool DofManager::fixValue(const Dof& dof, double value){
   // Get *REAL* Dof
-  map<const Dof*, int, DofComparator>::const_iterator it =
+  map<const Dof*, unsigned int, DofComparator>::const_iterator it =
     globalId->find(const_cast<Dof*>(&dof));
 
   // Check if 'dof' exists
@@ -86,11 +111,12 @@ pair<bool, double> DofManager::getValue(const Dof& dof) const{
 
 string DofManager::toString(void) const{
   stringstream s;
-  map<const Dof*, int, DofComparator>::iterator i =
-    globalId->begin();
 
-  map<const Dof*, int, DofComparator>::iterator end =
+  const map<const Dof*, unsigned int, DofComparator>::iterator end =
     globalId->end();
+
+  map<const Dof*, unsigned int, DofComparator>::iterator i =
+    globalId->begin();
 
   for(; i != end; i++)
     s << "("  << (*i).first->toString()

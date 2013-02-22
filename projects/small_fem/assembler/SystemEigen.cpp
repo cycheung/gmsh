@@ -9,7 +9,7 @@ SystemEigen::SystemEigen(const Formulation& formulation){
 
   // Get Dof Manager //
   dofM = new DofManager();
-  dofM->addToGlobalIdSpace(fs->getAllGroups());
+  dofM->addToDofManager(fs->getAllGroups());
 
   // Is the Problem a General EigenValue Problem ? //
   general = formulation.isGeneral();
@@ -76,6 +76,9 @@ setNumberOfEigenValues(unsigned int nEigenValues){
 }
 
 void SystemEigen::assemble(void){
+  // Enumerate //
+  dofM->generateGlobalIdSpace();
+
   // Get GroupOfDofs //
   const unsigned int E = fs->getSupport().getNumber();
   const vector<GroupOfDof*>& group = fs->getAllGroups();

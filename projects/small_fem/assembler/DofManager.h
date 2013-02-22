@@ -11,13 +11,13 @@
 /**
    @class DofManager
    @brief This class manages the Degrees Of Freedom (Dof)
-   
+
    This class numbers the Degrees Of Freedom (Dof).@n
 
    It can map a Dof to a @em global @c ID.@n
    Those @c IDs are handeld by the DofManager itself.@n
 
-   Finaly, this class allows to fix a Dof to a given value 
+   Finaly, this class allows to fix a Dof to a given value
    (in that case, we have a fixed Dof).@n
    Note that we call an @em unknown, a Dof that is @em not fixed.
 
@@ -27,37 +27,41 @@
 
 class DofManager{
  private:
-  std::map<const Dof*, int, DofComparator>*    globalId;
-  std::map<const Dof*, double, DofComparator>* fixedDof;
+  std::map<const Dof*, unsigned int, DofComparator>* globalId;
+  std::map<const Dof*, double, DofComparator>*       fixedDof;
 
-  int nextId;
-  
  public:
    DofManager(void);
   ~DofManager(void);
 
-  void addToGlobalIdSpace(const std::vector<GroupOfDof*>& god);
-  int  getGlobalId(const Dof& dof) const;
+  void addToDofManager(const std::vector<GroupOfDof*>& god);
+  void generateGlobalIdSpace(void);
+  void generateGlobalIdSpace(bool withFixedValue);
+
+  unsigned int  getGlobalId(const Dof& dof) const;
 
   bool isUnknown(const Dof& dof) const;
   bool fixValue(const Dof& dof, double value);
   std::pair<bool, double> getValue(const Dof& dof) const;
 
   unsigned int getDofNumber(void) const;
-  unsigned int getUnkownNumber(void) const;  
+  unsigned int getUnknownNumber(void) const;
 
   std::string toString(void) const;
+
+ private:
+  void generateGlobalIdSpaceWithoutFixedDof(void);
 };
 
 
 /**
    @fn DofManager::DofManager
-   
+
    Instantiates a new DofManager
    **
 
    @fn DofManager::~DofManager
-   
+
    Deletes this DofManager
    **
 
@@ -81,17 +85,17 @@ class DofManager{
    (@em i.e. a non fixed Dof)
    @li @c false, otherwise
    **
-   
+
    @fn DofManager::fixValue
    @param dof A Dof
    @param value A real number
-   
+
    Fixes the given Dof to the given value
 
    @return Returns:
    @li @c true, if the operation is a success
    @li @c false, otherwise
-   
+
    @note
    Here are two important cases, where fixValue() will fail:
    @li The given Dof is not in this DofManager
@@ -107,10 +111,10 @@ class DofManager{
          <li> @c true, if the given Dof @em is a @em fixed Dof
          <li> @c false, otherwise
        </ol>
-   
+
      <li> The second value is:
        <ol>
-         <li> If the first value was @em @c true, 
+         <li> If the first value was @em @c true,
 	 equal the value of the given (fixed) Dof
          <li> Not specified otherwise
        </ol>
@@ -118,11 +122,11 @@ class DofManager{
    **
 
    @fn DofManager::getDofNumber
-   @return Returns the number of Dof%s in 
+   @return Returns the number of Dof%s in
    this DofManager (with fixed Dof%s)
    **
 
-   @fn DofManager::getUnkownNumber  
+   @fn DofManager::getUnknownNumber
    @return Returns the number of fixed Dof%s
    in this DofManager
    **
@@ -141,10 +145,10 @@ inline bool DofManager::isUnknown(const Dof& dof) const{
 }
 
 inline unsigned int DofManager::getDofNumber(void) const{
-  return globalId->size() - fixedDof->size();
+  return globalId->size();
 }
 
-inline unsigned int DofManager::getUnkownNumber(void) const{
+inline unsigned int DofManager::getUnknownNumber(void) const{
   return fixedDof->size();
 }
 

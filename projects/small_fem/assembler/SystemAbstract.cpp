@@ -123,13 +123,7 @@ void SystemAbstract::assemble(linearSystemPETSc<double>& sys,
     fixed = dofM->getValue(*(dof[i]));
     dofI  = dofM->getGlobalId(*(dof[i]));
 
-    if(fixed.first){
-      // If known Dof
-      sys.addToMatrix(dofI, dofI, 1);
-      sys.addToRightHandSide(dofI, fixed.second);
-    }
-
-    else{
+    if(!fixed.first){
       // If unknown Dof
       for(unsigned int j = 0; j < N; j++){
 	dofJ = dofM->getGlobalId(*(dof[j]));
@@ -140,6 +134,12 @@ void SystemAbstract::assemble(linearSystemPETSc<double>& sys,
 
       sys.addToRightHandSide(dofI,
                              formulation->rhs(i, elementId));
+    }
+
+    else{
+      // If known Dof
+      sys.addToMatrix(dofI, dofI, 1);
+      sys.addToRightHandSide(dofI, fixed.second);
     }
   }
 }
@@ -158,18 +158,18 @@ void SystemAbstract::sparsity(linearSystemPETSc<double>& sys,
     fixed = dofM->getValue(*(dof[i]));
     dofI  = dofM->getGlobalId(*(dof[i]));
 
-    if(fixed.first){
-      // If fixed Dof
-      sys.insertInSparsityPattern(dofI, dofI);
-    }
-
-    else{
+    if(!fixed.first){
       // If unknown Dof
       for(unsigned int j = 0; j < N; j++){
 	dofJ = dofM->getGlobalId(*(dof[j]));
 
 	sys.insertInSparsityPattern(dofI, dofJ);
       }
+    }
+
+    else{
+      // If fixed Dof, do noting
+      sys.insertInSparsityPattern(dofI, dofI);
     }
   }
 }
