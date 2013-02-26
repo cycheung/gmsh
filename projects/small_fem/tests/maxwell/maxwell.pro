@@ -12,8 +12,14 @@ Function{
 
 Jacobian {
   { Name JVol ;
-    Case { 
+    Case {
       { Region All ; Jacobian Vol ; }
+    }
+  }
+
+  { Name JSur ;
+    Case {
+      { Region All ; Jacobian Sur ; }
     }
   }
 }
@@ -21,9 +27,9 @@ Jacobian {
 
 Integration {
   { Name I1 ;
-    Case { 
+    Case {
       { Type Gauss ;
-        Case { 
+        Case {
           { GeoElement Point ; NumberOfPoints  1 ; }
           { GeoElement Line ; NumberOfPoints  4 ; }
           { GeoElement Triangle ; NumberOfPoints 12 ; }
@@ -39,9 +45,9 @@ Integration {
 
 Constraint{
   { Name Dirichlet_e ;
-    Case {      
-      { Region GammaC ; Value 0. ; }
-      { Region GammaS ; Value 1. ; }
+    Case {
+      { Region GammaC ; Value Vector [0., 0., 0.] ; }
+      { Region GammaS ; Value Vector [0., 0., 1.] ; }
     }
   }
 }
@@ -52,24 +58,53 @@ FunctionSpace {
     BasisFunction {
       { Name se; NameOfCoef ee; Function BF_Edge; Support Region[{Omega,GammaS,GammaC}] ; Entity EdgesOf[All]; }
     }
-    Constraint {
-      { NameOfCoef ee; EntityType EdgesOf ; NameOfConstraint Dirichlet_e; }
+  }
+
+  { Name HcurlLS_e; Type Form1;
+    BasisFunction {
+      { Name se; NameOfCoef ee; Function BF_Edge; Support Region[{GammaS}] ; Entity EdgesOf[All]; }
+    }
+  }
+
+  { Name HcurlLC_e; Type Form1;
+    BasisFunction {
+      { Name se; NameOfCoef ee; Function BF_Edge; Support Region[{GammaC}] ; Entity EdgesOf[All]; }
     }
   }
 }
 
 
 Formulation {
-  { Name Maxwell_e; Type FemEquation; 
-    Quantity { 
+  { Name Maxwell_e; Type FemEquation;
+    Quantity {
       { Name e; Type Local;  NameOfSpace Hcurl_e; }
+      { Name ls; Type Local;  NameOfSpace HcurlLS_e; }
+      { Name lc; Type Local;  NameOfSpace HcurlLC_e; }
     }
     Equation {
-      Galerkin { [ Dof{d e} , {d e} ]; 
+      Galerkin { [ Dof{d e} , {d e} ];
                  In Omega; Integration I1; Jacobian JVol;  }
 
-      Galerkin { [ -k^2 * Dof{e} , {e} ]; 
-                 In Omega; Integration I1; Jacobian JVol;  }      
+      Galerkin { [ -k^2 * Dof{e} , {e} ];
+                 In Omega; Integration I1; Jacobian JVol;  }
+
+      Galerkin { [ Dof{ls} , {e} ];
+                 In GammaS; Integration I1; Jacobian JSur;  }
+
+      Galerkin { [ Dof{lc} , {e} ];
+                 In GammaC; Integration I1; Jacobian JSur;  }
+
+      Galerkin { [ Dof{e} , {ls} ];
+                 In GammaS; Integration I1; Jacobian JSur;  }
+
+      Galerkin { [ Dof{e} , {lc} ];
+                 In GammaC; Integration I1; Jacobian JSur;  }
+
+      Galerkin { [ Vector [0, 1, 0] , {ls} ];
+                 In GammaS; Integration I1; Jacobian JSur;  }
+
+      Galerkin { [ Vector [0, 0, 0] , {lc} ];
+                 In GammaC; Integration I1; Jacobian JSur;  }
     }
   }
 }
@@ -80,7 +115,7 @@ Resolution {
     System {
       { Name A ; NameOfFormulation Maxwell_e ; } //Type Complex; }
     }
-    Operation { 
+    Operation {
       Generate[A] ; Solve[A] ; SaveSolution[A] ;
     }
   }
@@ -90,7 +125,7 @@ Resolution {
 PostProcessing {
   { Name Maxwell_e ; NameOfFormulation Maxwell_e ;
     Quantity {
-      { Name e ; 
+      { Name e ;
 	Value { Local { [ {e} ] ; In Omega; Jacobian JVol ; } } }
     }
   }
@@ -98,7 +133,7 @@ PostProcessing {
 
 
 PostOperation {
-  { Name Maxwell_e ; NameOfPostProcessing Maxwell_e; 
+  { Name Maxwell_e ; NameOfPostProcessing Maxwell_e;
     Operation {
       Print[ e, OnElementsOf Omega, File "maxwell.pos"] ;
     }
