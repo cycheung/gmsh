@@ -42,6 +42,7 @@ void DofManager::addToDofManager(const vector<GroupOfDof*>& god){
     }
   }
 }
+
 /*
 void DofManager::generateGlobalIdSpace(bool withFixedValue){
   if(withFixedValue)

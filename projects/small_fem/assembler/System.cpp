@@ -33,10 +33,9 @@ void System::assemble(void){
   dofM->generateGlobalIdSpace();
 
   // Init System //
+  x      = new fullVector<double>(dofM->getDofNumber());
   linSys = new linearSystemPETSc<double>();
   linSys->allocate(dofM->getDofNumber());
-  x      = new fullVector<double>(dofM->getDofNumber());
-
 
   // Get GroupOfDofs //
   const unsigned int E = fs->getSupport().getNumber();

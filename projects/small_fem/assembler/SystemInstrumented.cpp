@@ -1,4 +1,5 @@
 #include "Timer.h"
+#include "DofFixedException.h"
 #include "SystemInstrumented.h"
 
 using namespace std;
@@ -27,6 +28,14 @@ SystemInstrumented::~SystemInstrumented(void){
 }
 
 void SystemInstrumented::assemble(void){
+  // Enumerate //
+  dofM->generateGlobalIdSpace();
+
+  // Init System //
+  x      = new fullVector<double>(dofM->getDofNumber());
+  linSys = new linearSystemPETSc<double>();
+  linSys->allocate(dofM->getDofNumber());
+
   // Get Groups //
   const unsigned int E = fs->getSupport().getNumber();
   const vector<GroupOfDof*>& group = fs->getAllGroups();
@@ -57,46 +66,63 @@ void SystemInstrumented::assemble(const GroupOfDof& group,
   double a;
   double b;
 
+  unsigned int dofI;
+  unsigned int dofJ;
+
   const vector<const Dof*>& dof = group.getAll();
   const unsigned int N = group.getNumber();
 
   for(unsigned int i = 0; i < N; i++){
-    timer.start();
-    pair<bool, double> fixed = dofM->getValue(*(dof[i]));
-    unsigned int dofI = dofM->getGlobalId(*(dof[i]));
-    timer.stop();
+    try{
+      timer.start();
+      dofI = dofM->getGlobalId(*(dof[i]));
+      timer.stop();
 
-    dofLookTime += timer.time();
-    dofLookCall++;
+      dofLookTime += timer.time();
+      dofLookCall++;
 
-    if(fixed.first){
-      linSys->addToMatrix(dofI, dofI, 1);
-      linSys->addToRightHandSide(dofI, fixed.second);
-   }
-
-    else{
-      // If unknown Dof
       for(unsigned int j = 0; j < N; j++){
-        timer.start();
-	unsigned int dofJ = dofM->getGlobalId(*(dof[j]));
-        timer.stop();
+        try{
+          timer.start();
+          dofJ = dofM->getGlobalId(*(dof[j]));
+          timer.stop();
 
-        dofLookTime += timer.time();
-        dofLookCall++;
+          dofLookTime += timer.time();
+          dofLookCall++;
 
-        timer.start();
-        a = formulation->weak(i, j, elementId);
-        timer.stop();
+          timer.start();
+          a = formulation->weak(i, j, elementId);
+          timer.stop();
 
-        totLHSTime += timer.time();
-        totLHSCall++;
+          totLHSTime += timer.time();
+          totLHSCall++;
 
-        timer.start();
-	linSys->addToMatrix(dofI, dofJ, a);
-        timer.stop();
+          timer.start();
+          linSys->addToMatrix(dofI, dofJ, a);
+          timer.stop();
 
-        totAddLHSTime += timer.time();
-        totAddLHSCall++;
+          totAddLHSTime += timer.time();
+          totAddLHSCall++;
+        }
+
+        catch(DofFixedException& fixedDof){
+          // If fixed Dof (for column 'dofJ'):
+          //    add to right hand side (with a minus sign) !
+          timer.start();
+          b = -1 * fixedDof.getValue() * (formulation->weak)(i, j, elementId);
+          timer.stop();
+
+          totRHSTime += timer.time();
+          totRHSCall++;
+
+          timer.start();
+          linSys->addToRightHandSide(dofI, b);
+          timer.stop();
+
+          totAddRHSTime += timer.time();
+          totAddRHSCall++;
+        }
+
       }
 
       timer.start();
@@ -112,6 +138,10 @@ void SystemInstrumented::assemble(const GroupOfDof& group,
 
       totAddRHSTime += timer.time();
       totAddRHSCall++;
+    }
+
+    catch(DofFixedException& any){
+      // Don't add fixed Dof (for line 'dofI')
     }
   }
 }

@@ -42,7 +42,6 @@ class DofManager{
 
   void addToDofManager(const std::vector<GroupOfDof*>& god);
   void generateGlobalIdSpace(void);
-  //void generateGlobalIdSpace(bool withFixedValue);
 
   unsigned int getGlobalId(const Dof& dof) const;
 

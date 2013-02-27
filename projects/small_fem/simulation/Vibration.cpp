@@ -38,7 +38,7 @@ int main(int argc, char** argv){
   FormulationVibration vibration(domain, order);
   SystemEigen sysVibration(vibration);
 
-  //sysVibration.fixCoef(msh.getFromPhysical(5), 0);
+  sysVibration.fixCoef(msh.getFromPhysical(5), 0);
 
   cout << "Vibration: " << sysVibration.getSize() << endl;
 

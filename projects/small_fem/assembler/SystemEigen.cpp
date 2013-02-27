@@ -15,22 +15,10 @@ SystemEigen::SystemEigen(const Formulation& formulation){
   general = formulation.isGeneral();
 
   // Create SystemEigen //
-  // Get Size
-  const unsigned int size = fs->dofNumber();
 
-  // Linear System A
-  linSysA = new linearSystemPETSc<double>();
-  linSysA->allocate(size);
-
-  // Linear System B
-  if(general){
-    linSysB = new linearSystemPETSc<double>();
-    linSysB->allocate(size);
-  }
-
-  else{
-    linSysB = NULL;
-  }
+  // Init
+  linSysA = NULL;
+  linSysB = NULL;
 
   // eSys will be created at solving point
   eSys        = NULL;
@@ -53,7 +41,8 @@ SystemEigen::~SystemEigen(void){
   if(eSys)
     delete eSys;
 
-  delete linSysA;
+  if(linSysA)
+    delete linSysA;
 
   if(general)
     delete linSysB;
@@ -64,7 +53,7 @@ SystemEigen::~SystemEigen(void){
 
 void SystemEigen::
 setNumberOfEigenValues(unsigned int nEigenValues){
-  const unsigned int nDof = fs->dofNumber();
+  const unsigned int nDof = dofM->getDofNumber();
 
   if(nEigenValues > nDof)
     throw
@@ -76,8 +65,21 @@ setNumberOfEigenValues(unsigned int nEigenValues){
 }
 
 void SystemEigen::assemble(void){
+  const unsigned int size = dofM->getDofNumber();
+
   // Enumerate //
   dofM->generateGlobalIdSpace();
+
+  // Init System //
+  // Linear System A
+  linSysA = new linearSystemPETSc<double>();
+  linSysA->allocate(size);
+
+  // Linear System B
+  if(general){
+    linSysB = new linearSystemPETSc<double>();
+    linSysB->allocate(size);
+  }
 
   // Get GroupOfDofs //
   const unsigned int E = fs->getSupport().getNumber();

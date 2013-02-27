@@ -37,7 +37,7 @@ fullVector<double> fWall(fullVector<double>& xyz){
 
 int main(int argc, char** argv){
   // Start Timer //
-  Timer preCtp;
+  Timer preCpt;
   Timer timer;
 
   timer.start();
@@ -59,9 +59,9 @@ int main(int argc, char** argv){
   const unsigned int order = atoi(argv[3]);
 
   // SteadyWaveVector //
-  //preCpt.start();
+  preCpt.start();
   FormulationSteadyWaveVector sWave(domain, puls * 1, order);
-  //preCpt.stop();
+  preCpt.stop();
 
   //SystemInstrumented sys(sWave);
   System sys(sWave);
