@@ -56,19 +56,25 @@ Constraint{
 FunctionSpace {
   { Name Hcurl_e; Type Form1;
     BasisFunction {
-      { Name se; NameOfCoef ee; Function BF_Edge; Support Region[{Omega,GammaS,GammaC}] ; Entity EdgesOf[All]; }
+      // Ordre 1 Complet //
+      { Name se   ; NameOfCoef ee   ; Function BF_Edge_1E ; Support Region[{Omega,GammaS,GammaC}] ; Entity EdgesOf[All]; }
+      { Name se2e ; NameOfCoef we2e ; Function BF_Edge_2E ; Support Region[{Omega,GammaS,GammaC}] ; Entity EdgesOf[All]; }
     }
   }
 
   { Name HcurlLS_e; Type Form1;
     BasisFunction {
-      { Name se; NameOfCoef ee; Function BF_Edge; Support Region[{GammaS}] ; Entity EdgesOf[All]; }
+      // Ordre 1 Complet //
+      { Name se   ; NameOfCoef ee  ; Function BF_Edge_1E; Support Region[{GammaS}] ; Entity EdgesOf[All]; }
+      { Name se2e ; NameOfCoef we2e; Function BF_Edge_2E; Support Region[{GammaS}] ; Entity EdgesOf[All]; }
     }
   }
 
   { Name HcurlLC_e; Type Form1;
     BasisFunction {
-      { Name se; NameOfCoef ee; Function BF_Edge; Support Region[{GammaC}] ; Entity EdgesOf[All]; }
+      // Ordre 1 Complet //
+      { Name se   ; NameOfCoef ee  ; Function BF_Edge_1E; Support Region[{GammaC}] ; Entity EdgesOf[All]; }
+      { Name se2e ; NameOfCoef we2e; Function BF_Edge_2E; Support Region[{GammaC}] ; Entity EdgesOf[All]; }
     }
   }
 }

@@ -1,6 +1,7 @@
 #include <sstream>
 
 #include "Exception.h"
+#include "DofFixedException.h"
 #include "FunctionSpaceScalar.h"
 #include "FunctionSpaceVector.h"
 #include "BasisGenerator.h"
@@ -238,8 +239,15 @@ void WriterMsh::writeNodalValuesFromSol(void) const{
     // Get Coef In FS Basis
     vector<double> fsCoef(size);
     for(unsigned int j = 0; j < size; j++)
-      // Look in Solution
-      fsCoef[j] = (*sol)(dofM->getGlobalId(*dof[j]));
+          try{
+            // Look in Solution
+            fsCoef[j] = (*sol)(dofM->getGlobalId(*dof[j]));
+          }
+
+          catch(DofFixedException& fixedDof){
+            // If Dos is fixed, look in 'fixedDof'
+            fsCoef[j] = fixedDof.getValue();
+          }
 
     // Get Coef In Lagrange Basis
     if(isScalar){

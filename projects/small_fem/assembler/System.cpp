@@ -11,8 +11,8 @@ System::System(const Formulation& formulation){
   dofM = new DofManager();
   dofM->addToDofManager(fs->getAllGroups());
 
-  // Solution Vector //
-  x      = new fullVector<double>(fs->dofNumber());
+  // Init //
+  x      = NULL;
   linSys = NULL;
 
   // The system is not assembled and not solved //
@@ -30,11 +30,13 @@ System::~System(void){
 
 void System::assemble(void){
   // Enumerate //
-  dofM->generateGlobalIdSpace(true);
+  dofM->generateGlobalIdSpace();
 
   // Init System //
   linSys = new linearSystemPETSc<double>();
-  linSys->allocate(fs->dofNumber());
+  linSys->allocate(dofM->getDofNumber());
+  x      = new fullVector<double>(dofM->getDofNumber());
+
 
   // Get GroupOfDofs //
   const unsigned int E = fs->getSupport().getNumber();
@@ -65,7 +67,7 @@ void System::solve(void){
   linSys->systemSolve();
 
   // Write Sol
-  const unsigned int size = fs->dofNumber();
+  const unsigned int size = dofM->getDofNumber();
   double xi;
 
   for(unsigned int i = 0; i < size; i++){

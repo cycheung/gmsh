@@ -21,7 +21,8 @@
 
    @todo
    Assembly of @em NON Element related Dof@n
-   Allow multiple basis for dirichelt
+   Allow multiple basis for dirichelt@n
+   Remove basis.orientAllElement()
  */
 
 class SystemAbstract{
@@ -152,7 +153,7 @@ inline bool SystemAbstract::isSolved(void) const{
 }
 
 inline unsigned int SystemAbstract::getSize(void) const{
-  return fs->dofNumber();
+  return dofM->getDofNumber();
 }
 
 inline const DofManager& SystemAbstract::

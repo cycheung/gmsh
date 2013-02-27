@@ -44,11 +44,11 @@ int main(int argc, char** argv){
   FormulationLaplace laplace(domain, order);
   System sysLaplace(laplace);
 
-  cout << "Laplace (" << order << "): "
-       << sysLaplace.getSize() << endl;
-
   sysLaplace.dirichlet(boundary0, f1);
   sysLaplace.dirichlet(boundary1, f2);
+
+  cout << "Laplace (" << order << "): "
+       << sysLaplace.getSize() << endl;
 
   sysLaplace.assemble();
   sysLaplace.solve();

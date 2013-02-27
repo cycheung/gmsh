@@ -7,6 +7,8 @@
 #include "GModel.h"
 #include "MElement.h"
 #include "MVertex.h"
+
+#include "DofFixedException.h"
 #include "Dof.h"
 
 using namespace std;
@@ -220,9 +222,15 @@ void Interpolator::interpolate(void){
 	// Get Coef
 	vector<double> coef(size);
 	for(unsigned int k = 0; k < size; k++)
-	  // Look in Solution
-	  coef[k] =
-	    (*sol)(dofM->getGlobalId(*dof[k]));
+          try{
+            // Look in Solution
+            coef[k] = (*sol)(dofM->getGlobalId(*dof[k]));
+          }
+
+          catch(DofFixedException& fixedDof){
+            // If Dos is fixed, look in 'fixedDof'
+            coef[k] = fixedDof.getValue();
+          }
 
 	// Get Node coordinate
 	fullVector<double> xyz(3);
@@ -296,9 +304,15 @@ void Interpolator::interpolateOnVisu(void){
       // Get Coef
       vector<double> coef(size);
       for(unsigned int k = 0; k < size; k++)
-	// Look in Solution
-	coef[k] =
-	  (*sol)(dofM->getGlobalId(*dof[k]));
+          try{
+            // Look in Solution
+            coef[k] = (*sol)(dofM->getGlobalId(*dof[k]));
+          }
+
+          catch(DofFixedException& fixedDof){
+            // If Dos is fixed, look in 'fixedDof'
+            coef[k] = fixedDof.getValue();
+          }
 
       // Get Node coordinate
       fullVector<double> xyz(3);

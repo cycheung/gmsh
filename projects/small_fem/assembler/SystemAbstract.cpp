@@ -3,6 +3,7 @@
 #include "BasisGenerator.h"
 #include "BasisLocal.h"
 #include "Exception.h"
+#include "DofFixedException.h"
 
 #include "SystemAbstract.h"
 #include "System.h"
@@ -115,31 +116,36 @@ void SystemAbstract::assemble(linearSystemPETSc<double>& sys,
   const vector<const Dof*>& dof = group.getAll();
   const unsigned int N = group.getNumber();
 
-  pair<bool, double> fixed;
   unsigned int dofI;
   unsigned int dofJ;
 
   for(unsigned int i = 0; i < N; i++){
-    fixed = dofM->getValue(*(dof[i]));
-    dofI  = dofM->getGlobalId(*(dof[i]));
+    try{
+      dofI = dofM->getGlobalId(*(dof[i]));
 
-    if(!fixed.first){
-      // If unknown Dof
       for(unsigned int j = 0; j < N; j++){
-	dofJ = dofM->getGlobalId(*(dof[j]));
+        try{
+          dofJ = dofM->getGlobalId(*(dof[j]));
 
-	sys.addToMatrix(dofI, dofJ,
-                        (formulation->*term)(i, j, elementId));
+          sys.addToMatrix(dofI, dofJ,
+                          (formulation->*term)(i, j, elementId));
+        }
+
+        catch(DofFixedException& fixedDof){
+          // If fixed Dof (for column 'dofJ'):
+          //    add to right hand side (with a minus sign) !
+          sys.addToRightHandSide
+            (dofI, -1 * fixedDof.getValue() * (formulation->*term)(i, j, elementId));
+        }
+
       }
 
       sys.addToRightHandSide(dofI,
                              formulation->rhs(i, elementId));
     }
 
-    else{
-      // If known Dof
-      sys.addToMatrix(dofI, dofI, 1);
-      sys.addToRightHandSide(dofI, fixed.second);
+    catch(DofFixedException& any){
+      // Don't add fixed Dof (for line 'dofI')
     }
   }
 }
@@ -150,26 +156,28 @@ void SystemAbstract::sparsity(linearSystemPETSc<double>& sys,
   const vector<const Dof*>& dof = group.getAll();
   const unsigned int N = group.getNumber();
 
-  pair<bool, double> fixed;
   unsigned int dofI;
   unsigned int dofJ;
 
   for(unsigned int i = 0; i < N; i++){
-    fixed = dofM->getValue(*(dof[i]));
-    dofI  = dofM->getGlobalId(*(dof[i]));
+    try{
+      dofI = dofM->getGlobalId(*(dof[i]));
 
-    if(!fixed.first){
-      // If unknown Dof
       for(unsigned int j = 0; j < N; j++){
-	dofJ = dofM->getGlobalId(*(dof[j]));
+        try{
+          dofJ = dofM->getGlobalId(*(dof[j]));
 
-	sys.insertInSparsityPattern(dofI, dofJ);
+          sys.insertInSparsityPattern(dofI, dofJ);
+        }
+
+        catch(DofFixedException& any){
+          // Don't add fixed Dof
+        }
       }
     }
 
-    else{
-      // If fixed Dof, do noting
-      sys.insertInSparsityPattern(dofI, dofI);
+    catch(DofFixedException& any){
+      // Don't add fixed Dof
     }
   }
 }

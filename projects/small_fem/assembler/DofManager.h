@@ -27,8 +27,14 @@
 
 class DofManager{
  private:
-  std::map<const Dof*, unsigned int, DofComparator>* globalId;
-  std::map<const Dof*, double, DofComparator>*       fixedDof;
+  typedef struct{
+    bool isFixed;
+    unsigned int globalId;
+    double       fixedValue;
+  } DofData;
+
+  std::map<const Dof*, DofData, DofComparator>* globalId;
+  unsigned int nNotFixedDof;
 
  public:
    DofManager(void);
@@ -36,16 +42,15 @@ class DofManager{
 
   void addToDofManager(const std::vector<GroupOfDof*>& god);
   void generateGlobalIdSpace(void);
-  void generateGlobalIdSpace(bool withFixedValue);
+  //void generateGlobalIdSpace(bool withFixedValue);
 
-  unsigned int  getGlobalId(const Dof& dof) const;
+  unsigned int getGlobalId(const Dof& dof) const;
 
   bool isUnknown(const Dof& dof) const;
   bool fixValue(const Dof& dof, double value);
   std::pair<bool, double> getValue(const Dof& dof) const;
 
   unsigned int getDofNumber(void) const;
-  unsigned int getUnknownNumber(void) const;
 
   std::string toString(void) const;
 
@@ -123,12 +128,7 @@ class DofManager{
 
    @fn DofManager::getDofNumber
    @return Returns the number of Dof%s in
-   this DofManager (with fixed Dof%s)
-   **
-
-   @fn DofManager::getUnknownNumber
-   @return Returns the number of fixed Dof%s
-   in this DofManager
+   this DofManager (without fixed Dof%s)
    **
 
    @fn  DofManager::toString
@@ -141,15 +141,11 @@ class DofManager{
 //////////////////////
 
 inline bool DofManager::isUnknown(const Dof& dof) const{
-  return fixedDof->count(&dof) == 0;
+  return globalId->find(&dof)->second.isFixed;
 }
 
 inline unsigned int DofManager::getDofNumber(void) const{
-  return globalId->size();
-}
-
-inline unsigned int DofManager::getUnknownNumber(void) const{
-  return fixedDof->size();
+  return nNotFixedDof;
 }
 
 #endif

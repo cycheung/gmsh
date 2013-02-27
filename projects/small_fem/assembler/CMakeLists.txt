@@ -1,6 +1,7 @@
 set(src
   Dof.cpp
   DofManager.cpp
+  DofFixedException.cpp
   GroupOfDof.cpp
 
   SystemAbstract.cpp
