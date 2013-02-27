@@ -36,6 +36,9 @@ fullVector<double> fWall(fullVector<double>& xyz){
 }
 
 int main(int argc, char** argv){
+  // 'nopos' string //
+  const char* nopos = "nopos";
+
   // Start Timer //
   Timer preCpt;
   Timer timer;
@@ -84,13 +87,17 @@ int main(int argc, char** argv){
   */
 
   if(argc == 5){
-    // Interpolated View //
-    // Visu Mesh
-    Mesh visuMsh(argv[4]);
-    GroupOfElement visu = visuMsh.getFromPhysical(7);
+    if(strcmp(argv[4], nopos)){
+      // Interpolated View //
+      // Visu Mesh
+      Mesh visuMsh(argv[4]);
+      GroupOfElement visu = visuMsh.getFromPhysical(7);
 
-    Interpolator interp(sys, visu);
-    interp.write("swavev", writer);
+      Interpolator interp(sys, visu);
+      interp.write("swavev", writer);
+    }
+
+    // If argv[4] == nopos --> do nothing //
   }
 
   else{
