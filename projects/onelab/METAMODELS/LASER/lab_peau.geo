@@ -2,16 +2,16 @@
 // Parameters shared with onelab need be defined here for consistency:
 // EPIDERMIS = 0.12 mm (hairless) or 0.05 mm (hairy) 
 
-DefineConstant[EPIDERMIS = {0.12, Path "Parameters/Skin/", ShortHelp "Thickness of epidermis [mm]"}];
-DefineConstant[DERMIS = {1.5, Path "Parameters/Skin/", ShortHelp "Thickness of dermis [mm]"}];
-DefineConstant[BEAMRADIUS = {3, Path "Parameters/Laser/", ShortHelp "Radius of the beam [mm]"}];
+DefineConstant[EPIDERMIS = {0.12, Path "Parameters/Skin/2", ShortHelp "Thickness of epidermis [mm]"}];
+DefineConstant[DERMIS = {1.5, Path "Parameters/Skin/3", ShortHelp "Thickness of dermis [mm]"}];
+DefineConstant[BEAMRADIUS = {3, Path "Parameters/Laser/2", ShortHelp "Radius of the beam [mm]"}];
 
 // Gmsh specific parameter
-DefineConstant[Nb1 = {8, Path "Gmsh/", ShortHelp "Elements on spot surface", Closed "1"} ]; 
-DefineConstant[Nb2 = {6, Path "Gmsh/", ShortHelp "Elements across epidermis"}];
+DefineConstant[Nb1 = {9, Path "Gmsh/", ShortHelp "Elements on spot surface", Closed "1"} ]; 
+DefineConstant[Nb2 = {5, Path "Gmsh/", ShortHelp "Elements across epidermis"}];
 DefineConstant[Nb3 = {5, Path "Gmsh/", ShortHelp "Elements across dermis"}]; 
-DefineConstant[Nb4 = {2, Path "Gmsh/", ShortHelp "Elements on free surface"}]; 
-DefineConstant[Ref = {3, Path "Gmsh/", ShortHelp "Refinement factor (1-5)"}]; 
+DefineConstant[Nb4 = {4, Path "Gmsh/", ShortHelp "Elements on free surface"}]; 
+DefineConstant[Ref = {2, Path "Gmsh/", ShortHelp "Refinement factor (1-5)"}]; 
 
 mm=1.e-3;
 L = 7*mm;
@@ -19,16 +19,17 @@ D = BEAMRADIUS *mm;
 H1 = DERMIS *mm;
 H2 = EPIDERMIS * mm;
 
-lc = 1;
-Point(1) = {0, 0, 0, lc}; 
-Point(2) = {D, 0, 0, lc};
-Point(3) = {L, 0, 0, lc};
+lc = H2/10;
+lc2 = H1/4;
+Point(1) = {0, 0, 0, lc2}; 
+Point(2) = {D, 0, 0, lc2};
+Point(3) = {L, 0, 0, lc2};
 Point(4) = {0, H1, 0, lc};
 Point(5) = {D, H1, 0, lc};
-Point(6) = {L, H1, 0, lc};
+Point(6) = {L, H1, 0, lc2/5};
 Point(7) = {0, H1+H2, 0, lc};
 Point(8) = {D, H1+H2, 0, lc};
-Point(9) = {L, H1+H2, 0, lc};
+Point(9) = {L, H1+H2, 0, lc2/5};
 
 Line(1) = {1, 2};
 Line(2) = {2, 3};
@@ -63,6 +64,6 @@ Physical Line("FreeSkin") = {11};
 
 Transfinite Line {1, 7, 10} = Nb1*Ref;
 Transfinite Line {4, 6, 9} = Nb2*Ref;
-Transfinite Line {3, 5, 12} = Nb3*Ref Using Progression 0.85;//0.9
-Transfinite Line {-2, -8, -11} = Nb4*Ref Using Progression 0.7;
+Transfinite Line {3, 5, 12} = Nb3*Ref Using Progression 0.75;//0.9
+Transfinite Line {-2, -8, -11} = Nb4*Ref Using Progression 0.8;
 Transfinite Surface {1,2,3,4} Right;

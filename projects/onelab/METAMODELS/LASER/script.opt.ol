@@ -1,9 +1,14 @@
 ListDepth=OL.get(PostPro/ZSURF,choices.expand( '{comma}' ));
 nbDepth = #ListDepth[];
 
+nbtimestep = OL.eval(OL.get(PostPro/PROBETIME)/OL.get(Parameters/Elmer/TimeStep)*1000-1)
+If (OL.get(PostPro/PROBETIME) > OL.get(Parameters/Elmer/3TimeEnd) )
+ nbtimestep = OL.eval(OL.get(Parameters/Elmer/3TimeEnd)/OL.get(Parameters/Elmer/TimeStep)*1000-1);
+EndIf
+
 Plugin(ExtractElements).MinVal=0;
 Plugin(ExtractElements).MaxVal=0;
-Plugin(ExtractElements).TimeStep=OL.eval(OL.get(PostPro/PROBETIME)/OL.get(Parameters/Elmer/TimeStep)*1000-1);
+Plugin(ExtractElements).TimeStep=nbtimestep;
 Plugin(ExtractElements).Visible=1;
 Plugin(ExtractElements).Dimension=2;
 Plugin(ExtractElements).View=0;

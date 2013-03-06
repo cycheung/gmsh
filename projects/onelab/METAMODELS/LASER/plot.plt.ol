@@ -24,7 +24,7 @@ set size 1.0, 1.0
 set origin 0.0, 0.0
 set grid
 
-if (INTERACT==-1) set title "Temperature on axis at various depths (every 12.5 {{/Symbol m}m})"
+if (INTERACT==-1) set title "Temperature on axis at surface and interface"
 set size 0.5,0.5
 set origin 0.0,0.5
 set ylabel "Temperature [{\260}C]";
@@ -34,9 +34,6 @@ set y2tics
 set y2label "Activated volume [mm^3]"
 plot "temp.txt" u 1:($2) lt 1 t "",\
      "temp.txt" u 1:($11) lt 2 t "",\
-     "temp.txt" u 1:($20) lt 3 t "",\
-     "temp.txt" u 1:($29) lt 4 t "",\
-     "temp.txt" u 1:($38) lt 5 t "", \
      OL.get(Parameters/Skin/OVERTEMP) w l  lt rgb "black" t "threshold ",\
      "volume.txt" u 2:8 axis x1y2 lt 8 lw 1 t "act. vol.",\
      "volderm.txt" u 2:8 axis x1y2 lt 8 lw 2 t ""
@@ -45,22 +42,21 @@ set ytics mirror
 unset y2tics
 unset y2label
  
-if (INTERACT==-1) set title "Temperature distribution at t_{laser} at different depths (every 12.5 {{/Symbol m}m})"
+if (INTERACT==-1) set title "Temperature distribution at t_{laser} at surface and interface"
 set size 0.5,0.5
 set origin 0.5,0.5  
 set xlabel "Radial coordinate [mm]"
 
-nbfiles= OL.get(PostPro/ZSURF,choices.size())
-nbfiles=5
+nbfiles= 2
 filename(n) = sprintf("templaser%d.txt", n)
 plot for [i=0:nbfiles-1] filename(i) u ($5)*1000:8 w l t "", \
      OL.get(Parameters/Skin/OVERTEMP) w l  lt rgb "black" t "threshold "
 
-skinWidth = (OL.get(Parameters/Skin/EPIDERMIS)+OL.get(Parameters/Skin/DERMIS))/1000
-dermis = OL.get(Parameters/Skin/EPIDERMIS)
+skinWidth = (OL.get(Parameters/Skin/2EPIDERMIS)+OL.get(Parameters/Skin/3DERMIS))/1000
+dermis = OL.get(Parameters/Skin/2EPIDERMIS)
 zsurf=OL.get(PostPro/ZSURF);
 
-if (INTERACT==-1) set title "Surface above threshold"
+if (INTERACT==-1) set title "Activated area"
 set size 0.5,0.5
 set origin 0.0,0.0
 set xlabel "Depth [mm]"
@@ -68,7 +64,7 @@ set ylabel "A_{A{/Symbol d}} [mm^2]"
 set arrow from dermis,graph(0,0) to dermis,graph(1,1) nohead lt 8
 plot "activeMax.txt" u (zsurf-($6))*1000:($8)*10**6 w lp t ""
 
-if (INTERACT==-1) set title "time above threshold (on axis)"
+if (INTERACT==-1) set title "Duration of activation"
 set size 0.5,0.5
 set origin 0.5,0.0
 set xlabel "Depth [mm]"
