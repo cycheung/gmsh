@@ -183,8 +183,12 @@ OL.iftrue(Parameters/Laser/TSKINFILE)
 OL.else
    Timposed = Variable Time
      Real
-     0.     OL.get(Parameters/Laser/LASERTEMP)
-     OL.get(Parameters/Laser/STIMTIME) OL.get(Parameters/Laser/LASERTEMP)
+     0.       OL.get(Parameters/Laser/7TEMP1)
+     OL.get(Parameters/Laser/8TIME1)  OL.get(Parameters/Laser/7TEMP1)
+     OL.eval(OL.get(Parameters/Laser/8TIME1)+OL.get(Parameters/Laser/9RAMPTIME))  OL.get(Parameters/Laser/5LASERTEMP)
+     OL.eval(OL.get(Parameters/Laser/8TIME1)+OL.get(Parameters/Laser/9RAMPTIME)+OL.get(Parameters/Laser/6STIMTIME))  OL.get(Parameters/Laser/5LASERTEMP)
+     OL.eval(OL.get(Parameters/Laser/8TIME1)+OL.get(Parameters/Laser/9RAMPTIME)+OL.get(Parameters/Laser/6STIMTIME)+1.e-3)  OL.get(Parameters/Skin/TAMBIANT)
+     10  OL.get(Parameters/Skin/TAMBIANT)
    End
 OL.endif
   Pin = Variable Time, Tsensor, Timposed

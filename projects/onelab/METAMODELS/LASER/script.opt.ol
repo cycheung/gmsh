@@ -71,7 +71,7 @@ EndFor
 
 //MATHEVAL THE CUTPLANE WITH STEP
 For k In {1:nbDepthF}
- Plugin(MathEval).Expression0= "Step(v0-OL.get(Parameters/Skin/OVERTEMP))*2*pi*x";
+ Plugin(MathEval).Expression0= "Step(v0-OL.get(Parameters/Skin/OVERTEMP)+1)*2*pi*x";
  Plugin(MathEval).TimeStep=-1;
  Plugin(MathEval).View=ViewNum+k;
  Plugin(MathEval).OtherTimeStep=-1;
@@ -104,3 +104,4 @@ ViewNum=ViewNum+nbDepthF;
 
 Combine ElementsByViewName;
 Save View [6] "activeMax.txt"; 
+

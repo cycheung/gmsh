@@ -42,7 +42,7 @@ set ytics mirror
 unset y2tics
 unset y2label
  
-if (INTERACT==-1) set title "Temperature distribution at t_{laser} in epidermis"
+if (INTERACT==-1) set title "Temperature distribution at t_{probe} in epidermis"
 set size 0.5,0.5
 set origin 0.5,0.5  
 set xlabel "Radial coordinate [mm]"

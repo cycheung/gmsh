@@ -23,7 +23,7 @@ Mesher.out( OL.get(Arguments/FileName).msh );
 Mesher.frontPage(OL.get(Arguments/FileName).geo);
 
 # Enumeration, i.e. a set of real values each associated with a label
-SKINTYPE.number(2, Parameters/Skin/1,"Skin type"); 
+SKINTYPE.number(1, Parameters/Skin/1,"Skin type"); 
 SKINTYPE.valueLabels(1,"hairy (thin)", 
                      2,"glabrous (thick)");
 # Numbers in pathes allow to sort parameters in the onelab window.
@@ -49,7 +49,7 @@ OL.endif
 REFLECTIVITY.number(0.0078, Parameters/Skin/4, "Skin reflectivity []");
 TCORE.number(37, Parameters/Skin/5,"Core temperature [C]");
 TBASE.number(30, Parameters/Skin/6, "Baseline temperature [C]");
-OVERTEMP.number(47, Parameters/Skin/7,"Thermal threshold fiber [C]");
+OVERTEMP.number(45, Parameters/Skin/7,"Thermal threshold fiber [C]");
 
 # Flags to describe model features that are activated or not
 TENEUR.radioButton(1,Parameters/Skin/8,"Account for variable water content");
@@ -81,7 +81,7 @@ LASERSHAPE.valueLabels(1,"Gaussian",
 ABSORPTION.number(2e4, Parameters/Laser/3, "Absorption coefficient [1/m]");
 
 
-LASERSIMU.number(1, Parameters/Laser/4,"Laser type");  
+LASERSIMU.number(3, Parameters/Laser/4,"Laser type");  
 LASERSIMU.valueLabels(
     1,"Imposed power", 
     2,"Imposed power file", 
@@ -102,10 +102,18 @@ Parameters/Laser/LASERTYPE.setValue(2);
 OL.endif
 LASERTYPE.setVisible(0);
 
-LASERPOWER.number(2.0, Parameters/Laser/5, "Power [W]");
-LASERTEMP.number(50, Parameters/Laser/5, "Imposed temperature [C]");
-STIMTIME.number(0.10, Parameters/Laser/6, "Laser stimulation time [s]");
+LASERPOWER.number(4.0, Parameters/Laser/5, "Power [W]");
+LASERTEMP.number(50, Parameters/Laser/5, "Temperature T2 [C]");
+STIMTIME.number(0.10, Parameters/Laser/6, "Duration T2 [s]");
+
+TEMP1.number(34, Parameters/Laser/7, "Temperature T1 [C]");
+TIME1.number(0.1, Parameters/Laser/8, "Duration T1 [s]");
+RAMPTIME.number(0.01, Parameters/Laser/9, "Ramp Time [s]");
+
 PROBETIME.number(OL.get(STIMTIME), PostPro/, "Probe time [s]");
+OL.if( OL.get(LASERSIMU) == 3)
+PROBETIME.setValue(OL.eval(OL.get(TIME1)+OL.get(RAMPTIME)+OL.get(STIMTIME)));
+OL.endif
 
 TSKINFILE.string(,Parameters/Laser/6, "Imposed temp. file");
 QSKINFILE.string(,Parameters/Laser/6, "Imposed laser power file");
@@ -122,6 +130,9 @@ LASERPOWER.setVisible(1);
 QSKINFILE.setVisible(0);
 TSKINFILE.setVisible(0);
 STIMTIME.setVisible(1);
+TEMP1.setVisible(0);
+TIME1.setVisible(0);
+RAMPTIME.setVisible(0);
 OL.endif
 
 OL.if( OL.get(LASERSIMU) == 2)
@@ -131,6 +142,9 @@ LASERPOWER.setVisible(0);
 QSKINFILE.setVisible(1);
 TSKINFILE.setVisible(0);
 STIMTIME.setVisible(0);
+TEMP1.setVisible(0);
+TIME1.setVisible(0);
+RAMPTIME.setVisible(0);
 OL.endif
 
 OL.if( OL.get(LASERSIMU) == 3)
@@ -140,6 +154,9 @@ LASERPOWER.setVisible(1);
 QSKINFILE.setVisible(0);
 TSKINFILE.setVisible(0);
 STIMTIME.setVisible(1);
+TEMP1.setVisible(1);
+TIME1.setVisible(1);
+RAMPTIME.setVisible(1);
 OL.endif
 
 OL.if( OL.get(LASERSIMU) == 4)
@@ -149,6 +166,9 @@ LASERPOWER.setVisible(1);
 QSKINFILE.setVisible(0);
 TSKINFILE.setVisible(1);
 STIMTIME.setVisible(0);
+TEMP1.setVisible(0);
+TIME1.setVisible(0);
+RAMPTIME.setVisible(0);
 OL.endif
 
 ABSORPTION.setVisible(1);
@@ -175,6 +195,7 @@ ZSURF.setVisible(0);
 
 VOLUME.number(,Solution/,"Skin above threshold [mm3]");
 VOLDERM.number(,Solution/,"Derm above threshold [mm3]");
+TEMPINTERF.number(,Solution/,"Temperature at dermis surface [C]");
 
 #-2) ElmerGrid converts the mesh for Elmer
 ElmerGrid.register(interfaced);
@@ -189,7 +210,14 @@ Elmer.out( solution.pos, temp.txt );
 Elmer.run( );
 Elmer.merge(solution.pos);
 
-#-4) Post-processing with Gmsh and a script
+#-4a) Post-processing with Gmsh and a script
+Post0.register(interfaced);
+Post0.in(solution.pos , script0.opt.ol );
+Post0.out(tempMaxInterface.txt);
+Post0.run(solution.pos script0.opt -);
+Post0.up(tempMaxInterface.txt,-1,8,Parameters/Skin/7OVERTEMP);
+
+#-4b) Post-processing with Gmsh and a script
 Post1.register(interfaced);
 Post1.in(solution.pos , script.opt.ol );
 Post1.out(temp0.txt, activeMax.txt);
