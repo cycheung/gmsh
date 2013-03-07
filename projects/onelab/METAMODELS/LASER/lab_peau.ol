@@ -195,7 +195,6 @@ ZSURF.setVisible(0);
 
 VOLUME.number(,Solution/,"Skin above threshold [mm3]");
 VOLDERM.number(,Solution/,"Derm above threshold [mm3]");
-TEMPINTERF.number(,Solution/,"Temperature at dermis surface [C]");
 
 #-2) ElmerGrid converts the mesh for Elmer
 ElmerGrid.register(interfaced);

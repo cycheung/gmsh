@@ -64,6 +64,6 @@ Physical Line("FreeSkin") = {11};
 
 Transfinite Line {1, 7, 10} = Nb1*Ref;
 Transfinite Line {4, 6, 9} = Nb2*Ref;
-Transfinite Line {3, 5, 12} = Nb3*Ref Using Progression 0.75;//0.9
+Transfinite Line {3, 5, 12} = Nb3*Ref Using Progression 0.65;//0.9
 Transfinite Line {-2, -8, -11} = Nb4*Ref Using Progression 0.8;
 Transfinite Surface {1,2,3,4} Right;
