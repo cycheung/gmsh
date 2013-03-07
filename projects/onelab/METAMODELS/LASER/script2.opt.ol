@@ -43,7 +43,6 @@ Plugin(Integrate).View=4;
 Plugin(Integrate).OverTime=-1;
 Plugin(Integrate).Dimension=2;
 Plugin(Integrate).Run; 
-
 Save View [5] "volume.txt" ;
 
 // View 6 and 7
@@ -68,7 +67,6 @@ Plugin(Integrate).View=8;
 Plugin(Integrate).OverTime=-1;
 Plugin(Integrate).Dimension=2;
 Plugin(Integrate).Run; 
-
 Save View [9] "volderm.txt" ;
 
 // View 10 and 11

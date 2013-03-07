@@ -4,7 +4,7 @@ OL.block
 #NumStep.number(11,Parameters/Elmer/1, "Time steps until end stim."); 
 TimeStep.number(1, Parameters/Elmer/2,"Time step [ms]");
 #TimeStep.setValue(OL.eval(OL.get(Parameters/Laser/STIMTIME)/OL.get(NumStep)));
-TimeEnd.number(0.5,Parameters/Elmer/3,"Simulation end time [s]");
+TimeEnd.number(0.25,Parameters/Elmer/3,"Simulation end time [s]");
 OL.endblock
 
 Header
@@ -85,11 +85,10 @@ Solver 3 !ElmerModelsManuel page 187
   Exec solver = "Before timestep"
   Equation = "SaveScalars"
   Procedure = "SaveData" "SaveScalars"
-  Filename = "temp.txt"
   Variable 1 = String Temperature
-  !Operator 1 = String mean ! mean over the whole domain of analysis
   Variable 2 = Time
   Save Coordinates(2,2) = 1e-6 OL.get(PostPro/ZSURF,choices.comp(0)) 1e-6 OL.get(PostPro/ZSURF,choices.comp(1))
+  Filename = "temp.txt"
   Target Variable 2 = String "Tsensor" 
 End
 

@@ -24,7 +24,7 @@ set size 1.0, 1.0
 set origin 0.0, 0.0
 set grid
 
-if (INTERACT==-1) set title "Temperature on axis at surface and interface"
+if (INTERACT==-1) set title "Temperature on axis in epidermis"
 set size 0.5,0.5
 set origin 0.0,0.5
 set ylabel "Temperature [{\260}C]";
@@ -42,7 +42,7 @@ set ytics mirror
 unset y2tics
 unset y2label
  
-if (INTERACT==-1) set title "Temperature distribution at t_{laser} at surface and interface"
+if (INTERACT==-1) set title "Temperature distribution at t_{laser} in epidermis"
 set size 0.5,0.5
 set origin 0.5,0.5  
 set xlabel "Radial coordinate [mm]"

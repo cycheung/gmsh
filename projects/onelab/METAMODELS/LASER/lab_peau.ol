@@ -37,11 +37,12 @@ SKINTYPE.valueLabels(1,"hairy (thin)",
 # In this case, EPIDERMIS was defined in lab_peau.geo
 
 OL.if( OL.get(SKINTYPE) == 1)
-Parameters/Skin/2EPIDERMIS.setValue(0.05);
+ Parameters/Skin/2EPIDERMIS.setValue(0.05);
 OL.endif
 OL.if( OL.get(SKINTYPE) == 2)
-Parameters/Skin/2EPIDERMIS.setValue(0.12);
+ Parameters/Skin/2EPIDERMIS.setValue(0.12);
 OL.endif
+
 # The "setValue" statement overrules the value on server.
 
 # other parameters of the model
@@ -101,9 +102,9 @@ Parameters/Laser/LASERTYPE.setValue(2);
 OL.endif
 LASERTYPE.setVisible(0);
 
-LASERPOWER.number(4.0, Parameters/Laser/5, "Power [W]");
+LASERPOWER.number(2.0, Parameters/Laser/5, "Power [W]");
 LASERTEMP.number(50, Parameters/Laser/5, "Imposed temperature [C]");
-STIMTIME.number(0.21, Parameters/Laser/6, "Laser stimulation time [s]");
+STIMTIME.number(0.10, Parameters/Laser/6, "Laser stimulation time [s]");
 PROBETIME.number(OL.get(STIMTIME), PostPro/, "Probe time [s]");
 
 TSKINFILE.string(,Parameters/Laser/6, "Imposed temp. file");
@@ -158,7 +159,7 @@ ZSURF.number( , PostPro/,"Z coordinates");
 ZSURF.setValue(OL.eval( (OL.get(Parameters/Skin/3DERMIS)+OL.get(Parameters/Skin/2EPIDERMIS))* 1e-3)); 
 ZSURF.resetChoices();
 ZSURF.addChoices( OL.eval( OL.get(ZSURF) - 0.0001 * 1e-3) );
-ZSURF.addChoices( OL.eval( OL.get(Parameters/Skin/3DERMIS) * 1e-3));
+ZSURF.addChoices( OL.eval( (OL.get(Parameters/Skin/3DERMIS) - 0.0001) * 1e-3));
 ZSURF.setVisible(0);
 
 # "OL.get" return the value on server 

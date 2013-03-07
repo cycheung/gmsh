@@ -1,6 +1,35 @@
 ListDepth=OL.get(PostPro/ZSURF,choices.expand( '{comma}' ));
 nbDepth = #ListDepth[];
 
+OL.block
+ SKINWIDTH.number(, Parameters/Skin/,"Skin width"); 
+ SKINWIDTH.setValue(OL.eval((OL.get(Parameters/Skin/3DERMIS)+OL.get(Parameters/Skin/2EPIDERMIS))*1e-3));
+ SKINWIDTH.setVisible(0);
+ ZSURFF.number( , PostPro/,"Z full coordinates"); 
+ ZSURFF.resetChoices();
+ ZSURFF.addChoices( OL.eval( OL.get(SKINWIDTH) - 0.0001 * 1e-3) );  	 	 
+ ZSURFF.addChoices( OL.eval( OL.get(SKINWIDTH) - 0.0125 * 1e-3) );  	 	 
+ ZSURFF.addChoices( OL.eval( OL.get(SKINWIDTH) - 0.0250 * 1e-3) );  	 	 
+ ZSURFF.addChoices( OL.eval( OL.get(SKINWIDTH) - 0.0375 * 1e-3) );  	 	 
+ ZSURFF.addChoices( OL.eval( OL.get(SKINWIDTH) - 0.0501 * 1e-3) );  	 	 
+ ZSURFF.addChoices( OL.eval( OL.get(SKINWIDTH) - 0.0625 * 1e-3) );  	 	 
+ ZSURFF.addChoices( OL.eval( OL.get(SKINWIDTH) - 0.0750 * 1e-3) );  	 	 
+ ZSURFF.addChoices( OL.eval( OL.get(SKINWIDTH) - 0.0875 * 1e-3) );  	 	 
+ ZSURFF.addChoices( OL.eval( OL.get(SKINWIDTH) - 0.1000 * 1e-3) );  	 	 
+ ZSURFF.addChoices( OL.eval( OL.get(SKINWIDTH) - 0.1125 * 1e-3) );  	 	 
+ ZSURFF.addChoices( OL.eval( OL.get(SKINWIDTH) - 0.1250 * 1e-3) );  	 	 
+ ZSURFF.addChoices( OL.eval( OL.get(SKINWIDTH) - 0.1375 * 1e-3) );  	 	 
+ ZSURFF.addChoices( OL.eval( OL.get(SKINWIDTH) - 0.1500 * 1e-3) );  	 	 
+ ZSURFF.addChoices( OL.eval( OL.get(SKINWIDTH) - 0.1625 * 1e-3) );  	 	 
+ ZSURFF.addChoices( OL.eval( OL.get(SKINWIDTH) - 0.1750 * 1e-3) );  	 	 
+ ZSURFF.addChoices( OL.eval( OL.get(SKINWIDTH) - 0.1875 * 1e-3) );  	 	 
+ ZSURFF.addChoices( OL.eval( OL.get(SKINWIDTH) - 0.2000 * 1e-3) );
+ ZSURFF.setVisible(0);
+OL.endblock
+
+ListDepthF=OL.get(PostPro/ZSURFF,choices.expand( '{comma}' ));
+nbDepthF = #ListDepthF[];
+
 Plugin(ExtractElements).MinVal=0;
 Plugin(ExtractElements).MaxVal=0;
 Plugin(ExtractElements).TimeStep = OL.eval(OL.get(PostPro/PROBETIME)/OL.get(Parameters/Elmer/TimeStep)*1000-1);
@@ -27,11 +56,11 @@ EndFor
 ViewNum=nbDepth+1;
 
 //CUT THE Z_PLANES
-For k In {1:nbDepth}
+For k In {1:nbDepthF}
     Plugin(CutPlane).A=0;
     Plugin(CutPlane).B=-1;
     Plugin(CutPlane).C=0;
-    Plugin(CutPlane).D= ListDepth[k-1];
+    Plugin(CutPlane).D= ListDepthF[k-1];
     Plugin(CutPlane).ExtractVolume=0;
     Plugin(CutPlane).RecurLevel=4;
     Plugin(CutPlane).TargetError=0;
@@ -41,7 +70,7 @@ For k In {1:nbDepth}
 EndFor
 
 //MATHEVAL THE CUTPLANE WITH STEP
-For k In {1:nbDepth}
+For k In {1:nbDepthF}
  Plugin(MathEval).Expression0= "Step(v0-OL.get(Parameters/Skin/OVERTEMP))*2*pi*x";
  Plugin(MathEval).TimeStep=-1;
  Plugin(MathEval).View=ViewNum+k;
@@ -52,26 +81,26 @@ For k In {1:nbDepth}
  Plugin(MathEval).Run;
 EndFor
 
-ViewNum=ViewNum+nbDepth;
+ViewNum=ViewNum+nbDepthF;
 
 //INTEGRATE
-For k In {1:nbDepth}
+For k In {1:nbDepthF}
  Plugin(Integrate).View=ViewNum+k;
  Plugin(Integrate).Run; 
 EndFor
 
-ViewNum=ViewNum+nbDepth;
+ViewNum=ViewNum+nbDepthF;
 
 //MIN MAX 
-For k In {1:nbDepth}
+For k In {1:nbDepthF}
  Plugin(MinMax).View=ViewNum+k;
  Plugin(MinMax).OverTime=1;
  Plugin(MinMax).Argument=0;
  Plugin(MinMax).Run;
- Save View [ViewNum+nbDepth+(k*2)] Sprintf("activeMax%g.txt", k-1);
+ Save View [ViewNum+nbDepthF+(k*2)] Sprintf("activeMax%g.txt", k-1);
 EndFor
 
-ViewNum=ViewNum+nbDepth;
+ViewNum=ViewNum+nbDepthF;
 
 Combine ElementsByViewName;
 Save View [6] "activeMax.txt"; 
