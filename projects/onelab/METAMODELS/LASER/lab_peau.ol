@@ -102,7 +102,7 @@ Parameters/Laser/LASERTYPE.setValue(2);
 OL.endif
 LASERTYPE.setVisible(0);
 
-LASERPOWER.number(4.0, Parameters/Laser/5, "Power [W]");
+LASERPOWER.number(10.0, Parameters/Laser/5, "Power [W]");
 LASERTEMP.number(50, Parameters/Laser/5, "Temperature T2 [C]");
 STIMTIME.number(0.10, Parameters/Laser/6, "Duration T2 [s]");
 
