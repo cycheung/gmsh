@@ -64,7 +64,7 @@ include_directories(
 
 ## Compiler Flags
 add_definitions(-pedantic -Wall -O3)
-# add_definitions(-g)
+add_definitions(-g)
 # add_definitions(-pg)
 # set(CMAKE_EXE_LINKER_FLAGS "-pg")
 
