@@ -73,7 +73,7 @@ TAMBIANT.setVisible(0);
 OL.endif
 
 # Available LASER models, another enumeration
-LASERSHAPE.number(1, Parameters/Laser/1,"Laser shape");  
+LASERSHAPE.number(2, Parameters/Laser/1,"Laser shape");  
 LASERSHAPE.valueLabels(1,"Gaussian",	    
                        2,"Flat-top");
 
