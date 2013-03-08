@@ -35,6 +35,8 @@ TermCurlCurl::TermCurlCurl(const GroupOfJacobian& goj,
 
   computeC(basis, getFunction, integrationWeights, cM);
   computeB(goj, integrationWeights.size(), bM);
+
+  allocA(nFunction * nFunction);
   computeA(bM, cM);
 
   // Clean up //

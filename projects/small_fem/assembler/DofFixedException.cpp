@@ -11,7 +11,7 @@ DofFixedException::DofFixedException(const Dof& dof, double value){
 }
 
 DofFixedException::~DofFixedException(void) throw(){
-  delete string;
+  delete[] string;
 }
 
 const char* DofFixedException::what(void) const throw(){

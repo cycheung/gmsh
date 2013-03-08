@@ -31,14 +31,16 @@ double Term::getTermOutCache(unsigned int dofI,
   return (*aM[i])(ctr, dofI * nFunction + dofJ);
 }
 
-void Term::computeA(fullMatrix<double>**& bM,
-                    fullMatrix<double>**& cM){
+void Term::allocA(unsigned int nFunction){
   // Alloc //
   aM = new fullMatrix<double>*[nOrientation];
 
   for(unsigned int s = 0; s < nOrientation; s++)
-    aM[s] = new fullMatrix<double>((*orientationStat)[s], nFunction * nFunction);
+    aM[s] = new fullMatrix<double>((*orientationStat)[s], nFunction);
+}
 
+void Term::computeA(fullMatrix<double>**& bM,
+                    fullMatrix<double>**& cM){
   // Fill //
   for(unsigned int s = 0; s < nOrientation; s++)
     // GEMM doesn't like matrices with 0 Elements

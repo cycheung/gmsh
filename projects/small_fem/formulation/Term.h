@@ -37,6 +37,8 @@ class Term{
                          unsigned int elementId) const;
 
  protected:
+  void allocA(unsigned int nFunction);
+
   void computeA(fullMatrix<double>**& bM,
                 fullMatrix<double>**& cM);
 

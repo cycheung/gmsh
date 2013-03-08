@@ -37,6 +37,8 @@ TermProjectionGrad::TermProjectionGrad(const GroupOfJacobian& goj,
 
   computeC(basis, getFunction, integrationWeights, cM);
   computeB(goj, integrationPoints, f, bM);
+
+  allocA(nFunction);
   computeA(bM, cM);
 
   // Clean up //
@@ -53,7 +55,6 @@ void TermProjectionGrad::computeC(const Basis& basis,
 
   const unsigned int nG = gW.size();
   unsigned int k;
-  unsigned int l;
 
   // Alloc //
   cM = new fullMatrix<double>*[nOrientation];
@@ -72,15 +73,8 @@ void TermProjectionGrad::computeC(const Basis& basis,
 
     for(unsigned int g = 0; g < nG; g++){
       for(unsigned int a = 0; a < 3; a++){
-        // Loop on Functions
-        l = 0;
-
-        for(unsigned int i = 0; i < nFunction; i++){
-          (*cM[s])(k, l) = gW(g) * phi(i, g * 3 + a);
-
-          l++;
-        }
-
+        for(unsigned int i = 0; i < nFunction; i++)
+          (*cM[s])(k, i) = gW(g) * phi(i, k);
 
         k++;
       }

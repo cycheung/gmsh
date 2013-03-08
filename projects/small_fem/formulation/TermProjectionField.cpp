@@ -25,6 +25,8 @@ TermProjectionField::TermProjectionField(const GroupOfJacobian& goj,
 
   computeC(basis, integrationWeights, cM);
   computeB(goj, integrationPoints, f, bM);
+
+  allocA(nFunction);
   computeA(bM, cM);
 
   // Clean up //

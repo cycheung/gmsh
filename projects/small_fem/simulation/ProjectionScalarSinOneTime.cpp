@@ -33,10 +33,10 @@ fullMatrix<double> l2(fullMatrix<vector<double> >& fem,
 		      vector<double>& ana);
 
 double f(fullVector<double>& xyz){
-  return
+  return xyz(0) + xyz(1) + xyz(2);/*
     sin(10 * xyz(0)) +
     sin(10 * xyz(1)) +
-    sin(10 * xyz(2));
+    sin(10 * xyz(2));*/
 }
 
 int main(int argc, char** argv){

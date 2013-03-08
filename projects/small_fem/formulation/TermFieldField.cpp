@@ -23,6 +23,8 @@ TermFieldField::TermFieldField(const GroupOfJacobian& goj,
 
   computeC(basis, integrationWeights, cM);
   computeB(goj, integrationWeights.size(), bM);
+
+  allocA(nFunction * nFunction);
   computeA(bM, cM);
 
   // Clean up //

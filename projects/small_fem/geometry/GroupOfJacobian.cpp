@@ -24,5 +24,5 @@ GroupOfJacobian::~GroupOfJacobian(void){
   for(unsigned int i = 0; i < size; i++)
     delete jac[i];
 
-  delete jac;
+  delete[] jac;
 }
