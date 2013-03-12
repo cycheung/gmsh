@@ -26,7 +26,6 @@ FormulationPoisson::FormulationPoisson(GroupOfElement& goe,
   basis  = BasisGenerator::generate(goe.get(0).getType(),
                                     0, order, "hierarchical");
 
-  goe.orientAllElements(*basis);
   fspace = new FunctionSpaceScalar(goe, *basis);
 
   // Gaussian Quadrature Data (LHS) //

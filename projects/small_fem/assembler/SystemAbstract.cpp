@@ -44,7 +44,6 @@ void SystemAbstract::dirichlet(GroupOfElement& goe,
                                                   fs->getBasis(0).getType(),
                                                   fs->getBasis(0).getOrder(),
                                                   "hierarchical");
-  goe.orientAllElements(*dirBasis); // TO BE REMOVED
   FunctionSpaceScalar dirFS(goe, *dirBasis);
 
   // Solve The Projection Of f on the Dirichlet Domain with dirFS //
@@ -85,7 +84,6 @@ void SystemAbstract::dirichlet(GroupOfElement& goe,
                                                   fs->getBasis(0).getType(),
                                                   fs->getBasis(0).getOrder(),
                                                   "hierarchical");
-  goe.orientAllElements(*dirBasis); // TO BE REMOVED
   FunctionSpaceVector dirFS(goe, *dirBasis);
 
   // Solve The Projection Of f on the Dirichlet Domain with dirFS //

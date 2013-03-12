@@ -114,8 +114,6 @@ vector<fullVector<double> > fem(GroupOfElement& domain, GroupOfElement& visu,
   Basis* basis  = BasisGenerator::generate(domain.get(0).getType(),
                                            1, order, "hierarchical");
 
-  domain.orientAllElements(*basis); // TO BE REMOVED !
-
   FunctionSpaceVector fSpace(domain, *basis);
   FormulationProjectionVector projection(f, fSpace);
   System sysProj(projection);

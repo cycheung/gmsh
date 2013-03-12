@@ -28,7 +28,6 @@ FormulationProjectionVector(fullVector<double> (*f)(fullVector<double>& xyz),
 
   // Local Terms //
   basis->preEvaluateFunctions(gC);
-  goe.orientAllElements(*basis);
 
   GroupOfJacobian jac(goe, gC, "invert");
 

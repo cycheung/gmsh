@@ -22,7 +22,6 @@
    @todo
    Assembly of @em NON Element related Dof@n
    Allow multiple basis for dirichelt@n
-   Remove basis.orientAllElement()
  */
 
 class SystemAbstract{

@@ -36,7 +36,8 @@ void GroupOfElement::
 orientAllElements(const Basis& basis){
   // If already oriented, delete old orientation //
   if(orientationStat)
-    delete orientationStat;
+    throw Exception
+      ("GroupOfElement already oriented");
 
   // Sort //
   OrientationSort sortPredicate(basis);

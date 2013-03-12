@@ -21,7 +21,6 @@ FormulationEigenFrequency::FormulationEigenFrequency(GroupOfElement& goe,
   basis  = BasisGenerator::generate(goe.get(0).getType(),
                                     1, order, "hierarchical");
 
-  goe.orientAllElements(*basis);
   fspace = new FunctionSpaceVector(goe, *basis);
 
   // Gaussian Quadrature Data (Term One) //

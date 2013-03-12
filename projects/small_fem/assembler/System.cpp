@@ -64,7 +64,7 @@ void System::solve(void){
 
   // Solve //
   linSys->systemSolve();
-
+  //linSys->print();
   // Write Sol
   const unsigned int size = dofM->getDofNumber();
   double xi;

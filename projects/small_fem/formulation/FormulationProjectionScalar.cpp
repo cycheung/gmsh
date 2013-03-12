@@ -28,8 +28,6 @@ FormulationProjectionScalar(double (*f)(fullVector<double>& xyz),
 
   // Local Terms //
   basis->preEvaluateFunctions(gC);
-  goe.orientAllElements(*basis);
-
   GroupOfJacobian jac(goe, gC, "jacobian");
 
   localTerms1 = new TermFieldField(jac, *basis, gW);
