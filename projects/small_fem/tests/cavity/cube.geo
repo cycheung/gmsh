@@ -1,7 +1,5 @@
-l   = 1;
-d   = 10;
-L   = l / 2;
-cl  = l / d;
+L  = 1;
+cl = 0.5;
 
 Point(1) = {+L, -L, -L, cl};
 Point(2) = {+L, +L, -L, cl};
@@ -20,6 +18,5 @@ Extrude {0, 0, 2 * L} {
   Surface{1};
 }
 
-Physical Surface(5) = {21};
-Physical Surface(6) = {13};
-Physical Volume(7)  = {1};
+Physical Surface(5)  = {1, 13, 17, 21, 25, 26};
+Physical Volume(7)   = {1};

@@ -39,7 +39,7 @@ bool EigenSolver::solve(int numEigenValues, std::string which)
 
   // set some default options
   _try(EPSSetDimensions(eps, numEigenValues, PETSC_DECIDE, PETSC_DECIDE));
-  _try(EPSSetTolerances(eps, 1.e-7, 20));//1.e-7 20
+  _try(EPSSetTolerances(eps, 1.e-7, 20E4));//1.e-7 20E4
   _try(EPSSetType(eps, EPSKRYLOVSCHUR)); //default
   //_try(EPSSetType(eps, EPSARNOLDI));
   //_try(EPSSetType(eps, EPSARPACK));
@@ -163,5 +163,3 @@ bool EigenSolver::solve(int numEigenValues, std::string which)
   }
 
 }
-
-
