@@ -38,11 +38,11 @@ filename = sys.argv[1]
 threshold = float(sys.argv[2])
 
 R = 8.314
-E = 1000
+Ea = 6.28e5
+A = 3.1e98
 
 Array = ReadArrayFromFile(filename)
 N = len(Array)
-
 
 filename=open('omega.txt','w')
 
@@ -54,7 +54,7 @@ for j in range(1,N):
     for k in range(0,len(Columns)):
         T = Array[j,Columns[k]-1]
         if(T >= threshold):
-            Omega[k] += numpy.exp(-E/R/(T+273.15) * dt)
+            Omega[k] += A*numpy.exp(-Ea/(R*(T+273.15))) * dt
         filename.write(str(T) + ' ' + str(Omega[k]) + ' ')
     filename.write('\n')
 

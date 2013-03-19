@@ -49,7 +49,7 @@ OL.endif
 REFLECTIVITY.number(0.0078, Parameters/Skin/4, "Skin reflectivity []");
 TCORE.number(37, Parameters/Skin/5,"Core temperature [C]");
 TBASE.number(30, Parameters/Skin/6, "Baseline temperature [C]");
-OVERTEMP.number(45, Parameters/Skin/7,"Thermal threshold fiber [C]");
+OVERTEMP.number(44, Parameters/Skin/7,"Thermal threshold fiber [C]");
 
 # Flags to describe model features that are activated or not
 TENEUR.radioButton(1,Parameters/Skin/8,"Account for variable water content");
@@ -193,6 +193,7 @@ ZSURF.setVisible(0);
 # The 'value' of a parameter and the 'choices' are different concepts
 # used independently according to the context.
 
+TEMPINTERF.number(,Solution/,"Temperature at interface [C]");
 VOLUME.number(,Solution/,"Skin above threshold [mm3]");
 VOLDERM.number(,Solution/,"Derm above threshold [mm3]");
 
@@ -214,7 +215,9 @@ Post0.register(interfaced);
 Post0.in(solution.pos , script0.opt.ol );
 Post0.out(tempMaxInterface.txt);
 Post0.run(solution.pos script0.opt -);
-Post0.up(tempMaxInterface.txt,-1,8,Parameters/Skin/7OVERTEMP);
+
+Post0.up(tempMaxInterface.txt,-1,8,Solution/TEMPINTERF);
+#Post0.up(tempMaxInterface.txt,-1,8,Parameters/Skin/7OVERTEMP);
 
 #-4b) Post-processing with Gmsh and a script
 Post1.register(interfaced);
