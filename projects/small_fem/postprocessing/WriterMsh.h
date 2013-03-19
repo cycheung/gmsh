@@ -55,11 +55,16 @@ class WriterMsh: public Writer{
   void writeHeader(void) const;
   void writeNodes(void) const;
   void writeElements(void) const;
+
   void writeInterpolationScheme(void) const;
   void writeNodalValuesHeader(const std::string name) const;
   void writeNodalValuesFromNode(void) const;
   void writeNodalValuesFromSol(void) const;
   void writeNodalValuesFooter(void) const;
+
+  void writeVolumeValuesHeader(const std::string name) const;
+  void writeVolumeValues(void) const;
+  void writeVolumeValuesFooter(void) const;
 };
 
 /**
@@ -82,7 +87,6 @@ class WriterMsh: public Writer{
    with @em only the given @em mesh.@n@n
    If no domain is given, an Exception will be thrown
    when WriterMsh::write() is called.
-   **
 */
 
 #endif

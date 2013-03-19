@@ -1,8 +1,12 @@
 set(src
   Writer.cpp
   WriterDummy.cpp
-  WriterMsh.cpp
   WriterVector.cpp
+
+  WriterMsh.cpp
+  WriterMshElement.cpp
+  WriterMshInterpolation.cpp
+  WriterMshNodal.cpp
 
   Interpolator.cpp
   PlotBasis.cpp
