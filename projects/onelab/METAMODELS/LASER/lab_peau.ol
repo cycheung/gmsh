@@ -14,7 +14,7 @@
 #-1)  Gmsh for meshing
 Mesher.register(native);
 Mesher.in( OL.get(Arguments/FileName).geo );
-Mesher.run( OL.get(Arguments/FileName).geo );
+Mesher.run( OL.get(Arguments/FileName).geo);
 Mesher.out( OL.get(Arguments/FileName).msh );
 # Tell ONELAB to show geometry + mesh as initial view
 # Mesher.preCompute();
@@ -234,10 +234,19 @@ Post2.merge(aboveThres.pos);
 Post2.up(volmax.txt,-1,8,Solution/VOLUME,
          voldermmax.txt,-1,8,Solution/VOLDERM);
 
+#Post3.register(interfaced);
+#Post3.in(temp.txt);
+#Post3.out(omega.txt);
+#Post3.run(omega.py temp.txt OL.eval(Parameters/Skin/7));
+
 #-6) Display solution curves with either gnuplot or matlab
 Gnuplot.register(interfaced);
 Gnuplot.in(temp.txt, plot.plt.ol);
 Gnuplot.run(plot.plt);
+
+#Gnuplot2.register(interfaced);
+#Gnuplot2.in(omega.txt, plotOM.plt);
+#Gnuplot2.run(plotOM.plt);
 
 # Dump the ONELAB database in a file named zzz
 #OL.dump(zzz);
