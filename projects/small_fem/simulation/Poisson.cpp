@@ -14,36 +14,37 @@
 
 using namespace std;
 
-void fPoisson(GroupOfElement& domain, 
-	      GroupOfElement& constraintDomain, 
+void fPoisson(GroupOfElement& domain,
+	      GroupOfElement& constraintDomain,
 	      Writer& writer, int order);
 
 int main(int argc, char** argv){
   GmshInitialize(argc, argv);
 
   // Writer //
-  WriterMsh writer; 
-  
+  WriterMsh writer;
+
   // Get Domains //
   Mesh msh(argv[1]);
   GroupOfElement           domain = msh.getFromPhysical(7);
   GroupOfElement constraintDomain = msh.getFromPhysical(5);
 
-  cout << "Number of Element: " << domain.getNumber() 
+  cout << "Number of Element: " << domain.getNumber()
        << endl << flush;
 
   // Get Order //
   unsigned int order = atoi(argv[2]);
- 
+
   // Compute //
   FormulationPoisson poisson(domain, order);
   System sysPoisson(poisson);
 
-  cout << "Poisson -- Order " << order 
-       << ": " << sysPoisson.getSize() 
-       << endl << flush;
-  
   sysPoisson.fixCoef(constraintDomain, 0);
+
+  cout << "Poisson -- Order " << order
+       << ": " << sysPoisson.getSize()
+       << endl << flush;
+
   sysPoisson.assemble();
   sysPoisson.solve();
 
@@ -52,7 +53,7 @@ int main(int argc, char** argv){
     // Visu Mesh
     Mesh visuMesh(argv[3]);
     GroupOfElement visu = visuMesh.getFromPhysical(7);
-    
+
     Interpolator interp(sysPoisson, visu);
     interp.write("poisson", writer);
   }
