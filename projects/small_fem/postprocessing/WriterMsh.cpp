@@ -13,6 +13,24 @@ WriterMsh::~WriterMsh(void){
 }
 
 void WriterMsh::write(const string name) const{
+  write(name, "vertex");
+}
+
+void WriterMsh::write(const string name,
+                      const string type) const{
+
+  if(type.compare("vertex") == 0)
+    writeAsNodalValues(name);
+
+  else if(type.compare("volume") == 0)
+    writeAsVolumeValues(name);
+
+  else
+    throw Exception("WriterMsh: Type %s is not defined!",
+                    name.c_str());
+}
+
+void WriterMsh::writeInit(const std::string name) const{
   // Check Domain //
   if(!hasDomain)
     throw Exception("WriterMsh: No Domain has been given !");
@@ -28,6 +46,20 @@ void WriterMsh::write(const string name) const{
   writeHeader();
   writeNodes();
   writeElements();
+}
+
+void WriterMsh::writeFinalize(void) const{
+  // Close & Clean //
+  out->close();
+  delete out;
+
+  if(!isNodal)
+    delete lBasis;
+}
+
+void WriterMsh::writeAsNodalValues(const std::string name) const{
+  // Init //
+  writeInit(name);
 
   // If We have Data to write --> write it :-) //
   if(hasValue){
@@ -59,13 +91,21 @@ void WriterMsh::write(const string name) const{
     writeNodalValuesFooter();
   }
 
-  // Close All & Clean //
-  out->close();
-  delete out;
-
-  if(!isNodal)
-    delete lBasis;
+  // Finalize //
+  writeFinalize();
 }
 
+void WriterMsh::writeAsVolumeValues(const std::string name) const{
+  // Init //
+  writeInit(name);
 
+  // If We have Data to write --> write it :-) //
+  if(hasValue){
+    writeVolumeValuesHeader(name);
+    writeVolumeValues();
+    writeVolumeValuesFooter();
+  }
 
+  // Finalize //
+  writeFinalize();
+}

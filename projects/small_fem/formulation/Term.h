@@ -14,7 +14,7 @@ class Term{
  protected:
   unsigned int nFunction;
   unsigned int nOrientation;
-  std::vector<unsigned int>* orientationStat;
+  const std::vector<unsigned int>* orientationStat;
 
   fullMatrix<double>** aM;
 

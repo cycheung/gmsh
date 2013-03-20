@@ -43,7 +43,7 @@ class GroupOfElement{
   const Mesh& getMesh(void) const;
 
   void orientAllElements(const Basis& basis);
-  std::vector<unsigned int>& getOrientationStats(void) const;
+  const std::vector<unsigned int>& getOrientationStats(void) const;
 
   std::string toString(void) const;
 };
@@ -127,7 +127,7 @@ inline const Mesh& GroupOfElement::getMesh(void) const{
   return *mesh;
 }
 
-inline std::vector<unsigned int>&
+inline const std::vector<unsigned int>&
 GroupOfElement::getOrientationStats(void) const{
   if(orientationStat)
     return *orientationStat;

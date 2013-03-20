@@ -23,8 +23,11 @@
 
    The @em data of this Writer are either:
    @li A set of scalar (or vectorial) values,
-   defined on the @em vertices of the mesh, of @f$f@f$.
    @li A System (or EigenSystem) solution
+
+   These data may be defined either:
+   @li On the Vertices of each Element
+   @li On each Element (Volume)
 
    A WriterMsh can write a .@c msh file of @f$f@f$
 
@@ -40,7 +43,7 @@
 */
 
 class WriterMsh: public Writer{
- protected:
+ private:
   mutable std::ofstream* out;
   mutable BasisLagrange* lBasis;
 
@@ -50,8 +53,16 @@ class WriterMsh: public Writer{
   virtual ~WriterMsh(void);
 
   virtual void write(const std::string name) const;
+  virtual void write(const std::string name,
+                     const std::string type) const;
 
- protected:
+ private:
+  void writeInit(const std::string name) const;
+  void writeFinalize(void) const;
+
+  void writeAsNodalValues(const std::string name)  const;
+  void writeAsVolumeValues(const std::string name) const;
+
   void writeHeader(void) const;
   void writeNodes(void) const;
   void writeElements(void) const;
@@ -76,11 +87,25 @@ class WriterMsh: public Writer{
    Deletes this WriterMsh
    **
 
-   @fn WriterMsh::write
+   @fn WriterMsh::write(const std::string) const
    @param name The name of the file to write into
    (@em without extensions)
 
-   Writes the Writer's Data into the given file
+   Same as WriterMsh::write(@c name, @c vertex);
+   **
+
+   @fn WriterMsh::write(const std::string, const std::string) const
+   @param name The name of the file to write into
+   (@em without extensions)
+   @param type A string
+
+   Writes the Writer's Data into the given file@n
+
+   If @c type is equal to:
+   @li @c vertex, the given data will be used as @em nodal Values
+   (that is defined on the vertices of an element)
+   @li @c volume, the given data will be used as @em element Values
+   (that is defined on an element)
 
    @note
    If no data are given, WriteMsh will write a @c .msh file

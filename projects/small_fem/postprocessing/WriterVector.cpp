@@ -24,16 +24,21 @@ void WriterVector::write(const string name) const{
 
   // Write to file //
   else{
-    stringstream fileName; 
+    stringstream fileName;
     fileName << name << ".raw";
-  
+
     ofstream out;
     out.open(fileName.str().c_str());
-  
+
     write(out);
 
     out.close();
   }
+}
+
+void WriterVector::write(const string name,
+                         const string type) const{
+  write(name);
 }
 
 void WriterVector::write(ostream& stream) const{
@@ -41,8 +46,8 @@ void WriterVector::write(ostream& stream) const{
     unsigned int size = nodalScalarValue->size();
 
     for(unsigned int i = 0; i < size; i++)
-      stream << i << ": " 
-	     << nodalScalarValue->at(i) 
+      stream << i << ": "
+	     << nodalScalarValue->at(i)
 	     << endl;
   }
 
@@ -50,12 +55,12 @@ void WriterVector::write(ostream& stream) const{
     unsigned int size = nodalVectorValue->size();
 
     for(unsigned int i = 0; i < size; i++)
-      stream << i << ": " 
-	     << "[ " 
+      stream << i << ": "
+	     << "[ "
 	     << (nodalVectorValue->at(i))(0) << " "
 	     << (nodalVectorValue->at(i))(1) << " "
 	     << (nodalVectorValue->at(i))(2) << " "
-	     << " ]" 
+	     << " ]"
 	     << endl;
   }
 }

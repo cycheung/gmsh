@@ -56,6 +56,8 @@ class Writer{
   virtual ~Writer(void);
 
   virtual void write(const std::string name) const = 0;
+  virtual void write(const std::string name,
+                     const std::string type) const = 0;
 
   void setValues(const std::vector<double>& value);
   void setValues(const std::vector<fullVector<double> >& value);
@@ -78,11 +80,26 @@ class Writer{
    Deletes this Writer
    **
 
-   @fn Writer::write
+   @fn Writer::write(const std::string) const
    @param name The name of the file to write into
    (@em without extensions)
 
-   Writes the Writer's Data into the given file
+   Writes the Writer's Data into the given file@n
+
+   The given Data are interpreted in the default way
+   @see Writer::write(const std::string, const std::string)
+   **
+
+   @fn Writer::write(const std::string, const std::string) const
+   @param name The name of the file to write into
+   (@em without extensions)
+   @param type A string
+
+   Writes the Writer's Data into the given file@n
+
+   If the Data may be interpreted, by a particular Writer,
+   in multiple way, the filed @c type is used to overcome
+   this situation
    **
 
    @fn void Writer::setValues(const std::vector<double>& value)

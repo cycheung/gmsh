@@ -7,6 +7,7 @@ set(src
   WriterMshElement.cpp
   WriterMshInterpolation.cpp
   WriterMshNodal.cpp
+  WriterMshVolume.cpp
 
   Interpolator.cpp
   PlotBasis.cpp
