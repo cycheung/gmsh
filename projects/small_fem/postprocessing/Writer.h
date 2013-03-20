@@ -44,8 +44,8 @@ class Writer{
   const std::vector<MVertex*>*        node;
 
   // Nodal Values //
-  const std::vector<double>*              nodalScalarValue;
-  const std::vector<fullVector<double> >* nodalVectorValue;
+  const std::vector<double>*              scalarValue;
+  const std::vector<fullVector<double> >* vectorValue;
 
   // Values with inteprolation scheme //
   const FunctionSpace*      fs;

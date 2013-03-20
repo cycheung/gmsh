@@ -43,23 +43,23 @@ void WriterVector::write(const string name,
 
 void WriterVector::write(ostream& stream) const{
   if(isScalar){
-    unsigned int size = nodalScalarValue->size();
+    unsigned int size = scalarValue->size();
 
     for(unsigned int i = 0; i < size; i++)
       stream << i << ": "
-	     << nodalScalarValue->at(i)
+	     << scalarValue->at(i)
 	     << endl;
   }
 
   else{
-    unsigned int size = nodalVectorValue->size();
+    unsigned int size = vectorValue->size();
 
     for(unsigned int i = 0; i < size; i++)
       stream << i << ": "
 	     << "[ "
-	     << (nodalVectorValue->at(i))(0) << " "
-	     << (nodalVectorValue->at(i))(1) << " "
-	     << (nodalVectorValue->at(i))(2) << " "
+	     << (vectorValue->at(i))(0) << " "
+	     << (vectorValue->at(i))(1) << " "
+	     << (vectorValue->at(i))(2) << " "
 	     << " ]"
 	     << endl;
   }

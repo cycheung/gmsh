@@ -19,8 +19,8 @@ Writer::~Writer(void){
 }
 
 void Writer::setValues(const std::vector<double>& value){
-  nodalScalarValue = &value;
-  nodalVectorValue = NULL;
+  scalarValue = &value;
+  vectorValue = NULL;
 
   fs   = NULL;
   dofM = NULL;
@@ -33,8 +33,8 @@ void Writer::setValues(const std::vector<double>& value){
 }
 
 void Writer::setValues(const std::vector<fullVector<double> >& value){
-  nodalScalarValue = NULL;
-  nodalVectorValue = &value;
+  scalarValue = NULL;
+  vectorValue = &value;
 
   fs   = NULL;
   dofM = NULL;
@@ -47,8 +47,8 @@ void Writer::setValues(const std::vector<fullVector<double> >& value){
 }
 
 void Writer::setValues(const System& system){
-  nodalScalarValue = NULL;
-  nodalVectorValue = NULL;
+  scalarValue = NULL;
+  vectorValue = NULL;
 
   fs   = &(system.getFunctionSpace());
   dofM = &(system.getDofManager());
@@ -74,8 +74,8 @@ void Writer::setValues(const SystemEigen& system, unsigned int eigenNumber){
   if(ownSol)
     delete sol;
 
-  nodalScalarValue = NULL;
-  nodalVectorValue = NULL;
+  scalarValue = NULL;
+  vectorValue = NULL;
 
   fs   = &(system.getFunctionSpace());
   dofM = &(system.getDofManager());

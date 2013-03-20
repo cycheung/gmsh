@@ -44,11 +44,11 @@ void WriterMsh::writeNodalValuesFromNode(void) const{
       //   --> we need to substract 1 !!
 
       if(isScalar)
-	*out << (*nodalScalarValue)[id] << " ";
+	*out << (*scalarValue)[id] << " ";
       else
-	*out << (*nodalVectorValue)[id](0) << " "
-	     << (*nodalVectorValue)[id](1) << " "
-	     << (*nodalVectorValue)[id](2) << " ";
+	*out << (*vectorValue)[id](0) << " "
+	     << (*vectorValue)[id](1) << " "
+	     << (*vectorValue)[id](2) << " ";
     }
 
     *out << endl;
