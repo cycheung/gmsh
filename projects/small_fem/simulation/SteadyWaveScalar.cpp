@@ -26,7 +26,7 @@ int main(int argc, char** argv){
 
   // Writer //
   WriterMsh writer;
-  
+
   // Get Domains //
   Mesh msh(argv[1]);
   GroupOfElement domain = msh.getFromPhysical(7);
@@ -37,7 +37,7 @@ int main(int argc, char** argv){
   const double       puls  = atof(argv[2]);
   const unsigned int order = atoi(argv[3]);
 
-  // SteadyWaveScalar //  
+  // SteadyWaveScalar //
   FormulationSteadyWaveScalar sWave(domain, puls * 1, order);
   System sys(sWave);
 
@@ -47,7 +47,7 @@ int main(int argc, char** argv){
   //sys.fixCoef(source, 1);
   //sys.fixCoef(wall,   0);
 
-  cout << "Scalar Steady Wave (Order: " << order 
+  cout << "Scalar Steady Wave (Order: " << order
        << " --- Pulsation: "            << puls
        << "): " << sys.getSize()        << endl;
 

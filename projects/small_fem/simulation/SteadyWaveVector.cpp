@@ -72,6 +72,9 @@ int main(int argc, char** argv){
   sys.dirichlet(source, fSource);
   sys.dirichlet(wall,   fWall);
 
+  //sys.fixCoef(source, 1);
+  //sys.fixCoef(wall,   0);
+
   cout << "Vectorial Steady Wave (Order: " << order
        << " --- Pulsation: "               << puls
        << "): " << sys.getSize()           << endl;

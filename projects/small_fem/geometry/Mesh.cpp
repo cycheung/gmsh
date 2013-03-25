@@ -8,7 +8,7 @@
 
 using namespace std;
 
-Mesh::Mesh(const std::string fileName){ 
+Mesh::Mesh(const std::string fileName){
   // New Mode //
   model = new GModel("SmallFEM");
 
@@ -34,7 +34,7 @@ Mesh::Mesh(const std::string fileName){
   vertex = GeoExtractor::extractVertex(*element);
   edge   = GeoExtractor::extractEdge(*element);
   face   = GeoExtractor::extractFace(*element);
-  
+
   // Number Geometry //
   nextId = 0;
   number();
@@ -42,7 +42,7 @@ Mesh::Mesh(const std::string fileName){
 
 Mesh::~Mesh(void){
   // Delete Elements //
-  
+
   // WARNING
   // Mesh is *NOT* responsible for
   // Deleting MElement*
@@ -59,85 +59,85 @@ Mesh::~Mesh(void){
   // Delete Edges //
   const map<const MEdge*, unsigned int, EdgeComparator>::iterator
     endE = edge->end();
-  
-  map<const MEdge*, unsigned int, EdgeComparator>::iterator 
+
+  map<const MEdge*, unsigned int, EdgeComparator>::iterator
     itE = edge->begin();
 
   for(; itE != endE; itE++)
     delete itE->first;
 
-  delete edge;  
+  delete edge;
 
   // Delete Faces //
   const map<const MFace*, unsigned int, FaceComparator>::iterator
     endF = face->end();
-  
-  map<const MFace*, unsigned int, FaceComparator>::iterator 
+
+  map<const MFace*, unsigned int, FaceComparator>::iterator
     itF = face->begin();
 
   for(; itF != endF; itF++)
     delete itF->first;
 
-  delete face;  
+  delete face;
 
   // Delete Model //
   delete model;
 }
 
 unsigned int Mesh::getGlobalId(const MElement& element) const{
-  map<const MElement*, 
-      unsigned int, 
-      ElementComparator>::iterator it = 
+  map<const MElement*,
+      unsigned int,
+      ElementComparator>::iterator it =
     this->element->find(&element);
 
   if(it == this->element->end())
-    throw 
+    throw
       Exception("Element not found");
 
-  return it->second;   
+  return it->second;
 }
 
 unsigned int Mesh::getGlobalId(const MVertex& vertex) const{
-  map<const MVertex*, 
-      unsigned int, 
-      VertexComparator>::iterator it = 
+  map<const MVertex*,
+      unsigned int,
+      VertexComparator>::iterator it =
     this->vertex->find(&vertex);
 
   if(it == this->vertex->end())
-    throw 
+    throw
       Exception("Vertex not found");
 
-  return it->second; 
+  return it->second;
 }
 
 unsigned int Mesh::getGlobalId(const MEdge& edge) const{
   // Look for Edge //
-  map<const MEdge*, 
-      unsigned int, 
-      EdgeComparator>::iterator it = 
+  map<const MEdge*,
+      unsigned int,
+      EdgeComparator>::iterator it =
     this->edge->find(&edge);
 
   if(it == this->edge->end()){
-    throw 
+    throw
       Exception("Edge not found");
   }
 
-  return it->second; 
+  return it->second;
 }
 
 unsigned int Mesh::getGlobalId(const MFace& face) const{
   // Look for Face //
-  map<const MFace*, 
-      unsigned int, 
-      FaceComparator>::iterator it = 
+  map<const MFace*,
+      unsigned int,
+      FaceComparator>::iterator it =
     this->face->find(&face);
 
   if(it == this->face->end()){
-    throw 
+    throw
       Exception("Face not found");
   }
 
-  return it->second; 
+  return it->second;
 }
 
 const vector<const MVertex*> Mesh::getAllVertex(void) const{
@@ -154,36 +154,36 @@ const vector<const MVertex*> Mesh::getAllVertex(void) const{
   for(unsigned int i = 0; i < size; i++, itV++)
     v[i] = itV->first;
 
-  // Return 
+  // Return
   return v;
 }
 
 void Mesh::number(void){
   // Get Iterators //
   const map<const MElement*, unsigned int, ElementComparator>::iterator
-    endEl = element->end();           
+    endEl = element->end();
 
   const map<const MVertex*, unsigned int, VertexComparator>::iterator
-    endV = vertex->end();           
+    endV = vertex->end();
 
   const map<const MEdge*, unsigned int, EdgeComparator>::iterator
-    endEd = edge->end();           
+    endEd = edge->end();
 
   const map<const MFace*, unsigned int, FaceComparator>::iterator
-    endF = face->end();           
-  
+    endF = face->end();
+
   map<const MElement*, unsigned int, ElementComparator>::iterator
     itEl = element->begin();
 
   map<const MVertex*, unsigned int, VertexComparator>::iterator
-    itV = vertex->begin();           
-  
+    itV = vertex->begin();
+
   map<const MEdge*, unsigned int, EdgeComparator>::iterator
     itEd = edge->begin();
 
   map<const MFace*, unsigned int, FaceComparator>::iterator
     itF = face->begin();
-  
+
   // Number Vertices //
   for(; itV != endV; itV++){
     itV->second = nextId;
@@ -210,57 +210,57 @@ void Mesh::number(void){
 }
 
 GroupOfElement Mesh::getFromPhysical(int physicalId) const{
-  const std::pair<std::multimap<int, const MElement*>::iterator, 
-                  std::multimap<int, const MElement*>::iterator> p = 
+  const std::pair<std::multimap<int, const MElement*>::iterator,
+                  std::multimap<int, const MElement*>::iterator> p =
     physical->equal_range(physicalId);
-  
+
   return GroupOfElement(p.first, p.second, *this);
 }
 
 string Mesh::toString(void) const{
   // Iterators //
   const map<const MElement*, unsigned int, ElementComparator>::iterator
-    endEl = element->end();           
+    endEl = element->end();
 
   const map<const MVertex*, unsigned int, VertexComparator>::iterator
-    endV = vertex->end();           
+    endV = vertex->end();
 
   const map<const MEdge*, unsigned int, EdgeComparator>::iterator
-    endEd = edge->end();           
+    endEd = edge->end();
 
   const map<const MFace*, unsigned int, FaceComparator>::iterator
-    endF = face->end();           
-  
+    endF = face->end();
+
   map<const MElement*, unsigned int, ElementComparator>::iterator
     itEl = element->begin();
 
   map<const MVertex*, unsigned int, VertexComparator>::iterator
-    itV = vertex->begin();           
-  
+    itV = vertex->begin();
+
   map<const MEdge*, unsigned int, EdgeComparator>::iterator
     itEd = edge->begin();
 
   map<const MFace*, unsigned int, FaceComparator>::iterator
     itF = face->begin();
-  
+
   stringstream stream;
-  
+
 
   // Header //
-  stream << "***********************************************"    
+  stream << "***********************************************"
 	 << endl
-	 << "*                     Mesh                    *"    
+	 << "*                     Mesh                    *"
 	 << endl
 	 << "***********************************************"
-	 << endl; 
+	 << endl;
 
 
   // Vertices //
   stream << "*                                             *"
 	 << endl
-	 << "* This mesh contains the following Vertex:    *" 
+	 << "* This mesh contains the following Vertex:    *"
 	 << endl;
-  
+
   for(; itV != endV; itV++)
     stream << "*   -- Vertex "
 	   << showpos
@@ -276,16 +276,16 @@ string Mesh::toString(void) const{
 
   stream << "*                                             *"
 	 << endl
-	 << "***********************************************"  
+	 << "***********************************************"
 	 << endl;
 
-  
+
   // Edges //
   stream << "*                                             *"
 	 << endl
-	 << "* This mesh contains the following Edges:     *" 
+	 << "* This mesh contains the following Edges:     *"
 	 << endl;
-  
+
   for(; itEd != endEd; itEd++)
     stream << "*   -- Edge "
 	   << getGlobalId(*itEd->first)
@@ -298,15 +298,15 @@ string Mesh::toString(void) const{
 
   stream << "*                                             *"
 	 << endl
-	 << "***********************************************"  
+	 << "***********************************************"
 	 << endl;
 
   // Faces //
   stream << "*                                             *"
 	 << endl
-	 << "* This mesh contains the following Faces:     *" 
+	 << "* This mesh contains the following Faces:     *"
 	 << endl;
-  
+
   for(; itF != endF; itF++)
     stream << "*   -- Face "
 	   << getGlobalId(*itF->first)
@@ -321,30 +321,30 @@ string Mesh::toString(void) const{
 
   stream << "*                                             *"
 	 << endl
-	 << "***********************************************"  
+	 << "***********************************************"
 	 << endl;
 
 
   // Elements //
   stream << "*                                             *"
 	 << endl
-	 << "* This mesh contains the following Elements:  *" 
+	 << "* This mesh contains the following Elements:  *"
 	 << endl;
-  
+
   for(; itEl != endEl; itEl++){
-    int nVertex = 
+    int nVertex =
       const_cast<MElement*>(itEl->first)->getNumPrimaryVertices();
-    
+
     int nVertexMinus = nVertex - 1;
-    
+
     stream << "*   -- Element "
 	   << getGlobalId(*itEl->first)
 	   << ": [";
-    
+
     for(int i = 0; i < nVertexMinus; i++)
       stream << getGlobalId(*const_cast<MElement*>(itEl->first)->getVertex(i))
 	     << ", ";
-    
+
     stream << getGlobalId(*const_cast<MElement*>(itEl->first)->getVertex(nVertexMinus))
 	   << "]"
 	   << endl;
@@ -352,10 +352,10 @@ string Mesh::toString(void) const{
 
   stream << "*                                             *"
 	 << endl
-	 << "***********************************************"  
-	 << endl;  
+	 << "***********************************************"
+	 << endl;
 
-  
+
   // Retrun //
   return stream.str();
 }

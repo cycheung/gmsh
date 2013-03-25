@@ -1,4 +1,6 @@
+#include <cstdlib>
 #include <iostream>
+#include <sstream>
 
 #include "Mesh.h"
 #include "WriterMsh.h"
@@ -17,7 +19,8 @@ int main(int argc, char** argv){
   cout << "## Reading Mesh" << endl << flush;
 
   Mesh msh(argv[1]);
-  GroupOfElement domain = msh.getFromPhysical(7);
+  unsigned int physical = atoi(argv[2]);
+  GroupOfElement domain = msh.getFromPhysical(physical);
 
 
   // Select Basis //
@@ -66,12 +69,15 @@ int main(int argc, char** argv){
 
   // Printing //
   WriterMsh writer;
+  stringstream name;
+
+  name << "analyze" << physical;
 
   cout << "## Writing Results" << endl << flush;
 
   writer.setDomain(domain);
   writer.setValues(orientation);
-  writer.write("analyze", "volume");
+  writer.write(name.str(), "volume");
 
 
   // Done //
