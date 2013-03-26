@@ -44,6 +44,7 @@ class GroupOfElement{
 
   void orientAllElements(const Basis& basis);
   const std::vector<unsigned int>& getOrientationStats(void) const;
+  void unoriented(void);
 
   std::string toString(void) const;
 };
@@ -99,6 +100,14 @@ class GroupOfElement{
    before for this method to have a meaning@n
 
    If not, an Exception is thrown
+   **
+
+   @fn GroupOfElement::unoriented
+
+   The elements of this GroupOfElement
+   are unoriented
+
+   @see Basis::getOrientation()
    **
 
    @fn GroupOfElement::toString

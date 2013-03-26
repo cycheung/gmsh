@@ -61,6 +61,13 @@ orientAllElements(const Basis& basis){
   // The last line is cool isn't it :-) ?
 }
 
+void GroupOfElement::unoriented(void){
+  if(orientationStat)
+    delete orientationStat;
+
+  orientationStat = NULL;
+}
+
 string GroupOfElement::toString(void) const{
   stringstream stream;
 
