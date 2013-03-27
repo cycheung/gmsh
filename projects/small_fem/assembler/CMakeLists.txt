@@ -8,6 +8,7 @@ set(src
   System.cpp
   SystemEigen.cpp
   SystemInstrumented.cpp
+  SystemShowFunctionSpace.cpp
 )
 
 add_sources(assembler "${src}")

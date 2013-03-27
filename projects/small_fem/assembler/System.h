@@ -24,6 +24,9 @@ class System: public SystemAbstract{
 
   virtual void assemble(void);
   virtual void solve(void);
+
+ protected:
+  System(void);
 };
 
 

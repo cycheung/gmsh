@@ -79,7 +79,7 @@ PostProcessing {
 PostOperation {
   { Name ElectricScalar ; NameOfPostProcessing ElectricScalar ;
     Operation {
-      Print [ laplaceRef, OnElementsOf OmegaE, File "laplaceCircle.pos" ] ;
+      Print [ laplaceRef, OnElementsOf OmegaE, File "laplace.pos" ] ;
     }
   }
 }

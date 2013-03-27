@@ -2,6 +2,11 @@
 
 using namespace std;
 
+System::System(void){
+  // Do nothing //
+  // Just for inheritance //
+}
+
 System::System(const Formulation& formulation){
   // Get Formulation //
   this->formulation = &formulation;
