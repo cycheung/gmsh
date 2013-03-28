@@ -1,5 +1,5 @@
 // View 1
-Plugin(MathEval).Expression0= "Step(v0-OL.get(Parameters/Skin/OVERTEMP)+1)";
+Plugin(MathEval).Expression0= "Step(v0-OL.get(Parameters/Skin/OVERTEMP))";
 Plugin(MathEval).TimeStep=-1;
 Plugin(MathEval).View=0;
 Plugin(MathEval).OtherTimeStep=-1;
@@ -29,7 +29,7 @@ Plugin(Integrate).Run;
 Save View [3] "duration.txt";
 
 // View 4
-Plugin(MathEval).Expression0= "Step(v0-OL.get(Parameters/Skin/OVERTEMP)+1)*6.2831853e9*x";
+Plugin(MathEval).Expression0= "Step(v0-OL.get(Parameters/Skin/OVERTEMP))*6.2831853e9*x";
 Plugin(MathEval).TimeStep=-1;
 Plugin(MathEval).View=0;
 Plugin(MathEval).OtherTimeStep=-1;
@@ -53,7 +53,7 @@ Plugin(MinMax).Run;
 Save View [7] "volmax.txt";
 
 // View 8
-Plugin(MathEval).Expression0= "Step(v0-OL.get(Parameters/Skin/OVERTEMP)+1)*6.2831853e9*x";
+Plugin(MathEval).Expression0= "Step(v0-OL.get(Parameters/Skin/OVERTEMP))*6.2831853e9*x";
 Plugin(MathEval).TimeStep=-1;
 Plugin(MathEval).View=0;
 Plugin(MathEval).OtherTimeStep=-1;

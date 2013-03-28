@@ -18,7 +18,7 @@ Simulation
   Timestep Intervals (1) = OL.eval(floor(OL.get(TimeEnd)/OL.get(TimeStep)*1000))
   Timestep sizes (1) = OL.eval(OL.get(TimeStep)/1000)
   Timestepping Method = Implicit Euler
-  ! BDF Order = 1
+!  BDF Order = 2
   Output Intervals = 1
 End
 

@@ -37,26 +37,38 @@ if len(sys.argv) < 3:
 filename = sys.argv[1]
 threshold = float(sys.argv[2])
 
-R = 8.314
-Ea = 6.28e5
-A = 3.1e98
+R = 8.3143
+Ea = 7.82e5 #6.28e5
+H = 2.185e124#3.1e98
+RCEM = 0.5
 
 Array = ReadArrayFromFile(filename)
 N = len(Array)
 
 filename=open('omega.txt','w')
+filename2=open('cem.txt','w')
 
 Columns = [2, 11]
 Omega = [0, 0]
+Cem = [0, 0]
 for j in range(1,N):
     filename.write(str(Array[j,0]) + ' ')
+    filename2.write(str(Array[j,0]) + ' ')
     dt = Array[j,0] - Array[j-1,0]
     for k in range(0,len(Columns)):
         T = Array[j,Columns[k]-1]
         if(T >= threshold):
-            Omega[k] += A*numpy.exp(-Ea/(R*(T+273.15))) * dt
+            myexp = numpy.exp(-Ea/(R*(T+273.15)))
+            omega_dt = H * myexp * dt
+            Omega[k] += H * myexp * dt
+            Cem[k]   += RCEM**(threshold-T)*dt  
         filename.write(str(T) + ' ' + str(Omega[k]) + ' ')
+        filename2.write(str(T) + ' ' + str(Cem[k]) + ' ')
     filename.write('\n')
+    filename2.write('\n')
+
+print 'Omega =', Omega[0], Omega[1]
+print 'Cem =', Cem[0], Cem[1]
 
 
 
