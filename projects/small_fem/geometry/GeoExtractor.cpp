@@ -10,7 +10,7 @@ MEdge* GeoExtractor::copy(const MEdge& edge){
   MVertex* begin = edge.getVertex(0);
   MVertex* end   = edge.getVertex(1);
 
-  return new MEdge(begin, end);  
+  return new MEdge(begin, end);
 }
 
 MFace* GeoExtractor::copy(const MFace& face){
@@ -20,5 +20,5 @@ MFace* GeoExtractor::copy(const MFace& face){
   for(int i = 0; i < size; i++)
     vertex[i] = face.getVertex(i);
 
-  return new MFace(vertex);  
+  return new MFace(vertex);
 }

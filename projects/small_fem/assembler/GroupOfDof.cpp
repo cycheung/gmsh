@@ -1,5 +1,4 @@
 #include "GroupOfDof.h"
-
 #include <sstream>
 
 GroupOfDof::GroupOfDof(unsigned int numberOfDof, const MElement& geoElement){
@@ -24,7 +23,7 @@ void GroupOfDof::add(const Dof& dof){
 
 std::string GroupOfDof::toString(void) const{
   std::stringstream stream;
-  
+
   stream << "*************************** " << std::endl
 	 << "* Group Of Dof"               << std::endl
 	 << "*************************** " << std::endl

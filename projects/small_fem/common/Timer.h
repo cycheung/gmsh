@@ -15,14 +15,14 @@ class Timer{
  private:
   struct timespec start_s, stop_s;
   double elapsedTime;
-  
+
   bool isLaunched;
   bool hasBeenStoped;
 
  public:
    Timer(void);
   ~Timer(void);
-  
+
   void        start(void);
   void        stop(void);
   double      time(void);
@@ -33,7 +33,7 @@ class Timer{
 };
 
 /**
-   @fn Timer::Timer(void)   
+   @fn Timer::Timer(void)
    Instantiates a new Timer
    **
 
@@ -47,21 +47,21 @@ class Timer{
 
    @fn Timer::stop
    Stops this Timer
-   
-   @note If this Timer hasn't been started, 
+
+   @note If this Timer hasn't been started,
    an Exception is thrown
    **
 
    @fn Timer::time
-   @return Returns the elapsed time between 
+   @return Returns the elapsed time between
    Timer::start() and Timer::stop()
-   
-   @note If this Timer hasn't been started 
+
+   @note If this Timer hasn't been started
    @em or stoped, an Exception is thrown
    **
 
    @fn Timer::unit
-   @return Returns a string with the @em unit 
+   @return Returns a string with the @em unit
    used by Timer::time()
  */
 

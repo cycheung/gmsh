@@ -16,7 +16,7 @@
 /**
    @class Mesh
    @brief Represents a mesh
-   
+
    This class represents a mesh.@n
 
    This class is responsible of the handling mesh elements
@@ -26,7 +26,7 @@
    elements.@n
    Indeed, each element is granted a @em unique @c ID.@n
 
-   A Mesh is instantiated thanks to a 
+   A Mesh is instantiated thanks to a
    <a href="http://www.geuz.org/gmsh">gmsh</a>
    .@c msh file, wich discribes the mesh.@n
 */
@@ -37,10 +37,10 @@ class Mesh{
  private:
   GModel* model;
 
-  std::map<const MElement*, unsigned int, ElementComparator>* element;           
+  std::map<const MElement*, unsigned int, ElementComparator>* element;
   std::map<const MVertex*, unsigned int, VertexComparator>*   vertex;
   std::map<const MEdge*, unsigned int, EdgeComparator>*       edge;
-  std::map<const MFace*, unsigned int, FaceComparator>*       face;  
+  std::map<const MFace*, unsigned int, FaceComparator>*       face;
 
   std::multimap<int, const MElement*>* physical;
 
@@ -65,9 +65,9 @@ class Mesh{
   unsigned int getFaceNumber(void) const;
 
   GroupOfElement getFromPhysical(int physicalId) const;
-  
+
   std::string toString(void) const;
- 
+
  private:
   void number(void);
 };
@@ -79,7 +79,7 @@ class Mesh{
 
    Instanciates a new Mesh
    **
-   
+
    @fn Mesh::~Mesh
    Deletes this Mesh
    **
@@ -115,7 +115,7 @@ class Mesh{
    @fn Mesh::getAllVertex
    @return Returns all the Vertices of this Mesh
    **
-   
+
    @fn Mesh::getElementNumber
    @return Returns the number of Element in this Mesh
    @note By Element we mean Quads, Tets, etc@n
@@ -135,8 +135,8 @@ class Mesh{
    **
 
    @fn Mesh::getFromPhysical
-   @param physicalId A physical @c ID 
-   (see <a href="http://www.geuz.org/gmsh">gmsh</a> 
+   @param physicalId A physical @c ID
+   (see <a href="http://www.geuz.org/gmsh">gmsh</a>
    documentation)
 
    @return @em Instantiate a new GroupOfElement, containing

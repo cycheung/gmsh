@@ -4,5 +4,4 @@ set(src
   Timer.cpp
 )
 
-
 add_sources(common "${src}")

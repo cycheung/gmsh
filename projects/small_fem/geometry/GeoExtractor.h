@@ -29,7 +29,7 @@ class GeoExtractor{
  public:
    GeoExtractor(void);
   ~GeoExtractor(void);
-  
+
   static std::pair<
     std::map<const MElement*, unsigned int, ElementComparator>*,
     std::multimap<int, const MElement*>*
@@ -37,20 +37,20 @@ class GeoExtractor{
     extractElement(const std::vector<GEntity*>& entity);
 
   static std::map<const MVertex*, unsigned int, VertexComparator>*
-    extractVertex(const std::map<const MElement*, 
-		                 unsigned int, 
+    extractVertex(const std::map<const MElement*,
+		                 unsigned int,
 		                 ElementComparator>& element);
 
   static std::map<const MEdge*, unsigned int, EdgeComparator>*
-    extractEdge(const std::map<const MElement*, 
-	                       unsigned int, 
+    extractEdge(const std::map<const MElement*,
+	                       unsigned int,
 	                       ElementComparator>& element);
 
   static std::map<const MFace*, unsigned int, FaceComparator>*
-    extractFace(const std::map<const MElement*, 
-	                       unsigned int, 
+    extractFace(const std::map<const MElement*,
+	                       unsigned int,
 	                       ElementComparator>& element);
-  
+
  private:
   static MEdge* copy(const MEdge& edge);
   static MFace* copy(const MFace& face);
@@ -60,15 +60,15 @@ class GeoExtractor{
 /**
    @fn GeoExtractor::GeoExtractor
    Instantiates a new GeoExtractor
-   
+
    @note
-   GeoExtractor got @em only @em class @em methods, 
+   GeoExtractor got @em only @em class @em methods,
    so it is @em not requiered to instanciate it.
    **
 
    @fn GeoExtractor::~GeoExtractor
    Deletes this GeoExtractor
-   **   
+   **
 
    @fn GeoExtractor::extractElement
    @param entity A vector of GEntity
@@ -76,7 +76,7 @@ class GeoExtractor{
    @li The first field containing a map with the MElement%s in
    the given entities (the mapped values are set to @em zero)
    @li The second field containing a multimap with the MElement%s
-   of the first field, and the @em physicals 
+   of the first field, and the @em physicals
    (see <a href="http://www.geuz.org/gmsh">gmsh</a> documentation) of
    the MElement%s
    **

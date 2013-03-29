@@ -1,7 +1,6 @@
 #include <sstream>
 #include "Dof.h"
 
-
 Dof::Dof(void){
   this->entity  = 0;
   this->type    = 0;

@@ -16,7 +16,7 @@
    @param a A Dof pointer
    @param b A second Dof pointer (possibly pointing to the same Dof as @c a)
    @return Returns:
-   @li @c true, if the Dof @em pointed by @c a is @em smaller 
+   @li @c true, if the Dof @em pointed by @c a is @em smaller
    than the Dof @em pointed by @c b
    @li @c false, otherwise
  */
@@ -32,7 +32,7 @@
    @param a A MElement pointer
    @param b A second MElement pointer (possibly pointing to the same MElement as @c a)
    @return Returns:
-   @li @c true, if the MElement @em pointed by @c a is @em smaller 
+   @li @c true, if the MElement @em pointed by @c a is @em smaller
    than the MElement @em pointed by @c b
    @li @c false, otherwise
  */
@@ -47,7 +47,7 @@
    @param a A MVertex pointer
    @param b A second MVertex pointer (possibly pointing to the same MVertex as @c a)
    @return Returns:
-   @li @c true, if the MVertex @em pointed by @c a is @em smaller 
+   @li @c true, if the MVertex @em pointed by @c a is @em smaller
    than the MVertex @em pointed by @c b
    @li @c false, otherwise
  */
@@ -67,7 +67,7 @@
    @param a A MEdge pointer
    @param b A second MEdge pointer (possibly pointing to the same MEdge as @c a)
    @return Returns:
-   @li @c true, if the MEdge @em pointed by @c a is @em smaller 
+   @li @c true, if the MEdge @em pointed by @c a is @em smaller
    than the MEdge @em pointed by @c b
    @li @c false, otherwise
 
@@ -92,7 +92,7 @@
    @param a A MFace pointer
    @param b A second MFace pointer (possibly pointing to the same MFace as @c a)
    @return Returns:
-   @li @c true, if the MFace @em pointed by @c a is @em smaller 
+   @li @c true, if the MFace @em pointed by @c a is @em smaller
    than the MFace @em pointed by @c b
    @li @c false, otherwise
 
@@ -117,7 +117,7 @@
    @param a A MEdge pointer
    @param b A second MEdge pointer (possibly pointing to the same MEdge as @c a)
    @return Returns:
-   @li @c true, if the MEdge @em pointed by @c a is @em smaller 
+   @li @c true, if the MEdge @em pointed by @c a is @em smaller
    than the MEdge @em pointed by @c b
    @li @c false, otherwise
 
@@ -187,9 +187,9 @@ operator()(const MEdge *a, const MEdge *b) const{
 
 inline bool OrientedEdgeComparator::
 operator()(const MEdge* a, const MEdge* b) const{
-  return 
+  return
     ( a->getVertex(0)->getNum() <  b->getVertex(0)->getNum()) ||
-    ((a->getVertex(0)->getNum() == b->getVertex(0)->getNum()) && 
+    ((a->getVertex(0)->getNum() == b->getVertex(0)->getNum()) &&
      (a->getVertex(1)->getNum() <  b->getVertex(1)->getNum()));
 }
 

@@ -4,22 +4,22 @@ using namespace std;
 
 map<const MVertex*, unsigned int, VertexComparator>*
 
-GeoExtractor::extractVertex(const map<const MElement*, 
-				      unsigned int, 
+GeoExtractor::extractVertex(const map<const MElement*,
+				      unsigned int,
 				      ElementComparator>& element){
   // Init //
-  map<const MVertex*, unsigned int, VertexComparator>* 
+  map<const MVertex*, unsigned int, VertexComparator>*
     vertex = new map<const MVertex*, unsigned int, VertexComparator>;
-  
+
   // Get Vertices //
   const map<const MElement*, unsigned int, ElementComparator>::const_iterator
     endE = element.end();
-  
+
   map<const MElement*, unsigned int, ElementComparator>::const_iterator
     itE = element.begin();
-  
+
   // Iterate on Elements
-  for(; itE != endE; itE++){   
+  for(; itE != endE; itE++){
     // Get Current Element
     MElement* myElement = const_cast<MElement*>(itE->first);
 

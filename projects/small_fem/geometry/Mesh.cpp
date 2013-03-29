@@ -5,7 +5,6 @@
 #include "Exception.h"
 #include "Mesh.h"
 
-
 using namespace std;
 
 Mesh::Mesh(const std::string fileName){

@@ -7,10 +7,10 @@ pair<map<const MElement*, unsigned int, ElementComparator>*,
 
 GeoExtractor::extractElement(const vector<GEntity*>& entity){
   // Init //
-  map<const MElement*, unsigned int, ElementComparator>* 
+  map<const MElement*, unsigned int, ElementComparator>*
     element = new map<const MElement*, unsigned int, ElementComparator>;
 
-  multimap<int, const MElement*>* 
+  multimap<int, const MElement*>*
     physical = new multimap<int, const MElement*>;
 
   // Get Elements //
@@ -28,25 +28,25 @@ GeoExtractor::extractElement(const vector<GEntity*>& entity){
     const vector<int> myPhysical = entity[i]->getPhysicalEntities();
     const unsigned int nPhysical = myPhysical.size();
 
-    // Insert Element     
+    // Insert Element
     for(unsigned int j = 0; j < nElement; j++){
       pair<map<const MElement*, unsigned int, ElementComparator>::iterator,
 	   bool>
-	
+
 	insert = element->insert
 	(pair<const MElement*, unsigned int>(myElement[j], 0));
-     
+
       // If Insertion is a success,
       // Insert Physical
       if(insert.second)
 	for(unsigned int k = 0; k < nPhysical; k++)
 	  physical->insert
-	    (pair<int, const MElement*>(myPhysical[k], myElement[j]));  
-    }    
+	    (pair<int, const MElement*>(myPhysical[k], myElement[j]));
+    }
   }
 
   // Return //
-  return 
+  return
     pair<map<const MElement*, unsigned int, ElementComparator>*,
 	 multimap<int, const MElement*>*>
   (element, physical);

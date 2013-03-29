@@ -7,6 +7,8 @@ Group{
 
 Function{
   k = 5;
+  fs[GammaS] = Vector [0., -1., 0.];
+  fc[GammaC] = Vector [0.,  0., 0.];
 }
 
 
@@ -42,91 +44,113 @@ Integration {
   }
 }
 
+Constraint {
+  { Name Dirichlet_e;
+   Case {
+     { Region GammaC ;
+       Type AssignFromResolution;
+       NameOfResolution Maxwell_e_DirichletC ; }
 
-Constraint{
-  { Name Dirichlet_e ;
-    Case {
-      { Region GammaC ; Value Vector [0., 0., 0.] ; }
-      { Region GammaS ; Value Vector [0., 0., 1.] ; }
-    }
+     { Region GammaS ;
+       Type AssignFromResolution;
+       NameOfResolution Maxwell_e_DirichletS ; }
+   }
   }
 }
-
 
 FunctionSpace {
   { Name Hcurl_e; Type Form1;
     BasisFunction {
       // Ordre 1 Complet //
-      { Name se   ; NameOfCoef ee   ; Function BF_Edge_1E ; Support Region[{Omega,GammaS,GammaC}] ; Entity EdgesOf[All]; }
+      { Name se   ; NameOfCoef ee   ; Function BF_Edge_1E ; Support Region[{Omega,GammaS,GammaC}] ; Entity EdgesOf[All]; }/*
       { Name se2e ; NameOfCoef we2e ; Function BF_Edge_2E ; Support Region[{Omega,GammaS,GammaC}] ; Entity EdgesOf[All]; }
-    }
-  }
 
-  { Name HcurlLS_e; Type Form1;
-    BasisFunction {
-      // Ordre 1 Complet //
-      { Name se   ; NameOfCoef ee  ; Function BF_Edge_1E; Support Region[{GammaS}] ; Entity EdgesOf[All]; }
-      { Name se2e ; NameOfCoef we2e; Function BF_Edge_2E; Support Region[{GammaS}] ; Entity EdgesOf[All]; }
-    }
-  }
+      // Ordre 2 Complet //
+      { Name se3fa; NameOfCoef we3fa; Function BF_Edge_3F_a ; Support Region[{Omega,GammaS,GammaC}] ; Entity FacetsOf[All]; }
+      { Name se3fb; NameOfCoef we3fb; Function BF_Edge_3F_b ; Support Region[{Omega,GammaS,GammaC}] ; Entity FacetsOf[All]; }
+      { Name se3fc; NameOfCoef we3fc; Function BF_Edge_3F_c ; Support Region[{Omega,GammaS,GammaC}] ; Entity FacetsOf[All]; }
 
-  { Name HcurlLC_e; Type Form1;
-    BasisFunction {
-      // Ordre 1 Complet //
-      { Name se   ; NameOfCoef ee  ; Function BF_Edge_1E; Support Region[{GammaC}] ; Entity EdgesOf[All]; }
-      { Name se2e ; NameOfCoef we2e; Function BF_Edge_2E; Support Region[{GammaC}] ; Entity EdgesOf[All]; }
+      { Name se4e ; NameOfCoef we4e ; Function BF_Edge_4E   ; Support Region[{Omega,GammaS,GammaC}] ; Entity EdgesOf[All]; }*/
+    }
+
+    Constraint {
+      { NameOfCoef ee   ; EntityType EdgesOf  ; NameOfConstraint Dirichlet_e; }/*
+      { NameOfCoef we2e ; EntityType EdgesOf  ; NameOfConstraint Dirichlet_e; }
+      { NameOfCoef we3fa; EntityType FacetsOf ; NameOfConstraint Dirichlet_e; }
+      { NameOfCoef we3fb; EntityType FacetsOf ; NameOfConstraint Dirichlet_e; }
+      { NameOfCoef we3fc; EntityType FacetsOf ; NameOfConstraint Dirichlet_e; }
+      { NameOfCoef we4e ; EntityType EdgesOf  ; NameOfConstraint Dirichlet_e; }*/
     }
   }
 }
 
-
 Formulation {
+  { Name Maxwell_e_DirichletC;
+    Quantity {
+      { Name e; Type Local; NameOfSpace Hcurl_e; }
+    }
+    Equation {
+      Galerkin { [ Dof{e} , {e} ];
+	In GammaC; Integration I1; Jacobian JSur;  }
+      Galerkin { [ fc[] , {e} ];
+	In GammaC; Integration I1; Jacobian JSur;  }
+    }
+  }
+
+  { Name Maxwell_e_DirichletS;
+    Quantity {
+      { Name e; Type Local; NameOfSpace Hcurl_e; }
+    }
+    Equation {
+      Galerkin { [ Dof{e} , {e} ];
+	In GammaS; Integration I1; Jacobian JSur;  }
+      Galerkin { [ fs[] , {e} ];
+	In GammaS; Integration I1; Jacobian JSur;  }
+    }
+  }
+
   { Name Maxwell_e; Type FemEquation;
     Quantity {
       { Name e; Type Local;  NameOfSpace Hcurl_e; }
-      { Name ls; Type Local;  NameOfSpace HcurlLS_e; }
-      { Name lc; Type Local;  NameOfSpace HcurlLC_e; }
     }
     Equation {
       Galerkin { [ Dof{d e} , {d e} ];
-                 In Omega; Integration I1; Jacobian JVol;  }
-
+	In Omega; Integration I1; Jacobian JVol;  }
       Galerkin { [ -k^2 * Dof{e} , {e} ];
-                 In Omega; Integration I1; Jacobian JVol;  }
-
-      Galerkin { [ Dof{ls} , {e} ];
-                 In GammaS; Integration I1; Jacobian JSur;  }
-
-      Galerkin { [ Dof{lc} , {e} ];
-                 In GammaC; Integration I1; Jacobian JSur;  }
-
-      Galerkin { [ Dof{e} , {ls} ];
-                 In GammaS; Integration I1; Jacobian JSur;  }
-
-      Galerkin { [ Dof{e} , {lc} ];
-                 In GammaC; Integration I1; Jacobian JSur;  }
-
-      Galerkin { [ Vector [0, 1, 0] , {ls} ];
-                 In GammaS; Integration I1; Jacobian JSur;  }
-
-      Galerkin { [ Vector [0, 0, 0] , {lc} ];
-                 In GammaC; Integration I1; Jacobian JSur;  }
+	In Omega; Integration I1; Jacobian JVol;  }
     }
   }
 }
-
 
 Resolution {
   { Name Maxwell_e ;
     System {
-      { Name A ; NameOfFormulation Maxwell_e ; } //Type Complex; }
+      { Name A ; NameOfFormulation Maxwell_e ; }
     }
     Operation {
-      Generate[A] ; Solve[A] ; SaveSolution[A] ;
+      Generate[A] ; Solve[A] ;
     }
   }
-}
 
+  { Name Maxwell_e_DirichletC;
+    System {
+      { Name B; NameOfFormulation Maxwell_e_DirichletC; DestinationSystem A; }
+    }
+    Operation {
+      Generate B; Solve B; TransferSolution B;
+    }
+  }
+
+  { Name Maxwell_e_DirichletS;
+    System {
+      { Name C; NameOfFormulation Maxwell_e_DirichletS; DestinationSystem A; }
+    }
+    Operation {
+      Generate C; Solve C; TransferSolution C;
+    }
+  }
+
+}
 
 PostProcessing {
   { Name Maxwell_e ; NameOfFormulation Maxwell_e ;
@@ -136,7 +160,6 @@ PostProcessing {
     }
   }
 }
-
 
 PostOperation {
   { Name Maxwell_e ; NameOfPostProcessing Maxwell_e;

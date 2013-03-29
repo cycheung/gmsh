@@ -2,9 +2,7 @@
 #define _FORMULATIONVIBRATION_H_
 
 #include "FunctionSpaceScalar.h"
-
 #include "TermGradGrad.h"
-
 #include "Formulation.h"
 
 /**

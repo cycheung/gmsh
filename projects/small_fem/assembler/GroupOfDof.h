@@ -10,7 +10,7 @@
    @class GroupOfDof
    @brief Handels a Group of Dof%s with @em geometrical meaning
 
-   This class handles a collection of Dof%s with a @em geometrical meaning 
+   This class handles a collection of Dof%s with a @em geometrical meaning
    (@e e.g: Dof%s that belongs to the same (finite) element).@n
 
    It also gives acces to the underlying Geometrical Element.
@@ -22,21 +22,21 @@ class GroupOfDof{
 
   unsigned int nDof;
   std::vector<const Dof*>* dof;
-  
+
   unsigned int nextDof;
 
  public:
-   GroupOfDof(unsigned int numberOfDof, 
+   GroupOfDof(unsigned int numberOfDof,
 	      const MElement& geoElement);
 
   ~GroupOfDof(void);
 
   void add(const Dof& dof);
-  
+
   unsigned int                   getNumber(void)     const;
-  const Dof&                     get(unsigned int i) const; 
+  const Dof&                     get(unsigned int i) const;
   const std::vector<const Dof*>& getAll(void)        const;
-  
+
   const MElement& getGeoElement(void) const;
 
   std::string toString(void) const;
@@ -59,7 +59,7 @@ class GroupOfDof{
 
    @fn GroupOfDof::add
    @param dof
- 
+
    Adds the given Dof to this GroupOfDof
    **
 
@@ -68,7 +68,7 @@ class GroupOfDof{
    **
 
    @fn GroupOfDof::get
-   @param i An interger ranging from 0 
+   @param i An interger ranging from 0
    to GroupOfDof::getNumber() - 1
    @return Returns the ith element of the Group
    **
@@ -96,7 +96,7 @@ inline unsigned int GroupOfDof::getNumber(void) const{
 inline const Dof& GroupOfDof::get(unsigned int i) const{
   return *((*dof)[i]);
 }
- 
+
 inline const std::vector<const Dof*>& GroupOfDof::getAll(void) const{
   return *dof;
 }
