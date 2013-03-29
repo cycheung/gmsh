@@ -6,6 +6,7 @@
 #include "WriterMsh.h"
 
 #include "FormulationSteadyWaveVector.h"
+#include "FormulationSteadyWaveVectorSlow.h"
 
 #include "SystemInstrumented.h"
 #include "Timer.h"

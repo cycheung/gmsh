@@ -5,6 +5,7 @@ set(src
   FormulationProjectionVector.cpp
   FormulationProjectionScalar.cpp
   FormulationSteadyWaveVector.cpp
+  FormulationSteadyWaveVectorSlow.cpp
   FormulationSteadyWaveScalar.cpp
   FormulationEigenFrequency.cpp
   FormulationVibration.cpp

@@ -1,3 +1,4 @@
+#include <cmath>
 #include "Exception.h"
 #include "TermCurlCurl.h"
 
@@ -125,7 +126,7 @@ void TermCurlCurl::computeB(const GroupOfJacobian& goj,
 
             for(unsigned int i = 0; i < 3; i++)
               (*bM[s])(j, k) +=
-                (*MJac[g]->first)(i, a) * (*MJac[g]->first)(i, b);
+                (*MJac[g]->first)(a, i) * (*MJac[g]->first)(b, i);
 
             (*bM[s])(j, k) /= fabs(MJac[g]->second);
 

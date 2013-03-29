@@ -24,7 +24,13 @@ FormulationProjectionScalar(double (*f)(fullVector<double>& xyz),
 
   // Look for 1st element to get element type
   // (We suppose only one type of Mesh !!)
-  gaussIntegration::get(goe.get(0).getType(), 2 * basis->getOrder(), gC, gW);
+ unsigned int order = basis->getOrder();
+
+  // if Order == 0 --> we want Nedelec Basis of ordre *almost* one //
+  if(order == 0)
+    order = 1;
+
+  gaussIntegration::get(goe.get(0).getType(), 2 * order, gC, gW);
 
   // Local Terms //
   basis->preEvaluateFunctions(gC);
