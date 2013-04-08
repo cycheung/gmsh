@@ -62,7 +62,7 @@ FunctionSpace {
   { Name Hcurl_e; Type Form1;
     BasisFunction {
       // Ordre 1 Complet //
-      { Name se   ; NameOfCoef ee   ; Function BF_Edge_1E ; Support Region[{Omega,GammaS,GammaC}] ; Entity EdgesOf[All]; }/*
+      { Name se   ; NameOfCoef ee   ; Function BF_Edge_1E ; Support Region[{Omega,GammaS,GammaC}] ; Entity EdgesOf[All]; }
       { Name se2e ; NameOfCoef we2e ; Function BF_Edge_2E ; Support Region[{Omega,GammaS,GammaC}] ; Entity EdgesOf[All]; }
 
       // Ordre 2 Complet //
@@ -70,16 +70,16 @@ FunctionSpace {
       { Name se3fb; NameOfCoef we3fb; Function BF_Edge_3F_b ; Support Region[{Omega,GammaS,GammaC}] ; Entity FacetsOf[All]; }
       { Name se3fc; NameOfCoef we3fc; Function BF_Edge_3F_c ; Support Region[{Omega,GammaS,GammaC}] ; Entity FacetsOf[All]; }
 
-      { Name se4e ; NameOfCoef we4e ; Function BF_Edge_4E   ; Support Region[{Omega,GammaS,GammaC}] ; Entity EdgesOf[All]; }*/
+      { Name se4e ; NameOfCoef we4e ; Function BF_Edge_4E   ; Support Region[{Omega,GammaS,GammaC}] ; Entity EdgesOf[All]; }
     }
 
     Constraint {
-      { NameOfCoef ee   ; EntityType EdgesOf  ; NameOfConstraint Dirichlet_e; }/*
+      { NameOfCoef ee   ; EntityType EdgesOf  ; NameOfConstraint Dirichlet_e; }
       { NameOfCoef we2e ; EntityType EdgesOf  ; NameOfConstraint Dirichlet_e; }
       { NameOfCoef we3fa; EntityType FacetsOf ; NameOfConstraint Dirichlet_e; }
       { NameOfCoef we3fb; EntityType FacetsOf ; NameOfConstraint Dirichlet_e; }
       { NameOfCoef we3fc; EntityType FacetsOf ; NameOfConstraint Dirichlet_e; }
-      { NameOfCoef we4e ; EntityType EdgesOf  ; NameOfConstraint Dirichlet_e; }*/
+      { NameOfCoef we4e ; EntityType EdgesOf  ; NameOfConstraint Dirichlet_e; }
     }
   }
 }
