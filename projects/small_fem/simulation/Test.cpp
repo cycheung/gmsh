@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "TriEdgeBasis.h"
+#include "TriReferenceSpace.h"
 
 #include "Gmsh.h"
 
@@ -10,7 +10,8 @@ using namespace std;
 int main(int argc, char** argv){
   GmshInitialize(argc, argv);
 
-  TriEdgeBasis(atoi(argv[1]));
+  TriReferenceSpace ref;
+  cout << ref.toString() << endl;
 
   GmshFinalize();
   return 0;

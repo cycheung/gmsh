@@ -28,16 +28,25 @@ Jacobian {
 
 
 Integration {
-  { Name I1 ;
+  { Name IOrder2 ;
     Case {
       { Type Gauss ;
         Case {
-          { GeoElement Point ; NumberOfPoints  1 ; }
-          { GeoElement Line ; NumberOfPoints  4 ; }
-          { GeoElement Triangle ; NumberOfPoints 12 ; }
-          { GeoElement Quadrangle ; NumberOfPoints 7 ; }
+          { GeoElement Line ; NumberOfPoints  2 ; }
+          { GeoElement Triangle ; NumberOfPoints 3 ; }
+          { GeoElement Tetrahedron ; NumberOfPoints 4 ; }
+        }
+      }
+    }
+  }
+
+  { Name IOrder4 ;
+    Case {
+      { Type Gauss ;
+        Case {
+          { GeoElement Line ; NumberOfPoints  3 ; }
+          { GeoElement Triangle ; NumberOfPoints 6 ; }
           { GeoElement Tetrahedron ; NumberOfPoints 15 ; }
-          { GeoElement Hexahedron ; NumberOfPoints 34 ; }
         }
       }
     }
@@ -91,9 +100,9 @@ Formulation {
     }
     Equation {
       Galerkin { [ Dof{e} , {e} ];
-	In GammaC; Integration I1; Jacobian JSur;  }
+	In GammaC; Integration IOrder4; Jacobian JSur;  }
       Galerkin { [ fc[] , {e} ];
-	In GammaC; Integration I1; Jacobian JSur;  }
+	In GammaC; Integration IOrder4; Jacobian JSur;  }
     }
   }
 
@@ -103,9 +112,9 @@ Formulation {
     }
     Equation {
       Galerkin { [ Dof{e} , {e} ];
-	In GammaS; Integration I1; Jacobian JSur;  }
+	In GammaS; Integration IOrder4; Jacobian JSur;  }
       Galerkin { [ fs[] , {e} ];
-	In GammaS; Integration I1; Jacobian JSur;  }
+	In GammaS; Integration IOrder4; Jacobian JSur;  }
     }
   }
 
@@ -115,9 +124,9 @@ Formulation {
     }
     Equation {
       Galerkin { [ Dof{d e} , {d e} ];
-	In Omega; Integration I1; Jacobian JVol;  }
+	In Omega; Integration IOrder2; Jacobian JVol;  }
       Galerkin { [ -k^2 * Dof{e} , {e} ];
-	In Omega; Integration I1; Jacobian JVol;  }
+	In Omega; Integration IOrder4; Jacobian JVol;  }
     }
   }
 }
@@ -164,7 +173,7 @@ PostProcessing {
 PostOperation {
   { Name Maxwell_e ; NameOfPostProcessing Maxwell_e;
     Operation {
-      Print[ e, OnElementsOf Omega, File "maxwell.pos"] ;
+      Print[ e, OnElementsOf Omega, File "maxwell.pos", Depth 3] ;
     }
   }
 }
