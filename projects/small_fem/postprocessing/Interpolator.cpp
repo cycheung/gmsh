@@ -8,7 +8,6 @@
 #include "MElement.h"
 #include "MVertex.h"
 
-#include "DofFixedException.h"
 #include "Dof.h"
 
 using namespace std;
@@ -182,10 +181,12 @@ void Interpolator::interpolate(void){
   vector<bool> isInterpolated(nTotVertex, false);
   vector<MVertex*> node;
 
-
   // Scalar or Vector ?
   const FunctionSpaceScalar* fsScalar = NULL;
   const FunctionSpaceVector* fsVector = NULL;
+
+  // Temporary //
+  unsigned int globalId;
 
   if(scalar){
     nodalScalarValue = new vector<double>(nTotVertex);
@@ -221,16 +222,18 @@ void Interpolator::interpolate(void){
 
 	// Get Coef
 	vector<double> coef(size);
-	for(unsigned int k = 0; k < size; k++)
-          try{
-            // Look in Solution
-            coef[k] = (*sol)(dofM->getGlobalId(*dof[k]));
-          }
+	for(unsigned int k = 0; k < size; k++){
+          // Dof Global ID
+          globalId = dofM->getGlobalId(*dof[k]);
 
-          catch(DofFixedException& fixedDof){
-            // If Dos is fixed, look in 'fixedDof'
-            coef[k] = fixedDof.getValue();
-          }
+          // If non fixed Dof: look in Solution
+          if(globalId != DofManager::isFixedId())
+            coef[k] = (*sol)(globalId);
+
+          // If Dof is fixed: get fixed value
+          else
+            coef[k] = dofM->getValue(*dof[k]);
+        }
 
 	// Get Node coordinate
 	fullVector<double> xyz(3);
@@ -262,6 +265,9 @@ void Interpolator::interpolateOnVisu(void){
   // Scalar or Vector ?
   const FunctionSpaceScalar* fsScalar = NULL;
   const FunctionSpaceVector* fsVector = NULL;
+
+  // Temporary //
+  unsigned int globalId;
 
   if(scalar){
     nodalScalarValue = new vector<double>(nTotVertex);
@@ -303,16 +309,18 @@ void Interpolator::interpolateOnVisu(void){
 
       // Get Coef
       vector<double> coef(size);
-      for(unsigned int k = 0; k < size; k++)
-          try{
-            // Look in Solution
-            coef[k] = (*sol)(dofM->getGlobalId(*dof[k]));
-          }
+      for(unsigned int k = 0; k < size; k++){
+        // Dof Global ID
+        globalId = dofM->getGlobalId(*dof[k]);
 
-          catch(DofFixedException& fixedDof){
-            // If Dos is fixed, look in 'fixedDof'
-            coef[k] = fixedDof.getValue();
-          }
+        // If non fixed Dof: look in Solution
+        if(globalId != DofManager::isFixedId())
+          coef[k] = (*sol)(globalId);
+
+        // If Dof is fixed: get fixed value
+        else
+          coef[k] = dofM->getValue(*dof[k]);
+      }
 
       // Get Node coordinate
       fullVector<double> xyz(3);

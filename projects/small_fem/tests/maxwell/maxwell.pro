@@ -173,7 +173,7 @@ PostProcessing {
 PostOperation {
   { Name Maxwell_e ; NameOfPostProcessing Maxwell_e;
     Operation {
-      Print[ e, OnElementsOf Omega, File "maxwell.pos", Depth 3] ;
+      Print[ e, OnElementsOf Omega, File "maxwell.pos", Depth 2] ;
     }
   }
 }

@@ -1,4 +1,3 @@
-#include "DofFixedException.h"
 #include "FunctionSpaceScalar.h"
 #include "FunctionSpaceVector.h"
 #include "WriterMsh.h"
@@ -63,6 +62,9 @@ void WriterMsh::writeNodalValuesFromSol(void) const{
   const FunctionSpaceScalar* fsScalar = NULL;
   const FunctionSpaceVector* fsVector = NULL;
 
+  // Temporary //
+  unsigned int globalId;
+
   if(isScalar)
     fsScalar = static_cast<const FunctionSpaceScalar*>(fs);
 
@@ -83,16 +85,18 @@ void WriterMsh::writeNodalValuesFromSol(void) const{
 
     // Get Coef In FS Basis
     vector<double> fsCoef(size);
-    for(unsigned int j = 0; j < size; j++)
-          try{
-            // Look in Solution
-            fsCoef[j] = (*sol)(dofM->getGlobalId(*dof[j]));
-          }
+    for(unsigned int j = 0; j < size; j++){
+      // Dof Global ID
+      globalId = dofM->getGlobalId(*dof[j]);
 
-          catch(DofFixedException& fixedDof){
-            // If Dos is fixed, look in 'fixedDof'
-            fsCoef[j] = fixedDof.getValue();
-          }
+      // If non fixed Dof: look in Solution
+      if(globalId != DofManager::isFixedId())
+        fsCoef[j] = (*sol)(globalId);
+
+      // If Dof is fixed: get fixed value
+      else
+        fsCoef[j] = dofM->getValue(*dof[j]);
+    }
 
     // Get Coef In Lagrange Basis
     if(isScalar){

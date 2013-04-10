@@ -8,7 +8,6 @@
 #include "FormulationSteadyWaveVector.h"
 #include "FormulationSteadyWaveVectorSlow.h"
 
-#include "SystemInstrumented.h"
 #include "Timer.h"
 #include "Gmsh.h"
 
@@ -67,7 +66,6 @@ int main(int argc, char** argv){
   FormulationSteadyWaveVector sWave(domain, puls * 1, order);
   preCpt.stop();
 
-  //SystemInstrumented sys(sWave);
   System sys(sWave);
 
   sys.dirichlet(source, fSource);

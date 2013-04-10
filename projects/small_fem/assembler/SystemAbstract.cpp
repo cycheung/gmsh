@@ -3,7 +3,6 @@
 #include "BasisGenerator.h"
 #include "BasisLocal.h"
 #include "Exception.h"
-#include "DofFixedException.h"
 
 #include "SystemAbstract.h"
 #include "System.h"
@@ -118,32 +117,27 @@ void SystemAbstract::assemble(linearSystemPETSc<double>& sys,
   unsigned int dofJ;
 
   for(unsigned int i = 0; i < N; i++){
-    try{
-      dofI = dofM->getGlobalId(*(dof[i]));
+    dofI = dofM->getGlobalId(*(dof[i]));
 
+    // If not a fixed Dof line: assemble
+    if(dofI != DofManager::isFixedId()){
       for(unsigned int j = 0; j < N; j++){
-        try{
-          dofJ = dofM->getGlobalId(*(dof[j]));
+        dofJ = dofM->getGlobalId(*(dof[j]));
 
+        // If not a fixed Dof
+        if(dofJ != DofManager::isFixedId())
           sys.addToMatrix(dofI, dofJ,
                           (formulation->*term)(i, j, elementId));
-        }
 
-        catch(DofFixedException& fixedDof){
-          // If fixed Dof (for column 'dofJ'):
-          //    add to right hand side (with a minus sign) !
-          sys.addToRightHandSide
-            (dofI, -1 * fixedDof.getValue() * (formulation->*term)(i, j, elementId));
-        }
-
+        // If fixed Dof (for column 'dofJ'):
+        //    add to right hand side (with a minus sign) !
+        else
+          sys.addToRightHandSide(dofI, -1 * dofM->getValue(*(dof[j])) *
+                                 (formulation->*term)(i, j, elementId));
       }
 
       sys.addToRightHandSide(dofI,
                              formulation->rhs(i, elementId));
-    }
-
-    catch(DofFixedException& any){
-      // Don't add fixed Dof (for line 'dofI')
     }
   }
 }
@@ -158,24 +152,17 @@ void SystemAbstract::sparsity(linearSystemPETSc<double>& sys,
   unsigned int dofJ;
 
   for(unsigned int i = 0; i < N; i++){
-    try{
-      dofI = dofM->getGlobalId(*(dof[i]));
+    dofI = dofM->getGlobalId(*(dof[i]));
 
+    // Add non fixed Dof
+    if(dofI != DofManager::isFixedId()){
       for(unsigned int j = 0; j < N; j++){
-        try{
-          dofJ = dofM->getGlobalId(*(dof[j]));
+        dofJ = dofM->getGlobalId(*(dof[j]));
 
+        // Add non fixed Dof
+        if(dofJ != DofManager::isFixedId())
           sys.insertInSparsityPattern(dofI, dofJ);
-        }
-
-        catch(DofFixedException& any){
-          // Don't add fixed Dof
-        }
       }
-    }
-
-    catch(DofFixedException& any){
-      // Don't add fixed Dof
     }
   }
 }

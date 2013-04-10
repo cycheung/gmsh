@@ -26,15 +26,13 @@
 */
 
 class DofManager{
- private:
-  typedef struct{
-    bool isFixed;
-    unsigned int globalId;
-    double       fixedValue;
-  } DofData;
+  static const unsigned int isFixed;
 
-  std::map<const Dof*, DofData, DofComparator>* globalId;
-  unsigned int nNotFixedDof;
+  std::map<const Dof*, unsigned int, DofComparator>* globalId;
+  std::map<const Dof*, double, DofComparator>*       fixedDof;
+
+ public:
+  static const unsigned int isFixedId(void);
 
  public:
    DofManager(void);
@@ -45,20 +43,31 @@ class DofManager{
 
   unsigned int getGlobalId(const Dof& dof) const;
 
-  bool isUnknown(const Dof& dof) const;
-  bool fixValue(const Dof& dof, double value);
-  std::pair<bool, double> getValue(const Dof& dof) const;
+  bool   isUnknown(const Dof& dof) const;
+  bool   fixValue(const Dof& dof, double value);
+  double getValue(const Dof& dof) const;
 
   unsigned int getDofNumber(void) const;
 
   std::string toString(void) const;
 
  private:
-  void generateGlobalIdSpaceWithoutFixedDof(void);
+  void serialize(void);
 };
 
 
 /**
+   @fn DofManager::isFixedId
+
+   Fixed Dof got a special global @c ID.@n
+   This global @c ID is returned by this class method.
+
+   @see DofManager::fixValue()
+   @see DofManager::getGlobalId()
+
+   @return The special @c ID for fixed Dof
+   **
+
    @fn DofManager::DofManager
 
    Instantiates a new DofManager
@@ -72,14 +81,26 @@ class DofManager{
    @fn DofManager::addToGlobalIdSpace
    @param god A vector of GroupOfDof
 
-   Numbers every Dof of every given GroupOfDof.@n
+   Adds the given Dof%s in this DofManager
+   **
 
+   @fn DofManager::generateGlobalIdSpace
+
+   Numbers every non fixed Dof%s of this DofManager.@n
    Each Dof%s will be given a @em unique @em global @c ID .
    **
 
    @fn DofManager::getGlobalId
    @param dof The Dof from which we want the @em global @c ID
    @return Returns the @em global @em @c ID of the given Dof
+
+   @note
+   If the given Dof has been fixed,
+   DofManager::isFixedId is returned
+
+   @note
+   If the given Dof is not in this DofManager,
+   an Exception is thrown
    **
 
    @fn DofManager::isUnknown
@@ -108,20 +129,10 @@ class DofManager{
 
    @fn DofManager::getValue
    @param dof A Dof
-   @return Returns an std::pair, where:
+   @return
    <ul>
-     <li> The first value is:
-       <ol>
-         <li> @c true, if the given Dof @em is a @em fixed Dof
-         <li> @c false, otherwise
-       </ol>
-
-     <li> The second value is:
-       <ol>
-         <li> If the first value was @em @c true,
-	 equal the value of the given (fixed) Dof
-         <li> Not specified otherwise
-       </ol>
+     <li> Returns the value of the given Dof, if it has been fixed
+     <li> Throws an Exception if the Dof has not been fixed
    </ul>
    **
 
@@ -132,19 +143,22 @@ class DofManager{
 
    @fn  DofManager::toString
    @return Returns the DofManager's string
-   **
 */
 
 //////////////////////
 // Inline Functions //
 //////////////////////
 
+inline const unsigned int DofManager::isFixedId(void){
+  return isFixed;
+}
+
 inline bool DofManager::isUnknown(const Dof& dof) const{
-  return globalId->find(&dof)->second.isFixed;
+  return globalId->find(&dof)->second == isFixed;
 }
 
 inline unsigned int DofManager::getDofNumber(void) const{
-  return nNotFixedDof;
+  return globalId->size() - fixedDof->size();
 }
 
 #endif
