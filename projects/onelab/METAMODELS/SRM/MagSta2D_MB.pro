@@ -50,8 +50,8 @@ FunctionSpace {
       { Name Ub ; Type AssociatedWith ; NameOfCoef ir ; }
     }
     Constraint {
-      { NameOfCoef Ub ; EntityType Region ; NameOfConstraint Voltage_2D ; }
-      { NameOfCoef Ib ; EntityType Region ; NameOfConstraint Current_2D ; }
+      { NameOfCoef Ub ; EntityType Region ; /*NameOfConstraint Voltage_2D ;*/ }
+      { NameOfCoef Ib ; EntityType Region ; /*NameOfConstraint Current_2D ;*/ }
     }
   }
 
@@ -65,8 +65,8 @@ FunctionSpace {
       { Name Uz ; Type AssociatedWith ; NameOfCoef ir ; }
     }
     Constraint {
-      { NameOfCoef Uz ; EntityType Region ; NameOfConstraint Voltage_Cir ; }
-      { NameOfCoef Iz ; EntityType Region ; NameOfConstraint Current_Cir ; }
+      { NameOfCoef Uz ; EntityType Region ; /*NameOfConstraint Voltage_Cir ;*/ }
+      { NameOfCoef Iz ; EntityType Region ; /*NameOfConstraint Current_Cir ;*/ }
     }
   }
 

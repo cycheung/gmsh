@@ -1,18 +1,26 @@
 
 Include "srm_data.pro";
 
+/*
+These variables are pointles when the model is called from a python metamodel
+
 DefineConstant[ ComputeCommand = {"-solve -v 1", Path "getdp/9"} ];
 // with "-solve -v 1 -v2" a mesh-based Gmsh output is issued, i.e.
 // all view are appended to the same file and appear superimposed in the GUI 
 DefineConstant[ ResolutionChoices = {"MagSta", Path "getdp/1"} ];
 DefineConstant[ PostOperationChoices = {"Torque", Path "getdp/2"} ];
+*/
 
-DefineConstant[ POSITION = {30., Path "IO/1", ShortHelp "Rotor Position [deg]"} ];
-DefineConstant[ MST = {0., Path "IO/2", ShortHelp "Torque (MST) [Nm]"} ];
-DefineConstant[ VWP = {0., Path "IO/3", ShortHelp "Torque (VWP) [Nm]"} ];
-DefineConstant[ IR = {  1, Path "IO/4", ShortHelp "Current phase R [A]"} ];
-DefineConstant[ IS = {  0, Path "IO/5", ShortHelp "Current phase S [A]"} ];
-DefineConstant[ IT = {  0, Path "IO/6", ShortHelp "Current phase T [A]"} ];
+/*
+Re-declaration of onelab parameter, to make the .pro file selfconsistent
+The parameters are already declared in the main python script
+*/
+DefineConstant[ POSITION = {30., Path "IO/1", Label "Rotor Position [deg]"}];
+DefineConstant[ MST = {0., Path "IO/2", Label "Torque (MST) [Nm]"}];
+DefineConstant[ VWP = {0., Path "IO/3", Label "Torque (VWP) [Nm]"}];
+DefineConstant[ IR = {  1, Path "IO/4", Label "Current phase R [A]"} ];
+DefineConstant[ IS = {  0, Path "IO/5", Label "Current phase S [A]"} ];
+DefineConstant[ IT = {  0, Path "IO/6", Label "Current phase T [A]"} ];
 
 angleR = POSITION ;// angular rotor position
 
