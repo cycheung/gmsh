@@ -7,11 +7,14 @@ OL = onelab.client()
 
 modelName = 'srm'
 
-OL.geometry(modelName + '.geo')
+# 2 ways to call the client gmsh
+# 1st 
+OL.geometry(modelName + '.geo')  # merge geo file
 if OL.action == 'compute' :
- OL.mesh(modelName + '.msh')
+ OL.mesh(modelName + '.msh') # send string "Mesh 3; Save filename;"
 
-#OL.run('sub_gmsh', 'gmsh ' + modelName + '.geo -', '-2')
+# 2d call gmsh as a client 
+# OL.run('sub_gmsh', 'gmsh ' + modelName + '.geo -', '-2')
 
 
 # call getDP, mesh file is given explicitly
