@@ -26,10 +26,23 @@
 */
 
 class DofManager{
+ private:
+  typedef struct{
+    unsigned int  nDof;
+    unsigned int* id;
+  } Data;
+
   static const unsigned int isFixed;
 
-  std::map<const Dof*, unsigned int, DofComparator>* globalId;
+  std::map<const Dof*, unsigned int, DofComparator>* globalIdM;
   std::map<const Dof*, double, DofComparator>*       fixedDof;
+
+  Data*        globalIdV;
+  unsigned int sizeV;
+
+  unsigned int first;
+  unsigned int last;
+  unsigned int nTotDof;
 
  public:
   static const unsigned int isFixedId(void);
@@ -41,7 +54,8 @@ class DofManager{
   void addToDofManager(const std::vector<GroupOfDof*>& god);
   void generateGlobalIdSpace(void);
 
-  unsigned int getGlobalId(const Dof& dof) const;
+  unsigned int getGlobalId(const Dof& dof)     const;
+  unsigned int getGlobalIdSafe(const Dof& dof) const;
 
   bool   isUnknown(const Dof& dof) const;
   bool   fixValue(const Dof& dof, double value);
@@ -53,6 +67,14 @@ class DofManager{
 
  private:
   void serialize(void);
+  std::pair<bool, unsigned int> find(const Dof& dof)     const;
+  std::pair<bool, unsigned int> findSafe(const Dof& dof) const;
+
+  bool isUnknownFromMap(const Dof& dof) const;
+  bool isUnknownFromVec(const Dof& dof) const;
+
+  std::string toStringFromMap(void) const;
+  std::string toStringFromVec(void) const;
 };
 
 
@@ -153,12 +175,23 @@ inline const unsigned int DofManager::isFixedId(void){
   return isFixed;
 }
 
-inline bool DofManager::isUnknown(const Dof& dof) const{
-  return globalId->find(&dof)->second == isFixed;
+inline std::pair<bool, unsigned int> DofManager::find(const Dof& dof) const{
+  const unsigned int entity = dof.getEntity() - first;
+  const unsigned int type   = dof.getType();
+
+  return std::pair<bool, unsigned int>(true, globalIdV[entity].id[type]);
+}
+
+inline unsigned int DofManager::getGlobalId(const Dof& dof) const{
+  return find(dof).second;
 }
 
 inline unsigned int DofManager::getDofNumber(void) const{
-  return globalId->size() - fixedDof->size();
+  if(globalIdM)
+    return globalIdM->size() - fixedDof->size();
+
+  else
+    return nTotDof - fixedDof->size();
 }
 
 #endif

@@ -7,6 +7,7 @@
 using namespace std;
 
 WriterMsh::WriterMsh(void){
+  lBasis = NULL;
 }
 
 WriterMsh::~WriterMsh(void){
@@ -53,7 +54,7 @@ void WriterMsh::writeFinalize(void) const{
   out->close();
   delete out;
 
-  if(!isNodal)
+  if(lBasis)
     delete lBasis;
 }
 

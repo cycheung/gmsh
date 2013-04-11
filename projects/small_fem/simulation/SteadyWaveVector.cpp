@@ -40,9 +40,7 @@ int main(int argc, char** argv){
   const char* nopos = "nopos";
 
   // Start Timer //
-  Timer preCpt;
   Timer timer;
-
   timer.start();
 
   // Init Gmsh //
@@ -62,10 +60,7 @@ int main(int argc, char** argv){
   const unsigned int order = atoi(argv[3]);
 
   // SteadyWaveVector //
-  preCpt.start();
   FormulationSteadyWaveVector sWave(domain, puls * 1, order);
-  preCpt.stop();
-
   System sys(sWave);
 
   sys.dirichlet(source, fSource);
@@ -79,14 +74,10 @@ int main(int argc, char** argv){
        << "): " << sys.getSize()           << endl;
 
   sys.assemble();
+  cout << "Assembled" << endl << flush;
+
   sys.solve();
-  /*
-  cout << "Precomputing: "  << preCpt.time()   << endl;
-  cout << "PreAlloc: "      << sys.preAlloc    << endl;
-  cout << "Dof Lookup: "    << sys.dofLookTime << endl;
-  cout << "Getting Terms: " << sys.totLHSTime    + sys.totRHSTime    << endl;
-  cout << "Adding Terms: "  << sys.totAddLHSTime + sys.totAddRHSTime << endl;
-  */
+  cout << "Solved"    << endl << flush;
 
   if(argc == 5){
     if(strcmp(argv[4], nopos)){
