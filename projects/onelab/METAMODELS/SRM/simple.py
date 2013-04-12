@@ -6,22 +6,8 @@ import OnelabClient as onelab
 OL = onelab.client()
 print('\nStarting METAMODEL - Action = %s' %(OL.getString('python/Action')))
 
-# parameters declaration
-# the given value is a default value
-dtime = OL.declareNumber('SRM/dtime', value=0.01, label='Time step [s]')
-nstep = OL.declareNumber('SRM/nstep', value=150, label='Nb of time steps')
-x = OL.declareNumber('IO/1POSITION', value=30, label='Rotor Position [deg]')
-IR = OL.declareNumber('IO/4IR', value=1, label='Current phase R [A]') 
-IS = OL.declareNumber('IO/5IS', value=0, label='Current phase R [A]')
-
-# a depending variable
-IT = OL.declareNumber('IO/6IT', value=1.-IR-IS, label='Current phase R [A]', readOnly=1)
-
-# declarations with no value yields a readOnly parameter (highlighted in the Gui)
-# This way, output quantities and readOnly parameters can be pre-declared
-# and given a range, a label, etc
-OL.declareNumber('IO/2MST', label='Torque (MST) [Nm]')
-OL.declareNumber('IO/3VWP', label='Torque (VWP) [Nm]')
+# Script calling the metamodel "srm.py" as a blackbox,
+# here in a simple loop over the angular position
 
 if OL.action == 'check' :
    OL.run('srm', 'srm.py ', '')  # check the FE model
