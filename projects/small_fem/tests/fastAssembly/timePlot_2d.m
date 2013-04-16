@@ -3,7 +3,7 @@ close all;
 clear all;
 
 %% Get Data
-data = dlmread("timing.csv", ";");
+data = dlmread("timing_2d.csv", ";");
 
 % Order
 order    = data(1, 3:end);

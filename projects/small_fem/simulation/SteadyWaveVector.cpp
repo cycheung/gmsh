@@ -18,8 +18,8 @@ double pi = 3.14159265359;
 fullVector<double> fSource(fullVector<double>& xyz){
   fullVector<double> res(3);
 
-  res(0) = 0;
-  res(1) = 1;
+  res(0) = 1;
+  res(1) = 0;
   res(2) = 0;
 
   return res;
