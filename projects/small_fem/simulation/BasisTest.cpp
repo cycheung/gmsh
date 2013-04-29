@@ -42,7 +42,7 @@ int main(int argc, char** argv){
   writer.setDomain(goe);
 
   // Plot Basis //
-  TriLagrangeBasis b(atoi(argv[2]));
+  QuadNodeBasis b(atoi(argv[2]));
   cout << "Size: "     << b.getNFunction() << endl;
   //cout << b.toString() << endl;
 
@@ -54,4 +54,3 @@ int main(int argc, char** argv){
 
   return 0;
 }
-

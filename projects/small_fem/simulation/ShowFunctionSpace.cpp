@@ -1,4 +1,4 @@
-#include <sstream>
+#include <cmath>
 
 #include "BasisGenerator.h"
 #include "FunctionSpaceScalar.h"
@@ -7,6 +7,7 @@
 #include "Mesh.h"
 #include "SystemShowFunctionSpace.h"
 #include "WriterMsh.h"
+#include "Interpolator.h"
 
 #include "Exception.h"
 #include "Gmsh.h"
@@ -58,6 +59,10 @@ int main(int argc, char** argv){
   // Compute all Basis //
   const unsigned int nDof = fSpace->dofNumber();
 
+  // View names
+  char fileName[1024];
+  const unsigned int nDec = floor(log10(nDof)) + 1;
+
   for(unsigned int i = 0; i < nDof; i++){
     SystemShowFunctionSpace sys(*fSpace, i);
 
@@ -65,11 +70,22 @@ int main(int argc, char** argv){
     sys.solve();
 
     // View
-    stringstream stream;
-    stream << "functionSpace_basis" << i;
+    sprintf(fileName, "functionSpace_basis%0*d", nDec, i + 1);
 
-    writer.setValues(sys);
-    writer.write(stream.str());
+    if(argc == 5){
+      // Interpolated View //
+      Mesh visuMesh(argv[4]);
+      GroupOfElement visu = visuMesh.getFromPhysical(7);
+
+      Interpolator interp(sys, visu);
+      interp.write(string(fileName), writer);
+    }
+
+    else{
+      // Adaptive View //
+      writer.setValues(sys);
+      writer.write(string(fileName));
+    }
   }
 
   // Return //

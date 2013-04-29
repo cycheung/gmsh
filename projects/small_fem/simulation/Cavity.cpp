@@ -64,15 +64,8 @@ int main(int argc, char** argv){
   // Write Sol //
   // Number of decimals in nEigenValue
   // Used for '0' pading in sprintf
-  int tmp = nEigenValue;
-  int dec = 0;
-
-  while(tmp != 0){
-    dec++;
-    tmp /= 10;
-  }
-
   char fileName[1024];
+  const unsigned int nDec = floor(log10(nEigenValue)) + 1;
 
   if(argc == 5){
     // With VisuMesh
@@ -80,8 +73,7 @@ int main(int argc, char** argv){
     GroupOfElement visu = visuMesh.getFromPhysical(7);
 
     for(unsigned int i = 0; i < nEigenValue; i++){
-      sprintf(fileName,
-	      "%s%0*d", "cavity_mode", dec, i + 1);
+      sprintf(fileName, "cavity_mode%0*d", nDec, i + 1);
 
       Interpolator intCavity(sysCavity, i, visu);
       intCavity.write(string(fileName), writer);
@@ -91,11 +83,10 @@ int main(int argc, char** argv){
   else{
     // Without VisuMesh
     for(unsigned int i = 0; i < nEigenValue; i++){
-      stringstream stream;
-      stream << "cavity_mode" << i + 1;
+      sprintf(fileName, "cavity_mode%0*d", nDec, i + 1);
 
       writer.setValues(sysCavity, i);
-      writer.write(stream.str());
+      writer.write(string(fileName));
     }
   }
 
