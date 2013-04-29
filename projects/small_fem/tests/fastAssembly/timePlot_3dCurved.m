@@ -5,10 +5,10 @@ clear all;
 %% Get Data
 data = dlmread("timing_3dCurved.csv", ";");
 
-order    = data(1, 2:end);
-unknowns = data(2, 2:end);
-slow     = data(3, 2:end);
-fast     = data(4, 2:end);
+order    = data(2:end, 1);
+unknowns = data(2:end, 2);
+slow     = data(2:end, 3);
+fast     = data(2:end, 4);
 
 %% Time
 figure;

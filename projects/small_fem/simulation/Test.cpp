@@ -1,7 +1,6 @@
 #include <iostream>
 
-#include "TriReferenceSpace.h"
-
+#include "TetReferenceSpace.h"
 #include "Gmsh.h"
 
 using namespace std;
@@ -10,8 +9,8 @@ using namespace std;
 int main(int argc, char** argv){
   GmshInitialize(argc, argv);
 
-  TriReferenceSpace ref;
-  cout << ref.toString() << endl;
+  TetReferenceSpace ref;
+  cout << ref.toLatex() << endl;
 
   GmshFinalize();
   return 0;
