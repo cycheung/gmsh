@@ -34,6 +34,10 @@ A) The packages needed to install gmsh are (gmsh has to be install to use cm3app
 
         - openmpi (don't forget to select openmpi_devel)
 
+        Under OpenSuse 12.3 with OpenMPI 1.6.3 there is a link that is wrong. Infact RTE searches a file in /usr/lib64/mpi/gcc/openmpi/etc. This file is in /etc so the solution consists in created a symbolic link to /etc in /usr/lib64/mpi/gcc/openmpi with the command as root:
+
+             ln -s /etc /usr/lib64/mpi/gcc/openmpi/etc
+
         - libpng and libjpeg (with devel and libpng-compat-devel)
 
         - PCRE (devel and tools) for swig (can be install directly by swig see later)
