@@ -1,5 +1,6 @@
-l  = 1;
-cl = 0.1;
+l   = 1;
+msh = 2;
+cl  = 1;
 
 Point(1) = {+l, -l, 0, cl};
 Point(2) = {+l, +l, 0, cl};
@@ -14,6 +15,8 @@ Line(4) = {4, 1};
 Line Loop(1)     = {1, 2, 3, 4};
 Plane Surface(1) = {1};
 
+Transfinite Line {1, 2, 3, 4} = msh Using Progression 1;
+Transfinite Surface {1};
 Recombine Surface{1};
 
 Physical Line(5)    = {1, 2, 3, 4};

@@ -48,8 +48,8 @@ FormulationSteadyWaveVector::FormulationSteadyWaveVector(GroupOfElement& goe,
   }
 
   else{
-    gaussIntegration::get(goe.get(0).getType(), (order - 1) + (order - 1), gC1, gW1);
-    gaussIntegration::get(goe.get(0).getType(), order + order, gC2, gW2);
+    gaussIntegration::get(goe.get(0).getType(), 2 * ((order - 1) + (order - 1)), gC1, gW1);
+    gaussIntegration::get(goe.get(0).getType(), 2 * (order + order), gC2, gW2);
   }
 
   // Local Terms //

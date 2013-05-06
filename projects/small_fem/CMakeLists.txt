@@ -24,6 +24,12 @@ endmacro(add_sources_in_gmsh)
 ## Look for Packages
 include(FindPackageHandleStandardArgs)
 
+find_package(OpenMP)
+if(OPENMP_FOUND)
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+endif()
+
 ## Include gmsh
 add_subdirectory(../.. "${CMAKE_CURRENT_BINARY_DIR}/gmsh")
 
@@ -64,10 +70,8 @@ include_directories(
 
 ## Compiler Flags
 add_definitions(-pedantic -Wall)
-add_definitions(-O3)
+add_definitions(-O3 -march=native)
 add_definitions(-g)
-# add_definitions(-pg)
-# set(CMAKE_EXE_LINKER_FLAGS "-pg")
 
 ## Build SmallFEM Library
 add_library(sf STATIC ${sources})

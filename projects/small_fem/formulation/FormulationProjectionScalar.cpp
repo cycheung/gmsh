@@ -30,7 +30,7 @@ FormulationProjectionScalar(double (*f)(fullVector<double>& xyz),
   if(order == 0)
     order = 1;
 
-  gaussIntegration::get(goe.get(0).getType(), 2 * order, gC, gW);
+  gaussIntegration::get(goe.get(0).getType(), 2 * 2 * order, gC, gW);
 
   // Local Terms //
   basis->preEvaluateFunctions(gC);
