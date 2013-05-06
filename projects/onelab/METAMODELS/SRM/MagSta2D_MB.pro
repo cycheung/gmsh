@@ -184,6 +184,7 @@ Resolution {
       { Name A ; NameOfFormulation MagSta_a_2D ; }
     }
     Operation {
+      CreateDirectory["res"];
       ChangeOfCoordinates [NodesOf[RotorMoving], RotatePZ[th0]] ;
       InitMovingBand2D[MB] ; MeshMovingBand2D[MB] ;
       //SaveMesh[A, Region[{Domain}], "Domain.msh"]; // Checking mesh (e.g. moving band)
