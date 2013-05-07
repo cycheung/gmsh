@@ -1,6 +1,6 @@
 #include "BasisGenerator.h"
-#include "GaussIntegration.h"
 #include "GroupOfJacobian.h"
+#include "Quadrature.h"
 
 #include "Exception.h"
 #include "FormulationSteadyWaveScalar.h"
@@ -33,21 +33,15 @@ FormulationSteadyWaveScalar::FormulationSteadyWaveScalar(GroupOfElement& goe,
 
   fspace = new FunctionSpaceScalar(goe, *basis);
 
-  // Gaussian Quadrature Data (Term One) //
-  // NB: We need to integrad a grad * grad !
-  //     and order(rot f) = order(f) - 1
-  fullMatrix<double> gC1;
-  fullVector<double> gW1;
+  // Gaussian Quadrature //
+  Quadrature gaussGradGrad(goe.get(0).getType(), order - 1, 2);
+  Quadrature gaussFF(goe.get(0).getType(), order, 2);
 
-  // Gaussian Quadrature Data (Term Two) //
-  // NB: We need to integrad a f * f !
-  fullMatrix<double> gC2;
-  fullVector<double> gW2;
+  const fullMatrix<double>& gC1 = gaussGradGrad.getPoints();
+  const fullVector<double>& gW1 = gaussGradGrad.getWeights();
 
-  // Look for 1st element to get element type
-  // (We suppose only one type of Mesh !!)
-  gaussIntegration::get(goe.get(0).getType(), 2 * (order - 1), gC1, gW1);
-  gaussIntegration::get(goe.get(0).getType(), 2 *  order     , gC2, gW2);
+  const fullMatrix<double>& gC2 = gaussFF.getPoints();
+  const fullVector<double>& gW2 = gaussFF.getWeights();
 
   // Local Terms //
   basis->preEvaluateDerivatives(gC1);

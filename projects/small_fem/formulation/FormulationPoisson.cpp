@@ -1,6 +1,6 @@
 #include "BasisGenerator.h"
-#include "GaussIntegration.h"
 #include "GroupOfJacobian.h"
+#include "Quadrature.h"
 
 #include "Exception.h"
 #include "FormulationPoisson.h"
@@ -28,25 +28,15 @@ FormulationPoisson::FormulationPoisson(GroupOfElement& goe,
 
   fspace = new FunctionSpaceScalar(goe, *basis);
 
-  // Gaussian Quadrature Data (LHS) //
-  // NB: We need to integrad a grad * grad !
-  //     and order(grad f) = order(f) - 1
-  fullMatrix<double> gCL;
-  fullVector<double> gWL;
+  // Gaussian Quadrature //
+  Quadrature gaussGradGrad(goe.get(0).getType(), order - 1, 2);
+  Quadrature gaussFF(goe.get(0).getType(), order + sourceOrder, 1);
 
-  // Look for 1st element to get element type
-  // (We suppose only one type of Mesh !!)
-  gaussIntegration::get(goe.get(0).getType(), 2 * (order - 1), gCL, gWL);
+  const fullMatrix<double>& gCL = gaussGradGrad.getPoints();
+  const fullVector<double>& gWL = gaussGradGrad.getWeights();
 
-  // Gaussian Quadrature Data (RHS) //
-  // NB: We need to integrad a f * gSource !
-  //     and order(gSource) = sourceOrder
-  fullMatrix<double> gCR;
-  fullVector<double> gWR;
-
-  // Look for 1st element to get element type
-  // (We suppose only one type of Mesh !!)
-  gaussIntegration::get(goe.get(0).getType(), order + sourceOrder, gCR, gWR);
+  const fullMatrix<double>& gCR = gaussFF.getPoints();
+  const fullVector<double>& gWR = gaussFF.getWeights();
 
   // Local Terms //
   basis->preEvaluateDerivatives(gCL);

@@ -1,7 +1,7 @@
 #include "BasisGenerator.h"
-#include "GaussIntegration.h"
 #include "GroupOfJacobian.h"
 #include "GroupOfElement.h"
+#include "Quadrature.h"
 
 #include "FormulationProjectionVector.h"
 
@@ -17,20 +17,11 @@ FormulationProjectionVector(fullVector<double> (*f)(fullVector<double>& xyz),
   // Domain //
   GroupOfElement& goe = fs.getSupport();
 
-  // Gaussian Quadrature Data  //
-  // NB: We need to integrad f_i * f_j or f_i * g
-  fullMatrix<double> gC;
-  fullVector<double> gW;
+  // Gaussian Quadrature //
+  Quadrature gauss(goe.get(0).getType(), basis->getOrder(), 2);
 
-  // Look for 1st element to get element type
-  // (We suppose only one type of Mesh !!)
-  unsigned int order = basis->getOrder();
-
-  // if Order == 0 --> we want Nedelec Basis of ordre *almost* one //
-  if(order == 0)
-    order = 1;
-
-  gaussIntegration::get(goe.get(0).getType(), 2 * 2 * order, gC, gW);
+  const fullMatrix<double>& gC = gauss.getPoints();
+  const fullVector<double>& gW = gauss.getWeights();
 
   // Local Terms //
   basis->preEvaluateFunctions(gC);

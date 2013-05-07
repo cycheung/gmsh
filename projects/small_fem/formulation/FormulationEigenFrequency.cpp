@@ -1,6 +1,6 @@
 #include "BasisGenerator.h"
-#include "GaussIntegration.h"
 #include "GroupOfJacobian.h"
+#include "Quadrature.h"
 
 #include "FormulationEigenFrequency.h"
 
@@ -23,30 +23,15 @@ FormulationEigenFrequency::FormulationEigenFrequency(GroupOfElement& goe,
 
   fspace = new FunctionSpaceVector(goe, *basis);
 
-  // Gaussian Quadrature Data (Term One) //
-  // NB: We need to integrad a rot * rot !
-  //     and order(rot f) = order(f) - 1
-  fullMatrix<double> gC1;
-  fullVector<double> gW1;
+  // Gaussian Quadrature //
+  Quadrature gaussCurlCurl(goe.get(0).getType(), order - 1, 2);
+  Quadrature gaussFF(goe.get(0).getType(), order, 2);
 
-  // Gaussian Quadrature Data (Term Two) //
-  // NB: We need to integrad a f * f !
-  fullMatrix<double> gC2;
-  fullVector<double> gW2;
+  const fullMatrix<double>& gC1 = gaussCurlCurl.getPoints();
+  const fullVector<double>& gW1 = gaussCurlCurl.getWeights();
 
-  // Look for 1st element to get element type
-  // (We suppose only one type of Mesh !!)
-
-  // if Order == 0 --> we want Nedelec Basis of ordre *almost* one //
-  if(order == 0){
-    gaussIntegration::get(goe.get(0).getType(), 0, gC1, gW1);
-    gaussIntegration::get(goe.get(0).getType(), 2, gC2, gW2);
-  }
-
-  else{
-    gaussIntegration::get(goe.get(0).getType(), (order - 1) + (order - 1), gC1, gW1);
-    gaussIntegration::get(goe.get(0).getType(), order + order, gC2, gW2);
-  }
+  const fullMatrix<double>& gC2 = gaussFF.getPoints();
+  const fullVector<double>& gW2 = gaussFF.getWeights();
 
   // Local Terms //
   basis->preEvaluateDerivatives(gC1);

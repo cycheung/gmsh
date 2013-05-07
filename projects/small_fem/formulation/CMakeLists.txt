@@ -16,6 +16,8 @@ set(src
   TermCurlCurl.cpp
   TermProjectionField.cpp
   TermProjectionGrad.cpp
+
+  Quadrature.cpp
 )
 
 add_sources(formulation "${src}")

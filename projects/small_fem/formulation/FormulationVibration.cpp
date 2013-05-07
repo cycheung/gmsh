@@ -1,6 +1,6 @@
 #include "BasisGenerator.h"
-#include "GaussIntegration.h"
 #include "GroupOfJacobian.h"
+#include "Quadrature.h"
 
 #include "Exception.h"
 #include "FormulationVibration.h"
@@ -20,15 +20,11 @@ FormulationVibration::FormulationVibration(GroupOfElement& goe,
 
   fspace = new FunctionSpaceScalar(goe, *basis);
 
-  // Gaussian Quadrature Data //
-  // NB: We need to integrad a grad * grad !
-  //     and order(grad f) = order(f) - 1
-  fullMatrix<double> gC;
-  fullVector<double> gW;
+  // Gaussian Quadrature //
+  Quadrature gauss(goe.get(0).getType(), order - 1, 2);
 
-  // Look for 1st element to get element type
-  // (We suppose only one type of Mesh !!)
-  gaussIntegration::get(goe.get(0).getType(), (order - 1) + (order - 1), gC, gW);
+  const fullMatrix<double>& gC = gauss.getPoints();
+  const fullVector<double>& gW = gauss.getWeights();
 
   // Local Terms //
   basis->preEvaluateDerivatives(gC);
