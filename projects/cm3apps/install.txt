@@ -19,6 +19,8 @@ A) The packages needed to install gmsh are (gmsh has to be install to use cm3app
       - libpng-dev
       - libjpeg-dev
 
+   Note for Ubuntu 13.04 (and higher?) Python3 bindings are created by default. After testing it works as long as work py-driver is compatible with python3 If you print something in this files you have to convert it using "2to3 -w driver.py" Note that this command write in place but normally creates a backup driver.py.bak of the driver working with python2... it is maybe safer to do a copy by your own before.  
+
    ° For openSUSE the following packages are available via yast2
 
         - make, cmake, gcc, gcc-c++, gcc-fortran python (+ python_devel) and svn (for svn search subversion in package manager under openSUSE) 
@@ -184,7 +186,7 @@ B) Now you can install your project(s) (dgshell and/or dG3D and/or msch), NonLin
               export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/petsc/petsc-3.1-p7/linux-gnu-c-opt/<petsc arch>/lib
       
            On the next lines APPS = dgshell dG3D or msch or the 3 if you want to compile the 3
-       0b) on hmem edit projects/APPS/CMakeLists.txt and replace PYTHON_INCLUDE_PATH by PYTHON_INCLUDE_DIR
+       0b) (Obsolete but just in case of the problem appear...)on hmem edit projects/APPS/CMakeLists.txt and replace PYTHON_INCLUDE_PATH by PYTHON_INCLUDE_DIR
 
        1) retrieve source via svn: svn co https://geuz.org/svn/gmsh/trunk gmsh type your username and password (ask for it)
 
@@ -195,6 +197,8 @@ B) Now you can install your project(s) (dgshell and/or dG3D and/or msch), NonLin
 
        4) type ccmake .. and set the option
              CMAKE_BUILD_TYPE release (or debug)
+             ENABLE_BUILD_DYNAMICS = ON (dynamic executable using the lib to not compile everything twice)
+             ENABLE_BUILD_SHARED = ON (creates the Gmsh library you need)
              ENABLE_MPI = ON (for // implementation)
              ENABLE_TAUCS=OFF (or install it but it's hard)
              ENABLE_SLEPC=OFF
@@ -260,7 +264,11 @@ It seems that is a problem with the version of gcc (from internet)
           to another. You have just to change the import in the beginning of your example.py file
 
       12) Go to gmsh/projects/dgshell/battery folder and type 
-              python battery.py --launch= to perform test
+           - If you are using python2 bindings (default except for Ubuntu 13.04 and higher)
+              python battery.py --launch=
+           - If you are using python3 bindings (Ubuntu 13.04 and higher)
+              python3 battery3.py --launch= 
+          to perform test
 
       13) after test see report.csv. If large error appear or there are some missing results please ask
 
