@@ -16,8 +16,9 @@ using namespace std;
 
 int main(int argc, char** argv){
   // Const
-  const char* scalar = "scalar";
-  const char* vector = "vector";
+  const char* lagrange = "lagrange";
+  const char* scalar   = "scalar";
+  const char* vector   = "vector";
 
   // Init //
   GmshInitialize(argc, argv);
@@ -34,7 +35,16 @@ int main(int argc, char** argv){
   Basis*               basis;
   FunctionSpace*       fSpace;
 
-  if(!strcmp(argv[2], scalar)){
+  if(!strcmp(argv[2], lagrange)){
+    // If Lagrange
+    basis =
+      BasisGenerator::generate(domain.get(0).getType(),
+                               0, order, "lagrange");
+
+    fSpace = new FunctionSpaceScalar(domain, *basis);
+  }
+
+  else if(!strcmp(argv[2], scalar)){
     // If Scalar
     basis =
       BasisGenerator::generate(domain.get(0).getType(),

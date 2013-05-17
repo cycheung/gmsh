@@ -10,7 +10,6 @@ set(src
   WriterMshVolume.cpp
 
   Interpolator.cpp
-  PlotBasis.cpp
 )
 
 

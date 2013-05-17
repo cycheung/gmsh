@@ -1,9 +1,19 @@
 #include <iostream>
 #include "Timer.h"
+#include "TriLagrangeBasis.h"
+#include "TriReferenceSpace.h"
 
 using namespace std;
 
 int main(int argc, char** argv){
+  TriLagrangeBasis basis(atoi(argv[1]));
+
+  //TriReferenceSpace tri;
+  //cout << tri.toLatex() << endl;
+
+  return 0;
+
+  /*
   const size_t N = 387 * 10;
   const size_t M = 28224 * 10;
 
@@ -28,4 +38,5 @@ int main(int argc, char** argv){
 
   delete[] ma;
   return 0;
+  */
 }
