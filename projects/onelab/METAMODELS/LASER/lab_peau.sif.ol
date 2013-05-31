@@ -1,10 +1,8 @@
 # in a name.xxx.ol file onelab parameter definition lines must be enclosed 
 # between "OL.begin" and "OL.end" or start with "OL.line"
 OL.block
-#NumStep.number(11,Parameters/Elmer/1, "Time steps until end stim."); 
-TimeStep.number(1, Parameters/Elmer/2,"Time step [ms]");
-#TimeStep.setValue(OL.eval(OL.get(Parameters/Laser/STIMTIME)/OL.get(NumStep)));
-TimeEnd.number(0.25,Parameters/Elmer/3,"Simulation end time [s]");
+#TimeStep.number(1, Parameters/Elmer/2,"Time step [ms]");
+#TimeEnd.number(0.25,Parameters/Elmer/3,"Simulation end time [s]");
 OL.endblock
 
 Header
@@ -15,8 +13,8 @@ Simulation
   Max Output Level = 3
   Coordinate System =  Axi Symmetric 
   Simulation Type = Transient 
-  Timestep Intervals (1) = OL.eval(floor(OL.get(TimeEnd)/OL.get(TimeStep)*1000))
-  Timestep sizes (1) = OL.eval(OL.get(TimeStep)/1000)
+  Timestep Intervals (1) = OL.eval(floor(OL.get(Parameters/Elmer/3TimeEnd)/OL.get(Parameters/Elmer/2TimeStep)*1000))
+  Timestep sizes (1) = OL.eval(OL.get(Parameters/Elmer/2TimeStep)/1000)
   Timestepping Method = Implicit Euler
 !  BDF Order = 2
   Output Intervals = 1
@@ -75,19 +73,20 @@ Solver 2
    Exec Solver = "After saving"
    Equation = String "ResultOutput"
    Procedure = File "ResultOutputSolve" "ResultOutputSolver"
-   Output File Name = String "solution.pos"
+   Output File Name = String "solutionOL.get(Solution/0TAG).pos"
    Output Format = String gmsh	
    Scalar Field 1 = String Temperature
    !Scalar Field 2 = String Teneur
    !Scalar Field 3 = String DensityBis
 End
+
 Solver 3 !ElmerModelsManuel page 187
   Exec solver = "Before timestep"
   Equation = "SaveScalars"
   Procedure = "SaveData" "SaveScalars"
   Variable 1 = String Temperature
   Variable 2 = Time
-  Save Coordinates(2,2) = 1e-6 OL.get(PostPro/ZSURF,choices.comp(0)) 1e-6 OL.get(PostPro/ZSURF,choices.comp(1))
+  Save Coordinates(2,2) = 1e-6 OL.eval(OL.get(PostPro/3SKINWIDTH)*1e-3) 1e-6 OL.eval( OL.get(Parameters/Skin/3DERMIS)*1e-3)
   Filename = "temp.txt"
   Target Variable 2 = String "Tsensor" 
 End
@@ -100,7 +99,7 @@ $refl    = OL.get(Parameters/Skin/REFLECTIVITY)
 $r       = OL.get(Parameters/Laser/2BEAMRADIUS)/1000
 $mua     = OL.get(Parameters/Laser/ABSORPTION)
 $tlaser  = OL.get(Parameters/Laser/STIMTIME)
-$hp      = OL.get(PostPro/ZSURF)
+$hp      = OL.get(PostPro/3SKINWIDTH)*1e-3
 $ylaser  = hp
 $temp    = OL.get(Parameters/Laser/LASERTEMP)
 $power   = OL.get(Parameters/Laser/LASERPOWER)
