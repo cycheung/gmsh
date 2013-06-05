@@ -186,7 +186,7 @@ OL.else
      OL.get(Parameters/Laser/8TIME1)  OL.get(Parameters/Laser/7TEMP1)
      OL.eval(OL.get(Parameters/Laser/8TIME1)+OL.get(Parameters/Laser/9RAMPTIME))  OL.get(Parameters/Laser/5LASERTEMP)
      OL.eval(OL.get(Parameters/Laser/8TIME1)+OL.get(Parameters/Laser/9RAMPTIME)+OL.get(Parameters/Laser/6STIMTIME))  OL.get(Parameters/Laser/5LASERTEMP)
-     OL.eval(OL.get(Parameters/Laser/8TIME1)+OL.get(Parameters/Laser/9RAMPTIME)+OL.get(Parameters/Laser/6STIMTIME)+1.e-3)  OL.get(Parameters/Skin/TAMBIANT)
+     OL.eval(OL.get(Parameters/Laser/8TIME1)+OL.get(Parameters/Laser/9RAMPTIME)+OL.get(Parameters/Laser/6STIMTIME)+1.e-3)  OL.get(Parameters/Skin/TBASE)
      10  OL.get(Parameters/Skin/6TBASE)
    End
 OL.endif
