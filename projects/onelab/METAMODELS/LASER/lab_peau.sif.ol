@@ -187,7 +187,7 @@ OL.else
      OL.eval(OL.get(Parameters/Laser/8TIME1)+OL.get(Parameters/Laser/9RAMPTIME))  OL.get(Parameters/Laser/5LASERTEMP)
      OL.eval(OL.get(Parameters/Laser/8TIME1)+OL.get(Parameters/Laser/9RAMPTIME)+OL.get(Parameters/Laser/6STIMTIME))  OL.get(Parameters/Laser/5LASERTEMP)
      OL.eval(OL.get(Parameters/Laser/8TIME1)+OL.get(Parameters/Laser/9RAMPTIME)+OL.get(Parameters/Laser/6STIMTIME)+1.e-3)  OL.get(Parameters/Skin/TAMBIANT)
-     10  OL.get(Parameters/Skin/TAMBIANT)
+     10  OL.get(Parameters/Skin/6TBASE)
    End
 OL.endif
   Pin = Variable Time, Tsensor, Timposed
