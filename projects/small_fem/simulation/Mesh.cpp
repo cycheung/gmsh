@@ -49,6 +49,9 @@ int main(int argc, char** argv){
   unsigned int j = 0;
   unsigned int sum = orientationStat[j];
 
+  for(unsigned int i = 0; i < orientationStat.size(); i++)
+    cout << i << ": " << orientationStat[i] << endl;
+
   while(orientationStat[j] == 0)
     j++;
 

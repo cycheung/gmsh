@@ -1,15 +1,18 @@
 #include <iostream>
 #include "Timer.h"
 #include "TriLagrangeBasis.h"
+#include "LineReferenceSpace.h"
 #include "TriReferenceSpace.h"
+#include "QuadReferenceSpace.h"
+#include "TetReferenceSpace.h"
 
 using namespace std;
 
 int main(int argc, char** argv){
-  TriLagrangeBasis basis(atoi(argv[1]));
+  //TriLagrangeBasis basis(atoi(argv[1]));
 
-  //TriReferenceSpace tri;
-  //cout << tri.toLatex() << endl;
+  TriReferenceSpace ref;
+  cout << ref.toString() << endl;
 
   return 0;
 
