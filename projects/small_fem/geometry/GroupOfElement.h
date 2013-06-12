@@ -29,8 +29,8 @@ class GroupOfElement{
 
  public:
    GroupOfElement(std::multimap<int, const MElement*>::iterator begin,
-		  std::multimap<int, const MElement*>::iterator end,
-		  const Mesh& mesh);
+                  std::multimap<int, const MElement*>::iterator end,
+                  const Mesh& mesh);
 
   ~GroupOfElement(void);
 

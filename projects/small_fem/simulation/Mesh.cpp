@@ -6,6 +6,7 @@
 #include "WriterMsh.h"
 #include "Gmsh.h"
 
+#include <vector>
 #include "Basis.h"
 #include "BasisGenerator.h"
 
@@ -69,6 +70,24 @@ int main(int argc, char** argv){
     orientation[i] = j;
   }
 
+  cout << "## Mesh" << endl << flush;
+  for(unsigned int i = 0; i < domain.getNumber(); i++){
+    const MElement& e    = domain.get(i);
+    const unsigned int N = e.getNumPrimaryVertices();
+
+    vector<int> v(N);
+    for(unsigned int j = 0; j < N; j++)
+      v[j] = e.getVertex(j)->getNum();
+
+    cout << "  -- " << "Element " << e.getNum()
+         << ": "    << "[";
+
+    for(unsigned int j = 0; j < N - 1; j++)
+      cout << v[j] << ", ";
+
+    cout << v[N - 1] << "]"
+         << endl;
+  }
 
   // Printing //
   WriterMsh writer;

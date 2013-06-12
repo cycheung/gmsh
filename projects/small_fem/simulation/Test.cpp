@@ -11,8 +11,8 @@ using namespace std;
 int main(int argc, char** argv){
   //TriLagrangeBasis basis(atoi(argv[1]));
 
-  TriReferenceSpace ref;
-  cout << ref.toString() << endl;
+  TetReferenceSpace ref;
+  //cout << ref.toString() << endl;
 
   return 0;
 
