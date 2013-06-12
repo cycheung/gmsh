@@ -9,8 +9,8 @@ OL = onelab.client()
 
 # declaration of the metamodel parameters
 # the given value is a default value
-dtime = OL.defineNumber('SRM/dtime', value=0.01, label='Time step [s]')
-nstep = OL.defineNumber('SRM/nstep', value=150, label='Nb of time steps')
+#dtime = OL.defineNumber('SRM/dtime', value=0.01, label='Time step [s]')
+#nstep = OL.defineNumber('SRM/nstep', value=150, label='Nb of time steps')
 x = OL.defineNumber('IO/1POSITION', value=30, label='Rotor Position [deg]')
 IR = OL.defineNumber('IO/4IR', value=1, label='Current phase R [A]') 
 IS = OL.defineNumber('IO/5IS', value=0, label='Current phase R [A]')

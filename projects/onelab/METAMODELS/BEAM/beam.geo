@@ -32,7 +32,7 @@ Transfinite Line {1, 3} = NbLayY;
 Transfinite Line {2, 4} = NbLayZ;
 Transfinite Surface {10} Right;
 Recombine Surface {10};
-Extrude Surface { 10, {L, 0, 0} } {Layers{NbLayX}; Recombine; } ;   
+Extrude Surface { 10, {L, 0, 0} } {Layers{NbLayX-1}; Recombine; } ;   
 
 Physical Volume("Volume")={1};
 Physical Surface("LoadSurf")={23};

@@ -10,7 +10,8 @@
 # in the "name.ol" file (this file)
 # In this case, the metamodel has 6 clients
 
-TAG.string(, Solution/0,"Simulation tag"); TAG.setReadOnly(0);
+TAGSIMU.string(,,"Simulation tag"); 
+TAGSIMU.setReadOnly(0); 
 RESTORE.radioButton(0,Solution/0,"Restore");
 
 #-1)  Gmsh for meshing
@@ -235,8 +236,6 @@ OL.if( OL.get(Metamodel/Action) == 1 ) # "check"
   UADELTA.resetChoices();
 OL.endif
 
-
-
 #-2) ElmerGrid converts the mesh for Elmer
 ElmerGrid.register(interfaced);
 OL.ifntrue(Solution/0RESTORE)
@@ -249,50 +248,53 @@ OL.endif
 Elmer.register(encapsulated);
 OL.ifntrue(Solution/0RESTORE)
   Elmer.in( ELMERSOLVER_STARTINFO.ol, OL.get(Arguments/FileName).sif.ol);
-  Elmer.out( solutionOL.get(Solution/0TAG).pos, temp.txt );
+  Elmer.out( solutionOL.get(TAGSIMU).pos, tempOL.get(TAGSIMU).txt );
   Elmer.run( );
 OL.endif
 
 #-4a) Post-processing with Gmsh and a script
 Post0.register(interfaced);
-Post0.in(solution.pos , script0.opt.ol );
+Post0.in(solutionOL.get(TAGSIMU).pos , script0.opt.ol );
 Post0.out(tempMaxInterface.txt);
-Post0.run(solutionOL.get(Solution/0TAG).pos script0.opt -);
+Post0.run(solutionOL.get(TAGSIMU).pos script0.opt -);
 Post0.up(tempMaxInterface.txt,-1,2,Solution/MAXTEMPTIME,
          tempMaxInterface.txt,-1,8,Solution/TEMPINTERF,
          Adelta.txt,-1,8,Solution/UADELTA);
 
 #-4b) Post-processing with Gmsh and a script
 Post1.register(interfaced);
-Post1.in(solutionOL.get(Solution/0TAG).pos , script.opt.ol );
+Post1.in(solutionOL.get(TAGSIMU).pos , script.opt.ol );
 Post1.out(temp0.txt, activeMax.txt);
-Post1.run(solutionOL.get(Solution/0TAG).pos script.opt -);
+Post1.run(solutionOL.get(TAGSIMU).pos script.opt -);
 
 #-5) Further post-processing with Gmsh and a script
 Post2.register(interfaced);
-Post2.in(solutionOL.get(Solution/0TAG).pos, script2.opt.ol);
+Post2.in(solutionOL.get(TAGSIMU).pos, script2.opt.ol);
 Post2.out(volume.txt, aboveThres.pos );
-Post2.run( solutionOL.get(Solution/0TAG).pos script2.opt - );
+Post2.run( solutionOL.get(TAGSIMU).pos script2.opt - );
 Post2.up(volmax.txt,-1,8,Solution/VOLUME,
          voldermmax.txt,-1,8,Solution/VOLDERM);
 
 MERGE.radioButton(1,PostPro/,"Color plot display");
 OL.iftrue(MERGE)
-  Post2.merge(solutionOL.get(Solution/0TAG).pos, aboveThres.pos);
+  Post2.merge(solutionOL.get(TAGSIMU).pos, aboveThres.pos);
 OL.endif
 
 #-6) Display solution curves with either gnuplot or matlab
 
 Gnuplot.register(interfaced);
-Gnuplot.in(temp.txt, volume.txt, volderm.txt, activeMax.txt, duration.txt, plot.plt.ol);
+Gnuplot.in(tempOL.get(TAGSIMU).txt, volume.txt, volderm.txt, activeMax.txt, duration.txt,
+           plot.plt.ol, 
+           plot1.plt.ol, 
+           plot2.plt.ol, 
+           plot3.plt.ol, 
+           plot4.plt.ol);
 Gnuplot.run(plot.plt);
 
 # Dump the ONELAB database in a file named zzz
 #OL.dump(zzz);
-#OL.clientStatus();
-#OL.show(PostPro/3SKINWIDTH);
-#OL.show(PostPro/PROBETIME);
-#OL.show(Metamodel/Action);
+#OL.show(Gmsh/MergedGeo, Arguments/WorkingDir);
+OL.show(TAGSIMU);
 
-
+OL.clientStatus();
 

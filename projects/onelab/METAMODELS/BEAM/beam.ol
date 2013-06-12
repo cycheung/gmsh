@@ -75,7 +75,7 @@ Mesher.frontPage(OL.get(Arguments/FileName).geo,
                  OL.get(Arguments/FileName).msh);
 
 OL.iftrue(LOOP)
-X.range(0.10:OL.get(1Geometry/L)|15.00001);
+X.range(0.05:OL.get(1Geometry/L)|19.00001);
 OL.else
 X.range(1e-4:OL.eval(OL.get(1Geometry/L)-1e-4):0.1);
 X.withinRange();
@@ -106,5 +106,5 @@ Post.up(MNT.txt,-1,8,9Results/2M,
 Post.merge(RemoveViews.macro, beam.pos, script.opt);
 
 MAX.setValue(OL.eval( 1e3*Max(abs(OL.get(vmin)), abs(OL.get(vmax))) ));
-
+#OL.show(MAX, vmin, vmax);
 #OL.dump(aaa);

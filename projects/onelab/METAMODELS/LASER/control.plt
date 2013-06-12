@@ -1,16 +1,11 @@
 
 
-INTERACT=-1
-
-if (INTERACT==-1) set terminal aqua enhanced
-if (INTERACT== 0) set terminal pdf enhanced font "Times-Roman,6"
-if (INTERACT== 0) set output "control.pdf"
 
 set style data line
 set style function lines
 set key bottom
 
-if (INTERACT==-1) set title "Control"
+set title "Control"
 set ylabel "Temperature [{\260}C]";
 set xlabel "Time [s]"
 set ytics nomirror

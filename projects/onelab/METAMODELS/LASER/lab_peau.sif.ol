@@ -73,7 +73,7 @@ Solver 2
    Exec Solver = "After saving"
    Equation = String "ResultOutput"
    Procedure = File "ResultOutputSolve" "ResultOutputSolver"
-   Output File Name = String "solutionOL.get(Solution/0TAG).pos"
+   Output File Name = String "solutionOL.get(TAGSIMU).pos"
    Output Format = String gmsh	
    Scalar Field 1 = String Temperature
    !Scalar Field 2 = String Teneur
@@ -87,7 +87,7 @@ Solver 3 !ElmerModelsManuel page 187
   Variable 1 = String Temperature
   Variable 2 = Time
   Save Coordinates(2,2) = 1e-6 OL.eval(OL.get(PostPro/3SKINWIDTH)*1e-3) 1e-6 OL.eval( OL.get(Parameters/Skin/3DERMIS)*1e-3)
-  Filename = "temp.txt"
+  Filename = "tempOL.get(TAGSIMU).txt"
   Target Variable 2 = String "Tsensor" 
 End
 
@@ -103,8 +103,8 @@ $hp      = OL.get(PostPro/3SKINWIDTH)*1e-3
 $ylaser  = hp
 $temp    = OL.get(Parameters/Laser/LASERTEMP)
 $power   = OL.get(Parameters/Laser/LASERPOWER)
-$dT      = 4.0
-$bb      = 0.1
+$dT      = 2.0
+$bb      = 0.25
 
 !*********** Materials ************
 Material 1 !dermis
@@ -191,7 +191,7 @@ OL.else
    End
 OL.endif
   Pin = Variable Time, Tsensor, Timposed
-  Real MATC "power * min((1.0+(bb-1.0)*(tx(1)-tx(2)+dT)/dT) 1.0)"
+  Real MATC "if(tx(1)>tx(2)) {0} else {power * min( (1.0+(bb-1.0)*(tx(1)-tx(2)+dT)/dT) 1.0)}"
   Heat Source = Variable Pin, Qvolume
   Real MATC "if(tx(0)>0) {tx(0) * tx(1)} else {0}"
 OL.endif

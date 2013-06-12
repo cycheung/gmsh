@@ -16,7 +16,7 @@ lc=0.05*H*Refine;
 
 Point(1) = {0, 0, 0, lc};
 Point(2) = {L, 0., 0, lc};
-Point(3) = {L,H, 0, lc};
+Point(3) = {L, H, 0, lc};
 Point(4) = {0, H, 0, lc};
 Point(5) = {R, H, 0, lc};
 Point(6) = {0, H+R, 0, lc};

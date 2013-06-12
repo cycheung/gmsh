@@ -14,7 +14,7 @@ if OL.action == 'check' :
    exit(0)
 
 for i in range(15) :
-   x = 3.0*i
+   x = 1*i
    # a setNumber command overrules the value on server
    OL.setNumber('IO/1POSITION', value=x);
    OL.run('srm', './srm.py ', '')  # run FE model
