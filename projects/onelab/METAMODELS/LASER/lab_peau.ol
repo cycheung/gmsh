@@ -105,8 +105,8 @@ LASERPOWER.number(10.0, Parameters/Laser/5, "Power [W]");
 LASERTEMP.number(50, Parameters/Laser/5, "Target temperature T_hot [C]");
 STIMTIME.number(0.10, Parameters/Laser/6, "Pulse Duration [s]");
 
-TEMP1.number(34, Parameters/Laser/7, "Conditioning temperature T_cond [C]");
-TIME1.number(0.05, Parameters/Laser/8, "Conditioning time [s]");
+TEMP1.number(30, Parameters/Laser/7, "Conditioning temperature T_cond [C]");
+TIME1.number(0.0, Parameters/Laser/8, "Conditioning time [s]");
 RAMPTIME.number(0.01, Parameters/Laser/9, "Ramp time [s]");
 
 TimeStep.number(1, Parameters/Elmer/2,"Time step [ms]");
@@ -196,7 +196,7 @@ OL.if( OL.get(PROBETIME) > OL.get(TimeEnd) )
   PROBETIME.setReadOnly(0);
 OL.endif
 
-OVERTEMP.number(44, PostPro/5,"Thermal threshold fiber [C]");
+OVERTEMP.number(39.5, PostPro/5,"Thermal threshold fiber [C]");
 
 SKINWIDTH.number(, PostPro/3,"Skin width [mm]");
 PostPro/3SKINWIDTH.setValue( OL.eval(OL.get(Parameters/Skin/3DERMIS) + OL.get(Parameters/Skin/2EPIDERMIS)));
