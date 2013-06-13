@@ -103,7 +103,7 @@ $hp      = OL.get(PostPro/3SKINWIDTH)*1e-3
 $ylaser  = hp
 $temp    = OL.get(Parameters/Laser/LASERTEMP)
 $power   = OL.get(Parameters/Laser/LASERPOWER)
-$dT      = 2.0
+$dT      = 1.5
 $bb      = 0.25
 
 !*********** Materials ************
