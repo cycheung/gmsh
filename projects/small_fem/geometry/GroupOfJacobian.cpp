@@ -1,3 +1,4 @@
+#include <sstream>
 #include "GroupOfJacobian.h"
 
 using namespace std;
@@ -14,6 +15,7 @@ GroupOfJacobian::GroupOfJacobian(const GroupOfElement& goe,
   // Alloc & Populate //
   jac = new Jacobian*[size];
 
+#pragma omp parallel for
   for(unsigned int i = 0; i < size; i++)
     jac[i] = new Jacobian(*element[i], point, type);
 }
@@ -25,4 +27,13 @@ GroupOfJacobian::~GroupOfJacobian(void){
     delete jac[i];
 
   delete[] jac;
+}
+
+string GroupOfJacobian::toString(void) const{
+  stringstream stream;
+
+  for(unsigned int i = 0; i < goe->getNumber(); i++)
+    stream << jac[i]->toString() << endl;
+
+  return stream.str();
 }

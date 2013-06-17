@@ -1,3 +1,4 @@
+#include <sstream>
 #include "Jacobian.h"
 
 using namespace std;
@@ -12,7 +13,7 @@ Jacobian::Jacobian(const MElement& element,
   // Check //
   if(point.size2() != 3)
     throw Exception("Jacobian: point matrix is of size [N, %d] instead of [N, 3]",
-		    point.size2());
+                    point.size2());
   // Save //
   this->element = &element;
   this->point   = &point;
@@ -151,4 +152,66 @@ void Jacobian::computeInvertFromScratch(void){
     tmp->first   = mIJac;
     (*invJac)[i] = tmp;
   }
+}
+
+string Jacobian::toString(void) const{
+  stringstream stream;
+  size_t size = point->size1();
+
+  stream << std::scientific;
+
+  stream << "Element " << element->getNum()
+         << " Jacobian" << endl;
+
+  for(size_t i = 0; i < size; i++){
+    stream << "   " << "Point ("
+           << (*point)(i, 0) << ", "
+           << (*point)(i, 1) << ", "
+           << (*point)(i, 2) << ")"
+           << endl;
+
+    if(jac){
+      stream << "   " << "   " << "Jacobian Matrix" << endl;
+      stream << "   " << "   " << "   "
+             << (*(*jac)[i]->first)(0, 0) << "\t"
+             << (*(*jac)[i]->first)(0, 1) << "\t"
+             << (*(*jac)[i]->first)(0, 2) << endl;
+      stream << "   " << "   " << "   "
+             << (*(*jac)[i]->first)(1, 0) << "\t"
+             << (*(*jac)[i]->first)(1, 1) << "\t"
+             << (*(*jac)[i]->first)(1, 2) << endl;
+      stream << "   " << "   " << "   "
+             << (*(*jac)[i]->first)(2, 0) << "\t"
+             << (*(*jac)[i]->first)(2, 1) << "\t"
+             << (*(*jac)[i]->first)(0, 2) << endl;
+      stream << endl;
+    }
+
+    if(invJac){
+      stream << "   " << "   " << "Invert Jacobian Matrix" << endl;
+      stream << "   " << "   " << "   "
+             << (*(*invJac)[i]->first)(0, 0) << "\t"
+             << (*(*invJac)[i]->first)(0, 1) << "\t"
+             << (*(*invJac)[i]->first)(0, 2) << endl;
+      stream << "   " << "   " << "   "
+             << (*(*invJac)[i]->first)(1, 0) << "\t"
+             << (*(*invJac)[i]->first)(1, 1) << "\t"
+             << (*(*invJac)[i]->first)(1, 2) << endl;
+      stream << "   " << "   " << "   "
+             << (*(*invJac)[i]->first)(2, 0) << "\t"
+             << (*(*invJac)[i]->first)(2, 1) << "\t"
+             << (*(*invJac)[i]->first)(0, 2) << endl;
+      stream << endl;
+    }
+
+    if(jac)
+      stream << "   " << "   " << "Jacobian Matrix Determinant: "
+             << (*jac)[i]->second << endl;
+
+    else if(invJac)
+      stream << "   " << "   " << "Jacobian Matrix Determinant: "
+             << (*invJac)[i]->second << endl;
+  }
+
+  return stream.str();
 }

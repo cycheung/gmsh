@@ -28,6 +28,8 @@ class GroupOfJacobian{
 
   const Jacobian&       getJacobian(unsigned int i) const;
   const GroupOfElement& getAllElements(void) const;
+
+  std::string toString(void) const;
 };
 
 /////////////////////

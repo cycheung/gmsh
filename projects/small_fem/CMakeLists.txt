@@ -64,6 +64,7 @@ include_directories(
   ../../FunctionSpace
   ../../Numeric
   ../../Geo
+  ../../Mesh
   ../../Solver
   ${GMSH_EXTERNAL_INCLUDE_DIRS}
 )

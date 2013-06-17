@@ -9,7 +9,7 @@
 #include "FormulationSteadyWaveVectorSlow.h"
 
 #include "Timer.h"
-#include "Gmsh.h"
+#include "SmallFem.h"
 
 using namespace std;
 
@@ -35,16 +35,13 @@ fullVector<double> fWall(fullVector<double>& xyz){
   return res;
 }
 
-int main(int argc, char** argv){
+void compute(int argc, char** argv){
   // 'nopos' string //
   const char* nopos = "nopos";
 
   // Start Timer //
   Timer timer;
   timer.start();
-
-  // Init Gmsh //
-  GmshInitialize(argc, argv);
 
   // Writer //
   WriterMsh writer;
@@ -99,13 +96,19 @@ int main(int argc, char** argv){
     writer.write("swavev");
   }
 
-
   // Timer -- Finalize -- Return //
-  GmshFinalize();
   timer.stop();
 
   cout << "Elapsed Time: " << timer.time()
        << " s"             << endl;
+}
 
+int main(int argc, char** argv){
+  // Init SmallFem //
+  SmallFem::Initialize(argc, argv);
+
+  compute(argc, argv);
+
+  SmallFem::Finalize();
   return 0;
 }

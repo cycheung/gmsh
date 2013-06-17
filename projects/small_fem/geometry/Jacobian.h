@@ -57,7 +57,7 @@ class Jacobian{
 
  public:
   Jacobian(const MElement& element,
-	   const fullMatrix<double>& point,
+           const fullMatrix<double>& point,
            const std::string type);
 
   ~Jacobian(void);
@@ -71,6 +71,8 @@ class Jacobian{
   const MElement&           getElement(void) const;
   const fullMatrix<double>& getPoints(void) const;
   const std::string&        getType(void) const;
+
+  std::string toString(void) const;
 
  private:
   void deleteJac(void);

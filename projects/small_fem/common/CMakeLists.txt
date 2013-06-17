@@ -1,4 +1,5 @@
 set(src
+  SmallFem.cpp
   Exception.cpp
   Comparators.cpp
   Timer.cpp

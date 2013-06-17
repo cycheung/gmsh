@@ -1,7 +1,7 @@
 #include "BasisGenerator.h"
 #include "GroupOfJacobian.h"
 #include "Quadrature.h"
-
+#include "Timer.h"
 #include "FormulationSteadyWaveVector.h"
 
 using namespace std;
@@ -16,8 +16,11 @@ const double FormulationSteadyWaveVector::mu  = 1;
 const double FormulationSteadyWaveVector::eps = 1;
 
 FormulationSteadyWaveVector::FormulationSteadyWaveVector(GroupOfElement& goe,
-							 double k,
-							 unsigned int order){
+                                                         double k,
+                                                         unsigned int order){
+  Timer timer, timerGoj;
+  timer.start();
+
   // Wave Number Squared //
   kSquare = k * k;
 
@@ -41,11 +44,19 @@ FormulationSteadyWaveVector::FormulationSteadyWaveVector(GroupOfElement& goe,
   basis->preEvaluateDerivatives(gC1);
   basis->preEvaluateFunctions(gC2);
 
+  timerGoj.start();
   GroupOfJacobian jac1(goe, gC1, "jacobian");
   GroupOfJacobian jac2(goe, gC2, "invert");
+  timerGoj.stop();
+
 
   localTerms1 = new TermCurlCurl(jac1, *basis, gW1);
   localTerms2 = new TermGradGrad(jac2, *basis, gW2);
+
+  timer.stop();
+
+  cout << "Jacs: " << timerGoj.time() << " " << timerGoj.unit() << endl;
+  cout << "Full: " << timer.time() << " " << timer.unit() << endl;
 }
 
 FormulationSteadyWaveVector::~FormulationSteadyWaveVector(void){
