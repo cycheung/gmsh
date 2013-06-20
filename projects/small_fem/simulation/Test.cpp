@@ -40,7 +40,7 @@ int main(int argc, char** argv){
 
   cout << timerGoj.time() << " " << timerGoj.unit() << endl;
   cout << timer.time() << " " << timer.unit() << endl;
-  //cout << goj.toString() << endl;
+  cout << goj.toString() << endl;
   */
   SmallFem::Finalize();
 

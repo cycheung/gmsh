@@ -1,7 +1,7 @@
 #include <cmath>
 #include "Exception.h"
 #include "TermCurlCurl.h"
-
+#include "Timer.h"
 using namespace std;
 
 TermCurlCurl::TermCurlCurl(const GroupOfJacobian& goj,
@@ -34,11 +34,26 @@ TermCurlCurl::TermCurlCurl(const GroupOfJacobian& goj,
   fullMatrix<double>** cM;
   fullMatrix<double>** bM;
 
+  Timer c;
+  Timer b;
+  Timer a;
+
+  c.start();
   computeC(basis, getFunction, integrationWeights, cM);
+  c.stop();
+
+  b.start();
   computeB(goj, integrationWeights.size(), bM);
+  b.stop();
 
   allocA(nFunction * nFunction);
+  a.start();
   computeA(bM, cM);
+  a.stop();
+
+  cout << "C: " << c.time() << endl
+       << "B: " << b.time() << endl
+       << "A: " << a.time() << endl << endl;
 
   // Clean up //
   clean(bM, cM);

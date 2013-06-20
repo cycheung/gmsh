@@ -15,7 +15,7 @@ GroupOfJacobian::GroupOfJacobian(const GroupOfElement& goe,
   // Alloc & Populate //
   jac = new Jacobian*[size];
 
-#pragma omp parallel for
+  #pragma omp parallel for
   for(unsigned int i = 0; i < size; i++)
     jac[i] = new Jacobian(*element[i], point, type);
 }

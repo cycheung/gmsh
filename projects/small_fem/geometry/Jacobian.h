@@ -32,9 +32,6 @@
    \displaystyle\frac{\partial{}z}{\partial{}w}\\
    \end{array}
    \right)@f$
-
-   @todo
-   GMSH WARNING: Memory leak with MElement::getJacobian() !!
 */
 
 class Jacobian{
