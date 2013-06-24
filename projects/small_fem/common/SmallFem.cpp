@@ -2,28 +2,49 @@
 #include <petsc.h>
 #include <slepc.h>
 
+#include <vector>
+#include <string>
+
 #include "BasisFactory.h"
 #include "Context.h"
 
 #include "SmallFem.h"
 
-bool SmallFem::initOne = false;
-bool SmallFem::finaOne = false;
+bool     SmallFem::initOne = false;
+bool     SmallFem::finaOne = false;
+Options* SmallFem::option  = NULL;
 
 SmallFem::SmallFem(void){
 }
 
 SmallFem::~SmallFem(void){
+  if(option)
+    delete option;
 }
 
 void SmallFem::Initialize(int argc, char** argv){
   // Initialize only once
 
   if(!initOne){
-    // Call MPI, PETSc and SLEPc
+    // Call MPI
     MPI_Init(&argc, &argv);
-    PetscInitialize(&argc, &argv, PETSC_NULL, PETSC_NULL);
-    SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC_NULL);
+
+    // Get Options (Remove command name)
+    option = new Options(argc - 1, argv + 1);
+
+    // PETSc And SLEPc
+    std::vector<std::string> argPetsc = option->getValue("-solver");
+    int argPetscSize = argPetsc.size() + 1;
+
+    char** argCStylePetsc = new char*[argPetscSize];
+
+    argCStylePetsc[0] = argv[0];
+    Options::cStyle(argPetsc, argCStylePetsc, 1);
+
+    PetscInitialize(&argPetscSize, &argCStylePetsc, PETSC_NULL, PETSC_NULL);
+    SlepcInitialize(&argPetscSize, &argCStylePetsc, PETSC_NULL, PETSC_NULL);
+
+    delete[] argCStylePetsc;
 
     // Gmsh Instance
     CTX::instance();
@@ -45,6 +66,10 @@ void SmallFem::Finalize(void){
     // Clear Gmsh BasisFactory
     BasisFactory::clearAll();
 
+    // Delete Options
+    delete option;
+    option = NULL;
+
     // Finalize MPI, PETSc and SLEPc
     PetscFinalize();
     SlepcFinalize();
@@ -52,4 +77,8 @@ void SmallFem::Finalize(void){
 
     finaOne = true;
   }
+}
+
+Options& SmallFem::getOptions(void){
+  return *option;
 }

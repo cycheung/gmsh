@@ -35,10 +35,7 @@ fullVector<double> fWall(fullVector<double>& xyz){
   return res;
 }
 
-void compute(int argc, char** argv){
-  // 'nopos' string //
-  const char* nopos = "nopos";
-
+void compute(const Options& option){
   // Start Timer //
   Timer timer;
   timer.start();
@@ -47,14 +44,14 @@ void compute(int argc, char** argv){
   WriterMsh writer;
 
   // Get Domains //
-  Mesh msh(argv[1]);
+  Mesh msh(option.getValue("-msh")[0]);
   GroupOfElement domain = msh.getFromPhysical(7);
   GroupOfElement source = msh.getFromPhysical(5);
   GroupOfElement wall   = msh.getFromPhysical(6);
 
   // Get Parameters //
-  const double       puls  = atof(argv[2]);
-  const unsigned int order = atoi(argv[3]);
+  const double       puls  = atof(option.getValue("-k")[0].c_str());
+  const unsigned int order = atoi(option.getValue("-o")[0].c_str());
 
   // SteadyWaveVector //
   FormulationSteadyWaveVector sWave(domain, puls * 1, order);
@@ -76,24 +73,22 @@ void compute(int argc, char** argv){
   sys.solve();
   cout << "Solved"    << endl << flush;
 
-  if(argc == 5){
-    if(strcmp(argv[4], nopos)){
+  if(!option.getValue("-nopos").size()){
+    if(option.getValue("-interp").size()){
       // Interpolated View //
       // Visu Mesh
-      Mesh visuMsh(argv[4]);
+      Mesh visuMsh(option.getValue("-interp")[0]);
       GroupOfElement visu = visuMsh.getFromPhysical(7);
 
       Interpolator interp(sys, visu);
       interp.write("swavev", writer);
     }
 
-    // If argv[4] == nopos --> do nothing //
-  }
-
-  else{
-    // Adaptive View //
-    writer.setValues(sys);
-    writer.write("swavev");
+    else{
+      // Adaptive View //
+      writer.setValues(sys);
+      writer.write("swavev");
+    }
   }
 
   // Timer -- Finalize -- Return //
@@ -107,7 +102,7 @@ int main(int argc, char** argv){
   // Init SmallFem //
   SmallFem::Initialize(argc, argv);
 
-  compute(argc, argv);
+  compute(SmallFem::getOptions());
 
   SmallFem::Finalize();
   return 0;

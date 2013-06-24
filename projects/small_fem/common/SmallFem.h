@@ -1,6 +1,8 @@
 #ifndef _SMALLFEM_H_
 #define _SMALLFEM_H_
 
+#include "Options.h"
+
 /**
    @class SmallFem
    @brief SmallFem Initialize and finalize
@@ -10,8 +12,9 @@
 
 class SmallFem{
  private:
-  static bool initOne;
-  static bool finaOne;
+  static bool     initOne;
+  static bool     finaOne;
+  static Options* option;
 
  public:
    SmallFem(void);
@@ -19,6 +22,8 @@ class SmallFem{
 
   static void Initialize(int argc, char** argv);
   static void Finalize(void);
+
+  static Options& getOptions(void);
 };
 
 /**
