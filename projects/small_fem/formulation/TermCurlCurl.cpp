@@ -1,7 +1,7 @@
 #include <cmath>
 #include "Exception.h"
 #include "TermCurlCurl.h"
-#include "Timer.h"
+
 using namespace std;
 
 TermCurlCurl::TermCurlCurl(const GroupOfJacobian& goj,
@@ -34,26 +34,11 @@ TermCurlCurl::TermCurlCurl(const GroupOfJacobian& goj,
   fullMatrix<double>** cM;
   fullMatrix<double>** bM;
 
-  Timer c;
-  Timer b;
-  Timer a;
-
-  c.start();
   computeC(basis, getFunction, integrationWeights, cM);
-  c.stop();
-
-  b.start();
   computeB(goj, integrationWeights.size(), bM);
-  b.stop();
 
   allocA(nFunction * nFunction);
-  a.start();
   computeA(bM, cM);
-  a.stop();
-
-  cout << "C: " << c.time() << endl
-       << "B: " << b.time() << endl
-       << "A: " << a.time() << endl << endl;
 
   // Clean up //
   clean(bM, cM);
@@ -68,8 +53,6 @@ void TermCurlCurl::computeC(const Basis& basis,
                             fullMatrix<double>**& cM){
 
   const unsigned int nG = gW.size();
-  unsigned int k;
-  unsigned int l;
 
   // Alloc //
   cM = new fullMatrix<double>*[nOrientation];
@@ -78,30 +61,30 @@ void TermCurlCurl::computeC(const Basis& basis,
     cM[s] = new fullMatrix<double>(9 * nG, nFunction * nFunction);
 
   // Fill //
+  //#pragma omp parallel
   for(unsigned int s = 0; s < nOrientation; s++){
+
     // Get functions for this Orientation
     const fullMatrix<double>& phi =
       (basis.*getFunction)(s);
 
-    // Loop on Gauss Points
-    k = 0;
+    // fullMatrix is in *Column-major* //
+    //  --> iterate on column first    //
+    //       --> iterate on functions  //
 
-    for(unsigned int g = 0; g < nG; g++){
-      for(unsigned int a = 0; a < 3; a++){
-        for(unsigned int b = 0; b < 3; b++){
-          // Loop on Functions
-          l = 0;
+    // Loop on Functions
+    //#pragma omp for
+    for(unsigned int i = 0; i < nFunction; i++){
+      for(unsigned int j = 0; j < nFunction; j++){
 
-          for(unsigned int i = 0; i < nFunction; i++){
-            for(unsigned int j = 0; j < nFunction; j++){
-              (*cM[s])(k, l) =
+        // Loop on Gauss Points
+        for(unsigned int g = 0; g < nG; g++){
+          for(unsigned int a = 0; a < 3; a++){
+            for(unsigned int b = 0; b < 3; b++){
+              (*cM[s])(g * 9 + a * 3 + b, i * nFunction + j) =
                 gW(g) * phi(i, g * 3 + a) * phi(j, g * 3 + b);
-
-              l++;
             }
           }
-
-          k++;
         }
       }
     }
@@ -122,6 +105,10 @@ void TermCurlCurl::computeB(const GroupOfJacobian& goj,
     bM[s] = new fullMatrix<double>((*orientationStat)[s], 9 * nG);
 
   // Fill //
+
+  // Despite that fullMatrix is Column-major  //
+  // Row-major fill seems faster for matrix B //
+
   for(unsigned int s = 0; s < nOrientation; s++){
     // Loop On Element
     j = 0;

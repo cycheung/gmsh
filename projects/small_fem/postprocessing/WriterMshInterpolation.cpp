@@ -5,7 +5,7 @@ using namespace std;
 void WriterMsh::writeInterpolationScheme(void) const{
   // Some Temp Value
   const fullMatrix<double>& coef = lBasis->getCoefficient();
-  const fullMatrix<int>&    mono = lBasis->getMonomial();
+  const fullMatrix<double>& mono = lBasis->getMonomial();
 
   const unsigned int nRowCoef = coef.size1();
   const unsigned int nColCoef = coef.size2();
