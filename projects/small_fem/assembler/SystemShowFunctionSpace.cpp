@@ -16,6 +16,9 @@ SystemShowFunctionSpace::SystemShowFunctionSpace(const FunctionSpace& fs,
   dofM->generateGlobalIdSpace();
 
   // Alloc //
+  A       = NULL;
+  b       = NULL;
+  xPetsc  = NULL;
   x       = new fullVector<double>(dofM->getDofNumber());
   fNumber = functionNumber;
 
