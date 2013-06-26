@@ -1,6 +1,12 @@
 #ifndef _SYSTEMABSTRACT_H_
 #define _SYSTEMABSTRACT_H_
 
+#include <petscmat.h>
+#include <petscvec.h>
+
+#include <vector>
+#include <set>
+
 #include "Dof.h"
 #include "DofManager.h"
 #include "FunctionSpace.h"
@@ -30,6 +36,9 @@ class SystemAbstract{
     double (Formulation::*formulationPtr)(unsigned int dofI,
                                           unsigned int dofJ,
                                           unsigned int elementId) const;
+
+ protected:
+  typedef std::vector<std::set<unsigned int> > UniqueSparsity;
 
  protected:
   bool assembled;
@@ -67,7 +76,17 @@ class SystemAbstract{
                 const GroupOfDof& group,
                 formulationPtr& term);
 
+  void assemble(Mat& A,
+                Vec& b,
+                unsigned int elementId,
+                const GroupOfDof& group,
+                formulationPtr& term);
+
   void sparsity(linearSystemPETSc<double>& sys,
+                const GroupOfDof& group);
+
+  void sparsity(PetscInt* nonZero,
+                UniqueSparsity& uniqueSparsity,
                 const GroupOfDof& group);
 };
 

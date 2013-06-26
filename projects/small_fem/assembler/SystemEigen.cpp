@@ -58,7 +58,7 @@ setNumberOfEigenValues(unsigned int nEigenValues){
   if(nEigenValues > nDof)
     throw
       Exception("I cannot compute more Eigenvalues (%d) than the number of unknowns (%d)",
-		nEigenValues, nDof);
+                nEigenValues, nDof);
 
   else
     this->nEigenValues = nEigenValues;

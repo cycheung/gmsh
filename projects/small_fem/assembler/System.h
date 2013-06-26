@@ -1,6 +1,9 @@
 #ifndef _SYSTEM_H_
 #define _SYSTEM_H_
 
+#include <petscmat.h>
+#include <petscvec.h>
+
 #include "SystemAbstract.h"
 
 /**
@@ -13,8 +16,11 @@
 
 class System: public SystemAbstract{
  protected:
-  linearSystemPETSc<double>* linSys;
-  fullVector<double>*        x;
+  Mat* A;
+  Vec* b;
+  Vec* xPetsc;
+
+  fullVector<double>* x;
 
  public:
   System(const Formulation& formulation);

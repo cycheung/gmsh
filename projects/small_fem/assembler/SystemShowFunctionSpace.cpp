@@ -17,7 +17,6 @@ SystemShowFunctionSpace::SystemShowFunctionSpace(const FunctionSpace& fs,
 
   // Alloc //
   x       = new fullVector<double>(dofM->getDofNumber());
-  linSys  = NULL;
   fNumber = functionNumber;
 
   // The system is not assembled and not solved //

@@ -35,13 +35,13 @@ class Formulation{
   virtual bool isGeneral(void) const = 0;
 
   virtual double weak(unsigned int dofI, unsigned int dofJ,
-		      unsigned int elementId) const = 0;
+                      unsigned int elementId) const = 0;
 
   virtual double weakB(unsigned int dofI, unsigned int dofJ,
-		       unsigned int elementId) const = 0;
+                       unsigned int elementId) const = 0;
 
   virtual double rhs(unsigned int equationI,
-		     unsigned int elementId) const = 0;
+                     unsigned int elementId) const = 0;
 
   virtual const FunctionSpace& fs(void) const = 0;
 };

@@ -142,6 +142,59 @@ void SystemAbstract::assemble(linearSystemPETSc<double>& sys,
   }
 }
 
+void SystemAbstract::assemble(Mat& A,
+                              Vec& b,
+                              unsigned int elementId,
+                              const GroupOfDof& group,
+                              formulationPtr& term){
+
+  const vector<const Dof*>& dof = group.getAll();
+  const unsigned int N = group.getNumber();
+
+  unsigned int dofI;
+  unsigned int dofJ;
+
+  //PetscInt petscI;
+  //PetscInt petscJ;
+  //PetscScalar petscV;
+
+  for(unsigned int i = 0; i < N; i++){
+    dofI = dofM->getGlobalId(*(dof[i]));
+
+    // If not a fixed Dof line: assemble
+    if(dofI != DofManager::isFixedId()){
+      for(unsigned int j = 0; j < N; j++){
+        dofJ = dofM->getGlobalId(*(dof[j]));
+
+        // If not a fixed Dof
+        if(dofJ != DofManager::isFixedId()){
+          MatSetValue(A, dofI, dofJ,
+                      (formulation->*term)(i, j, elementId), ADD_VALUES);
+
+          // TODO: Concider using MatSetValueS
+        }
+
+        // If fixed Dof (for column 'dofJ'):
+        //    add to right hand side (with a minus sign) !
+        else{
+            VecSetValue(b, dofI,
+                        -1 * dofM->getValue(*(dof[j])) *
+                        (formulation->*term)(i, j, elementId),
+                        ADD_VALUES);
+
+            // TODO: Concider using VecSetValueS
+        }
+      }
+
+      VecSetValue(b, dofI,
+                  formulation->rhs(i, elementId),
+                  ADD_VALUES);
+
+      // TODO: Concider using VecSetValueS
+    }
+  }
+}
+
 void SystemAbstract::sparsity(linearSystemPETSc<double>& sys,
                               const GroupOfDof& group){
 
@@ -162,6 +215,38 @@ void SystemAbstract::sparsity(linearSystemPETSc<double>& sys,
         // Add non fixed Dof
         if(dofJ != DofManager::isFixedId())
           sys.insertInSparsityPattern(dofI, dofJ);
+      }
+    }
+  }
+}
+
+void SystemAbstract::sparsity(PetscInt* nonZero,
+                              UniqueSparsity& uniqueSparsity,
+                              const GroupOfDof& group){
+
+  const vector<const Dof*>& dof = group.getAll();
+  const unsigned int N = group.getNumber();
+
+  unsigned int dofI;
+  unsigned int dofJ;
+
+  // Add each column only one
+
+  for(unsigned int i = 0; i < N; i++){
+    dofI = dofM->getGlobalId(*(dof[i]));
+
+    // Add non fixed Dof
+    if(dofI != DofManager::isFixedId()){
+      for(unsigned int j = 0; j < N; j++){
+        dofJ = dofM->getGlobalId(*(dof[j]));
+
+        // Add non fixed Dof
+        if(dofJ != DofManager::isFixedId()){
+          // Check if pair (dofI, dofJ) allready inserted
+          if(uniqueSparsity.empty() ||
+             uniqueSparsity[dofI].insert(dofJ).second)
+              nonZero[dofI]++;
+        }
       }
     }
   }

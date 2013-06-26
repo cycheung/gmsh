@@ -70,7 +70,7 @@ include_directories(
 )
 
 ## Compiler Flags
-add_definitions(-pedantic -Wall)
+add_definitions(-pedantic -Wall -Wno-long-long) # -Wno-long-long for PETSc 3.3
 add_definitions(-O3 -march=native)
 add_definitions(-g)
 
