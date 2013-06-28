@@ -37,7 +37,7 @@ fullVector<double> fWall(fullVector<double>& xyz){
 
 void compute(const Options& option){
   // Start Timer //
-  Timer timer;
+  Timer timer, assemble, solve;
   timer.start();
 
   // Writer //
@@ -67,11 +67,17 @@ void compute(const Options& option){
        << " --- Pulsation: "               << puls
        << "): " << sys.getSize()           << endl;
 
+  assemble.start();
   sys.assemble();
-  cout << "Assembled" << endl << flush;
+  assemble.stop();
+  cout << "Assembled: " << assemble.time() << assemble.unit()
+       << endl << flush;
 
+  solve.start();
   sys.solve();
-  cout << "Solved"    << endl << flush;
+  solve.stop();
+  cout << "Solved: " << solve.time() << solve.unit()
+       << endl << flush;
 
   if(!option.getValue("-nopos").size()){
     if(option.getValue("-interp").size()){

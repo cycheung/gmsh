@@ -54,13 +54,15 @@ inline double Term::getTerm(unsigned int dofI,
                             unsigned int dofJ,
                             unsigned int elementId) const{
 
+  return getTermOutCache(dofI, dofJ, elementId);
+  /*
   if(!once || elementId != lastId)
     // If Out Of Cache --> Fetch
     return getTermOutCache(dofI, dofJ, elementId);
 
   else
     // Else, rock baby yeah !
-    return (*aM[lastI])(lastCtr, dofI * nFunction + dofJ);
+    return (*aM[lastI])(lastCtr, dofI * nFunction + dofJ);*/
 }
 
 #endif
