@@ -159,8 +159,6 @@ void SystemAbstract::assemble(Mat& A,
   //PetscScalar petscV;
 
   for(unsigned int i = 0; i < N; i++){
-    dofM->lockDof(*(dof[i]));
-
     dofI = dofM->getGlobalId(*(dof[i]));
 
     // If not a fixed Dof line: assemble
@@ -187,14 +185,13 @@ void SystemAbstract::assemble(Mat& A,
             // TODO: Concider using VecSetValueS
         }
       }
+
       VecSetValue(b, dofI,
                   formulation->rhs(i, elementId),
                   ADD_VALUES);
 
       // TODO: Concider using VecSetValueS
     }
-
-    dofM->unlockDof(*(dof[i]));
   }
 }
 

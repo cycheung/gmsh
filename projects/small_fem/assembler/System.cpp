@@ -98,7 +98,6 @@ void System::assemble(void){
   // Assemble System //
   formulationPtr term = &Formulation::weak;
 
-  //#pragma omp parallel for
   for(unsigned int i = 0; i < E; i++)
     SystemAbstract::assemble(*A, *b, i, *group[i], term);
 

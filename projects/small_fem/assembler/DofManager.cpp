@@ -15,18 +15,8 @@ DofManager::DofManager(void){
 
 DofManager::~DofManager(void){
   if(globalIdV){
-    for(unsigned int i = 0; i < sizeV; i++){
-      if(globalIdV[i].id){
-        delete[] globalIdV[i].id;
-      }
-
-      if(globalIdV[i].lock){
-        for(size_t j = 0; j < globalIdV[i].nDof; j++)
-          omp_destroy_lock(&globalIdV[i].lock[j]);
-
-        delete[] globalIdV[i].lock;
-      }
-    }
+    for(unsigned int i = 0; i < sizeV; i++)
+      delete[] globalIdV[i].id;
 
     delete[] globalIdV;
   }
@@ -123,18 +113,11 @@ void DofManager::serialize(void){
         globalIdV[i].nDof++; // New Dof found
 
     // Alloc
-    if(globalIdV[i].nDof){
-      globalIdV[i].id   = new unsigned int[globalIdV[i].nDof];
-      globalIdV[i].lock = new omp_lock_t[globalIdV[i].nDof];
+    if(globalIdV[i].nDof)
+      globalIdV[i].id = new unsigned int[globalIdV[i].nDof];
 
-      for(size_t j = 0; j < globalIdV[i].nDof; j++)
-        omp_init_lock(&globalIdV[i].lock[j]);
-    }
-
-    else{
-      globalIdV[i].id   = NULL;
-      globalIdV[i].lock = NULL;
-    }
+    else
+      globalIdV[i].id = NULL;
 
     // Add globalIds in vector for this entity
     it = currentEntity;

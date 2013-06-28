@@ -1,8 +1,6 @@
 #ifndef _DOFMANAGER_H_
 #define _DOFMANAGER_H_
 
-#include <omp.h>
-
 #include <string>
 #include <map>
 
@@ -32,7 +30,6 @@ class DofManager{
   typedef struct{
     unsigned int  nDof;
     unsigned int* id;
-    omp_lock_t*   lock;
   } Data;
 
   static const unsigned int isFixed;
@@ -59,9 +56,6 @@ class DofManager{
 
   unsigned int getGlobalId(const Dof& dof)     const;
   unsigned int getGlobalIdSafe(const Dof& dof) const;
-
-  bool lockDof(const Dof& dof);
-  bool unlockDof(const Dof& dof);
 
   bool   isUnknown(const Dof& dof) const;
   bool   fixValue(const Dof& dof, double value);
@@ -190,31 +184,6 @@ inline std::pair<bool, unsigned int> DofManager::find(const Dof& dof) const{
 
 inline unsigned int DofManager::getGlobalId(const Dof& dof) const{
   return find(dof).second;
-}
-
-inline bool DofManager::lockDof(const Dof& dof){
-  const unsigned int entity = dof.getEntity() - first;
-  const unsigned int type   = dof.getType();
-
-  omp_set_lock(&globalIdV[entity].lock[type]);
-
-  return true;
-  /*
-  if(omp_test_lock(&globalIdV[entity].lock[type]))
-    return true;
-
-  else
-    return false;
-  */
-}
-
-inline bool DofManager::unlockDof(const Dof& dof){
-  const unsigned int entity = dof.getEntity() - first;
-  const unsigned int type   = dof.getType();
-
-  omp_unset_lock(&globalIdV[entity].lock[type]);
-
-  return true;
 }
 
 inline unsigned int DofManager::getDofNumber(void) const{
