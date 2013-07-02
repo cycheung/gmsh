@@ -15,8 +15,8 @@
 using namespace std;
 
 void fPoisson(GroupOfElement& domain,
-	      GroupOfElement& constraintDomain,
-	      Writer& writer, int order);
+              GroupOfElement& constraintDomain,
+              Writer& writer, int order);
 
 int main(int argc, char** argv){
   GmshInitialize(argc, argv);

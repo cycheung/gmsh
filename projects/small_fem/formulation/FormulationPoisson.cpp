@@ -16,7 +16,7 @@ double FormulationPoisson::gSource(fullVector<double>& xyz){
 
 // Poisson //
 FormulationPoisson::FormulationPoisson(GroupOfElement& goe,
-				       unsigned int order){
+                                       unsigned int order){
   // Can't have 0th order //
   if(order == 0)
     throw

@@ -110,8 +110,8 @@ void SystemAbstract::assemble(linearSystemPETSc<double>& sys,
                               const GroupOfDof& group,
                               formulationPtr& term){
 
-  const vector<const Dof*>& dof = group.getAll();
-  const unsigned int N = group.getNumber();
+  const vector<const Dof*>& dof = group.getDof();
+  const unsigned int N = group.size();
 
   unsigned int dofI;
   unsigned int dofJ;
@@ -148,8 +148,8 @@ void SystemAbstract::assemble(Mat& A,
                               const GroupOfDof& group,
                               formulationPtr& term){
 
-  const vector<const Dof*>& dof = group.getAll();
-  const unsigned int N = group.getNumber();
+  const vector<const Dof*>& dof = group.getDof();
+  const unsigned int N = group.size();
 
   unsigned int dofI;
   unsigned int dofJ;
@@ -198,8 +198,8 @@ void SystemAbstract::assemble(Mat& A,
 void SystemAbstract::sparsity(linearSystemPETSc<double>& sys,
                               const GroupOfDof& group){
 
-  const vector<const Dof*>& dof = group.getAll();
-  const unsigned int N = group.getNumber();
+  const vector<const Dof*>& dof = group.getDof();
+  const unsigned int N = group.size();
 
   unsigned int dofI;
   unsigned int dofJ;
@@ -224,8 +224,8 @@ void SystemAbstract::sparsity(PetscInt* nonZero,
                               UniqueSparsity& uniqueSparsity,
                               const GroupOfDof& group){
 
-  const vector<const Dof*>& dof = group.getAll();
-  const unsigned int N = group.getNumber();
+  const vector<const Dof*>& dof = group.getDof();
+  const unsigned int N = group.size();
 
   unsigned int dofI;
   unsigned int dofJ;

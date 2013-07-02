@@ -1,36 +1,49 @@
 #include "GroupOfDof.h"
 #include <sstream>
 
-GroupOfDof::GroupOfDof(unsigned int numberOfDof, const MElement& geoElement){
-  // Init //
+GroupOfDof::GroupOfDof(const MElement& geoElement,
+                       const std::vector<const Dof*>& dof,
+                       const std::vector<size_t>& order){
+  // Geo Element //
   element = &geoElement;
 
-  // Set GroupOfDof //
-  nDof = numberOfDof;
-  dof  = new std::vector<const Dof*>(nDof);
+  // Alloc and Copy //
+  this->dof   = new std::vector<const Dof*>(dof);
+  this->order = new std::vector<size_t>(order);
+}
 
-  nextDof = 0;
+GroupOfDof::GroupOfDof(const MElement& geoElement,
+                       const std::vector<const Dof*>& dof){
+  // Geo Element //
+  element = &geoElement;
+
+  // Alloc and Copy //
+  this->dof = new std::vector<const Dof*>(dof);
+
+  // Order //
+  const size_t nDof = dof.size();
+
+  this->order = new std::vector<size_t>(nDof);
+
+  for(size_t i = 0; i < nDof; i++)
+    (*this->order)[i] = i;
 }
 
 GroupOfDof::~GroupOfDof(void){
   delete dof;
-}
-
-void GroupOfDof::add(const Dof& dof){
-  this->dof->at(nextDof) = &dof;
-  nextDof++;
+  delete order;
 }
 
 std::string GroupOfDof::toString(void) const{
   std::stringstream stream;
 
   stream << "*************************** " << std::endl
-	 << "* Group Of Dof"               << std::endl
-	 << "*************************** " << std::endl
-	 << "* Associated Dofs:  " << std::endl;
+         << "* Group Of Dof"               << std::endl
+         << "*************************** " << std::endl
+         << "* Associated Dofs:  "         << std::endl;
 
-  for(unsigned int i = 0; i < nDof; i++)
-    stream << "*    -- " << get(i).toString() << std::endl;
+  for(size_t i = 0; i < dof->size(); i++)
+    stream << "*    -- " << (*dof)[i]->toString() << std::endl;
 
   stream << "*************************** " << std::endl;
 

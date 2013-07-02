@@ -31,10 +31,10 @@ void WriterMsh::writeInterpolationScheme(void) const{
       *out << coef(i, j);
 
       if(j < nColCoef - 1)
-	*out << " ";
+        *out << " ";
 
       else
-	*out << endl;
+        *out << endl;
     }
   }
 
@@ -47,10 +47,10 @@ void WriterMsh::writeInterpolationScheme(void) const{
       *out << mono(i, j);
 
       if(j < nColMono - 1)
-	*out << " ";
+        *out << " ";
 
       else
-	*out << endl;
+        *out << endl;
     }
   }
 

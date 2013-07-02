@@ -21,15 +21,15 @@ using namespace std;
 double f(fullVector<double>& xyz);
 
 vector<double> fem(GroupOfElement& domain, GroupOfElement& visu,
-		   double (*f)(fullVector<double>& xyz),
-		   Writer& writer, int order);
+                   double (*f)(fullVector<double>& xyz),
+                   Writer& writer, int order);
 
 vector<double> ana(GroupOfElement& domain,
-		   double (*f)(fullVector<double>& xyz),
-		   Writer& writer);
+                   double (*f)(fullVector<double>& xyz),
+                   Writer& writer);
 
 fullMatrix<double> l2(fullMatrix<vector<double> >& fem,
-		      vector<double>& ana);
+                      vector<double>& ana);
 
 double f(fullVector<double>& xyz){
   return
@@ -86,10 +86,10 @@ int main(int argc, char** argv){
 
     for(unsigned int j = 0; j < l2ColMinus; j++)
       cout << scientific << showpos
-	   << l2Error(i, j) << " , ";
+           << l2Error(i, j) << " , ";
 
     cout << scientific << showpos
-	 << l2Error(i, l2ColMinus) << " ; ..." << endl;
+         << l2Error(i, l2ColMinus) << " ; ..." << endl;
   }
 
   cout << "    ];" << endl;
@@ -99,8 +99,8 @@ int main(int argc, char** argv){
 }
 
 vector<double> fem(GroupOfElement& domain, GroupOfElement& visu,
-		   double (*f)(fullVector<double>& xyz),
-		   Writer& writer, int order){
+                   double (*f)(fullVector<double>& xyz),
+                   Writer& writer, int order){
 
   stringstream stream;
 
@@ -125,8 +125,8 @@ vector<double> fem(GroupOfElement& domain, GroupOfElement& visu,
 }
 
 vector<double> ana(GroupOfElement& domain,
-		   double (*f)(fullVector<double>& xyz),
-		   Writer& writer){
+                   double (*f)(fullVector<double>& xyz),
+                   Writer& writer){
 
   stringstream stream;
 
@@ -163,7 +163,7 @@ fullMatrix<double> l2(fullMatrix<vector<double> >& fem, vector<double>& ana){
   for(unsigned int i = 0; i < nOrder; i++){
     for(unsigned int j = 0; j < nMesh; j++){
       for(unsigned int k = 0; k < nNode; k++)
-	res(i, j) += (ana[k] - fem(i, j)[k]) * (ana[k] - fem(i, j)[k]);
+        res(i, j) += (ana[k] - fem(i, j)[k]) * (ana[k] - fem(i, j)[k]);
 
       res(i, j) = sqrt(res(i, j)) / anaNorm;
     }

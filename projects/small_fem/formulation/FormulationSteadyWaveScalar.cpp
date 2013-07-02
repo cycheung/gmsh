@@ -17,8 +17,8 @@ const double FormulationSteadyWaveScalar::mu  = 1;
 const double FormulationSteadyWaveScalar::eps = 1;
 
 FormulationSteadyWaveScalar::FormulationSteadyWaveScalar(GroupOfElement& goe,
-							 double k,
-							 unsigned int order){
+                                                         double k,
+                                                         unsigned int order){
   // Can't have 0th order //
   if(order == 0)
     throw

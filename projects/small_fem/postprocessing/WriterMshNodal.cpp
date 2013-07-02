@@ -9,12 +9,12 @@ void WriterMsh::writeNodalValuesHeader(const string name) const{
 
   if(isNodal)
     *out << "1"                        << endl  // 1 string tag
-	 << "\"" << name << "\""       << endl; // (name)
+         << "\"" << name << "\""       << endl; // (name)
 
   else
     *out << "2"                        << endl  // 2 string tag
-	 << "\"" << name << "\""       << endl  // (name)
-	 << "\"interpolation scheme\"" << endl; // (interpolation scheme)
+         << "\"" << name << "\""       << endl  // (name)
+         << "\"interpolation scheme\"" << endl; // (interpolation scheme)
 
   *out << "1"                          << endl  // 1 real tag
        << "0"                          << endl  // (time value)
@@ -32,7 +32,7 @@ void WriterMsh::writeNodalValuesHeader(const string name) const{
 void WriterMsh::writeNodalValuesFromNode(void) const{
   for(unsigned int i = 0; i < E; i++){
     *out << (*element)[i]->getNum()         << " "
-	 << (*element)[i]->getNumVertices() << " ";
+         << (*element)[i]->getNumVertices() << " ";
 
     const unsigned int M = (*element)[i]->getNumVertices();
     MElement* myElement = const_cast<MElement*>((*element)[i]);
@@ -43,11 +43,11 @@ void WriterMsh::writeNodalValuesFromNode(void) const{
       //   --> we need to substract 1 !!
 
       if(isScalar)
-	*out << (*scalarValue)[id] << " ";
+        *out << (*scalarValue)[id] << " ";
       else
-	*out << (*vectorValue)[id](0) << " "
-	     << (*vectorValue)[id](1) << " "
-	     << (*vectorValue)[id](2) << " ";
+        *out << (*vectorValue)[id](0) << " "
+             << (*vectorValue)[id](1) << " "
+             << (*vectorValue)[id](2) << " ";
     }
 
     *out << endl;
@@ -74,13 +74,13 @@ void WriterMsh::writeNodalValuesFromSol(void) const{
   // Iterate on Element //
   for(unsigned int i = 0; i < E; i++){
     *out << (*element)[i]->getNum() << " "
-	 << nCoef                   << " ";
+         << nCoef                   << " ";
 
     // Get Element GoD
     const GroupOfDof& god = fs->getGoDFromElement(*(*element)[i]);
 
     // Get Dof
-    const vector<const Dof*>& dof  = god.getAll();
+    const vector<const Dof*>& dof  = god.getDof();
     const unsigned int        size = dof.size();
 
     // Get Coef In FS Basis
@@ -101,20 +101,20 @@ void WriterMsh::writeNodalValuesFromSol(void) const{
     // Get Coef In Lagrange Basis
     if(isScalar){
       vector<double> lCoef =
-	lBasis->project(*(*element)[i], fsCoef, *fsScalar);
+        lBasis->project(*(*element)[i], fsCoef, *fsScalar);
 
       for(unsigned int j = 0; j < nCoef; j++)
-	*out << lCoef[j] << " ";
+        *out << lCoef[j] << " ";
     }
 
     else{
       vector<fullVector<double> > lCoef =
-	lBasis->project(*(*element)[i], fsCoef, *fsVector);
+        lBasis->project(*(*element)[i], fsCoef, *fsVector);
 
       for(unsigned int j = 0; j < nCoef; j++)
-	*out << lCoef[j](0) << " "
-	     << lCoef[j](1) << " "
-	     << lCoef[j](2) << " ";
+        *out << lCoef[j](0) << " "
+             << lCoef[j](1) << " "
+             << lCoef[j](2) << " ";
     }
 
     *out << endl;

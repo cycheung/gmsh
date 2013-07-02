@@ -40,7 +40,7 @@ void DofManager::addToDofManager(const vector<GroupOfDof*>& god){
   // Add to DofManager //
   for(unsigned int i = 0; i < nGoD; i++){
     // Dof from god[i]
-    const vector<const Dof*>& dof = god[i]->getAll();
+    const vector<const Dof*>& dof = god[i]->getDof();
 
     // Init map entry
     const unsigned int nDof = dof.size();

@@ -33,7 +33,7 @@ void Interpolator::initSystem(const System& system){
 }
 
 void Interpolator::initSystem(const SystemEigen& system,
-			      unsigned int eigenNumber){
+                              unsigned int eigenNumber){
   // Save some data
   this->dofM = &(system.getDofManager());
   this->fs   = &(system.getFunctionSpace());
@@ -67,7 +67,7 @@ Interpolator::Interpolator(const System& system){
 }
 
 Interpolator::Interpolator(const System& system,
-			   const GroupOfElement& visu){
+                           const GroupOfElement& visu){
   // Init
   initSystem(system);
 
@@ -82,7 +82,7 @@ Interpolator::Interpolator(const System& system,
 }
 
 Interpolator::Interpolator(const SystemEigen& system,
-			   unsigned int eigenNumber){
+                           unsigned int eigenNumber){
   // Init
   initSystem(system, eigenNumber);
 
@@ -96,8 +96,8 @@ Interpolator::Interpolator(const SystemEigen& system,
 }
 
 Interpolator::Interpolator(const SystemEigen& system,
-			   unsigned int eigenNumber,
-			   const GroupOfElement& visu){
+                           unsigned int eigenNumber,
+                           const GroupOfElement& visu){
   // Init
   initSystem(system, eigenNumber);
 
@@ -112,7 +112,7 @@ Interpolator::Interpolator(const SystemEigen& system,
 }
 
 Interpolator::Interpolator(double (*f)(fullVector<double>& xyz),
-			   const GroupOfElement& visu){
+                           const GroupOfElement& visu){
   // Init
   scalar = true;
   ownSol = false;
@@ -130,7 +130,7 @@ Interpolator::Interpolator(double (*f)(fullVector<double>& xyz),
 }
 
 Interpolator::Interpolator(fullVector<double> (*f)(fullVector<double>& xyz),
-			   const GroupOfElement& visu){
+                           const GroupOfElement& visu){
   // Init
   scalar = false;
   ownSol = false;
@@ -216,13 +216,13 @@ void Interpolator::interpolate(void){
 
       // If not interpolated: interpolate :-P !
       if(!isInterpolated[id]){
-	// Get Dof
-	const vector<const Dof*>& dof  = god[i]->getAll();
-	const unsigned int        size = dof.size();
+        // Get Dof
+        const vector<const Dof*>& dof  = god[i]->getDof();
+        const unsigned int        size = dof.size();
 
-	// Get Coef
-	vector<double> coef(size);
-	for(unsigned int k = 0; k < size; k++){
+        // Get Coef
+        vector<double> coef(size);
+        for(unsigned int k = 0; k < size; k++){
           // Dof Global ID
           globalId = dofM->getGlobalId(*dof[k]);
 
@@ -235,22 +235,22 @@ void Interpolator::interpolate(void){
             coef[k] = dofM->getValue(*dof[k]);
         }
 
-	// Get Node coordinate
-	fullVector<double> xyz(3);
-	xyz(0) = node[j]->x();
-	xyz(1) = node[j]->y();
-	xyz(2) = node[j]->z();
+        // Get Node coordinate
+        fullVector<double> xyz(3);
+        xyz(0) = node[j]->x();
+        xyz(1) = node[j]->y();
+        xyz(2) = node[j]->z();
 
-	// Interpolate (AT LAST !!)
-	if(scalar)
-	  (*nodalScalarValue)[id] =
-	    fsScalar->interpolate(element, coef, xyz);
+        // Interpolate (AT LAST !!)
+        if(scalar)
+          (*nodalScalarValue)[id] =
+            fsScalar->interpolate(element, coef, xyz);
 
-	else
-	  (*nodalVectorValue)[id] =
-	    fsVector->interpolate(element, coef, xyz);
+        else
+          (*nodalVectorValue)[id] =
+            fsVector->interpolate(element, coef, xyz);
 
-	isInterpolated[id] = true;
+        isInterpolated[id] = true;
       }
     }
   }
@@ -293,10 +293,10 @@ void Interpolator::interpolateOnVisu(void){
     // WARNING: if no element found, set to zero
     if(!element){
       if(scalar)
-	(*nodalScalarValue)[node[i]->getNum() - 1] = 0;
+        (*nodalScalarValue)[node[i]->getNum() - 1] = 0;
 
       else
-	(*nodalVectorValue)[node[i]->getNum() - 1] = 0;
+        (*nodalVectorValue)[node[i]->getNum() - 1] = 0;
     }
 
     else{
@@ -304,7 +304,7 @@ void Interpolator::interpolateOnVisu(void){
       const GroupOfDof& god = fs->getGoDFromElement(*element);
 
       // Get Dof
-      const vector<const Dof*>& dof  = god.getAll();
+      const vector<const Dof*>& dof  = god.getDof();
       const unsigned int        size = dof.size();
 
       // Get Coef
@@ -330,12 +330,12 @@ void Interpolator::interpolateOnVisu(void){
 
       // Interpolate (AT LAST !!)
       if(scalar)
-	(*nodalScalarValue)[node[i]->getNum() - 1] =
-	  fsScalar->interpolate(*element, coef, xyz);
+        (*nodalScalarValue)[node[i]->getNum() - 1] =
+          fsScalar->interpolate(*element, coef, xyz);
 
       else
-	(*nodalVectorValue)[node[i]->getNum() - 1] =
-	  fsVector->interpolate(*element, coef, xyz);
+        (*nodalVectorValue)[node[i]->getNum() - 1] =
+          fsVector->interpolate(*element, coef, xyz);
     }
   }
 }
@@ -364,11 +364,11 @@ void Interpolator::evaluateF(void){
     // Evaluate (AT LAST !!)
     if(scalar)
       (*nodalScalarValue)[node[i]->getNum() - 1] =
-	fScalar(xyz);
+        fScalar(xyz);
 
     else
       (*nodalVectorValue)[node[i]->getNum() - 1] =
-	fVector(xyz);
+        fVector(xyz);
   }
 }
 

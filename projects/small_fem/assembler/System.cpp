@@ -82,7 +82,7 @@ void System::assemble(void){
   const vector<GroupOfDof*>& group = fs->getAllGroups();
 
   // Get Sparsity Pattern & PreAllocate//
-  UniqueSparsity uniqueSparsity(0);
+  UniqueSparsity uniqueSparsity(size);
   PetscInt* nonZero = new PetscInt[size];
 
   for(size_t i = 0; i < size; i++)
@@ -108,9 +108,9 @@ void System::assemble(void){
 
   /*
   PetscViewer fd;
-  PetscViewerASCIIOpen(MPI_COMM_WORLD, "mat2.m", &fd);
+  PetscViewerASCIIOpen(MPI_COMM_WORLD, "mat.m", &fd);
   PetscViewerSetFormat(fd, PETSC_VIEWER_ASCII_MATLAB);
-  PetscObjectSetName((PetscObject)(*A), "A2");
+  PetscObjectSetName((PetscObject)(*A), "A");
   MatView(*A, fd);
   */
 

@@ -72,43 +72,43 @@ string GroupOfElement::toString(void) const{
   stringstream stream;
 
   stream << "***********************************************"
-	 << endl
-	 << "* Group Of Element"
-	 << endl
-	 << "***********************************************"
-	 << endl
+         << endl
+         << "* Group Of Element"
+         << endl
+         << "***********************************************"
+         << endl
          << "*                                             *"
-	 << endl
-	 << "* This group contains the following Elements: *"
-	 << endl;
+         << endl
+         << "* This group contains the following Elements: *"
+         << endl;
 
   for(unsigned int i = 0; i < element->size(); i++)
     stream << "*   -- Element #"
-	   << mesh->getGlobalId(*(*element)[i])
-	   << endl;
+           << mesh->getGlobalId(*(*element)[i])
+           << endl;
 
   stream << "*                                             *"
-	 << endl
+         << endl
          << "***********************************************"
-	 << endl;
+         << endl;
 
   if(!orientationStat)
     return stream.str();
 
 
   stream << "*                                             *"
-	 << endl
-	 << "* This group has the following Orientations:  *"
-	 << endl;
+         << endl
+         << "* This group has the following Orientations:  *"
+         << endl;
 
   for(unsigned int i = 0; i < orientationStat->size(); i++)
     stream << "*   -- Elements with Orientation " << i << " - "
            << (*orientationStat)[i] << endl;
 
   stream << "*                                             *"
-	 << endl
+         << endl
          << "***********************************************"
-	 << endl;
+         << endl;
 
   return stream.str();
 }
