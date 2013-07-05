@@ -4,8 +4,8 @@ using namespace std;
 
 map<const MEdge*, unsigned int, EdgeComparator>*
 GeoExtractor::extractEdge(const map<const MElement*,
-				    unsigned int,
-				    ElementComparator>& element){
+                                    unsigned int,
+                          ElementComparator>& element){
   // Init //
   map<const MEdge*, unsigned int, EdgeComparator>*
     edge = new map<const MEdge*, unsigned int, EdgeComparator>;
@@ -34,13 +34,13 @@ GeoExtractor::extractEdge(const map<const MElement*,
 
       // Try to Insert
       pair<map<const MEdge*, unsigned int, EdgeComparator>::iterator,
-	   bool> insert =
-	edge->insert(pair<const MEdge* ,int>(edgeCopy, 0));
+           bool> insert =
+        edge->insert(pair<const MEdge* ,int>(edgeCopy, 0));
 
       // If Insertion is not a success,
       // Delete edgeCopy
       if(!insert.second)
-	delete edgeCopy;
+        delete edgeCopy;
     }
   }
 

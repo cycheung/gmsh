@@ -13,32 +13,23 @@
    This class handles a collection of Dof%s with a @em geometrical meaning
    (@e e.g: Dof%s that belongs to the same (finite) element).@n
 
-   It also gives acces to the underlying Geometrical Element.@n
-
-   The contained Dof%s can also be given an order.
+   It also gives acces to the underlying Geometrical Element.
 */
 
 class GroupOfDof{
  private:
   const MElement*          element;
   std::vector<const Dof*>* dof;
-  std::vector<size_t>*     order;
 
  public:
-  GroupOfDof(const MElement& geoElement,
-             const std::vector<const Dof*>& dof,
-             const std::vector<size_t>& order);
-
   GroupOfDof(const MElement& geoElement,
              const std::vector<const Dof*>& dof);
 
   ~GroupOfDof(void);
 
-  size_t                         size(void)     const;
-  const std::vector<const Dof*>& getDof(void)   const;
-  const std::vector<size_t>&     getOrder(void) const;
-
-  const MElement& getGeoElement(void) const;
+  size_t                         size(void)          const;
+  const std::vector<const Dof*>& getDof(void)        const;
+  const MElement&                getGeoElement(void) const;
 
   std::string toString(void) const;
 };
@@ -48,22 +39,9 @@ class GroupOfDof{
    @fn GroupOfDof::GroupOfDof
    @param geoElement A geomtrical Element (MElement)
    @param dof A vector of Dof
-   @param order A vector of integers
 
    Instanciates a new GroupOfDof related to the given
-   Element and that can contains the given Dof%s.
-
-   GroupOfDof::getOrder() will return a copy of order.
-   **
-
-   @fn GroupOfDof::GroupOfDof
-   @param geoElement A geomtrical Element (MElement)
-   @param dof A vector of Dof
-
-   Instanciates a new GroupOfDof related to the given
-   Element and that can contains the given Dof%s.
-
-   GroupOfDof::getOrder() will return the vector [0 .. GroupOfDof::size() - 1].
+   Element and that can contains the given Dof%s
    **
 
    @fn GroupOfDof::~GroupOfDof
@@ -77,10 +55,6 @@ class GroupOfDof{
 
    @fn GroupOfDof::getDof
    @return Returns all the Dofs
-   **
-
-   @fn GroupOfDof::getOrder
-   @return Returns the order in which the Dof%s should be taken
    **
 
    @fn GroupOfDof::getGeoElement
@@ -101,10 +75,6 @@ inline size_t GroupOfDof::size(void) const{
 
 inline const std::vector<const Dof*>& GroupOfDof::getDof(void) const{
   return *dof;
-}
-
-inline const std::vector<size_t>& GroupOfDof::getOrder(void) const{
-  return *order;
 }
 
 inline const MElement& GroupOfDof::getGeoElement(void) const{

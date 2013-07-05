@@ -13,10 +13,35 @@
 #include "fullMatrix.h"
 #include "GroupOfJacobian.h"
 
+#include "PermutationTree.h"
+
 using namespace std;
 
 int main(int argc, char** argv){
-  SmallFem::Initialize(argc, argv);
+  //TriReferenceSpace triRef;
+  TetReferenceSpace tetRef;
+  //QuadReferenceSpace quaRef;
+  /*
+  vector<size_t> seq(3);
+  seq[0] = 0;
+  seq[1] = 1;
+  seq[2] = 2;
+
+  vector<size_t> test(3);
+  test[0] = 1;
+  test[1] = 2;
+  test[2] = 0;
+
+  PermutationTree pTree(seq);
+
+
+  cout << pTree.getPermutationId(test) << endl;
+
+  pTree.addTagToPermutation(3, 42);
+
+  cout << pTree.toString() << endl;
+  */
+  //SmallFem::Initialize(argc, argv);
   /*
   Timer timer;
   timer.start();
@@ -42,7 +67,7 @@ int main(int argc, char** argv){
   cout << timer.time() << " " << timer.unit() << endl;
   cout << goj.toString() << endl;
   */
-  SmallFem::Finalize();
+  //SmallFem::Finalize();
 
   return 0;
 
