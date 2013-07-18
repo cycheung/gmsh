@@ -9,6 +9,8 @@
 #include "QuadReferenceSpace.h"
 #include "TetReferenceSpace.h"
 
+#include "TriNodeBasis.h"
+
 #include "Mesh.h"
 #include "fullMatrix.h"
 #include "GroupOfJacobian.h"
@@ -19,8 +21,15 @@ using namespace std;
 
 int main(int argc, char** argv){
   //TriReferenceSpace triRef;
-  TetReferenceSpace tetRef;
+  //TetReferenceSpace tetRef;
   //QuadReferenceSpace quaRef;
+
+  TriReferenceSpace ref;
+  cout << ref.toString() << endl;
+
+  TriNodeBasis basis(atoi(argv[1]));
+  cout << basis.toString() << endl;
+
   /*
   vector<size_t> seq(3);
   seq[0] = 0;

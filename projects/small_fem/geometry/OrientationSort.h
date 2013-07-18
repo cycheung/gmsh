@@ -66,7 +66,8 @@ inline const Basis& OrientationSort::getBasis(void) const{
 inline bool OrientationSort::operator()
 (const MElement* a, const MElement* b) const{
   return
-    basis->getOrientation(*a) < basis->getOrientation(*b);
+    basis->getReferenceSpace().getReferenceSpace(*a) <
+    basis->getReferenceSpace().getReferenceSpace(*b);
 }
 
 #endif

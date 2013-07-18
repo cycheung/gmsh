@@ -26,7 +26,7 @@ TermGradGrad::TermGradGrad(const GroupOfJacobian& goj,
 
   // Orientations & Functions //
   orientationStat = &goj.getAllElements().getOrientationStats();
-  nOrientation    = basis.getNOrientation();
+  nOrientation    = basis.getReferenceSpace().getNReferenceSpace();
   nFunction       = basis.getNFunction();
 
   // Compute //

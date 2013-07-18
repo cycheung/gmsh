@@ -15,7 +15,7 @@
 
 class TermProjectionGrad: public Term{
  private:
-  typedef const fullMatrix<double>& (Basis::*bFunction)(unsigned int s)const;
+  typedef const fullMatrix<double>& (Basis::*bFunction)(size_t s)const;
 
  public:
   TermProjectionGrad(const GroupOfJacobian& goj,

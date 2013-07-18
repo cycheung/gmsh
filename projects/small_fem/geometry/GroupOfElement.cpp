@@ -45,7 +45,7 @@ orientAllElements(const Basis& basis){
 
   // Get Orientation Stats //
   // Get some Data
-  const unsigned int nOrient  = basis.getNOrientation();
+  const unsigned int nOrient  = basis.getReferenceSpace().getNReferenceSpace();
   const unsigned int nElement = element->size();
 
   // Init
@@ -56,7 +56,8 @@ orientAllElements(const Basis& basis){
 
   // Compute
   for(unsigned int i = 0; i < nElement; i++)
-    (*orientationStat)[basis.getOrientation(*(*element)[i])]++;
+    (*orientationStat)
+      [basis.getReferenceSpace().getReferenceSpace(*(*element)[i])]++;
 
   // The last line is cool isn't it :-) ?
 }
