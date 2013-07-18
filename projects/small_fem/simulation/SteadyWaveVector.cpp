@@ -50,8 +50,8 @@ void compute(const Options& option){
   GroupOfElement wall   = msh.getFromPhysical(6);
 
   // Get Parameters //
-  const double       puls  = atof(option.getValue("-k")[0].c_str());
-  const unsigned int order = atoi(option.getValue("-o")[0].c_str());
+  const double puls  = atof(option.getValue("-k")[0].c_str());
+  const size_t order = atoi(option.getValue("-o")[0].c_str());
 
   // SteadyWaveVector //
   FormulationSteadyWaveVector sWave(domain, puls * 1, order);

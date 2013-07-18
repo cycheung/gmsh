@@ -31,9 +31,9 @@ int main(int argc, char** argv){
   GroupOfElement domain = msh.getFromPhysical(7);
 
   // Get FunctionSpace //
-  const unsigned int   order = atoi(argv[3]);
-  Basis*               basis;
-  FunctionSpace*       fSpace;
+  const size_t   order = atoi(argv[3]);
+  Basis*         basis;
+  FunctionSpace* fSpace;
 
   if(!strcmp(argv[2], lagrange)){
     // If Lagrange
@@ -67,20 +67,20 @@ int main(int argc, char** argv){
                     argv[2]);
 
   // Compute all Basis //
-  const unsigned int nDof = fSpace->dofNumber();
+  const size_t nDof = fSpace->dofNumber();
 
   // View names
   char fileName[1024];
-  const unsigned int nDec = floor(log10(nDof)) + 1;
+  const int nDec = floor(log10(nDof)) + 1;
 
-  for(unsigned int i = 0; i < nDof; i++){
+  for(size_t i = 0; i < nDof; i++){
     SystemShowFunctionSpace sys(*fSpace, i);
 
     sys.assemble();
     sys.solve();
 
     // View
-    sprintf(fileName, "functionSpace_basis%0*d", nDec, i + 1);
+    sprintf(fileName, "functionSpace_basis%0*u", nDec, (unsigned int)(i + 1));
 
     if(argc == 5){
       // Interpolated View //

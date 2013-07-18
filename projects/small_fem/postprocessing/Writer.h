@@ -37,8 +37,8 @@ class Writer{
   bool isScalar;
   bool isNodal;
 
-  unsigned int N;
-  unsigned int E;
+  size_t N;
+  size_t E;
 
   const std::vector<const MElement*>* element;
   const std::vector<MVertex*>*        node;
@@ -62,7 +62,7 @@ class Writer{
   void setValues(const std::vector<double>& value);
   void setValues(const std::vector<fullVector<double> >& value);
   void setValues(const System& system);
-  void setValues(const SystemEigen& system, unsigned int eigenNumber);
+  void setValues(const SystemEigen& system, size_t eigenNumber);
 
   void setDomain(const GroupOfElement& domain);
 
@@ -71,7 +71,7 @@ class Writer{
 
   static const fullVector<double>*
     getSol(const std::vector<std::vector<std::complex<double> > >& eVector,
-	   unsigned int eigenNumber);
+           size_t eigenNumber);
 };
 
 
@@ -124,7 +124,7 @@ class Writer{
    of the FunctionSpace of the Formulation of the System
    **
 
-   @fn void Writer::setValues(const SystemEigen& system, unsigned int)
+   @fn void Writer::setValues(const SystemEigen& system, size_t)
    @param system An SystemEigen
    @param eigenNumber A natural number
 

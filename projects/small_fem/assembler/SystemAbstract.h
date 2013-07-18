@@ -33,12 +33,12 @@
 class SystemAbstract{
  protected:
   typedef
-    double (Formulation::*formulationPtr)(unsigned int dofI,
-                                          unsigned int dofJ,
-                                          unsigned int elementId) const;
+    double (Formulation::*formulationPtr)(size_t dofI,
+                                          size_t dofJ,
+                                          size_t elementId) const;
 
  protected:
-  typedef std::vector<std::set<unsigned int> > UniqueSparsity;
+  typedef std::vector<std::set<size_t> > UniqueSparsity;
 
  protected:
   bool assembled;
@@ -54,7 +54,7 @@ class SystemAbstract{
   bool isAssembled(void) const;
   bool isSolved(void)    const;
 
-  unsigned int         getSize(void)          const;
+  size_t               getSize(void)          const;
   const DofManager&    getDofManager(void)    const;
   const FunctionSpace& getFunctionSpace(void) const;
 
@@ -72,13 +72,13 @@ class SystemAbstract{
 
  protected:
   void assemble(linearSystemPETSc<double>& sys,
-                unsigned int elementId,
+                size_t elementId,
                 const GroupOfDof& group,
                 formulationPtr& term);
 
   void assemble(Mat& A,
                 Vec& b,
-                unsigned int elementId,
+                size_t elementId,
                 const GroupOfDof& group,
                 formulationPtr& term);
 
@@ -170,7 +170,7 @@ inline bool SystemAbstract::isSolved(void) const{
   return solved;
 }
 
-inline unsigned int SystemAbstract::getSize(void) const{
+inline size_t SystemAbstract::getSize(void) const{
   return dofM->getDofNumber();
 }
 

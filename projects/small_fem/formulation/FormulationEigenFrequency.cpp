@@ -16,7 +16,7 @@ const double FormulationEigenFrequency::mu  = 1;
 const double FormulationEigenFrequency::eps = 1;
 
 FormulationEigenFrequency::FormulationEigenFrequency(GroupOfElement& goe,
-                                                     unsigned int order){
+                                                     size_t order){
   // Function Space & Basis //
   basis  = BasisGenerator::generate(goe.get(0).getType(),
                                     1, order, "hierarchical");
@@ -52,20 +52,20 @@ FormulationEigenFrequency::~FormulationEigenFrequency(void){
   delete localTerms2;
 }
 
-double FormulationEigenFrequency::weak(unsigned int dofI, unsigned int dofJ,
-                                       unsigned int elementId) const{
+double FormulationEigenFrequency::weak(size_t dofI, size_t dofJ,
+                                       size_t elementId) const{
 
   return localTerms1->getTerm(dofI, dofJ, elementId) / mu;
 }
 
-double FormulationEigenFrequency::weakB(unsigned int dofI, unsigned int dofJ,
-                                        unsigned int elementId) const{
+double FormulationEigenFrequency::weakB(size_t dofI, size_t dofJ,
+                                        size_t elementId) const{
 
   return localTerms2->getTerm(dofI, dofJ, elementId) * eps;
 }
 
-double FormulationEigenFrequency::rhs(unsigned int dofI,
-                                      unsigned int elementId) const{
+double FormulationEigenFrequency::rhs(size_t dofI,
+                                      size_t elementId) const{
   return 0;
 }
 

@@ -12,32 +12,32 @@
 
 class Term{
  protected:
-  unsigned int nFunction;
-  unsigned int nOrientation;
-  const std::vector<unsigned int>* orientationStat;
+  size_t nFunction;
+  size_t nOrientation;
+  const std::vector<size_t>* orientationStat;
 
   fullMatrix<double>** aM;
 
-  mutable bool         once;
-  mutable unsigned int lastId;
-  mutable unsigned int lastI;
-  mutable unsigned int lastCtr;
+  mutable bool   once;
+  mutable size_t lastId;
+  mutable size_t lastI;
+  mutable size_t lastCtr;
 
  public:
   Term(void);
   virtual ~Term(void);
 
-  double getTerm(unsigned int dofI,
-                 unsigned int dofJ,
-                 unsigned int elementId) const;
+  double getTerm(size_t dofI,
+                 size_t dofJ,
+                 size_t elementId) const;
 
  private:
-  double getTermOutCache(unsigned int dofI,
-                         unsigned int dofJ,
-                         unsigned int elementId) const;
+  double getTermOutCache(size_t dofI,
+                         size_t dofJ,
+                         size_t elementId) const;
 
  protected:
-  void allocA(unsigned int nFunction);
+  void allocA(size_t nFunction);
 
   void computeA(fullMatrix<double>**& bM,
                 fullMatrix<double>**& cM);
@@ -50,9 +50,9 @@ class Term{
 // Inline Function //
 /////////////////////
 
-inline double Term::getTerm(unsigned int dofI,
-                            unsigned int dofJ,
-                            unsigned int elementId) const{
+inline double Term::getTerm(size_t dofI,
+                            size_t dofJ,
+                            size_t elementId) const{
 
   if(!once || elementId != lastId)
     // If Out Of Cache --> Fetch

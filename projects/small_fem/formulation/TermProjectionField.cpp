@@ -3,11 +3,12 @@
 
 using namespace std;
 
-TermProjectionField::TermProjectionField(const GroupOfJacobian& goj,
-                                         const Basis& basis,
-                                         const fullVector<double>& integrationWeights,
-                                         const fullMatrix<double>& integrationPoints,
-                                         double (*f)(fullVector<double>& xyz)){
+TermProjectionField::
+TermProjectionField(const GroupOfJacobian& goj,
+                    const Basis& basis,
+                    const fullVector<double>& integrationWeights,
+                    const fullMatrix<double>& integrationPoints,
+                    double (*f)(fullVector<double>& xyz)){
   // Basis Check //
   if(basis.getType() != 0)
     throw
@@ -40,23 +41,23 @@ void TermProjectionField::computeC(const Basis& basis,
                                    const fullVector<double>& gW,
                                    fullMatrix<double>**& cM){
 
-  const unsigned int nG = gW.size();
+  const size_t nG = gW.size();
 
   // Alloc //
   cM = new fullMatrix<double>*[nOrientation];
 
-  for(unsigned int s = 0; s < nOrientation; s++)
+  for(size_t s = 0; s < nOrientation; s++)
     cM[s] = new fullMatrix<double>(nG, nFunction);
 
   // Fill //
-  for(unsigned int s = 0; s < nOrientation; s++){
+  for(size_t s = 0; s < nOrientation; s++){
     // Get functions for this Orientation
     const fullMatrix<double>& phi =
       basis.getPreEvaluatedFunctions(s);
 
     // Loop on Gauss Points
-    for(unsigned int g = 0; g < nG; g++)
-      for(unsigned int i = 0; i < nFunction; i++)
+    for(size_t g = 0; g < nG; g++)
+      for(size_t i = 0; i < nFunction; i++)
         (*cM[s])(g, i) = gW(g) * phi(i, g);
   }
 }
@@ -67,9 +68,9 @@ void TermProjectionField::computeB(const GroupOfJacobian& goj,
                                    double (*f)(fullVector<double>& xyz),
                                    fullMatrix<double>**& bM){
 
-  const unsigned int nG = gC.size1();
-  unsigned int offset = 0;
-  unsigned int j;
+  const size_t nG = gC.size1();
+  size_t offset = 0;
+  size_t j;
 
   fullVector<double> xyz(3);
   double             pxyz[3];
@@ -78,20 +79,20 @@ void TermProjectionField::computeB(const GroupOfJacobian& goj,
   // Alloc //
   bM = new fullMatrix<double>*[nOrientation];
 
-  for(unsigned int s = 0; s < nOrientation; s++)
+  for(size_t s = 0; s < nOrientation; s++)
     bM[s] = new fullMatrix<double>((*orientationStat)[s], nG);
 
   // Fill //
-  for(unsigned int s = 0; s < nOrientation; s++){
+  for(size_t s = 0; s < nOrientation; s++){
     // Loop On Element
     j = 0;
 
-    for(unsigned int e = offset; e < offset + (*orientationStat)[s]; e++){
+    for(size_t e = offset; e < offset + (*orientationStat)[s]; e++){
       // Get Jacobians
       const vector<const pair<const fullMatrix<double>*, double>*>& jacM =
         goj.getJacobian(e).getJacobianMatrix();
 
-      for(unsigned int g = 0; g < nG; g++){
+      for(size_t g = 0; g < nG; g++){
         // Compute f in the *physical* coordinate
         basis.getReferenceSpace().mapFromABCtoXYZ(goj.getAllElements().get(e),
                                                   gC(g, 0),

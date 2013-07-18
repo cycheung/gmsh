@@ -34,14 +34,14 @@ class Formulation{
 
   virtual bool isGeneral(void) const = 0;
 
-  virtual double weak(unsigned int dofI, unsigned int dofJ,
-                      unsigned int elementId) const = 0;
+  virtual double weak(size_t dofI, size_t dofJ,
+                      size_t elementId) const = 0;
 
-  virtual double weakB(unsigned int dofI, unsigned int dofJ,
-                       unsigned int elementId) const = 0;
+  virtual double weakB(size_t dofI, size_t dofJ,
+                       size_t elementId) const = 0;
 
-  virtual double rhs(unsigned int equationI,
-                     unsigned int elementId) const = 0;
+  virtual double rhs(size_t equationI,
+                     size_t elementId) const = 0;
 
   virtual const FunctionSpace& fs(void) const = 0;
 };

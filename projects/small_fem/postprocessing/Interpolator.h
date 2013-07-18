@@ -51,18 +51,18 @@ class Interpolator{
  public:
    Interpolator(const System& system);
    Interpolator(const System& system,
-		const GroupOfElement& visu);
+                const GroupOfElement& visu);
 
    Interpolator(const SystemEigen& system,
-		unsigned int eigenNumber);
+                size_t eigenNumber);
    Interpolator(const SystemEigen& system,
-		unsigned int eigenNumber,
-		const GroupOfElement& visu);
+                size_t eigenNumber,
+                const GroupOfElement& visu);
 
    Interpolator(double (*f)(fullVector<double>& xyz),
-	    const GroupOfElement& visu);
+                const GroupOfElement& visu);
    Interpolator(fullVector<double> (*f)(fullVector<double>& xyz),
-	    const GroupOfElement& visu);
+                const GroupOfElement& visu);
 
   ~Interpolator(void);
 
@@ -75,7 +75,7 @@ class Interpolator{
  private:
   void initSystem(const System& system);
   void initSystem(const SystemEigen& system,
-		  unsigned int eigenNumber);
+                  size_t eigenNumber);
 
   void interpolate(void);
   void interpolateOnVisu(void);
@@ -83,7 +83,7 @@ class Interpolator{
 
   static const fullVector<double>*
     getSol(const std::vector<std::vector<std::complex<double> > >& eVector,
-	   unsigned int eigenNumber);
+           size_t eigenNumber);
 };
 
 
@@ -110,7 +110,7 @@ class Interpolator{
    The interpolation will be done on the given GroupOfElement
    **
 
-   @fn Interpolator::Interpolator(const SystemEigen&, unsigned int)
+   @fn Interpolator::Interpolator(const SystemEigen&, size_t)
    @param system An SystemEigen
    @param eigenNumber A natural number
 
@@ -123,7 +123,7 @@ class Interpolator{
    SystemEigen%'s EigenFormulation%'s FunctionSpace.
    **
 
-   @fn Interpolator::Interpolator(const SystemEigen&, unsigned int, const GroupOfElement&)
+   @fn Interpolator::Interpolator(const SystemEigen&, size_t, const GroupOfElement&)
    @param system A System
    @param eigenNumber a natural number
    @param visu The GroupOfElement to use for interpolation

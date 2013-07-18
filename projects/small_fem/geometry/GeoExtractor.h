@@ -31,25 +31,25 @@ class GeoExtractor{
   ~GeoExtractor(void);
 
   static std::pair<
-    std::map<const MElement*, unsigned int, ElementComparator>*,
+    std::map<const MElement*, size_t, ElementComparator>*,
     std::multimap<int, const MElement*>*
     >
     extractElement(const std::vector<GEntity*>& entity);
 
-  static std::map<const MVertex*, unsigned int, VertexComparator>*
+  static std::map<const MVertex*, size_t, VertexComparator>*
     extractVertex(const std::map<const MElement*,
-		                 unsigned int,
-		                 ElementComparator>& element);
+                                 size_t,
+                                 ElementComparator>& element);
 
-  static std::map<const MEdge*, unsigned int, EdgeComparator>*
+  static std::map<const MEdge*, size_t, EdgeComparator>*
     extractEdge(const std::map<const MElement*,
-	                       unsigned int,
-	                       ElementComparator>& element);
+                               size_t,
+                               ElementComparator>& element);
 
-  static std::map<const MFace*, unsigned int, FaceComparator>*
+  static std::map<const MFace*, size_t, FaceComparator>*
     extractFace(const std::map<const MElement*,
-	                       unsigned int,
-	                       ElementComparator>& element);
+                               size_t,
+                               ElementComparator>& element);
 
  private:
   static MEdge* copy(const MEdge& edge);

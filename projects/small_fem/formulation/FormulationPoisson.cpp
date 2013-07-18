@@ -8,7 +8,7 @@
 using namespace std;
 
 // Source Terms //
-const unsigned int FormulationPoisson::sourceOrder = 1;
+const size_t FormulationPoisson::sourceOrder = 1;
 
 double FormulationPoisson::gSource(fullVector<double>& xyz){
   return 1;
@@ -16,7 +16,7 @@ double FormulationPoisson::gSource(fullVector<double>& xyz){
 
 // Poisson //
 FormulationPoisson::FormulationPoisson(GroupOfElement& goe,
-                                       unsigned int order){
+                                       size_t order){
   // Can't have 0th order //
   if(order == 0)
     throw
@@ -57,14 +57,14 @@ FormulationPoisson::~FormulationPoisson(void){
   delete localTermsR;
 }
 
-double FormulationPoisson::weak(unsigned int dofI, unsigned int dofJ,
-                                unsigned int elementId) const{
+double FormulationPoisson::weak(size_t dofI, size_t dofJ,
+                                size_t elementId) const{
 
   return localTermsL->getTerm(dofI, dofJ, elementId);
 }
 
-double FormulationPoisson::rhs(unsigned int equationI,
-                               unsigned int elementId) const{
+double FormulationPoisson::rhs(size_t equationI,
+                               size_t elementId) const{
 
   return localTermsR->getTerm(0, equationI, elementId);
 }
@@ -73,9 +73,9 @@ bool FormulationPoisson::isGeneral(void) const{
   return false;
 }
 
-double FormulationPoisson::weakB(unsigned int dofI,
-                                 unsigned int dofJ,
-                                 unsigned int elementId) const{
+double FormulationPoisson::weakB(size_t dofI,
+                                 size_t dofJ,
+                                 size_t elementId) const{
   return 0;
 }
 

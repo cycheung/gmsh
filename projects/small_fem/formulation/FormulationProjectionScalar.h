@@ -28,20 +28,20 @@ class FormulationProjectionScalar: public Formulation{
 
  public:
   FormulationProjectionScalar(double (*f)(fullVector<double>& xyz),
-			      FunctionSpaceScalar& fs);
+                              FunctionSpaceScalar& fs);
 
   virtual ~FormulationProjectionScalar(void);
 
   virtual bool isGeneral(void) const;
 
-  virtual double weak(unsigned int dofI, unsigned int dofJ,
-		      unsigned int elementId) const;
+  virtual double weak(size_t dofI, size_t dofJ,
+                      size_t elementId) const;
 
-  virtual double weakB(unsigned int dofI, unsigned int dofJ,
-                       unsigned int elementId) const;
+  virtual double weakB(size_t dofI, size_t dofJ,
+                       size_t elementId) const;
 
-  virtual double rhs(unsigned int equationI,
-		     unsigned int elementId) const;
+  virtual double rhs(size_t equationI,
+                     size_t elementId) const;
 
   virtual const FunctionSpace& fs(void) const;
 };

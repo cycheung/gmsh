@@ -45,17 +45,17 @@ orientAllElements(const Basis& basis){
 
   // Get Orientation Stats //
   // Get some Data
-  const unsigned int nOrient  = basis.getReferenceSpace().getNReferenceSpace();
-  const unsigned int nElement = element->size();
+  const size_t nOrient  = basis.getReferenceSpace().getNReferenceSpace();
+  const size_t nElement = element->size();
 
   // Init
-  orientationStat = new vector<unsigned int>(nOrient);
+  orientationStat = new vector<size_t>(nOrient);
 
-  for(unsigned int i = 0; i < nOrient; i++)
+  for(size_t i = 0; i < nOrient; i++)
     (*orientationStat)[i] = 0;
 
   // Compute
-  for(unsigned int i = 0; i < nElement; i++)
+  for(size_t i = 0; i < nElement; i++)
     (*orientationStat)
       [basis.getReferenceSpace().getReferenceSpace(*(*element)[i])]++;
 
@@ -83,7 +83,7 @@ string GroupOfElement::toString(void) const{
          << "* This group contains the following Elements: *"
          << endl;
 
-  for(unsigned int i = 0; i < element->size(); i++)
+  for(size_t i = 0; i < element->size(); i++)
     stream << "*   -- Element #"
            << mesh->getGlobalId(*(*element)[i])
            << endl;
@@ -102,7 +102,7 @@ string GroupOfElement::toString(void) const{
          << "* This group has the following Orientations:  *"
          << endl;
 
-  for(unsigned int i = 0; i < orientationStat->size(); i++)
+  for(size_t i = 0; i < orientationStat->size(); i++)
     stream << "*   -- Elements with Orientation " << i << " - "
            << (*orientationStat)[i] << endl;
 

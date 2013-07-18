@@ -37,14 +37,14 @@ FormulationProjectionVector::~FormulationProjectionVector(void){
   delete localTerms2;
 }
 
-double FormulationProjectionVector::weak(unsigned int dofI, unsigned int dofJ,
-                                         unsigned int elementId) const{
+double FormulationProjectionVector::weak(size_t dofI, size_t dofJ,
+                                         size_t elementId) const{
 
   return localTerms1->getTerm(dofI, dofJ, elementId);
 }
 
-double FormulationProjectionVector::rhs(unsigned int equationI,
-                                        unsigned int elementId) const{
+double FormulationProjectionVector::rhs(size_t equationI,
+                                        size_t elementId) const{
 
   return localTerms2->getTerm(0, equationI, elementId);
 }
@@ -53,9 +53,9 @@ bool FormulationProjectionVector::isGeneral(void) const{
   return false;
 }
 
-double FormulationProjectionVector::weakB(unsigned int dofI,
-                                          unsigned int dofJ,
-                                          unsigned int elementId) const{
+double FormulationProjectionVector::weakB(size_t dofI,
+                                          size_t dofJ,
+                                          size_t elementId) const{
   return 0;
 }
 

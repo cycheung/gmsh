@@ -36,14 +36,14 @@ FormulationProjectionScalar::~FormulationProjectionScalar(void){
   delete localTerms1;
 }
 
-double FormulationProjectionScalar::weak(unsigned int dofI, unsigned int dofJ,
-                                         unsigned int elementId) const{
+double FormulationProjectionScalar::weak(size_t dofI, size_t dofJ,
+                                         size_t elementId) const{
 
   return localTerms1->getTerm(dofI, dofJ, elementId);
 }
 
-double FormulationProjectionScalar::rhs(unsigned int equationI,
-                                        unsigned int elementId) const{
+double FormulationProjectionScalar::rhs(size_t equationI,
+                                        size_t elementId) const{
 
   return localTerms2->getTerm(0, equationI, elementId);
 }
@@ -52,9 +52,9 @@ bool FormulationProjectionScalar::isGeneral(void) const{
   return false;
 }
 
-double FormulationProjectionScalar::weakB(unsigned int dofI,
-                                          unsigned int dofJ,
-                                          unsigned int elementId) const{
+double FormulationProjectionScalar::weakB(size_t dofI,
+                                          size_t dofJ,
+                                          size_t elementId) const{
   return 0;
 }
 

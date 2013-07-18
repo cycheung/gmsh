@@ -20,7 +20,7 @@ const double FormulationSteadyWaveVectorSlow::eps = 1;
 FormulationSteadyWaveVectorSlow::
 FormulationSteadyWaveVectorSlow(GroupOfElement& goe,
                                 double k,
-                                unsigned int order){
+                                size_t order){
   // Wave Number Squared //
   kSquare = k * k;
 
@@ -65,9 +65,9 @@ FormulationSteadyWaveVectorSlow::~FormulationSteadyWaveVectorSlow(void){
   delete fspace;
 }
 
-double FormulationSteadyWaveVectorSlow::weak(unsigned int dofI,
-                                             unsigned int dofJ,
-                                             unsigned int elementId) const{
+double FormulationSteadyWaveVectorSlow::weak(size_t dofI,
+                                             size_t dofJ,
+                                             size_t elementId) const{
   // Init Some Stuff //
   fullVector<double> phiI(3);
   fullVector<double> phiJ(3);
@@ -123,8 +123,8 @@ double FormulationSteadyWaveVectorSlow::weak(unsigned int dofI,
   return integral1 - integral2;
 }
 
-double FormulationSteadyWaveVectorSlow::rhs(unsigned int equationI,
-                                            unsigned int elementId) const{
+double FormulationSteadyWaveVectorSlow::rhs(size_t equationI,
+                                            size_t elementId) const{
   return 0;
 }
 
@@ -132,9 +132,9 @@ bool FormulationSteadyWaveVectorSlow::isGeneral(void) const{
   return false;
 }
 
-double FormulationSteadyWaveVectorSlow::weakB(unsigned int dofI,
-                                              unsigned int dofJ,
-                                              unsigned int elementId) const{
+double FormulationSteadyWaveVectorSlow::weakB(size_t dofI,
+                                              size_t dofJ,
+                                              size_t elementId) const{
   return 0;
 }
 

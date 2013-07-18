@@ -37,14 +37,14 @@ class Mesh{
  private:
   GModel* model;
 
-  std::map<const MElement*, unsigned int, ElementComparator>* element;
-  std::map<const MVertex*, unsigned int, VertexComparator>*   vertex;
-  std::map<const MEdge*, unsigned int, EdgeComparator>*       edge;
-  std::map<const MFace*, unsigned int, FaceComparator>*       face;
+  std::map<const MElement*, size_t, ElementComparator>* element;
+  std::map<const MVertex*, size_t, VertexComparator>*   vertex;
+  std::map<const MEdge*, size_t, EdgeComparator>*       edge;
+  std::map<const MFace*, size_t, FaceComparator>*       face;
 
   std::multimap<int, const MElement*>* physical;
 
-  int nextId;
+  size_t nextId;
 
  public:
    Mesh(const std::string fileName);
@@ -52,17 +52,17 @@ class Mesh{
 
   GModel& getModel(void) const;
 
-  unsigned int getGlobalId(const MElement& element) const;
-  unsigned int getGlobalId(const MVertex& vertex) const;
-  unsigned int getGlobalId(const MEdge& edge) const;
-  unsigned int getGlobalId(const MFace& face) const;
+  size_t getGlobalId(const MElement& element) const;
+  size_t getGlobalId(const MVertex& vertex) const;
+  size_t getGlobalId(const MEdge& edge) const;
+  size_t getGlobalId(const MFace& face) const;
 
   const std::vector<const MVertex*> getAllVertex(void) const;
 
-  unsigned int getElementNumber(void) const;
-  unsigned int getVertexNumber(void) const;
-  unsigned int getEdgeNumber(void) const;
-  unsigned int getFaceNumber(void) const;
+  size_t getElementNumber(void) const;
+  size_t getVertexNumber(void) const;
+  size_t getEdgeNumber(void) const;
+  size_t getFaceNumber(void) const;
 
   GroupOfElement getFromPhysical(int physicalId) const;
 
@@ -88,25 +88,25 @@ class Mesh{
    @return Returns the Model used for generating this Mesh
    **
 
-   @fn unsigned int Mesh::getGlobalId(const MElement& element) const
+   @fn size_t Mesh::getGlobalId(const MElement& element) const
    @param element A MElement
    @return Returns the @em global @em @c ID (in this Mesh) of the
    given MElement
    **
 
-   @fn unsigned int Mesh::getGlobalId(const MVertex& vertex) const
+   @fn size_t Mesh::getGlobalId(const MVertex& vertex) const
    @param vertex A MVertex
    @return Returns the @em global @em @c ID (in this Mesh) of the
    given MVertex
    **
 
-   @fn unsigned int Mesh::getGlobalId(const MEdge& edge) const
+   @fn size_t Mesh::getGlobalId(const MEdge& edge) const
    @param edge A MEdge
    @return Returns the @em global @em @c ID (in this Mesh) of the
    given MEdge
    **
 
-   @fn unsigned int Mesh::getGlobalId(const MFace& face) const
+   @fn size_t Mesh::getGlobalId(const MFace& face) const
    @param face A MFace
    @return Returns the @em global @em @c ID (in this Mesh) of the
    given MFace
@@ -156,19 +156,19 @@ inline GModel& Mesh::getModel(void) const{
   return *model;
 }
 
-inline unsigned int Mesh::getElementNumber(void) const{
+inline size_t Mesh::getElementNumber(void) const{
   return element->size();
 }
 
-inline unsigned int Mesh::getVertexNumber(void) const{
+inline size_t Mesh::getVertexNumber(void) const{
   return vertex->size();
 }
 
-inline unsigned int Mesh::getEdgeNumber(void) const{
+inline size_t Mesh::getEdgeNumber(void) const{
   return edge->size();
 }
 
-inline unsigned int Mesh::getFaceNumber(void) const{
+inline size_t Mesh::getFaceNumber(void) const{
   return face->size();
 }
 

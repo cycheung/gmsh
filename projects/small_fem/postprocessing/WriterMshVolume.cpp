@@ -15,7 +15,7 @@ void WriterMsh::writeVolumeValuesHeader(const string name) const{
 }
 
 void WriterMsh::writeVolumeValues(void) const{
-  for(unsigned int i = 0; i < E; i++){
+  for(size_t i = 0; i < E; i++){
     *out << (*element)[i]->getNum() << " "
          << (*scalarValue)[i]       << " "
          << endl;

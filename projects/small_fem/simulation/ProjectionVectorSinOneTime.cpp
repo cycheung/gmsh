@@ -22,15 +22,15 @@ using namespace std;
 fullVector<double> f(fullVector<double>& xyz);
 
 vector<fullVector<double> > fem(GroupOfElement& domain, GroupOfElement& visu,
-				fullVector<double> (*f)(fullVector<double>& xyz),
-				Writer& writer, int order);
+                                fullVector<double> (*f)(fullVector<double>& xyz),
+                                Writer& writer, int order);
 
 vector<fullVector<double> > ana(GroupOfElement& domain,
-				fullVector<double> (*f)(fullVector<double>& xyz),
-				Writer& writer);
+                                fullVector<double> (*f)(fullVector<double>& xyz),
+                                Writer& writer);
 
 fullMatrix<double> l2(fullMatrix<vector<fullVector<double> > >& fem,
-		      vector<fullVector<double> >& ana);
+                      vector<fullVector<double> >& ana);
 
 double modSquare(fullVector<double>& v);
 double modDiffSquare(fullVector<double>& v0, fullVector<double>& v1);
@@ -57,7 +57,7 @@ int main(int argc, char** argv){
   WriterMsh writer;
 
   // Get Data //
-  const unsigned int order = atoi(argv[3]);
+  const size_t order = atoi(argv[3]);
 
   // Get Visu //
   cout << "## Reading Visu Mesh ..." << endl << flush;
@@ -93,21 +93,21 @@ int main(int argc, char** argv){
   fullMatrix<double> l2Error = l2(sol, real);
   cout << "## ... Done !" << endl << endl << flush;
 
-  const unsigned int l2Row      = l2Error.size1();
-  const unsigned int l2ColMinus = l2Error.size2() - 1;
+  const size_t l2Row      = l2Error.size1();
+  const size_t l2ColMinus = l2Error.size2() - 1;
 
   cout << "l2 = ..." << endl
        << "    [..." << endl;
 
-  for(unsigned int i = 0; i < l2Row; i++){
+  for(size_t i = 0; i < l2Row; i++){
     cout << "        ";
 
-    for(unsigned int j = 0; j < l2ColMinus; j++)
+    for(size_t j = 0; j < l2ColMinus; j++)
       cout << scientific << showpos
-	   << l2Error(i, j) << " , ";
+           << l2Error(i, j) << " , ";
 
     cout << scientific << showpos
-	 << l2Error(i, l2ColMinus) << " ; ..." << endl;
+         << l2Error(i, l2ColMinus) << " ; ..." << endl;
   }
 
   cout << "    ];" << endl;
@@ -124,8 +124,8 @@ int main(int argc, char** argv){
 }
 
 vector<fullVector<double> > fem(GroupOfElement& domain, GroupOfElement& visu,
-				fullVector<double> (*f)(fullVector<double>& xyz),
-				Writer& writer, int order){
+                                fullVector<double> (*f)(fullVector<double>& xyz),
+                                Writer& writer, int order){
 
   stringstream stream;
 
@@ -150,8 +150,8 @@ vector<fullVector<double> > fem(GroupOfElement& domain, GroupOfElement& visu,
 }
 
 vector<fullVector<double> > ana(GroupOfElement& domain,
-				fullVector<double> (*f)(fullVector<double>& xyz),
-				Writer& writer){
+                                fullVector<double> (*f)(fullVector<double>& xyz),
+                                Writer& writer){
 
   stringstream stream;
 
@@ -166,29 +166,29 @@ vector<fullVector<double> > ana(GroupOfElement& domain,
 }
 
 fullMatrix<double> l2(fullMatrix<vector<fullVector<double> > >& fem,
-		      vector<fullVector<double> >& ana){
+                      vector<fullVector<double> >& ana){
   // Init //
-  const unsigned int nOrder = fem.size1();
-  const unsigned int nMesh  = fem.size2();
-  const unsigned int nNode  = ana.size();
+  const size_t nOrder = fem.size1();
+  const size_t nMesh  = fem.size2();
+  const size_t nNode  = ana.size();
 
   fullMatrix<double> res(nOrder, nMesh);
 
-  for(unsigned int i = 0; i < nOrder; i++)
-    for(unsigned int j = 0; j < nMesh; j++)
+  for(size_t i = 0; i < nOrder; i++)
+    for(size_t j = 0; j < nMesh; j++)
       res(i , j) = 0;
 
   // Norm of Analytic Solution //
   double anaNorm = 0;
-  for(unsigned int k = 0; k < nNode; k++)
+  for(size_t k = 0; k < nNode; k++)
     anaNorm += modSquare(ana[k]);
 
   anaNorm = sqrt(anaNorm);
 
   // Norm of FEM Error //
-  for(unsigned int i = 0; i < nOrder; i++){
-    for(unsigned int j = 0; j < nMesh; j++){
-      for(unsigned int k = 0; k < nNode; k++)
+  for(size_t i = 0; i < nOrder; i++){
+    for(size_t j = 0; j < nMesh; j++){
+      for(size_t k = 0; k < nNode; k++)
 	res(i, j) += modDiffSquare(ana[k], fem(i, j)[k]);
 
       res(i, j) = sqrt(res(i, j)) / anaNorm;

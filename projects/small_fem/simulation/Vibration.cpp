@@ -27,18 +27,20 @@ int main(int argc, char** argv){
   // Get Domain //
   Mesh msh(argv[1]);
   GroupOfElement domain = msh.getFromPhysical(7);
+  GroupOfElement border = msh.getFromPhysical(5);
 
   // Get Some Data //
   WriterMsh writer;
 
-  const unsigned int order = atoi(argv[2]);
-  const unsigned int nWave = atoi(argv[3]);
+  const size_t order = atoi(argv[2]);
+  const size_t nWave = atoi(argv[3]);
 
   // Vibration //
   FormulationVibration vibration(domain, order);
   SystemEigen sysVibration(vibration);
 
-  sysVibration.fixCoef(msh.getFromPhysical(5), 0);
+  //sysVibration.fixCoef(msh.getFromPhysical(5), 0);
+  sysVibration.dirichlet(border, fDir);
 
   cout << "Vibration: " << sysVibration.getSize() << endl;
 
@@ -50,7 +52,7 @@ int main(int argc, char** argv){
   sysVibration.solve();
 
   // Display //
-  const unsigned int nEigenValue =
+  const size_t nEigenValue =
     sysVibration.getEigenValuesNumber();
 
   const vector<complex<double> >& eigenValue =
@@ -59,24 +61,24 @@ int main(int argc, char** argv){
   cout << endl
        << "Number\tEigen Value\tEigen Wave Number" << endl;
 
-  for(unsigned int i = 0; i < nEigenValue; i++)
+  for(size_t i = 0; i < nEigenValue; i++)
     cout << "#" << i + 1        << "\t"
-	 << eigenValue[i]       << "\t"
-	 << sqrt(eigenValue[i]) << endl;
+         << eigenValue[i]       << "\t"
+         << sqrt(eigenValue[i]) << endl;
 
   // Write Sol //
   // Number of decimals in nEigenValue
   // Used for '0' pading in sprintf
   char fileName[1024];
-  const unsigned int nDec = floor(log10(nEigenValue)) + 1;
+  const int nDec = floor(log10(nEigenValue)) + 1;
 
   if(argc == 5){
     // With VisuMesh
     Mesh           visuMesh(argv[4]);
     GroupOfElement visu = visuMesh.getFromPhysical(7);
 
-    for(unsigned int i = 0; i < nEigenValue; i++){
-      sprintf(fileName, "vibration_mode%0*d", nDec, i + 1);
+    for(size_t i = 0; i < nEigenValue; i++){
+      sprintf(fileName, "vibration_mode%0*u", nDec, (unsigned int)(i + 1));
 
       Interpolator intVibration(sysVibration, i, visu);
       intVibration.write(string(fileName), writer);
@@ -85,8 +87,8 @@ int main(int argc, char** argv){
 
   else{
     // Without VisuMesh
-    for(unsigned int i = 0; i < nEigenValue; i++){
-      sprintf(fileName, "vibration_mode%0*d", nDec, i + 1);
+    for(size_t i = 0; i < nEigenValue; i++){
+      sprintf(fileName, "vibration_mode%0*u", nDec, (unsigned int)(i + 1));
 
       writer.setValues(sysVibration, i);
       writer.write(string(fileName));

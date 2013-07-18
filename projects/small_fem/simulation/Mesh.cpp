@@ -20,7 +20,7 @@ int main(int argc, char** argv){
   cout << "## Reading Mesh" << endl << flush;
 
   Mesh msh(argv[1]);
-  unsigned int physical = atoi(argv[2]);
+  size_t       physical = atoi(argv[2]);
   GroupOfElement domain = msh.getFromPhysical(physical);
 
 
@@ -39,18 +39,18 @@ int main(int argc, char** argv){
   // Analyze //
   cout << "## Analyzing" << endl << flush;
 
-  const unsigned int size = domain.getNumber();
+  const size_t size = domain.getNumber();
 
-  const vector<unsigned int>& orientationStat =
+  const vector<size_t>& orientationStat =
     domain.getOrientationStats();
 
   vector<double> orientation(size);
 
-  unsigned int i = 0;
-  unsigned int j = 0;
-  unsigned int sum = orientationStat[j];
+  size_t i   = 0;
+  size_t j   = 0;
+  size_t sum = orientationStat[j];
 
-  for(unsigned int i = 0; i < orientationStat.size(); i++)
+  for(size_t i = 0; i < orientationStat.size(); i++)
     cout << i << ": " << orientationStat[i] << endl;
 
   while(orientationStat[j] == 0)
@@ -71,18 +71,18 @@ int main(int argc, char** argv){
   }
 
   cout << "## Mesh" << endl << flush;
-  for(unsigned int i = 0; i < domain.getNumber(); i++){
-    const MElement& e    = domain.get(i);
-    const unsigned int N = e.getNumPrimaryVertices();
+  for(size_t i = 0; i < domain.getNumber(); i++){
+    const MElement& e = domain.get(i);
+    const size_t    N = e.getNumPrimaryVertices();
 
     vector<int> v(N);
-    for(unsigned int j = 0; j < N; j++)
+    for(size_t j = 0; j < N; j++)
       v[j] = e.getVertex(j)->getNum();
 
     cout << "  -- " << "Element " << e.getNum()
          << ": "    << "[";
 
-    for(unsigned int j = 0; j < N - 1; j++)
+    for(size_t j = 0; j < N - 1; j++)
       cout << v[j] << ", ";
 
     cout << v[N - 1] << "]"

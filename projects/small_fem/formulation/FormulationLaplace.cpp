@@ -8,7 +8,7 @@
 using namespace std;
 
 FormulationLaplace::FormulationLaplace(GroupOfElement& goe,
-                                       unsigned int order){
+                                       size_t order){
   // Can't have 0th order //
   if(order == 0)
     throw
@@ -40,15 +40,15 @@ FormulationLaplace::~FormulationLaplace(void){
   delete localTerms;
 }
 
-double FormulationLaplace::weak(unsigned int dofI, unsigned int dofJ,
-                                unsigned int elementId) const{
+double FormulationLaplace::weak(size_t dofI, size_t dofJ,
+                                size_t elementId) const{
 
   return localTerms->getTerm(dofI, dofJ, elementId);
 }
 
 
-double FormulationLaplace::rhs(unsigned int equationI,
-                               unsigned int elementId) const{
+double FormulationLaplace::rhs(size_t equationI,
+                               size_t elementId) const{
   return 0;
 }
 
@@ -56,9 +56,9 @@ bool FormulationLaplace::isGeneral(void) const{
   return false;
 }
 
-double FormulationLaplace::weakB(unsigned int dofI,
-                                 unsigned int dofJ,
-                                 unsigned int elementId) const{
+double FormulationLaplace::weakB(size_t dofI,
+                                 size_t dofJ,
+                                 size_t elementId) const{
   return 0;
 }
 

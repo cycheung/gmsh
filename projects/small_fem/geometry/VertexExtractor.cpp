@@ -2,20 +2,19 @@
 
 using namespace std;
 
-map<const MVertex*, unsigned int, VertexComparator>*
-
+map<const MVertex*, size_t, VertexComparator>*
 GeoExtractor::extractVertex(const map<const MElement*,
-				      unsigned int,
-				      ElementComparator>& element){
+                                      size_t,
+                                      ElementComparator>& element){
   // Init //
-  map<const MVertex*, unsigned int, VertexComparator>*
-    vertex = new map<const MVertex*, unsigned int, VertexComparator>;
+  map<const MVertex*, size_t, VertexComparator>*
+    vertex = new map<const MVertex*, size_t, VertexComparator>;
 
   // Get Vertices //
-  const map<const MElement*, unsigned int, ElementComparator>::const_iterator
+  const map<const MElement*, size_t, ElementComparator>::const_iterator
     endE = element.end();
 
-  map<const MElement*, unsigned int, ElementComparator>::const_iterator
+  map<const MElement*, size_t, ElementComparator>::const_iterator
     itE = element.begin();
 
   // Iterate on Elements
@@ -24,9 +23,9 @@ GeoExtractor::extractVertex(const map<const MElement*,
     MElement* myElement = const_cast<MElement*>(itE->first);
 
     // Iterate on Vertices
-    const unsigned int N = myElement->getNumVertices();
+    const size_t N = myElement->getNumVertices();
 
-    for(unsigned int i = 0; i < N; i++){
+    for(size_t i = 0; i < N; i++){
       // Take Current Vertex
       MVertex* myVertex = myElement->getVertex(i);
 

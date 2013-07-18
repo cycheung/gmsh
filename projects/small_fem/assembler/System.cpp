@@ -78,7 +78,7 @@ void System::assemble(void){
   VecSetType(*xPetsc, "seq");
 
   // Get GroupOfDofs //
-  const unsigned int E = fs->getSupport().getNumber();
+  const size_t E = fs->getSupport().getNumber();
   const vector<GroupOfDof*>& group = fs->getAllGroups();
 
   // Get Sparsity Pattern & PreAllocate//
@@ -88,7 +88,7 @@ void System::assemble(void){
   for(size_t i = 0; i < size; i++)
     nonZero[i] = 0;
 
-  for(unsigned int i = 0; i < E; i++)
+  for(size_t i = 0; i < E; i++)
     SystemAbstract::sparsity(nonZero, uniqueSparsity, *group[i]);
 
   MatSeqAIJSetPreallocation(*A, 42, nonZero);
@@ -98,7 +98,7 @@ void System::assemble(void){
   // Assemble System //
   formulationPtr term = &Formulation::weak;
 
-  for(unsigned int i = 0; i < E; i++)
+  for(size_t i = 0; i < E; i++)
     SystemAbstract::assemble(*A, *b, i, *group[i], term);
 
   MatAssemblyBegin(*A, MAT_FINAL_ASSEMBLY);

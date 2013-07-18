@@ -30,7 +30,7 @@ class TermCurlCurl: public Term{
                 fullMatrix<double>**& cM);
 
   void computeB(const GroupOfJacobian& goj,
-                unsigned int nG,
+                size_t nG,
                 fullMatrix<double>**& bM);
 };
 

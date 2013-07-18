@@ -30,7 +30,7 @@ int main(int argc, char** argv){
   Mesh msh(argv[1]);
 
   // Get Order //
-  unsigned int order = atoi(argv[2]);
+  size_t order = atoi(argv[2]);
 
   // Get Domain //
   GroupOfElement domain    = msh.getFromPhysical(7);

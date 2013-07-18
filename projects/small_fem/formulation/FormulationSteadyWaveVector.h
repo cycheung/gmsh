@@ -34,21 +34,21 @@ class FormulationSteadyWaveVector: public Formulation{
 
  public:
   FormulationSteadyWaveVector(GroupOfElement& goe,
-			      double k,
-			      unsigned int order);
+                              double k,
+                              size_t order);
 
   virtual ~FormulationSteadyWaveVector(void);
 
   virtual bool isGeneral(void) const;
 
-  virtual double weak(unsigned int dofI, unsigned int dofJ,
-		      unsigned int elementId) const;
+  virtual double weak(size_t dofI, size_t dofJ,
+                      size_t elementId) const;
 
-  virtual double weakB(unsigned int dofI, unsigned int dofJ,
-                       unsigned int elementId) const;
+  virtual double weakB(size_t dofI, size_t dofJ,
+                       size_t elementId) const;
 
-  virtual double rhs(unsigned int equationI,
-		     unsigned int elementId) const;
+  virtual double rhs(size_t equationI,
+                     size_t elementId) const;
 
   virtual const FunctionSpace& fs(void) const;
 };

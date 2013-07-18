@@ -28,24 +28,24 @@
 class DofManager{
  private:
   typedef struct{
-    unsigned int  nDof;
-    unsigned int* id;
+    size_t  nDof;
+    size_t* id;
   } Data;
 
-  static const unsigned int isFixed;
+  static const size_t isFixed;
 
-  std::map<const Dof*, unsigned int, DofComparator>* globalIdM;
-  std::map<const Dof*, double, DofComparator>*       fixedDof;
+  std::map<const Dof*, size_t, DofComparator>* globalIdM;
+  std::map<const Dof*, double, DofComparator>* fixedDof;
 
-  Data*        globalIdV;
-  unsigned int sizeV;
+  Data*  globalIdV;
+  size_t sizeV;
 
-  unsigned int first;
-  unsigned int last;
-  unsigned int nTotDof;
+  size_t first;
+  size_t last;
+  size_t nTotDof;
 
  public:
-  static const unsigned int isFixedId(void);
+  static const size_t isFixedId(void);
 
  public:
    DofManager(void);
@@ -54,21 +54,21 @@ class DofManager{
   void addToDofManager(const std::vector<GroupOfDof*>& god);
   void generateGlobalIdSpace(void);
 
-  unsigned int getGlobalId(const Dof& dof)     const;
-  unsigned int getGlobalIdSafe(const Dof& dof) const;
+  size_t getGlobalId(const Dof& dof)     const;
+  size_t getGlobalIdSafe(const Dof& dof) const;
 
   bool   isUnknown(const Dof& dof) const;
   bool   fixValue(const Dof& dof, double value);
   double getValue(const Dof& dof) const;
 
-  unsigned int getDofNumber(void) const;
+  size_t getDofNumber(void) const;
 
   std::string toString(void) const;
 
  private:
   void serialize(void);
-  std::pair<bool, unsigned int> find(const Dof& dof)     const;
-  std::pair<bool, unsigned int> findSafe(const Dof& dof) const;
+  std::pair<bool, size_t> find(const Dof& dof)     const;
+  std::pair<bool, size_t> findSafe(const Dof& dof) const;
 
   bool isUnknownFromMap(const Dof& dof) const;
   bool isUnknownFromVec(const Dof& dof) const;
@@ -171,22 +171,22 @@ class DofManager{
 // Inline Functions //
 //////////////////////
 
-inline const unsigned int DofManager::isFixedId(void){
+inline const size_t DofManager::isFixedId(void){
   return isFixed;
 }
 
-inline std::pair<bool, unsigned int> DofManager::find(const Dof& dof) const{
-  const unsigned int entity = dof.getEntity() - first;
-  const unsigned int type   = dof.getType();
+inline std::pair<bool, size_t> DofManager::find(const Dof& dof) const{
+  const size_t entity = dof.getEntity() - first;
+  const size_t type   = dof.getType();
 
-  return std::pair<bool, unsigned int>(true, globalIdV[entity].id[type]);
+  return std::pair<bool, size_t>(true, globalIdV[entity].id[type]);
 }
 
-inline unsigned int DofManager::getGlobalId(const Dof& dof) const{
+inline size_t DofManager::getGlobalId(const Dof& dof) const{
   return find(dof).second;
 }
 
-inline unsigned int DofManager::getDofNumber(void) const{
+inline size_t DofManager::getDofNumber(void) const{
   if(globalIdM)
     return globalIdM->size() - fixedDof->size();
 

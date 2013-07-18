@@ -16,21 +16,21 @@
 
 class Dof{
  private:
-  unsigned long int entity;
-  unsigned int type;
+  size_t entity;
+  size_t type;
 
  public:
    Dof(void);
    Dof(const Dof& other);
-   Dof(unsigned long int entity, unsigned int type);
+   Dof(size_t entity, size_t type);
   ~Dof(void);
 
-  unsigned long int getEntity(void) const;
-  unsigned int      getType(void)   const;
+  size_t getEntity(void) const;
+  size_t getType(void)   const;
 
-  void setEntity(unsigned long int entity);
-  void setType(unsigned int type);
-  void setDof(unsigned long int entity, unsigned int type);
+  void setEntity(size_t entity);
+  void setType(size_t type);
+  void setDof(size_t entity, size_t type);
 
   bool operator<(const Dof& other) const;
   bool operator>(const Dof& other) const;
@@ -53,7 +53,7 @@ class Dof{
    Instanciates a @em copy of the given Dof
    **
 
-   @fn Dof::Dof(unsigned int, unsigned int)
+   @fn Dof::Dof(size_t, size_t)
    @param entity A natural number
    @param type A natural number
 
@@ -122,24 +122,23 @@ class Dof{
 // Inline Functions //
 //////////////////////
 
-inline unsigned long int Dof::getEntity(void) const{
+inline size_t Dof::getEntity(void) const{
   return entity;
 }
 
-inline unsigned int Dof::getType(void) const{
+inline size_t Dof::getType(void) const{
   return type;
 }
 
-inline void Dof::setEntity(unsigned long int entity){
+inline void Dof::setEntity(size_t entity){
   this->entity = entity;
 }
 
-inline void Dof::setType(unsigned int type){
+inline void Dof::setType(size_t type){
   this->type = type;
 }
 
-inline void Dof::setDof(unsigned long int entity,
-                        unsigned int type){
+inline void Dof::setDof(size_t entity, size_t type){
   this->entity = entity;
   this->type   = type;
 }

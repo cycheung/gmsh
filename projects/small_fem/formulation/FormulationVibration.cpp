@@ -8,7 +8,7 @@
 using namespace std;
 
 FormulationVibration::FormulationVibration(GroupOfElement& goe,
-                                           unsigned int order){
+                                           size_t order){
   // Can't have 0th order //
   if(order == 0)
     throw
@@ -41,8 +41,8 @@ FormulationVibration::~FormulationVibration(void){
   delete localTerms;
 }
 
-double FormulationVibration::weak(unsigned int dofI, unsigned int dofJ,
-                                  unsigned int elementId) const{
+double FormulationVibration::weak(size_t dofI, size_t dofJ,
+                                  size_t elementId) const{
 
   return localTerms->getTerm(dofI, dofJ, elementId);
 }
@@ -51,13 +51,13 @@ bool FormulationVibration::isGeneral(void) const{
   return false;
 }
 
-double FormulationVibration::weakB(unsigned int dofI, unsigned int dofJ,
-                                   unsigned int elementId) const{
+double FormulationVibration::weakB(size_t dofI, size_t dofJ,
+                                   size_t elementId) const{
   return 0;
 }
 
-double FormulationVibration::rhs(unsigned int equationI,
-                                 unsigned int elementId) const{
+double FormulationVibration::rhs(size_t equationI,
+                                 size_t elementId) const{
   return 0;
 }
 

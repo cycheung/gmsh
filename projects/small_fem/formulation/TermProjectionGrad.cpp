@@ -3,11 +3,12 @@
 
 using namespace std;
 
-TermProjectionGrad::TermProjectionGrad(const GroupOfJacobian& goj,
-                                       const Basis& basis,
-                                       const fullVector<double>& integrationWeights,
-                                       const fullMatrix<double>& integrationPoints,
-                                       fullVector<double> (*f)(fullVector<double>& xyz)){
+TermProjectionGrad::
+TermProjectionGrad(const GroupOfJacobian& goj,
+                   const Basis& basis,
+                   const fullVector<double>& integrationWeights,
+                   const fullMatrix<double>& integrationPoints,
+                   fullVector<double> (*f)(fullVector<double>& xyz)){
   // Basis Check //
   bFunction getFunction;
 
@@ -53,17 +54,17 @@ void TermProjectionGrad::computeC(const Basis& basis,
                                   const fullVector<double>& gW,
                                   fullMatrix<double>**& cM){
 
-  const unsigned int nG = gW.size();
-  unsigned int k;
+  const size_t nG = gW.size();
+  size_t k;
 
   // Alloc //
   cM = new fullMatrix<double>*[nOrientation];
 
-  for(unsigned int s = 0; s < nOrientation; s++)
+  for(size_t s = 0; s < nOrientation; s++)
     cM[s] = new fullMatrix<double>(3 * nG, nFunction);
 
   // Fill //
-  for(unsigned int s = 0; s < nOrientation; s++){
+  for(size_t s = 0; s < nOrientation; s++){
     // Get functions for this Orientation
     const fullMatrix<double>& phi =
       (basis.*getFunction)(s);
@@ -71,9 +72,9 @@ void TermProjectionGrad::computeC(const Basis& basis,
     // Loop on Gauss Points
     k = 0;
 
-    for(unsigned int g = 0; g < nG; g++){
-      for(unsigned int a = 0; a < 3; a++){
-        for(unsigned int i = 0; i < nFunction; i++)
+    for(size_t g = 0; g < nG; g++){
+      for(size_t a = 0; a < 3; a++){
+        for(size_t i = 0; i < nFunction; i++)
           (*cM[s])(k, i) = gW(g) * phi(i, k);
 
         k++;
@@ -82,15 +83,16 @@ void TermProjectionGrad::computeC(const Basis& basis,
   }
 }
 
-void TermProjectionGrad::computeB(const GroupOfJacobian& goj,
-                                  const Basis& basis,
-                                  const fullMatrix<double>& gC,
-                                  fullVector<double> (*f)(fullVector<double>& xyz),
-                                  fullMatrix<double>**& bM){
+void TermProjectionGrad::
+computeB(const GroupOfJacobian& goj,
+         const Basis& basis,
+         const fullMatrix<double>& gC,
+         fullVector<double> (*f)(fullVector<double>& xyz),
+         fullMatrix<double>**& bM){
 
-  const unsigned int nG = gC.size1();
-  unsigned int offset = 0;
-  unsigned int j;
+  const size_t nG = gC.size1();
+  size_t offset = 0;
+  size_t j;
 
   fullVector<double> xyz(3);
   double             pxyz[3];
@@ -99,21 +101,21 @@ void TermProjectionGrad::computeB(const GroupOfJacobian& goj,
   // Alloc //
   bM = new fullMatrix<double>*[nOrientation];
 
-  for(unsigned int s = 0; s < nOrientation; s++)
+  for(size_t s = 0; s < nOrientation; s++)
     bM[s] = new fullMatrix<double>((*orientationStat)[s], 3 * nG);
 
   // Fill //
-  for(unsigned int s = 0; s < nOrientation; s++){
+  for(size_t s = 0; s < nOrientation; s++){
     // Loop On Element
     j = 0;
 
-    for(unsigned int e = offset; e < offset + (*orientationStat)[s]; e++){
+    for(size_t e = offset; e < offset + (*orientationStat)[s]; e++){
       // Get Jacobians
       const vector<const pair<const fullMatrix<double>*, double>*>& invJac =
         goj.getJacobian(e).getInvertJacobianMatrix();
 
       // Loop on Gauss Points
-      for(unsigned int g = 0; g < nG; g++){
+      for(size_t g = 0; g < nG; g++){
         // Compute f in the *physical* coordinate
         basis.getReferenceSpace().mapFromABCtoXYZ(goj.getAllElements().get(e),
                                                   gC(g, 0),
@@ -131,7 +133,7 @@ void TermProjectionGrad::computeB(const GroupOfJacobian& goj,
         (*bM[s])(j, g * 3 + 1) = 0;
         (*bM[s])(j, g * 3 + 2) = 0;
 
-        for(unsigned int i = 0; i < 3; i++){
+        for(size_t i = 0; i < 3; i++){
           (*bM[s])(j, g * 3)     += (*invJac[g]->first)(i, 0) * fxyz(i);
           (*bM[s])(j, g * 3 + 1) += (*invJac[g]->first)(i, 1) * fxyz(i);
           (*bM[s])(j, g * 3 + 2) += (*invJac[g]->first)(i, 2) * fxyz(i);

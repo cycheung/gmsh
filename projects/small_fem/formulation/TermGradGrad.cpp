@@ -51,17 +51,17 @@ void TermGradGrad::computeC(const Basis& basis,
                             const fullVector<double>& gW,
                             fullMatrix<double>**& cM){
 
-  const unsigned int nG = gW.size();
+  const size_t nG = gW.size();
 
   // Alloc //
   cM = new fullMatrix<double>*[nOrientation];
 
-  for(unsigned int s = 0; s < nOrientation; s++)
+  for(size_t s = 0; s < nOrientation; s++)
     cM[s] = new fullMatrix<double>(9 * nG, nFunction * nFunction);
 
   // Fill //
   //#pragma omp parallel
-  for(unsigned int s = 0; s < nOrientation; s++){
+  for(size_t s = 0; s < nOrientation; s++){
 
     // Get functions for this Orientation
     const fullMatrix<double>& phi =
@@ -73,13 +73,13 @@ void TermGradGrad::computeC(const Basis& basis,
 
     // Loop on Functions
     //#pragma omp for
-    for(unsigned int i = 0; i < nFunction; i++){
-      for(unsigned int j = 0; j < nFunction; j++){
+    for(size_t i = 0; i < nFunction; i++){
+      for(size_t j = 0; j < nFunction; j++){
 
         // Loop on Gauss Points
-        for(unsigned int g = 0; g < nG; g++){
-          for(unsigned int a = 0; a < 3; a++){
-            for(unsigned int b = 0; b < 3; b++){
+        for(size_t g = 0; g < nG; g++){
+          for(size_t a = 0; a < 3; a++){
+            for(size_t b = 0; b < 3; b++){
               (*cM[s])(g * 9 + a * 3 + b, i * nFunction + j) =
                 gW(g) * phi(i, g * 3 + a) * phi(j, g * 3 + b);
             }
@@ -91,16 +91,16 @@ void TermGradGrad::computeC(const Basis& basis,
 }
 
 void TermGradGrad::computeB(const GroupOfJacobian& goj,
-                            unsigned int nG,
+                            size_t nG,
                             fullMatrix<double>**& bM){
-  unsigned int offset = 0;
-  unsigned int j;
-  unsigned int k;
+  size_t offset = 0;
+  size_t j;
+  size_t k;
 
   // Alloc //
   bM = new fullMatrix<double>*[nOrientation];
 
-  for(unsigned int s = 0; s < nOrientation; s++)
+  for(size_t s = 0; s < nOrientation; s++)
     bM[s] = new fullMatrix<double>((*orientationStat)[s], 9 * nG);
 
   // Fill //
@@ -108,11 +108,11 @@ void TermGradGrad::computeB(const GroupOfJacobian& goj,
   // Despite that fullMatrix is Column-major  //
   // Row-major fill seems faster for matrix B //
 
-  for(unsigned int s = 0; s < nOrientation; s++){
+  for(size_t s = 0; s < nOrientation; s++){
     // Loop On Element
     j = 0;
 
-    for(unsigned int e = offset; e < offset + (*orientationStat)[s]; e++){
+    for(size_t e = offset; e < offset + (*orientationStat)[s]; e++){
       // Get Jacobians
       const vector<const pair<const fullMatrix<double>*, double>*>& invJac =
         goj.getJacobian(e).getInvertJacobianMatrix();
@@ -120,12 +120,12 @@ void TermGradGrad::computeB(const GroupOfJacobian& goj,
       // Loop on Gauss Points
       k = 0;
 
-      for(unsigned int g = 0; g < nG; g++){
-        for(unsigned int a = 0; a < 3; a++){
-          for(unsigned int b = 0; b < 3; b++){
+      for(size_t g = 0; g < nG; g++){
+        for(size_t a = 0; a < 3; a++){
+          for(size_t b = 0; b < 3; b++){
             (*bM[s])(j, k) = 0;
 
-            for(unsigned int i = 0; i < 3; i++)
+            for(size_t i = 0; i < 3; i++)
               (*bM[s])(j, k) +=
                 (*invJac[g]->first)(i, a) * (*invJac[g]->first)(i, b);
 

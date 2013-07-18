@@ -17,7 +17,7 @@ const double FormulationSteadyWaveVector::eps = 1;
 
 FormulationSteadyWaveVector::FormulationSteadyWaveVector(GroupOfElement& goe,
                                                          double k,
-                                                         unsigned int order){
+                                                         size_t order){
   Timer timer, timerGoj;
   timer.start();
 
@@ -67,15 +67,15 @@ FormulationSteadyWaveVector::~FormulationSteadyWaveVector(void){
   delete localTerms2;
 }
 
-double FormulationSteadyWaveVector::weak(unsigned int dofI, unsigned int dofJ,
-                                         unsigned int elementId) const{
+double FormulationSteadyWaveVector::weak(size_t dofI, size_t dofJ,
+                                         size_t elementId) const{
   return
     localTerms1->getTerm(dofI, dofJ, elementId) / mu -
     localTerms2->getTerm(dofI, dofJ, elementId) * eps * kSquare;
 }
 
-double FormulationSteadyWaveVector::rhs(unsigned int equationI,
-                                        unsigned int elementId) const{
+double FormulationSteadyWaveVector::rhs(size_t equationI,
+                                        size_t elementId) const{
   return 0;
 }
 
@@ -83,9 +83,9 @@ bool FormulationSteadyWaveVector::isGeneral(void) const{
   return false;
 }
 
-double FormulationSteadyWaveVector::weakB(unsigned int dofI,
-                                          unsigned int dofJ,
-                                          unsigned int elementId) const{
+double FormulationSteadyWaveVector::weakB(size_t dofI,
+                                          size_t dofJ,
+                                          size_t elementId) const{
   return 0;
 }
 

@@ -34,8 +34,8 @@ int main(int argc, char** argv){
   GroupOfElement wall   = msh.getFromPhysical(6);
 
   // Get Parameters //
-  const double       puls  = atof(argv[2]);
-  const unsigned int order = atoi(argv[3]);
+  const double puls  = atof(argv[2]);
+  const size_t order = atoi(argv[3]);
 
   // SteadyWaveScalar //
   FormulationSteadyWaveScalar sWave(domain, puls * 1, order);

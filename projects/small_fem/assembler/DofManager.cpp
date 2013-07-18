@@ -5,17 +5,17 @@
 
 using namespace std;
 
-const unsigned int DofManager::isFixed = 0 - 1; // Largest unsigned int
+const size_t DofManager::isFixed = 0 - 1; // Largest size_t
 
 DofManager::DofManager(void){
   globalIdV = NULL;
-  globalIdM = new map<const Dof*, unsigned int, DofComparator>;
+  globalIdM = new map<const Dof*, size_t, DofComparator>;
   fixedDof  = new map<const Dof*, double, DofComparator>;
 }
 
 DofManager::~DofManager(void){
   if(globalIdV){
-    for(unsigned int i = 0; i < sizeV; i++)
+    for(size_t i = 0; i < sizeV; i++)
       delete[] globalIdV[i].id;
 
     delete[] globalIdV;
@@ -35,29 +35,29 @@ void DofManager::addToDofManager(const vector<GroupOfDof*>& god){
       ("DofManager: global id space generated -> can't add Dof");
 
   // Number Dof //
-  const unsigned int nGoD = god.size();
+  const size_t nGoD = god.size();
 
   // Add to DofManager //
-  for(unsigned int i = 0; i < nGoD; i++){
+  for(size_t i = 0; i < nGoD; i++){
     // Dof from god[i]
     const vector<const Dof*>& dof = god[i]->getDof();
 
     // Init map entry
-    const unsigned int nDof = dof.size();
+    const size_t nDof = dof.size();
 
-    for(unsigned int j = 0; j < nDof; j++)
-      globalIdM->insert(pair<const Dof*, unsigned int>(dof[j], 0));
+    for(size_t j = 0; j < nDof; j++)
+      globalIdM->insert(pair<const Dof*, size_t>(dof[j], 0));
   }
 }
 
 void DofManager::generateGlobalIdSpace(void){
-  const map<const Dof*, unsigned int, DofComparator>::iterator
+  const map<const Dof*, size_t, DofComparator>::iterator
     end = globalIdM->end();
 
-  map<const Dof*, unsigned int, DofComparator>::iterator
+  map<const Dof*, size_t, DofComparator>::iterator
     it = globalIdM->begin();
 
-  unsigned int id = 0;
+  size_t id = 0;
 
   for(; it != end; it++){
     // Check if unknown
@@ -74,10 +74,10 @@ void DofManager::generateGlobalIdSpace(void){
 
 void DofManager::serialize(void){
   // Get Data //
-  map<const Dof*, unsigned int, DofComparator>::iterator end =
+  map<const Dof*, size_t, DofComparator>::iterator end =
     globalIdM->end();
 
-  map<const Dof*, unsigned int, DofComparator>::iterator it =
+  map<const Dof*, size_t, DofComparator>::iterator it =
     globalIdM->begin();
 
   // Take the last element *IN* map
@@ -97,11 +97,11 @@ void DofManager::serialize(void){
 
 
   // Populate //
-  map<const Dof*, unsigned int, DofComparator>::iterator
+  map<const Dof*, size_t, DofComparator>::iterator
     currentEntity = it;
 
   // Iterate on vector
-  for(unsigned int i = 0; i < sizeV; i++){
+  for(size_t i = 0; i < sizeV; i++){
     // No dof for this entity
     globalIdV[i].nDof = 0;
 
@@ -114,14 +114,14 @@ void DofManager::serialize(void){
 
     // Alloc
     if(globalIdV[i].nDof)
-      globalIdV[i].id = new unsigned int[globalIdV[i].nDof];
+      globalIdV[i].id = new size_t[globalIdV[i].nDof];
 
     else
       globalIdV[i].id = NULL;
 
     // Add globalIds in vector for this entity
     it = currentEntity;
-    for(unsigned int j = 0; j < globalIdV[i].nDof; j++, it++)
+    for(size_t j = 0; j < globalIdV[i].nDof; j++, it++)
       globalIdV[i].id[j] = it->second; // Copy globalId from map
 
     // Current entity is added to vector:
@@ -130,30 +130,30 @@ void DofManager::serialize(void){
   }
 }
 
-pair<bool, unsigned int> DofManager::findSafe(const Dof& dof) const{
+pair<bool, size_t> DofManager::findSafe(const Dof& dof) const{
   // Is 'dof' in globalIdV range ?
-  unsigned int tmpEntity = dof.getEntity();
+  size_t tmpEntity = dof.getEntity();
 
   if(tmpEntity < first || tmpEntity > last)
-    return pair<bool, unsigned int>(false, 42);
+    return pair<bool, size_t>(false, 42);
 
   // Offset Entity & Get Type
-  const unsigned int entity = tmpEntity - first;
-  const unsigned int type   = dof.getType();
+  const size_t entity = tmpEntity - first;
+  const size_t type   = dof.getType();
 
   // Look for Entity in globalIdV
   if(globalIdV[entity].nDof > 0 && type <= globalIdV[entity].nDof)
     // If we have Dofs associated to this Entity,
     // get the requested Type and return Id
-    return pair<bool, unsigned int>(true, globalIdV[entity].id[type]);
+    return pair<bool, size_t>(true, globalIdV[entity].id[type]);
 
   else
     // If no Dof, return false
-    return pair<bool, unsigned int>(false, 42);
+    return pair<bool, size_t>(false, 42);
 }
 
-unsigned int DofManager::getGlobalIdSafe(const Dof& dof) const{
-  const pair<bool, unsigned int> search = findSafe(dof);
+size_t DofManager::getGlobalIdSafe(const Dof& dof) const{
+  const pair<bool, size_t> search = findSafe(dof);
 
   if(!search.first)
     throw
@@ -172,7 +172,7 @@ bool DofManager::isUnknown(const Dof& dof) const{
 }
 
 bool DofManager::isUnknownFromVec(const Dof& dof) const{
-  const pair<bool, unsigned int> search = findSafe(dof);
+  const pair<bool, size_t> search = findSafe(dof);
 
   if(search.first)
     return search.second == isFixed;
@@ -182,7 +182,7 @@ bool DofManager::isUnknownFromVec(const Dof& dof) const{
 }
 
 bool DofManager::isUnknownFromMap(const Dof& dof) const{
-  const map<const Dof*, unsigned int, DofComparator>::
+  const map<const Dof*, size_t, DofComparator>::
     iterator it = globalIdM->find(&dof);
 
   if(it != globalIdM->end())
@@ -200,7 +200,7 @@ bool DofManager::fixValue(const Dof& dof, double value){
       ("DofManager: global id space generated -> can't fix values");
 
   // Get *REAL* Dof
-  const map<const Dof*, unsigned int, DofComparator>::iterator it =
+  const map<const Dof*, size_t, DofComparator>::iterator it =
     globalIdM->find(&dof);
 
   // Check if 'dof' exists
@@ -237,10 +237,10 @@ string DofManager::toString(void) const{
 string DofManager::toStringFromMap(void) const{
   stringstream s;
 
-  const map<const Dof*, unsigned int, DofComparator>::iterator end =
+  const map<const Dof*, size_t, DofComparator>::iterator end =
     globalIdM->end();
 
-  map<const Dof*, unsigned int, DofComparator>::iterator it =
+  map<const Dof*, size_t, DofComparator>::iterator it =
     globalIdM->begin();
 
   for(; it != end; it++){
@@ -260,13 +260,13 @@ string DofManager::toStringFromMap(void) const{
 
 string DofManager::toStringFromVec(void) const{
   stringstream s;
-  unsigned int nDof;
-  pair<bool, unsigned int> search;
+  size_t nDof;
+  pair<bool, size_t> search;
 
-  for(unsigned int entity = 0; entity < sizeV; entity++){
+  for(size_t entity = 0; entity < sizeV; entity++){
     nDof = globalIdV[entity].nDof;
 
-    for(unsigned int type = 0; type < nDof; type++){
+    for(size_t type = 0; type < nDof; type++){
       Dof dof(entity + first, type);
       search = findSafe(dof);
 

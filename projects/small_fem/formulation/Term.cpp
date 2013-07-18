@@ -5,18 +5,18 @@ Term::Term(void){
 }
 
 Term::~Term(void){
-  for(unsigned int s = 0; s < nOrientation; s++)
+  for(size_t s = 0; s < nOrientation; s++)
     delete aM[s];
 
   delete[] aM;
 }
 
-double Term::getTermOutCache(unsigned int dofI,
-                             unsigned int dofJ,
-                             unsigned int elementId) const{
-  unsigned int i   = 0;
-  unsigned int ctr = elementId;
-  unsigned int off = (*orientationStat)[0];
+double Term::getTermOutCache(size_t dofI,
+                             size_t dofJ,
+                             size_t elementId) const{
+  size_t i   = 0;
+  size_t ctr = elementId;
+  size_t off = (*orientationStat)[0];
 
   for(; elementId >= off && i < nOrientation; i++){
     off += (*orientationStat)[i + 1];
@@ -31,18 +31,18 @@ double Term::getTermOutCache(unsigned int dofI,
   return (*aM[i])(ctr, dofI * nFunction + dofJ);
 }
 
-void Term::allocA(unsigned int nFunction){
+void Term::allocA(size_t nFunction){
   // Alloc //
   aM = new fullMatrix<double>*[nOrientation];
 
-  for(unsigned int s = 0; s < nOrientation; s++)
+  for(size_t s = 0; s < nOrientation; s++)
     aM[s] = new fullMatrix<double>((*orientationStat)[s], nFunction);
 }
 
 void Term::computeA(fullMatrix<double>**& bM,
                     fullMatrix<double>**& cM){
   // Fill //
-  for(unsigned int s = 0; s < nOrientation; s++)
+  for(size_t s = 0; s < nOrientation; s++)
     // GEMM doesn't like matrices with 0 Elements
     if((*orientationStat)[s])
       aM[s]->gemm(*bM[s], *cM[s]);
@@ -51,12 +51,12 @@ void Term::computeA(fullMatrix<double>**& bM,
 void Term::clean(fullMatrix<double>**& bM,
                  fullMatrix<double>**& cM){
 
-  for(unsigned int s = 0; s < nOrientation; s++)
+  for(size_t s = 0; s < nOrientation; s++)
     delete cM[s];
 
   delete[] cM;
 
-  for(unsigned int s = 0; s < nOrientation; s++)
+  for(size_t s = 0; s < nOrientation; s++)
     delete bM[s];
 
   delete[] bM;

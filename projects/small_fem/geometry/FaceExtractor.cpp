@@ -2,19 +2,19 @@
 
 using namespace std;
 
-map<const MFace*, unsigned int, FaceComparator>*
+map<const MFace*, size_t, FaceComparator>*
 GeoExtractor::extractFace(const map<const MElement*,
-				    unsigned int,
-				    ElementComparator>& element){
+                                    size_t,
+                                    ElementComparator>& element){
   // Init //
-  map<const MFace*, unsigned int, FaceComparator>*
-    face = new map<const MFace*, unsigned int, FaceComparator>;
+  map<const MFace*, size_t, FaceComparator>*
+    face = new map<const MFace*, size_t, FaceComparator>;
 
   // Get Faces //
-  const map<const MElement*, unsigned int, ElementComparator>::const_iterator
+  const map<const MElement*, size_t, ElementComparator>::const_iterator
     endE = element.end();
 
-  map<const MElement*, unsigned int, ElementComparator>::const_iterator
+  map<const MElement*, size_t, ElementComparator>::const_iterator
     itE = element.begin();
 
   // Iterate on Elements
@@ -23,9 +23,9 @@ GeoExtractor::extractFace(const map<const MElement*,
     MElement* myElement = const_cast<MElement*>(itE->first);
 
     // Iterate on Faces
-    const unsigned int N = myElement->getNumFaces();
+    const size_t N = myElement->getNumFaces();
 
-    for(unsigned int i = 0; i < N; i++){
+    for(size_t i = 0; i < N; i++){
       // Take Current Face
       const MFace myFace = myElement->getFace(i);
 
@@ -33,9 +33,9 @@ GeoExtractor::extractFace(const map<const MElement*,
       MFace* faceCopy = copy(myFace);
 
       // Try to Insert
-      pair<map<const MFace*, unsigned int, FaceComparator>::iterator,
-	   bool> insert =
-	face->insert(pair<const MFace* ,int>(faceCopy, 0));
+      pair<map<const MFace*, size_t, FaceComparator>::iterator,
+           bool> insert =
+        face->insert(pair<const MFace* ,int>(faceCopy, 0));
 
       // If Insertion is not a success,
       // Delete faceCopy

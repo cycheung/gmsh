@@ -43,24 +43,24 @@ void WriterVector::write(const string name,
 
 void WriterVector::write(ostream& stream) const{
   if(isScalar){
-    unsigned int size = scalarValue->size();
+    size_t size = scalarValue->size();
 
-    for(unsigned int i = 0; i < size; i++)
+    for(size_t i = 0; i < size; i++)
       stream << i << ": "
-	     << scalarValue->at(i)
-	     << endl;
+             << scalarValue->at(i)
+             << endl;
   }
 
   else{
-    unsigned int size = vectorValue->size();
+    size_t size = vectorValue->size();
 
-    for(unsigned int i = 0; i < size; i++)
+    for(size_t i = 0; i < size; i++)
       stream << i << ": "
-	     << "[ "
-	     << (vectorValue->at(i))(0) << " "
-	     << (vectorValue->at(i))(1) << " "
-	     << (vectorValue->at(i))(2) << " "
-	     << " ]"
-	     << endl;
+             << "[ "
+             << (vectorValue->at(i))(0) << " "
+             << (vectorValue->at(i))(1) << " "
+             << (vectorValue->at(i))(2) << " "
+             << " ]"
+             << endl;
   }
 }

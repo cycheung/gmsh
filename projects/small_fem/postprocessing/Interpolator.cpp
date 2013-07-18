@@ -33,7 +33,7 @@ void Interpolator::initSystem(const System& system){
 }
 
 void Interpolator::initSystem(const SystemEigen& system,
-                              unsigned int eigenNumber){
+                              size_t eigenNumber){
   // Save some data
   this->dofM = &(system.getDofManager());
   this->fs   = &(system.getFunctionSpace());
@@ -82,7 +82,7 @@ Interpolator::Interpolator(const System& system,
 }
 
 Interpolator::Interpolator(const SystemEigen& system,
-                           unsigned int eigenNumber){
+                           size_t eigenNumber){
   // Init
   initSystem(system, eigenNumber);
 
@@ -96,7 +96,7 @@ Interpolator::Interpolator(const SystemEigen& system,
 }
 
 Interpolator::Interpolator(const SystemEigen& system,
-                           unsigned int eigenNumber,
+                           size_t eigenNumber,
                            const GroupOfElement& visu){
   // Init
   initSystem(system, eigenNumber);
@@ -174,9 +174,9 @@ void Interpolator::write(const std::string name, Writer& writer) const{
 
 void Interpolator::interpolate(void){
   // Init
-  const unsigned int nTotVertex       = mesh->getVertexNumber();
+  const size_t nTotVertex             = mesh->getVertexNumber();
   const std::vector<GroupOfDof*>& god = fs->getAllGroups();
-  const unsigned int nGod             = god.size();
+  const size_t nGod                   = god.size();
 
   vector<bool> isInterpolated(nTotVertex, false);
   vector<MVertex*> node;
@@ -186,7 +186,7 @@ void Interpolator::interpolate(void){
   const FunctionSpaceVector* fsVector = NULL;
 
   // Temporary //
-  unsigned int globalId;
+  size_t globalId;
 
   if(scalar){
     nodalScalarValue = new vector<double>(nTotVertex);
@@ -200,29 +200,29 @@ void Interpolator::interpolate(void){
 
 
   // Iterate on GroupOfElement
-  for(unsigned int i = 0; i < nGod; i++){
+  for(size_t i = 0; i < nGod; i++){
     // Get Element
     MElement& element =
       const_cast<MElement&>(god[i]->getGeoElement());
 
     // Get NodeS
     element.getVertices(node);
-    const unsigned int nNode = node.size();
+    const size_t nNode = node.size();
 
     // Iterate on Node
-    for(unsigned int j = 0; j < nNode; j++){
+    for(size_t j = 0; j < nNode; j++){
       // Get *GMSH* Id
-      const unsigned int id = node[j]->getNum() - 1;
+      const size_t id = node[j]->getNum() - 1;
 
       // If not interpolated: interpolate :-P !
       if(!isInterpolated[id]){
         // Get Dof
         const vector<const Dof*>& dof  = god[i]->getDof();
-        const unsigned int        size = dof.size();
+        const size_t              size = dof.size();
 
         // Get Coef
         vector<double> coef(size);
-        for(unsigned int k = 0; k < size; k++){
+        for(size_t k = 0; k < size; k++){
           // Dof Global ID
           globalId = dofM->getGlobalId(*dof[k]);
 
@@ -259,7 +259,7 @@ void Interpolator::interpolate(void){
 void Interpolator::interpolateOnVisu(void){
   // Init
   const Mesh& visuMesh              = visuDomain->getMesh();
-  const unsigned int nTotVertex     = visuMesh.getVertexNumber();
+  const size_t nTotVertex           = visuMesh.getVertexNumber();
   const vector<const MVertex*> node = visuMesh.getAllVertex();
 
   // Scalar or Vector ?
@@ -267,7 +267,7 @@ void Interpolator::interpolateOnVisu(void){
   const FunctionSpaceVector* fsVector = NULL;
 
   // Temporary //
-  unsigned int globalId;
+  size_t globalId;
 
   if(scalar){
     nodalScalarValue = new vector<double>(nTotVertex);
@@ -284,7 +284,7 @@ void Interpolator::interpolateOnVisu(void){
   const int dim = model.getDim();
 
   // Iterate on *NODES*
-  for(unsigned int i = 0; i < nTotVertex; i++){
+  for(size_t i = 0; i < nTotVertex; i++){
     // Search element (in System Mesh) containg this
     // visu node
     SPoint3   point   = node[i]->point();
@@ -305,11 +305,11 @@ void Interpolator::interpolateOnVisu(void){
 
       // Get Dof
       const vector<const Dof*>& dof  = god.getDof();
-      const unsigned int        size = dof.size();
+      const size_t              size = dof.size();
 
       // Get Coef
       vector<double> coef(size);
-      for(unsigned int k = 0; k < size; k++){
+      for(size_t k = 0; k < size; k++){
         // Dof Global ID
         globalId = dofM->getGlobalId(*dof[k]);
 
@@ -343,7 +343,7 @@ void Interpolator::interpolateOnVisu(void){
 void Interpolator::evaluateF(void){
   // Init
   const Mesh& visuMesh              = visuDomain->getMesh();
-  const unsigned int nTotVertex     = visuMesh.getVertexNumber();
+  const size_t nTotVertex           = visuMesh.getVertexNumber();
   const vector<const MVertex*> node = visuMesh.getAllVertex();
 
   // Scalar or Vector ?
@@ -354,7 +354,7 @@ void Interpolator::evaluateF(void){
     nodalVectorValue = new vector<fullVector<double> >(nTotVertex);
 
   // Iterate on *NODES*
-  for(unsigned int i = 0; i < nTotVertex; i++){
+  for(size_t i = 0; i < nTotVertex; i++){
     // Get Node coordinate
     fullVector<double> xyz(3);
     xyz(0) = node[i]->x();
@@ -374,14 +374,14 @@ void Interpolator::evaluateF(void){
 
 const fullVector<double>* Interpolator::
 getSol(const vector<vector<complex<double> > >& eVector,
-       unsigned int eigenNumber){
+       size_t eigenNumber){
 
   // Init
-  unsigned int size       = eVector[eigenNumber].size();
+  size_t size             = eVector[eigenNumber].size();
   fullVector<double>* sol = new fullVector<double>(size);
 
   // Get Sol
-  for(unsigned int i = 0; i < size; i++){
+  for(size_t i = 0; i < size; i++){
     (*sol)(i) = real(eVector[eigenNumber][i]);
   }
 

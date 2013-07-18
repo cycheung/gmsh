@@ -22,20 +22,20 @@ class FormulationLaplace: public Formulation{
   TermGradGrad* localTerms;
 
  public:
-  FormulationLaplace(GroupOfElement& goe, unsigned int order);
+  FormulationLaplace(GroupOfElement& goe, size_t order);
 
   virtual ~FormulationLaplace(void);
 
   virtual bool isGeneral(void) const;
 
-  virtual double weak(unsigned int dofI, unsigned int dofJ,
-		      unsigned int elementId) const;
+  virtual double weak(size_t dofI, size_t dofJ,
+                      size_t elementId) const;
 
-  virtual double weakB(unsigned int dofI, unsigned int dofJ,
-                       unsigned int elementId) const;
+  virtual double weakB(size_t dofI, size_t dofJ,
+                       size_t elementId) const;
 
-  virtual double rhs(unsigned int equationI,
-		     unsigned int elementId) const;
+  virtual double rhs(size_t equationI,
+                     size_t elementId) const;
 
   virtual const FunctionSpace& fs(void) const;
 };

@@ -18,7 +18,7 @@ const double FormulationSteadyWaveScalar::eps = 1;
 
 FormulationSteadyWaveScalar::FormulationSteadyWaveScalar(GroupOfElement& goe,
                                                          double k,
-                                                         unsigned int order){
+                                                         size_t order){
   // Can't have 0th order //
   if(order == 0)
     throw
@@ -62,15 +62,15 @@ FormulationSteadyWaveScalar::~FormulationSteadyWaveScalar(void){
   delete localTerms2;
 }
 
-double FormulationSteadyWaveScalar::weak(unsigned int dofI, unsigned int dofJ,
-                                         unsigned int elementId) const{
+double FormulationSteadyWaveScalar::weak(size_t dofI, size_t dofJ,
+                                         size_t elementId) const{
   return
     localTerms1->getTerm(dofI, dofJ, elementId) / mu -
     localTerms2->getTerm(dofI, dofJ, elementId) * eps * kSquare;
 }
 
-double FormulationSteadyWaveScalar::rhs(unsigned int equationI,
-                                        unsigned int elementId) const{
+double FormulationSteadyWaveScalar::rhs(size_t equationI,
+                                        size_t elementId) const{
   return 0;
 }
 
@@ -78,9 +78,9 @@ bool FormulationSteadyWaveScalar::isGeneral(void) const{
   return false;
 }
 
-double FormulationSteadyWaveScalar::weakB(unsigned int dofI,
-                                          unsigned int dofJ,
-                                          unsigned int elementId) const{
+double FormulationSteadyWaveScalar::weakB(size_t dofI,
+                                          size_t dofJ,
+                                          size_t elementId) const{
   return 0;
 }
 

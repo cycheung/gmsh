@@ -30,15 +30,15 @@ void WriterMsh::writeNodalValuesHeader(const string name) const{
 }
 
 void WriterMsh::writeNodalValuesFromNode(void) const{
-  for(unsigned int i = 0; i < E; i++){
+  for(size_t i = 0; i < E; i++){
     *out << (*element)[i]->getNum()         << " "
          << (*element)[i]->getNumVertices() << " ";
 
-    const unsigned int M = (*element)[i]->getNumVertices();
+    const size_t M      = (*element)[i]->getNumVertices();
     MElement* myElement = const_cast<MElement*>((*element)[i]);
 
-    for(unsigned int j = 0; j < M; j++){
-      const unsigned int id = myElement->getVertex(j)->getNum() - 1;
+    for(size_t j = 0; j < M; j++){
+      const size_t id = myElement->getVertex(j)->getNum() - 1;
       // Note: getNum() ranges from *1* to MAX
       //   --> we need to substract 1 !!
 
@@ -56,14 +56,14 @@ void WriterMsh::writeNodalValuesFromNode(void) const{
 
 void WriterMsh::writeNodalValuesFromSol(void) const{
   // Lagrange Basis Size //
-  const unsigned int nCoef = lBasis->getNFunction();
+  const size_t nCoef = lBasis->getNFunction();
 
   // Scalar FS ? //
   const FunctionSpaceScalar* fsScalar = NULL;
   const FunctionSpaceVector* fsVector = NULL;
 
   // Temporary //
-  unsigned int globalId;
+  size_t globalId;
 
   if(isScalar)
     fsScalar = static_cast<const FunctionSpaceScalar*>(fs);
@@ -72,7 +72,7 @@ void WriterMsh::writeNodalValuesFromSol(void) const{
     fsVector = static_cast<const FunctionSpaceVector*>(fs);
 
   // Iterate on Element //
-  for(unsigned int i = 0; i < E; i++){
+  for(size_t i = 0; i < E; i++){
     *out << (*element)[i]->getNum() << " "
          << nCoef                   << " ";
 
@@ -81,11 +81,11 @@ void WriterMsh::writeNodalValuesFromSol(void) const{
 
     // Get Dof
     const vector<const Dof*>& dof  = god.getDof();
-    const unsigned int        size = dof.size();
+    const size_t              size = dof.size();
 
     // Get Coef In FS Basis
     vector<double> fsCoef(size);
-    for(unsigned int j = 0; j < size; j++){
+    for(size_t j = 0; j < size; j++){
       // Dof Global ID
       globalId = dofM->getGlobalId(*dof[j]);
 
@@ -103,7 +103,7 @@ void WriterMsh::writeNodalValuesFromSol(void) const{
       vector<double> lCoef =
         lBasis->project(*(*element)[i], fsCoef, *fsScalar);
 
-      for(unsigned int j = 0; j < nCoef; j++)
+      for(size_t j = 0; j < nCoef; j++)
         *out << lCoef[j] << " ";
     }
 
@@ -111,7 +111,7 @@ void WriterMsh::writeNodalValuesFromSol(void) const{
       vector<fullVector<double> > lCoef =
         lBasis->project(*(*element)[i], fsCoef, *fsVector);
 
-      for(unsigned int j = 0; j < nCoef; j++)
+      for(size_t j = 0; j < nCoef; j++)
         *out << lCoef[j](0) << " "
              << lCoef[j](1) << " "
              << lCoef[j](2) << " ";

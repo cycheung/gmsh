@@ -25,7 +25,7 @@ class GroupOfElement{
   const Mesh* mesh;
 
   std::vector<const MElement*>* element;
-  std::vector<unsigned int>*    orientationStat;
+  std::vector<size_t>*          orientationStat;
 
  public:
    GroupOfElement(std::multimap<int, const MElement*>::iterator begin,
@@ -34,8 +34,8 @@ class GroupOfElement{
 
   ~GroupOfElement(void);
 
-  unsigned int    getNumber(void)     const;
-  const MElement& get(unsigned int i) const;
+  size_t    getNumber(void)     const;
+  const MElement& get(size_t i) const;
 
   const std::vector<const MElement*>&
     getAll(void) const;
@@ -43,7 +43,7 @@ class GroupOfElement{
   const Mesh& getMesh(void) const;
 
   void orientAllElements(const Basis& basis);
-  const std::vector<unsigned int>& getOrientationStats(void) const;
+  const std::vector<size_t>& getOrientationStats(void) const;
   void unoriented(void);
 
   std::string toString(void) const;
@@ -119,11 +119,11 @@ class GroupOfElement{
 // Inline Functions //
 //////////////////////
 
-inline unsigned int GroupOfElement::getNumber(void) const{
+inline size_t GroupOfElement::getNumber(void) const{
   return element->size();
 }
 
-inline const MElement& GroupOfElement::get(unsigned int i) const{
+inline const MElement& GroupOfElement::get(size_t i) const{
   return *(*element)[i];
 }
 
@@ -136,7 +136,7 @@ inline const Mesh& GroupOfElement::getMesh(void) const{
   return *mesh;
 }
 
-inline const std::vector<unsigned int>&
+inline const std::vector<size_t>&
 GroupOfElement::getOrientationStats(void) const{
   if(orientationStat)
     return *orientationStat;

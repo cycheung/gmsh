@@ -69,7 +69,7 @@ void Writer::setValues(const System& system){
   setDomain(fs->getSupport());
 }
 
-void Writer::setValues(const SystemEigen& system, unsigned int eigenNumber){
+void Writer::setValues(const SystemEigen& system, size_t eigenNumber){
   // Delete old Sol if any, and if Own
   if(ownSol)
     delete sol;
@@ -107,18 +107,18 @@ void Writer::setDomain(const GroupOfElement& domain){
   // Get All Vertices //
   set<MVertex*, MVertexLessThanNum> setVertex;
 
-  for(unsigned int i = 0; i < E; i++){
-    const unsigned int N = (*element)[i]->getNumVertices();
+  for(size_t i = 0; i < E; i++){
+    const size_t N = (*element)[i]->getNumVertices();
     MElement* myElement =
       const_cast<MElement*>((*element)[i]);
 
-    for(unsigned int j = 0; j < N; j++)
+    for(size_t j = 0; j < N; j++)
       setVertex.insert(myElement->getVertex(j));
   }
 
   // Serialize the set into a vector //
   node = new vector<MVertex*>(setVertex.begin(),
-			      setVertex.end());
+                              setVertex.end());
   N    = node->size();
 
   // Set hasDomain //
@@ -127,14 +127,14 @@ void Writer::setDomain(const GroupOfElement& domain){
 
 const fullVector<double>* Writer::
 getSol(const vector<vector<complex<double> > >& eVector,
-       unsigned int eigenNumber){
+       size_t eigenNumber){
 
   // Init
-  unsigned int size       = eVector[eigenNumber].size();
+  size_t size             = eVector[eigenNumber].size();
   fullVector<double>* sol = new fullVector<double>(size);
 
   // Get Sol
-  for(unsigned int i = 0; i < size; i++){
+  for(size_t i = 0; i < size; i++){
     (*sol)(i) = real(eVector[eigenNumber][i]);
   }
 
