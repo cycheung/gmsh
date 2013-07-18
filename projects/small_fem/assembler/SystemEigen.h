@@ -30,7 +30,7 @@ class SystemEigen: public SystemAbstract{
 
   std::vector<std::complex<double> >* eigenValue;
   std::vector<std::vector<std::complex<double> > >* eigenVector;
-  unsigned int nEigenValues;
+  size_t nEigenValues;
 
  public:
   SystemEigen(const Formulation& formulation);
@@ -38,11 +38,16 @@ class SystemEigen: public SystemAbstract{
 
   bool isGeneral(void) const;
 
-  unsigned int                                       getEigenValuesNumber(void) const;
-  const std::vector<std::complex<double> >&               getEigenValues(void)  const;
-  const std::vector<std::vector<std::complex<double> > >& getEigenVectors(void) const;
+  size_t
+    getEigenValuesNumber(void) const;
 
-  void setNumberOfEigenValues(unsigned int nEigenValues);
+  const std::vector<std::complex<double> >&
+    getEigenValues(void)  const;
+
+  const std::vector<std::vector<std::complex<double> > >&
+    getEigenVectors(void) const;
+
+  void setNumberOfEigenValues(size_t nEigenValues);
 
   virtual void assemble(void);
   virtual void solve(void);
@@ -94,7 +99,7 @@ inline bool SystemEigen::isGeneral(void) const{
   return general;
 }
 
-inline unsigned int SystemEigen::getEigenValuesNumber(void) const{
+inline size_t SystemEigen::getEigenValuesNumber(void) const{
   return nEigenValues;
 }
 

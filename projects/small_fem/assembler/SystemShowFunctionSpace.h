@@ -20,11 +20,11 @@
 
 class SystemShowFunctionSpace: public System{
  protected:
-  unsigned int fNumber;
+  size_t fNumber;
 
  public:
   SystemShowFunctionSpace(const FunctionSpace& fs,
-                          unsigned int functionNumber);
+                          size_t functionNumber);
 
   virtual ~SystemShowFunctionSpace(void);
 

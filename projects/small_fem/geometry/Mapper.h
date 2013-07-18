@@ -28,14 +28,14 @@ class Mapper{
   ~Mapper(void);
 
   static void hCurl(const fullMatrix<double>& hCurlUVW,
-                    unsigned int              row,
-                    unsigned int              col,
+                    size_t                    row,
+                    size_t                    col,
                     const fullMatrix<double>& invJac,
                     fullVector<double>&       hCurlXYZ);
 
   static void hDiv(const fullMatrix<double>& hDivUVW,
-                   unsigned int              row,
-                   unsigned int              col,
+                   size_t                    row,
+                   size_t                    col,
                    const fullMatrix<double>& jac,
                    double                    det,
                    fullVector<double>&       hDivXYZ);

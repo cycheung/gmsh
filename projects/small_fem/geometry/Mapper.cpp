@@ -11,8 +11,8 @@ Mapper::~Mapper(void){
 // Jacobians are transposed ! //
 
 void Mapper::hCurl(const fullMatrix<double>& hCurlUVW,
-                   unsigned int              row,
-                   unsigned int              col,
+                   size_t                    row,
+                   size_t                    col,
                    const fullMatrix<double>& invJac,
                    fullVector<double>&       hCurlXYZ){
 
@@ -33,8 +33,8 @@ void Mapper::hCurl(const fullMatrix<double>& hCurlUVW,
 }
 
 void Mapper::hDiv(const fullMatrix<double>& hDivUVW,
-                  unsigned int              row,
-                  unsigned int              col,
+                  size_t                    row,
+                  size_t                    col,
                   const fullMatrix<double>& jac,
                   double                    det,
                   fullVector<double>&       hDivXYZ){

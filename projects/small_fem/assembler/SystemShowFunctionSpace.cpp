@@ -3,7 +3,7 @@
 using namespace std;
 
 SystemShowFunctionSpace::SystemShowFunctionSpace(const FunctionSpace& fs,
-                                                 unsigned int functionNumber){
+                                                 size_t functionNumber){
   // Get Formulation //
   this->formulation = NULL;
   this->fs          = &fs;
@@ -42,9 +42,9 @@ void SystemShowFunctionSpace::solve(void){
     assemble();
 
   // Write Sol
-  const unsigned int size = dofM->getDofNumber();
+  const size_t size = dofM->getDofNumber();
 
-  for(unsigned int i = 0; i < size; i++)
+  for(size_t i = 0; i < size; i++)
     if(i == fNumber)
       (*x)(i) = 1;
 

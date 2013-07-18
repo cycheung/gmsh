@@ -24,7 +24,7 @@ class Quadrature{
 
  public:
    Quadrature(int elementType, int order,
-              unsigned int multiplicity);
+              size_t multiplicity);
 
   ~Quadrature(void);
 

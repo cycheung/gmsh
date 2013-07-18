@@ -5,8 +5,7 @@
 
 Quadrature::Quadrature(int elementType,
                        int order,
-                       unsigned int multiplicity){
-
+                       size_t multiplicity){
   // Alloc //
   gC = new fullMatrix<double>(1, 1);
   gW = new fullVector<double>(1);
@@ -16,25 +15,41 @@ Quadrature::Quadrature(int elementType,
     order = 1;
 
   // True order:
-  unsigned int trueOrder = order * multiplicity;
+  size_t trueOrder = order * multiplicity;
 
   // Get points and weigths //
   switch(elementType){
-  case TYPE_PNT : point(*gC, *gW); break;
+  case TYPE_PNT :
+    point(*gC, *gW);
+    break;
 
-  case TYPE_LIN : gaussIntegration::get(TYPE_LIN,     trueOrder, *gC, *gW); break;
-  case TYPE_TRI : gaussIntegration::get(TYPE_TRI,     trueOrder, *gC, *gW); break;
-  case TYPE_QUA : gaussIntegration::get(TYPE_QUA, 2 * trueOrder, *gC, *gW); break;
-  case TYPE_TET : gaussIntegration::get(TYPE_TET,     trueOrder, *gC, *gW); break;
+  case TYPE_LIN:
+    gaussIntegration::get(TYPE_LIN, trueOrder, *gC, *gW);
+    break;
 
-  case TYPE_HEX : throw
-      Exception("Quadrature on Hexahedron not implemented");
+  case TYPE_TRI:
+    gaussIntegration::get(TYPE_TRI, trueOrder, *gC, *gW);
+    break;
 
-  case TYPE_PRI : throw Exception("Quadrature on Prism not implemented");
-  case TYPE_PYR : throw Exception("Quadrature on Pyramid not implemented");
+  case TYPE_QUA:
+    gaussIntegration::get(TYPE_QUA, 2 * trueOrder, *gC, *gW);
+    break;
 
-  default : throw Exception("Quadrature: unknown element type (%d)",
-                            elementType);
+  case TYPE_TET:
+    gaussIntegration::get(TYPE_TET, trueOrder, *gC, *gW);
+    break;
+
+  case TYPE_HEX:
+    throw Exception("Quadrature on Hexahedron not implemented");
+
+  case TYPE_PRI:
+    throw Exception("Quadrature on Prism not implemented");
+
+  case TYPE_PYR:
+    throw Exception("Quadrature on Pyramid not implemented");
+
+  default:
+    throw Exception("Quadrature: unknown element type (%d)", elementType);
   }
 }
 

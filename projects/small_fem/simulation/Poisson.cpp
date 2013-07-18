@@ -37,7 +37,7 @@ int main(int argc, char** argv){
        << endl << flush;
 
   // Get Order //
-  unsigned int order = atoi(argv[2]);
+  size_t order = atoi(argv[2]);
 
   // Compute //
   FormulationPoisson poisson(domain, order);

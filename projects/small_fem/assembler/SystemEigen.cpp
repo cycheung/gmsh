@@ -52,8 +52,8 @@ SystemEigen::~SystemEigen(void){
 }
 
 void SystemEigen::
-setNumberOfEigenValues(unsigned int nEigenValues){
-  const unsigned int nDof = dofM->getDofNumber();
+setNumberOfEigenValues(size_t nEigenValues){
+  const size_t nDof = dofM->getDofNumber();
 
   if(nEigenValues > nDof)
     throw
@@ -65,7 +65,7 @@ setNumberOfEigenValues(unsigned int nEigenValues){
 }
 
 void SystemEigen::assemble(void){
-  const unsigned int size = dofM->getDofNumber();
+  const size_t size = dofM->getDofNumber();
 
   // Enumerate //
   dofM->generateGlobalIdSpace();
@@ -82,19 +82,19 @@ void SystemEigen::assemble(void){
   }
 
   // Get GroupOfDofs //
-  const unsigned int E = fs->getSupport().getNumber();
+  const size_t E = fs->getSupport().getNumber();
   const vector<GroupOfDof*>& group = fs->getAllGroups();
 
   // Get Sparcity Pattern & PreAllocate//
   // linSysA
-  for(unsigned int i = 0; i < E; i++)
+  for(size_t i = 0; i < E; i++)
     SystemAbstract::sparsity(*linSysA, *group[i]);
 
   linSysA->preAllocateEntries();
 
   // linSysB
   if(general){
-    for(unsigned int i = 0; i < E; i++)
+    for(size_t i = 0; i < E; i++)
       SystemAbstract::sparsity(*linSysB, *group[i]);
 
     linSysB->preAllocateEntries();
@@ -104,11 +104,11 @@ void SystemEigen::assemble(void){
   formulationPtr termA = &Formulation::weak;
   formulationPtr termB = &Formulation::weakB;
 
-  for(unsigned int i = 0; i < E; i++)
+  for(size_t i = 0; i < E; i++)
     SystemAbstract::assemble(*linSysA, i, *group[i], termA);
 
   if(general)
-    for(unsigned int i = 0; i < E; i++)
+    for(size_t i = 0; i < E; i++)
       SystemAbstract::assemble(*linSysB, i, *group[i], termB);
 
   // The SystemEigen is assembled //
@@ -135,10 +135,10 @@ void SystemEigen::solve(void){
   eigenValue  = new vector<complex<double> >(nEigenValues);
   eigenVector = new vector<vector<complex<double> > >(nEigenValues);
 
-  for(unsigned int i = 0; i < nEigenValues; i++)
+  for(size_t i = 0; i < nEigenValues; i++)
     (*eigenValue)[i] = eSys->getEigenValue(i);
 
-  for(unsigned int i = 0; i < nEigenValues; i++)
+  for(size_t i = 0; i < nEigenValues; i++)
     (*eigenVector)[i] = eSys->getEigenVector(i);
 
   // System solved ! //
