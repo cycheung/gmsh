@@ -47,8 +47,8 @@ FormulationSteadyWaveScalar::FormulationSteadyWaveScalar(GroupOfElement& goe,
   basis->preEvaluateDerivatives(gC1);
   basis->preEvaluateFunctions(gC2);
 
-  GroupOfJacobian jac1(goe, gC1, "invert");
-  GroupOfJacobian jac2(goe, gC2, "jacobian");
+  GroupOfJacobian jac1(goe, *basis, gC1, "invert");
+  GroupOfJacobian jac2(goe, *basis, gC2, "jacobian");
 
   localTerms1 = new TermGradGrad(jac1, *basis, gW1);
   localTerms2 = new TermFieldField(jac2, *basis, gW2);

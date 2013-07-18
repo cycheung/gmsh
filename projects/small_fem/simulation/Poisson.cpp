@@ -18,6 +18,10 @@ void fPoisson(GroupOfElement& domain,
               GroupOfElement& constraintDomain,
               Writer& writer, int order);
 
+double fDirichlet(fullVector<double>& xyz){
+  return 0;
+}
+
 int main(int argc, char** argv){
   GmshInitialize(argc, argv);
 
@@ -39,7 +43,7 @@ int main(int argc, char** argv){
   FormulationPoisson poisson(domain, order);
   System sysPoisson(poisson);
 
-  sysPoisson.fixCoef(constraintDomain, 0);
+  sysPoisson.dirichlet(constraintDomain, fDirichlet);
 
   cout << "Poisson -- Order " << order
        << ": " << sysPoisson.getSize()

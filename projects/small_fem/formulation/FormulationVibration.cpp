@@ -8,7 +8,7 @@
 using namespace std;
 
 FormulationVibration::FormulationVibration(GroupOfElement& goe,
-					   unsigned int order){
+                                           unsigned int order){
   // Can't have 0th order //
   if(order == 0)
     throw
@@ -29,7 +29,7 @@ FormulationVibration::FormulationVibration(GroupOfElement& goe,
   // Local Terms //
   basis->preEvaluateDerivatives(gC);
 
-  GroupOfJacobian jac(goe, gC, "invert");
+  GroupOfJacobian jac(goe, *basis, gC, "invert");
 
   localTerms = new TermGradGrad(jac, *basis, gW);
 }

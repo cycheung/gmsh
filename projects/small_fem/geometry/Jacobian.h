@@ -7,6 +7,7 @@
 #include "MElement.h"
 #include "Exception.h"
 #include "fullMatrix.h"
+#include "Basis.h"
 
 /**
    @class Jacobian
@@ -54,6 +55,7 @@ class Jacobian{
 
  public:
   Jacobian(const MElement& element,
+           const Basis& basis,
            const fullMatrix<double>& point,
            const std::string type);
 
@@ -75,9 +77,9 @@ class Jacobian{
   void deleteJac(void);
   void deleteInvertJac(void);
 
-  void computeJacobians(void);
+  void computeJacobians(const Basis& basis);
   void computeInvertFromJac(void);
-  void computeInvertFromScratch(void);
+  void computeInvertFromScratch(const Basis& basis);
 };
 
 /**

@@ -1,11 +1,13 @@
 #ifndef _GROUPOFJACOBIAN_H_
 #define _GROUPOFJACOBIAN_H_
 
+#include <string>
+
 #include "GroupOfElement.h"
 #include "fullMatrix.h"
-#include "Jacobian.h"
+#include "Basis.h"
 
-#include <string>
+#include "Jacobian.h"
 
 /**
    @class GroupOfJacobian
@@ -21,12 +23,13 @@ class GroupOfJacobian{
 
  public:
   GroupOfJacobian(const GroupOfElement& goe,
+                  const Basis& basis,
                   const fullMatrix<double>& point,
                   const std::string type);
 
   ~GroupOfJacobian(void);
 
-  const Jacobian&       getJacobian(unsigned int i) const;
+  const Jacobian&       getJacobian(size_t i) const;
   const GroupOfElement& getAllElements(void) const;
 
   std::string toString(void) const;
@@ -37,7 +40,7 @@ class GroupOfJacobian{
 /////////////////////
 
 inline const Jacobian&
-GroupOfJacobian::getJacobian(unsigned int i) const{
+GroupOfJacobian::getJacobian(size_t i) const{
   return *jac[i];
 }
 

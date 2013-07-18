@@ -45,8 +45,8 @@ FormulationSteadyWaveVector::FormulationSteadyWaveVector(GroupOfElement& goe,
   basis->preEvaluateFunctions(gC2);
 
   timerGoj.start();
-  GroupOfJacobian jac1(goe, gC1, "jacobian");
-  GroupOfJacobian jac2(goe, gC2, "invert");
+  GroupOfJacobian jac1(goe, *basis, gC1, "jacobian");
+  GroupOfJacobian jac2(goe, *basis, gC2, "invert");
   timerGoj.stop();
 
 

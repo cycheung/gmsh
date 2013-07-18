@@ -8,12 +8,14 @@ const string Jacobian::invertString   = string("invert");
 const string Jacobian::bothString     = string("both");
 
 Jacobian::Jacobian(const MElement& element,
+                   const Basis& basis,
                    const fullMatrix<double>& point,
                    const string type){
   // Check //
   if(point.size2() != 3)
-    throw Exception("Jacobian: point matrix is of size [N, %d] instead of [N, 3]",
-                    point.size2());
+    throw
+      Exception("Jacobian: point matrix is of size [N, %d] instead of [N, 3]",
+                point.size2());
   // Save //
   this->element = &element;
   this->point   = &point;
@@ -25,13 +27,13 @@ Jacobian::Jacobian(const MElement& element,
 
   // Compute //
   if(!type.compare(jacobianString))
-    computeJacobians();
+    computeJacobians(basis);
 
   else if (!type.compare(invertString))
-    computeInvertFromScratch();
+    computeInvertFromScratch(basis);
 
   else if (!type.compare(bothString)){
-    computeJacobians();
+    computeJacobians(basis);
     computeInvertFromJac();
   }
 
@@ -52,9 +54,9 @@ void Jacobian::deleteJac(void){
     return;
 
   // Delete //
-  const unsigned int size = jac->size();
+  const size_t size = jac->size();
 
-  for(unsigned int i = 0; i < size; i++){
+  for(size_t i = 0; i < size; i++){
     delete (*jac)[i]->first;
     delete (*jac)[i];
   }
@@ -71,9 +73,9 @@ void Jacobian::deleteInvertJac(void){
     return;
 
   // Delete //
-  const unsigned int size = invJac->size();
+  const size_t size = invJac->size();
 
-  for(unsigned int i = 0; i < size; i++){
+  for(size_t i = 0; i < size; i++){
     delete (*invJac)[i]->first;
     delete (*invJac)[i];
   }
@@ -84,24 +86,32 @@ void Jacobian::deleteInvertJac(void){
   invJac = NULL;
 }
 
-void Jacobian::computeJacobians(void){
+void Jacobian::computeJacobians(const Basis& basis){
   // Init Jac //
-  const unsigned int nPoint = point->size1();
+  const size_t nPoint = point->size1();
   jac = new jac_t(nPoint) ;
 
   // Fill Jac //
   jac_pair*           tmp;
   fullMatrix<double>* mJac;
 
-  for(unsigned int i = 0; i < nPoint; i++){
+  for(size_t i = 0; i < nPoint; i++){
     tmp  = new jac_pair;
     mJac = new fullMatrix<double>(3, 3);
 
+    tmp->second =
+      basis.getReferenceSpace().getJacobian(*element,
+                                            (*point)(i, 0),
+                                            (*point)(i, 1),
+                                            (*point)(i, 2),
+                                            *mJac);
+    /*
     tmp->second = const_cast<MElement*>
       (element)->getJacobian((*point)(i, 0),
                              (*point)(i, 1),
                              (*point)(i, 2),
                              *mJac);
+    */
     tmp->first = mJac;
     (*jac)[i]  = tmp;
   }
@@ -109,14 +119,14 @@ void Jacobian::computeJacobians(void){
 
 void Jacobian::computeInvertFromJac(void){
   // Init InvJac //
-  const unsigned int nPoint = point->size1();
+  const size_t nPoint = point->size1();
   invJac = new jac_t(nPoint);
 
   // Fill InvJac //
   jac_pair*           tmp;
   fullMatrix<double>* mIJac;
 
-  for(unsigned int i = 0; i < nPoint; i++){
+  for(size_t i = 0; i < nPoint; i++){
     tmp   = new jac_pair;
     mIJac = new fullMatrix<double>(3, 3);
 
@@ -129,24 +139,32 @@ void Jacobian::computeInvertFromJac(void){
   }
 }
 
-void Jacobian::computeInvertFromScratch(void){
+void Jacobian::computeInvertFromScratch(const Basis& basis){
   // Init InvJac //
-  const unsigned int nPoint = point->size1();
+  const size_t nPoint = point->size1();
   invJac = new jac_t(nPoint) ;
 
   // Fill InvJac //
   jac_pair*           tmp;
   fullMatrix<double>* mIJac;
 
-  for(unsigned int i = 0; i < nPoint; i++){
+  for(size_t i = 0; i < nPoint; i++){
     tmp   = new jac_pair;
     mIJac = new fullMatrix<double>(3, 3);
 
+    tmp->second =
+      basis.getReferenceSpace().getJacobian(*element,
+                                            (*point)(i, 0),
+                                            (*point)(i, 1),
+                                            (*point)(i, 2),
+                                            *mIJac);
+    /*
     tmp->second = const_cast<MElement*>
       (element)->getJacobian((*point)(i, 0),
-                             (*point)(i, 1),
+      (*point)(i, 1),
                              (*point)(i, 2),
                              *mIJac);
+    */
     mIJac->invertInPlace();
 
     tmp->first   = mIJac;

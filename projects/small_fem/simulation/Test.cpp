@@ -10,6 +10,7 @@
 #include "TetReferenceSpace.h"
 
 #include "TriNodeBasis.h"
+#include "LineNodeBasis.h"
 
 #include "Mesh.h"
 #include "fullMatrix.h"
@@ -24,10 +25,10 @@ int main(int argc, char** argv){
   //TetReferenceSpace tetRef;
   //QuadReferenceSpace quaRef;
 
-  TriReferenceSpace ref;
+  LineReferenceSpace ref;
   cout << ref.toString() << endl;
 
-  TriNodeBasis basis(atoi(argv[1]));
+  LineNodeBasis basis(atoi(argv[1]));
   cout << basis.toString() << endl;
 
   /*

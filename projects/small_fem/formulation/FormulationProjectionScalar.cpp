@@ -9,7 +9,7 @@ using namespace std;
 
 FormulationProjectionScalar::
 FormulationProjectionScalar(double (*f)(fullVector<double>& xyz),
-			    FunctionSpaceScalar& fs){
+                            FunctionSpaceScalar& fs){
   // Save fspace //
   fspace = &fs;
   basis  = &fs.getBasis(0);
@@ -25,7 +25,7 @@ FormulationProjectionScalar(double (*f)(fullVector<double>& xyz),
 
   // Local Terms //
   basis->preEvaluateFunctions(gC);
-  GroupOfJacobian jac(goe, gC, "jacobian");
+  GroupOfJacobian jac(goe, *basis, gC, "jacobian");
 
   localTerms1 = new TermFieldField(jac, *basis, gW);
   localTerms2 = new TermProjectionField(jac, *basis, gW, gC, f);
@@ -43,7 +43,7 @@ double FormulationProjectionScalar::weak(unsigned int dofI, unsigned int dofJ,
 }
 
 double FormulationProjectionScalar::rhs(unsigned int equationI,
-					unsigned int elementId) const{
+                                        unsigned int elementId) const{
 
   return localTerms2->getTerm(0, equationI, elementId);
 }

@@ -33,6 +33,7 @@ class TermProjectionGrad: public Term{
                 fullMatrix<double>**& cM);
 
   void computeB(const GroupOfJacobian& goj,
+                const Basis& basis,
                 const fullMatrix<double>& gC,
                 fullVector<double> (*f)(fullVector<double>& xyz),
                 fullMatrix<double>**& bM);

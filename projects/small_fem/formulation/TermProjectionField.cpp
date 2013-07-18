@@ -24,7 +24,7 @@ TermProjectionField::TermProjectionField(const GroupOfJacobian& goj,
   fullMatrix<double>** bM;
 
   computeC(basis, integrationWeights, cM);
-  computeB(goj, integrationPoints, f, bM);
+  computeB(goj, basis, integrationPoints, f, bM);
 
   allocA(nFunction);
   computeA(bM, cM);
@@ -62,6 +62,7 @@ void TermProjectionField::computeC(const Basis& basis,
 }
 
 void TermProjectionField::computeB(const GroupOfJacobian& goj,
+                                   const Basis& basis,
                                    const fullMatrix<double>& gC,
                                    double (*f)(fullVector<double>& xyz),
                                    fullMatrix<double>**& bM){
@@ -71,7 +72,7 @@ void TermProjectionField::computeB(const GroupOfJacobian& goj,
   unsigned int j;
 
   fullVector<double> xyz(3);
-  SPoint3            pxyz;
+  double             pxyz[3];
   double             fxyz;
 
   // Alloc //
@@ -92,18 +93,18 @@ void TermProjectionField::computeB(const GroupOfJacobian& goj,
 
       for(unsigned int g = 0; g < nG; g++){
         // Compute f in the *physical* coordinate
-        const_cast<MElement&>(goj.getAllElements().get(e))
-          .pnt(gC(g, 0),
-               gC(g, 1),
-               gC(g, 2),
-               pxyz);
-
-        xyz(0) = pxyz.x();
-        xyz(1) = pxyz.y();
-        xyz(2) = pxyz.z();
+        basis.getReferenceSpace().mapFromABCtoXYZ(goj.getAllElements().get(e),
+                                                  gC(g, 0),
+                                                  gC(g, 1),
+                                                  gC(g, 2),
+                                                  pxyz);
+        xyz(0) = pxyz[0];
+        xyz(1) = pxyz[1];
+        xyz(2) = pxyz[2];
 
         fxyz = f(xyz);
 
+        // Compute B
         (*bM[s])(j, g) = fabs(jacM[g]->second) * fxyz;
       }
 

@@ -17,9 +17,10 @@ using namespace std;
 const double FormulationSteadyWaveVectorSlow::mu  = 1;
 const double FormulationSteadyWaveVectorSlow::eps = 1;
 
-FormulationSteadyWaveVectorSlow::FormulationSteadyWaveVectorSlow(GroupOfElement& goe,
-                                                                 double k,
-                                                                 unsigned int order){
+FormulationSteadyWaveVectorSlow::
+FormulationSteadyWaveVectorSlow(GroupOfElement& goe,
+                                double k,
+                                unsigned int order){
   // Wave Number Squared //
   kSquare = k * k;
 
@@ -49,8 +50,8 @@ FormulationSteadyWaveVectorSlow::FormulationSteadyWaveVectorSlow(GroupOfElement&
   basis->preEvaluateDerivatives(*gC1);
   basis->preEvaluateFunctions(*gC2);
 
-  jac1 = new GroupOfJacobian(goe, *gC1, "jacobian");
-  jac2 = new GroupOfJacobian(goe, *gC2, "invert");
+  jac1 = new GroupOfJacobian(goe, *basis, *gC1, "jacobian");
+  jac2 = new GroupOfJacobian(goe, *basis, *gC2, "invert");
 }
 
 FormulationSteadyWaveVectorSlow::~FormulationSteadyWaveVectorSlow(void){
@@ -64,7 +65,8 @@ FormulationSteadyWaveVectorSlow::~FormulationSteadyWaveVectorSlow(void){
   delete fspace;
 }
 
-double FormulationSteadyWaveVectorSlow::weak(unsigned int dofI, unsigned int dofJ,
+double FormulationSteadyWaveVectorSlow::weak(unsigned int dofI,
+                                             unsigned int dofJ,
                                              unsigned int elementId) const{
   // Init Some Stuff //
   fullVector<double> phiI(3);

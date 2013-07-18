@@ -8,7 +8,7 @@
 using namespace std;
 
 FormulationLaplace::FormulationLaplace(GroupOfElement& goe,
-				       unsigned int order){
+                                       unsigned int order){
   // Can't have 0th order //
   if(order == 0)
     throw
@@ -29,7 +29,7 @@ FormulationLaplace::FormulationLaplace(GroupOfElement& goe,
   // Local Terms //
   basis->preEvaluateDerivatives(gC);
 
-  GroupOfJacobian jac(goe, gC, "invert");
+  GroupOfJacobian jac(goe, *basis, gC, "invert");
 
   localTerms = new TermGradGrad(jac, *basis, gW);
 }
@@ -41,7 +41,7 @@ FormulationLaplace::~FormulationLaplace(void){
 }
 
 double FormulationLaplace::weak(unsigned int dofI, unsigned int dofJ,
-				unsigned int elementId) const{
+                                unsigned int elementId) const{
 
   return localTerms->getTerm(dofI, dofJ, elementId);
 }

@@ -9,7 +9,7 @@ using namespace std;
 
 FormulationProjectionVector::
 FormulationProjectionVector(fullVector<double> (*f)(fullVector<double>& xyz),
-			    FunctionSpaceVector& fs){
+                            FunctionSpaceVector& fs){
   // Save fspace //
   fspace = &fs;
   basis  = &fs.getBasis(0);
@@ -26,7 +26,7 @@ FormulationProjectionVector(fullVector<double> (*f)(fullVector<double>& xyz),
   // Local Terms //
   basis->preEvaluateFunctions(gC);
 
-  GroupOfJacobian jac(goe, gC, "invert");
+  GroupOfJacobian jac(goe, *basis, gC, "invert");
 
   localTerms1 = new TermGradGrad(jac, *basis, gW);
   localTerms2 = new TermProjectionGrad(jac, *basis, gW, gC, f);
@@ -44,7 +44,7 @@ double FormulationProjectionVector::weak(unsigned int dofI, unsigned int dofJ,
 }
 
 double FormulationProjectionVector::rhs(unsigned int equationI,
-					unsigned int elementId) const{
+                                        unsigned int elementId) const{
 
   return localTerms2->getTerm(0, equationI, elementId);
 }
