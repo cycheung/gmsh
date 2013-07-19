@@ -54,7 +54,6 @@ include_directories(
   formulation
   geometry
   postprocessing
-  solver
 )
 
 ## Include Path for gmsh

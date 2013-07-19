@@ -81,7 +81,7 @@ void System::assemble(void){
   const size_t E = fs->getSupport().getNumber();
   const vector<GroupOfDof*>& group = fs->getAllGroups();
 
-  // Get Sparsity Pattern & PreAllocate//
+  // Get Sparsity Pattern & PreAllocate //
   UniqueSparsity uniqueSparsity(size);
   PetscInt* nonZero = new PetscInt[size];
 

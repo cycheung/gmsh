@@ -1,8 +1,8 @@
 #include "Comparators.h"
 
 bool FaceComparator::operator()(const MFace* a, const MFace* b) const{
-  const unsigned int sizeA = a->getNumVertices();
-  const unsigned int sizeB = b->getNumVertices();
+  const size_t sizeA = a->getNumVertices();
+  const size_t sizeB = b->getNumVertices();
 
   // Quad Faces are *bigger* than Tri Face
   if(sizeA < sizeB)
@@ -14,7 +14,7 @@ bool FaceComparator::operator()(const MFace* a, const MFace* b) const{
   // Here we got both quad or tri
   // --> use Vertex index
 
-  for(unsigned int i = 0; i < sizeA; i++){
+  for(size_t i = 0; i < sizeA; i++){
     if(a->getSortedVertex(i) < b->getSortedVertex(i))
       return true;
 

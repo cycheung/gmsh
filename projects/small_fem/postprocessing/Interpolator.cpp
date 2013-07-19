@@ -373,7 +373,7 @@ void Interpolator::evaluateF(void){
 }
 
 const fullVector<double>* Interpolator::
-getSol(const vector<vector<complex<double> > >& eVector,
+getSol(const vector<fullVector<complex<double> > >& eVector,
        size_t eigenNumber){
 
   // Init
@@ -382,7 +382,7 @@ getSol(const vector<vector<complex<double> > >& eVector,
 
   // Get Sol
   for(size_t i = 0; i < size; i++){
-    (*sol)(i) = real(eVector[eigenNumber][i]);
+    (*sol)(i) = real(eVector[eigenNumber](i));
   }
 
   // Return

@@ -110,43 +110,6 @@ dirichlet(GroupOfElement& goe,
   delete dirBasis;
 }
 
-void SystemAbstract::assemble(linearSystemPETSc<double>& sys,
-                              size_t elementId,
-                              const GroupOfDof& group,
-                              formulationPtr& term){
-
-  const vector<const Dof*>& dof = group.getDof();
-  const size_t N = group.size();
-
-  size_t dofI;
-  size_t dofJ;
-
-  for(size_t i = 0; i < N; i++){
-    dofI = dofM->getGlobalId(*(dof[i]));
-
-    // If not a fixed Dof line: assemble
-    if(dofI != DofManager::isFixedId()){
-      for(size_t j = 0; j < N; j++){
-        dofJ = dofM->getGlobalId(*(dof[j]));
-
-        // If not a fixed Dof
-        if(dofJ != DofManager::isFixedId())
-          sys.addToMatrix(dofI, dofJ,
-                          (formulation->*term)(i, j, elementId));
-
-        // If fixed Dof (for column 'dofJ'):
-        //    add to right hand side (with a minus sign) !
-        else
-          sys.addToRightHandSide(dofI, -1 * dofM->getValue(*(dof[j])) *
-                                 (formulation->*term)(i, j, elementId));
-      }
-
-      sys.addToRightHandSide(dofI,
-                             formulation->rhs(i, elementId));
-    }
-  }
-}
-
 void SystemAbstract::assemble(Mat& A,
                               Vec& b,
                               size_t elementId,
@@ -200,8 +163,10 @@ void SystemAbstract::assemble(Mat& A,
   }
 }
 
-void SystemAbstract::sparsity(linearSystemPETSc<double>& sys,
-                              const GroupOfDof& group){
+void SystemAbstract::assemble(Mat& A,
+                              size_t elementId,
+                              const GroupOfDof& group,
+                              formulationPtr& term){
 
   const vector<const Dof*>& dof = group.getDof();
   const size_t N = group.size();
@@ -209,17 +174,25 @@ void SystemAbstract::sparsity(linearSystemPETSc<double>& sys,
   size_t dofI;
   size_t dofJ;
 
+  //PetscInt petscI;
+  //PetscInt petscJ;
+  //PetscScalar petscV;
+
   for(size_t i = 0; i < N; i++){
     dofI = dofM->getGlobalId(*(dof[i]));
 
-    // Add non fixed Dof
+    // If not a fixed Dof line: assemble
     if(dofI != DofManager::isFixedId()){
       for(size_t j = 0; j < N; j++){
         dofJ = dofM->getGlobalId(*(dof[j]));
 
-        // Add non fixed Dof
-        if(dofJ != DofManager::isFixedId())
-          sys.insertInSparsityPattern(dofI, dofJ);
+        // If not a fixed Dof
+        if(dofJ != DofManager::isFixedId()){
+          MatSetValue(A, dofI, dofJ,
+                      (formulation->*term)(i, j, elementId), ADD_VALUES);
+
+          // TODO: Concider using MatSetValueS
+        }
       }
     }
   }

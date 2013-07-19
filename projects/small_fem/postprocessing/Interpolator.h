@@ -82,7 +82,7 @@ class Interpolator{
   void evaluateF(void);
 
   static const fullVector<double>*
-    getSol(const std::vector<std::vector<std::complex<double> > >& eVector,
+    getSol(const std::vector<fullVector<std::complex<double> > >& eVector,
            size_t eigenNumber);
 };
 

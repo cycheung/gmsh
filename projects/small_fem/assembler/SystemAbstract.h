@@ -14,8 +14,6 @@
 #include "GroupOfElement.h"
 #include "fullMatrix.h"
 
-#include "linearSystemPETSc.h"
-
 /**
    @interface SystemAbstract
    @brief Common Interface for Linear Systems Assemblers
@@ -37,7 +35,6 @@ class SystemAbstract{
                                           size_t dofJ,
                                           size_t elementId) const;
 
- protected:
   typedef std::vector<std::set<size_t> > UniqueSparsity;
 
  protected:
@@ -71,19 +68,16 @@ class SystemAbstract{
   virtual void solve(void)    = 0;
 
  protected:
-  void assemble(linearSystemPETSc<double>& sys,
-                size_t elementId,
-                const GroupOfDof& group,
-                formulationPtr& term);
-
   void assemble(Mat& A,
                 Vec& b,
                 size_t elementId,
                 const GroupOfDof& group,
                 formulationPtr& term);
 
-  void sparsity(linearSystemPETSc<double>& sys,
-                const GroupOfDof& group);
+  void assemble(Mat& A,
+                size_t elementId,
+                const GroupOfDof& group,
+                formulationPtr& term);
 
   void sparsity(PetscInt* nonZero,
                 UniqueSparsity& uniqueSparsity,

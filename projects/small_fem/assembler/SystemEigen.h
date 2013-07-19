@@ -24,13 +24,12 @@ class SystemEigen: public SystemAbstract{
  private:
   bool general;
 
-  linearSystemPETSc<double>* linSysA;
-  linearSystemPETSc<double>* linSysB;
-  EigenSolver*               eSys;
+  Mat* A;
+  Mat* B;
 
+  PetscInt nEigenValues;
   std::vector<std::complex<double> >* eigenValue;
-  std::vector<std::vector<std::complex<double> > >* eigenVector;
-  size_t nEigenValues;
+  std::vector<fullVector<std::complex<double> > >* eigenVector;
 
  public:
   SystemEigen(const Formulation& formulation);
@@ -44,7 +43,7 @@ class SystemEigen: public SystemAbstract{
   const std::vector<std::complex<double> >&
     getEigenValues(void)  const;
 
-  const std::vector<std::vector<std::complex<double> > >&
+  const std::vector<fullVector<std::complex<double> > >&
     getEigenVectors(void) const;
 
   void setNumberOfEigenValues(size_t nEigenValues);
@@ -108,7 +107,7 @@ SystemEigen::getEigenValues(void) const{
   return *eigenValue;
 }
 
-inline const std::vector<std::vector<std::complex<double> > >&
+inline const std::vector<fullVector<std::complex<double> > >&
 SystemEigen::getEigenVectors(void) const{
   return *eigenVector;
 }
