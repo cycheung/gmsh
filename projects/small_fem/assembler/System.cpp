@@ -135,6 +135,10 @@ void System::solve(void){
   PCSetType(precond, PCLU);
   PCFactorSetMatSolverPackage(precond, MATSOLVERMUMPS);
 
+  // Override with PETSc Database //
+  KSPSetFromOptions(solver);
+  PCSetFromOptions(precond);
+
   // Solve and Delete Solver //
   KSPSolve(solver, *b, *xPetsc);
   KSPDestroy(&solver);

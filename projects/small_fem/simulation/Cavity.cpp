@@ -10,7 +10,7 @@
 
 #include "FormulationEigenFrequency.h"
 
-#include "Gmsh.h"
+#include "SmallFem.h"
 
 using namespace std;
 
@@ -24,20 +24,19 @@ fullVector<double> fDirichlet(fullVector<double>& xyz){
   return f;
 }
 
-int main(int argc, char** argv){
-  // Init //
-  GmshInitialize(argc, argv);
-
+void compute(const Options& option){
+  cout << option.toString() << endl;
   // Get Domain //
-  Mesh msh(argv[1]);
+  Mesh msh(option.getValue("-msh")[0]);
   GroupOfElement domain = msh.getFromPhysical(7);
   GroupOfElement border = msh.getFromPhysical(5);
 
-  // Get Some Data //
+  // Writer //
   WriterMsh writer;
 
-  const size_t order = atoi(argv[2]);
-  const size_t nWave = atoi(argv[3]);
+  // Get Parameters //
+  const size_t order = atoi(option.getValue("-o")[0].c_str());
+  const size_t nWave = atoi(option.getValue("-n")[0].c_str());
 
   // EigenFrequency //
   FormulationEigenFrequency cavity(domain, order);
@@ -74,35 +73,43 @@ int main(int argc, char** argv){
          << sqrt(eigenValue[i]) << endl;
 
   // Write Sol //
-  // Number of decimals in nEigenValue
-  // Used for '0' pading in sprintf
-  char fileName[1024];
-  const int nDec = floor(log10(nEigenValue)) + 1;
+  if(!option.getValue("-nopos").size()){
+    // Number of decimals in nEigenValue
+    // Used for '0' pading in sprintf
+    char fileName[1024];
+    const int nDec = floor(log10(nEigenValue)) + 1;
 
-  if(argc == 5){
-    // With VisuMesh
-    Mesh           visuMesh(argv[4]);
-    GroupOfElement visu = visuMesh.getFromPhysical(7);
+    if(option.getValue("-interp").size()){
+      // With VisuMesh
+      Mesh           visuMesh(option.getValue("-interp")[0]);
+      GroupOfElement visu = visuMesh.getFromPhysical(7);
 
-    for(size_t i = 0; i < nEigenValue; i++){
-      sprintf(fileName, "cavity_mode%0*u", nDec, (unsigned int)(i + 1));
+      for(size_t i = 0; i < nEigenValue; i++){
+        sprintf(fileName, "cavity_mode%0*u", nDec, (unsigned int)(i + 1));
 
-      Interpolator intCavity(sysCavity, i, visu);
-      intCavity.write(string(fileName), writer);
+        Interpolator intCavity(sysCavity, i, visu);
+        intCavity.write(string(fileName), writer);
+      }
+    }
+
+    else{
+      // Without VisuMesh
+      for(size_t i = 0; i < nEigenValue; i++){
+        sprintf(fileName, "cavity_mode%0*u", nDec, (unsigned int)(i + 1));
+
+        writer.setValues(sysCavity, i);
+        writer.write(string(fileName));
+      }
     }
   }
+}
 
-  else{
-    // Without VisuMesh
-    for(size_t i = 0; i < nEigenValue; i++){
-      sprintf(fileName, "cavity_mode%0*u", nDec, (unsigned int)(i + 1));
+int main(int argc, char** argv){
+  // Init SmallFem //
+  SmallFem::Initialize(argc, argv);
 
-      writer.setValues(sysCavity, i);
-      writer.write(string(fileName));
-    }
-  }
+  compute(SmallFem::getOptions());
 
-  // Done //
-  GmshFinalize();
+  SmallFem::Finalize();
   return 0;
 }

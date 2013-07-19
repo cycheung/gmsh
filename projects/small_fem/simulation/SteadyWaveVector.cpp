@@ -79,6 +79,7 @@ void compute(const Options& option){
   cout << "Solved: " << solve.time() << solve.unit()
        << endl << flush;
 
+  // Write Sol //
   if(!option.getValue("-nopos").size()){
     if(option.getValue("-interp").size()){
       // Interpolated View //

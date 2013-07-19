@@ -155,12 +155,12 @@ void SystemEigen::solve(void){
 
   // Set Options //
   EPSSetDimensions(solver, nEigenValues, PETSC_DECIDE, PETSC_DECIDE);
-  EPSSetTolerances(solver, 1E-7, 1E3);
+  EPSSetTolerances(solver, 1E-18, 1E6);
   EPSSetType(solver, EPSKRYLOVSCHUR);
   EPSSetWhichEigenpairs(solver, EPS_SMALLEST_MAGNITUDE);
 
-  //EPSSetWhichEigenpairs(solver, EPS_TARGET_MAGNITUDE);
-  //EPSSetTarget(solver, 2);
+  // Override with PETSc Database //
+  EPSSetFromOptions(solver);
 
   // Solve //
   EPSSolve(solver);

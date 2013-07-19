@@ -21,74 +21,14 @@
 using namespace std;
 
 int main(int argc, char** argv){
-  //TriReferenceSpace triRef;
-  //TetReferenceSpace tetRef;
-  //QuadReferenceSpace quaRef;
-
-  LineReferenceSpace ref;
-  cout << ref.toString() << endl;
-
-  LineNodeBasis basis(atoi(argv[1]));
-  cout << basis.toString() << endl;
-
-  /*
-  vector<size_t> seq(3);
-  seq[0] = 0;
-  seq[1] = 1;
-  seq[2] = 2;
-
-  vector<size_t> test(3);
-  test[0] = 1;
-  test[1] = 2;
-  test[2] = 0;
-
-  PermutationTree pTree(seq);
-
-
-  cout << pTree.getPermutationId(test) << endl;
-
-  pTree.addTagToPermutation(3, 42);
-
-  cout << pTree.toString() << endl;
-  */
-  //SmallFem::Initialize(argc, argv);
-  /*
-  Timer timer;
-  timer.start();
-
-
-  Mesh msh(argv[1]);
-
-
-  GroupOfElement domain = msh.getFromPhysical(7);
-
-  fullMatrix<double> p(1, 3);
-  p(0, 0) = 0;
-  p(0, 1) = 0;
-  p(0, 2) = 0;
-
-  Timer timerGoj;
-  timerGoj.start();
-  GroupOfJacobian goj(domain, p, "invert");
-  timerGoj.stop();
-  timer.stop();
-
-  cout << timerGoj.time() << " " << timerGoj.unit() << endl;
-  cout << timer.time() << " " << timer.unit() << endl;
-  cout << goj.toString() << endl;
-  */
-  //SmallFem::Finalize();
+  SmallFem::Initialize(argc, argv);
+  #pragma omp parallel for
+  for(int i = 0; i < 9; i++)
+    printf("%d\n", i);
+  SmallFem::Finalize();
 
   return 0;
 
-  /*
-  //TriLagrangeBasis basis(atoi(argv[1]));
-
-  TetReferenceSpace ref;
-  //cout << ref.toString() << endl;
-
-  return 0;
-  */
   /*
   const size_t N = 387 * 10;
   const size_t M = 28224 * 10;
