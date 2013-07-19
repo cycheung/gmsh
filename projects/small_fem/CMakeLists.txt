@@ -39,7 +39,6 @@ add_subdirectory(common)
 add_subdirectory(formulation)
 add_subdirectory(geometry)
 add_subdirectory(postprocessing)
-add_subdirectory(solver)
 
 ## TO BE REMOVED !!!
 ####################

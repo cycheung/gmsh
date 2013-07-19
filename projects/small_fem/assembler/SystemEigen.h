@@ -1,8 +1,8 @@
 #ifndef _SYSTEMEIGEN_H_
 #define _SYSTEMEIGEN_H_
 
+#include <complex>
 #include "SystemAbstract.h"
-#include "EigenSolver.h"
 
 /**
    @class SystemEigen
