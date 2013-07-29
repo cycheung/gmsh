@@ -5,12 +5,12 @@
 
 /**
    @class Dof
-   @brief This class represents Degrees Of Freedom
+   @brief This class represent a Degree of Freedom
 
-   This class represents Degrees Of Freedom.@n
+   This class represents a Degree of Freedom.
 
-   A Dof is defined by a pair of to integers called (@c entity, @c type).@n
-   By themselfs, these integers have no meaning, they just @em define a Dof.
+   A Dof is defined by a pair of to integers called (entity, type).
+   By themselfs, these integers have no meaning, they just define a Dof.
 */
 
 
@@ -43,22 +43,21 @@ class Dof{
 /**
    @fn Dof::Dof(void)
    Instanciates a new Dof with:
-   @li @c entity = 0
-   @li @c type = 0
+   @li entity = 0
+   @li type = 0
    **
 
    @fn Dof::Dof(const Dof&)
    @param other An other Dof
 
-   Instanciates a @em copy of the given Dof
+   Instanciates a copy of the given Dof
    **
 
    @fn Dof::Dof(size_t, size_t)
    @param entity A natural number
    @param type A natural number
 
-   Instanciates a new Dof with the given
-   pair (@c entity, @c type)
+   Instanciates a new Dof with the given pair (entity, type)
    **
 
    @fn Dof::~Dof
@@ -66,55 +65,55 @@ class Dof{
    **
 
    @fn Dof::getEntity
-   @return Returns the associated @a entity of the Dof
+   @return Returns the associated entity of the Dof
    **
 
    @fn Dof::getType
-   @return Returns the associated @a type of the Dof
+   @return Returns the associated type of the Dof
    **
 
    @fn Dof::setEntity
    @param entity A natural number
 
-   Sets this Dof @c entity to the given value
+   Sets this Dof entity to the given value
    **
 
    @fn Dof::setType
    @param type A natural number
 
-   Sets this Dof @c type to the given value
+   Sets this Dof type to the given value
    **
 
    @fn Dof::setDof
    @param entity A natural number
    @param type A natural number
 
-   Sets this Dof to the given pair (@c entity, @c type)
+   Sets this Dof to the given pair (entity, type)
    **
 
    @fn bool Dof::operator<(const Dof& other) const
-   @param other An other Dof to compare the current one
+   @param other An other Dof to compare with the current one
    @return Returns :
-   @li @c true if the current Dof is @em smaller than @c other
-   @li @c false otherwise
+   @li true if the current Dof is smaller than the other one
+   @li false otherwise
    **
 
    @fn bool Dof::operator>(const Dof& other) const
-   @param other An other Dof to compare the current one
+   @param other An other Dof to compare with the current one
    @return Returns :
-   @li @c true if the current Dof is @em greater than @c other
-   @li @c false otherwise
+   @li true if the current Dof is greater than the other one
+   @li false otherwise
    **
 
    @fn bool Dof::operator==(const Dof& other) const
-   @param other An other Dof to compare the current one
+   @param other An other Dof to compare with the current one
    @return Returns :
-   @li @c true if the current Dof is @em equal to @c other
-   @li @c false otherwise
+   @li true if the current Dof is  equal to the other one
+   @li false otherwise
    **
 
    @fn Dof::toString
-   @return Returns the Dof's string
+   @return Returns the Dof string
    **
 */
 

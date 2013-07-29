@@ -2,43 +2,36 @@
 #define _DOFMANAGER_H_
 
 #include <string>
+#include <vector>
 #include <map>
 
-#include "Dof.h"
+#include "GroupOfDof.h"
 #include "Comparators.h"
-#include "FunctionSpace.h"
 
 /**
    @class DofManager
-   @brief This class manages the Degrees Of Freedom (Dof)
+   @brief This class manages the Degrees of Freedom (Dof)
 
-   This class numbers the Degrees Of Freedom (Dof).@n
+   This class numbers the Degrees of Freedom (Dof).
 
-   It can map a Dof to a @em global @c ID.@n
-   Those @c IDs are handeld by the DofManager itself.@n
+   It can map a Dof to a unique number, called global ID.
 
-   Finaly, this class allows to fix a Dof to a given value
-   (in that case, we have a fixed Dof).@n
-   Note that we call an @em unknown, a Dof that is @em not fixed.
+   In addtion, this class allows to assign a Dof to a given value.
+   A Dof that has been assigned to a value is called a fixed Dof.
+   The global ID of a fixed Dof is not unique and is equal to
+   DofManager::isFixedId().
 
-   @warning
-   Up to know, a mapped Dof @em can't be @em deleted.@n
+   Finaly, the global IDs given to the unfixed Dof%s ranges from 0 to
+   (total number of Dof - number of fixed Dof - 1).
 */
 
 class DofManager{
  private:
-  typedef struct{
-    size_t  nDof;
-    size_t* id;
-  } Data;
-
   static const size_t isFixed;
 
-  std::map<const Dof*, size_t, DofComparator>* globalIdM;
-  std::map<const Dof*, double, DofComparator>* fixedDof;
-
-  Data*  globalIdV;
-  size_t sizeV;
+  std::vector<std::vector<size_t> > globalIdV;
+  std::map<Dof, size_t>             globalIdM;
+  std::map<Dof, double>             fixedDof;
 
   size_t first;
   size_t last;
@@ -57,21 +50,18 @@ class DofManager{
   size_t getGlobalId(const Dof& dof)     const;
   size_t getGlobalIdSafe(const Dof& dof) const;
 
-  bool   isUnknown(const Dof& dof) const;
   bool   fixValue(const Dof& dof, double value);
   double getValue(const Dof& dof) const;
 
-  size_t getDofNumber(void) const;
+  size_t getTotalDofNumber(void) const;
+  size_t getUnfixedDofNumber(void) const;
+  size_t getFixedDofNumber(void) const;
 
   std::string toString(void) const;
 
  private:
   void serialize(void);
-  std::pair<bool, size_t> find(const Dof& dof)     const;
   std::pair<bool, size_t> findSafe(const Dof& dof) const;
-
-  bool isUnknownFromMap(const Dof& dof) const;
-  bool isUnknownFromVec(const Dof& dof) const;
 
   std::string toStringFromMap(void) const;
   std::string toStringFromVec(void) const;
@@ -81,13 +71,9 @@ class DofManager{
 /**
    @fn DofManager::isFixedId
 
-   Fixed Dof got a special global @c ID.@n
-   This global @c ID is returned by this class method.
+   Fixed Dof got a special global ID (which is the highest possible number).
 
-   @see DofManager::fixValue()
-   @see DofManager::getGlobalId()
-
-   @return The special @c ID for fixed Dof
+   @return The special ID of fixed Dof
    **
 
    @fn DofManager::DofManager
@@ -100,71 +86,83 @@ class DofManager{
    Deletes this DofManager
    **
 
-   @fn DofManager::addToGlobalIdSpace
+   @fn DofManager::addToDofManager
    @param god A vector of GroupOfDof
 
-   Adds the given Dof%s in this DofManager
+   Adds the given Dof%s in this DofManager.
+   The same Dof may be insterd multiple time,
+   but it will be given the same unique ID.
    **
 
    @fn DofManager::generateGlobalIdSpace
 
-   Numbers every non fixed Dof%s of this DofManager.@n
-   Each Dof%s will be given a @em unique @em global @c ID .
+   Numbers every non fixed Dof of this DofManager.
+   Each Dof will be given a unique global ID.
    **
 
    @fn DofManager::getGlobalId
-   @param dof The Dof from which we want the @em global @c ID
-   @return Returns the @em global @em @c ID of the given Dof
+   @param dof The Dof from which we want the global ID
+   @return Returns the global ID of the given Dof
 
-   @note
-   If the given Dof has been fixed,
-   DofManager::isFixedId is returned
+   If the requested Dof has not been added to this DofManager,
+   or if DofManager::generateGlobalIdSpace() has not been called,
+   the behaviour of this method is unpredicable.
+   Actually, it will most probably lead to a process crash.
 
-   @note
-   If the given Dof is not in this DofManager,
-   an Exception is thrown
+   @see DofManager::getGlobalIdSafe
    **
 
-   @fn DofManager::isUnknown
-   @param dof A Dof
-   @return Returns:
-   @li @c true, if the given Dof is an unknwon
-   (@em i.e. a non fixed Dof)
-   @li @c false, otherwise
+   @fn DofManager::getGlobalIdSafe
+   @param dof The Dof from which we want the global ID
+   @return Returns the global ID of the given Dof
+
+   If the requested Dof has not been added to this DofManager,
+   or if DofManager::generateGlobalIdSpace() has not been called,
+   an Exception is thrown.
+
+   This method is safer but slower than DofManager::getGlobalId().
+
+   @see DofManager::getGlobalId
    **
 
    @fn DofManager::fixValue
    @param dof A Dof
    @param value A real number
 
-   Fixes the given Dof to the given value
+   Fixes the given Dof to the given value.
 
    @return Returns:
-   @li @c true, if the operation is a success
-   @li @c false, otherwise
+   @li true, if the operation is a success
+   @li false, otherwise
 
-   @note
-   Here are two important cases, where fixValue() will fail:
+   Here are three important cases, where DofManager::fixValue() will fail:
    @li The given Dof is not in this DofManager
    @li The given Dof is already fixed
+   @li DofManager::generateGlobalIdSpace() has been called
    **
 
    @fn DofManager::getValue
    @param dof A Dof
-   @return
-   <ul>
-     <li> Returns the value of the given Dof, if it has been fixed
-     <li> Throws an Exception if the Dof has not been fixed
-   </ul>
+   @return Returns the value of the given Dof, if it has been fixed
+
+   This method throws an Exception if the Dof has not been fixed
    **
 
-   @fn DofManager::getDofNumber
-   @return Returns the number of Dof%s in
-   this DofManager (without fixed Dof%s)
+   @fn DofManager::getTotalDofNumber
+   @return Returns the number of Dof%s in this DofManager (fixed and unfixed)
+   **
+
+   @fn DofManager::getUnfixedDofNumber
+   @return Returns the number of Unfixed Dof%s in this DofManager
+   **
+
+   @fn DofManager::getFixedDofNumber
+   @return Returns the number of fixed Dof%s in this DofManager
    **
 
    @fn  DofManager::toString
-   @return Returns the DofManager's string
+   @return Returns the DofManager string
+   **
 */
 
 //////////////////////
@@ -175,23 +173,8 @@ inline const size_t DofManager::isFixedId(void){
   return isFixed;
 }
 
-inline std::pair<bool, size_t> DofManager::find(const Dof& dof) const{
-  const size_t entity = dof.getEntity() - first;
-  const size_t type   = dof.getType();
-
-  return std::pair<bool, size_t>(true, globalIdV[entity].id[type]);
-}
-
 inline size_t DofManager::getGlobalId(const Dof& dof) const{
-  return find(dof).second;
-}
-
-inline size_t DofManager::getDofNumber(void) const{
-  if(globalIdM)
-    return globalIdM->size() - fixedDof->size();
-
-  else
-    return nTotDof - fixedDof->size();
+  return globalIdV[dof.getEntity() - first][dof.getType()];
 }
 
 #endif

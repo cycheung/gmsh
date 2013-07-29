@@ -37,7 +37,7 @@ class System: public SystemAbstract{
 
 
 /**
-   @fn System::System
+   @fn System::System(const Formulation&)
    @param formulation A Formulation that
    gives the way to assemble the system
 
@@ -49,7 +49,7 @@ class System: public SystemAbstract{
    **
 
    @fn System::getSol
-   @return Returns the solution of the the linear system
+   @return Returns the solution of the linear system
 */
 
 /////////////////////

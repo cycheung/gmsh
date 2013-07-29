@@ -80,14 +80,14 @@ void WriterMsh::writeNodalValuesFromSol(void) const{
     const GroupOfDof& god = fs->getGoDFromElement(*(*element)[i]);
 
     // Get Dof
-    const vector<const Dof*>& dof  = god.getDof();
-    const size_t              size = dof.size();
+    const vector<Dof>& dof  = god.getDof();
+    const size_t       size = dof.size();
 
     // Get Coef In FS Basis
     vector<double> fsCoef(size);
     for(size_t j = 0; j < size; j++){
       // Dof Global ID
-      globalId = dofM->getGlobalId(*dof[j]);
+      globalId = dofM->getGlobalId(dof[j]);
 
       // If non fixed Dof: look in Solution
       if(globalId != DofManager::isFixedId())
@@ -95,7 +95,7 @@ void WriterMsh::writeNodalValuesFromSol(void) const{
 
       // If Dof is fixed: get fixed value
       else
-        fsCoef[j] = dofM->getValue(*dof[j]);
+        fsCoef[j] = dofM->getValue(dof[j]);
     }
 
     // Get Coef In Lagrange Basis

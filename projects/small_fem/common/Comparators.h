@@ -12,13 +12,13 @@
 
    This class is able to compare two Dof%s.
 
-   @fn bool DofComparator::operator()(const Dof* a, const Dof* b) const;
+   @fn bool DofComparator::operator()(const Dof*, const Dof*)
    @param a A Dof pointer
-   @param b A second Dof pointer (possibly pointing to the same Dof as @c a)
+   @param b A second Dof pointer
    @return Returns:
-   @li @c true, if the Dof @em pointed by @c a is @em smaller
-   than the Dof @em pointed by @c b
-   @li @c false, otherwise
+   @li true, if the Dof pointed by a is smaller
+   than the Dof pointed by b
+   @li false, otherwise
  */
 
 
@@ -28,13 +28,13 @@
 
    This class is able to compare two MElement%s.
 
-   @fn bool ElementComparator::operator()(const MElement* a, const MElement* b) const;
+   @fn bool ElementComparator::operator()(const MElement*, const MElement*)
    @param a A MElement pointer
-   @param b A second MElement pointer (possibly pointing to the same MElement as @c a)
+   @param b A second MElement pointer
    @return Returns:
-   @li @c true, if the MElement @em pointed by @c a is @em smaller
-   than the MElement @em pointed by @c b
-   @li @c false, otherwise
+   @li true, if the MElement pointed by a is smaller
+   than the MElement pointed by b
+   @li false, otherwise
  */
 
 /**
@@ -43,88 +43,67 @@
 
    This class is able to compare two MVertices.
 
-   @fn bool VertexComparator::operator()(const MVertex* a, const MVertex* b) const;
+   @fn bool VertexComparator::operator()(const MVertex*, const MVertex*)
    @param a A MVertex pointer
-   @param b A second MVertex pointer (possibly pointing to the same MVertex as @c a)
+   @param b A second MVertex pointer
    @return Returns:
-   @li @c true, if the MVertex @em pointed by @c a is @em smaller
-   than the MVertex @em pointed by @c b
-   @li @c false, otherwise
+   @li true, if the MVertex pointed by a is smaller
+   than the MVertex pointed by b
+   @li false, otherwise
  */
 
 /**
    @class EdgeComparator
-   @brief A comparator for MEdge%s (without @em orientation notion)
+   @brief A comparator for MEdge%s (without orientation notion)
 
-   This class is able to compare two MEdge%s.
+   This class is able to compare two MEdge%s (without orientation notion).
 
-   @warning
-   With this comparator, two MEdge%s with the @em same @em points,
-   but @em different @em orientations, are handled as the @em same
-   MEdge.
+   With this comparator, two MEdge%s with the same points,
+   but different orientations, are handled as the same MEdge.
 
-   @fn bool EdgeComparator::operator()(const MEdge* a, const MEdge* b) const;
+   @fn bool EdgeComparator::operator()(const MEdge*, const MEdge*)
    @param a A MEdge pointer
-   @param b A second MEdge pointer (possibly pointing to the same MEdge as @c a)
+   @param b A second MEdge pointer
    @return Returns:
-   @li @c true, if the MEdge @em pointed by @c a is @em smaller
-   than the MEdge @em pointed by @c b
-   @li @c false, otherwise
-
-   @warning
-   With this comparator, two MEdge%s with the @em same @em points,
-   but @em different @em orientations, are handled as the @em same
-   MEdge.
+   @li true, if the MEdge pointed by a is smaller
+   than the MEdge pointed by b
+   @li false, otherwise
  */
 
 /**
    @class FaceComparator
    @brief A comparator for MFace%s (without @em orientation notion)
 
-   This class is able to compare two MFace%s.
+   This class is able to compare two MFace%s (without @em orientation notion).
 
-   @warning
-   With this comparator, two MFace%s with the @em same @em points,
-   but @em different @em orientations, are handled as the @em same
-   MFace.
+   With this comparator, two MFace%s with the same points,
+   but different orientations, are handled as the same MFace.
 
-   @fn bool FaceComparator::operator()(const MFace* a, const MFace* b) const;
+   @fn bool FaceComparator::operator()(const MFace*, const MFace*)
    @param a A MFace pointer
-   @param b A second MFace pointer (possibly pointing to the same MFace as @c a)
+   @param b A second MFace pointer
    @return Returns:
-   @li @c true, if the MFace @em pointed by @c a is @em smaller
-   than the MFace @em pointed by @c b
-   @li @c false, otherwise
-
-   @warning
-   With this comparator, two MFace%s with the @em same @em points,
-   but @em different @em orientations, are handled as the @em same
-   MFace.
+   @li true, if the MFace pointed by a is smaller
+   than the MFace pointed by b
+   @li false, otherwise
  */
 
 /**
    @class OrientedEdgeComparator
    @brief A comparator for MEdge%s (with @em orientation notion)
 
-   This class is able to compare two MEdge%s.
+   This class is able to compare two MEdge%s (with @em orientation notion).
 
-   @warning
-   With this comparator, two MEdge%s with the @em same @em points,
-   but @em different @em orientations, are handled as @em different
-   MEdge%s.
+   With this comparator, two MEdge%s with the same points,
+   but different orientations, are handled as different MEdge%s.
 
-   @fn bool OrientedEdgeComparator::operator()(const MEdge* a, const MEdge* b) const;
+   @fn bool OrientedEdgeComparator::operator()(const MEdge*, const MEdge*)
    @param a A MEdge pointer
-   @param b A second MEdge pointer (possibly pointing to the same MEdge as @c a)
+   @param b A second MEdge pointer
    @return Returns:
-   @li @c true, if the MEdge @em pointed by @c a is @em smaller
-   than the MEdge @em pointed by @c b
-   @li @c false, otherwise
-
-   @warning
-   With this comparator, two MEdge%s with the @em same @em points,
-   but @em different @em orientations, are handled as @em different
-   MEdge%s.
+   @li true, if the MEdge pointed by a is smaller
+   than the MEdge pointed by b
+   @li false, otherwise
  */
 
 class DofComparator{

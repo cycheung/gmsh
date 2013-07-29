@@ -19,7 +19,7 @@ SystemShowFunctionSpace::SystemShowFunctionSpace(const FunctionSpace& fs,
   A       = NULL;
   b       = NULL;
   xPetsc  = NULL;
-  x       = new fullVector<double>(dofM->getDofNumber());
+  x       = new fullVector<double>(dofM->getUnfixedDofNumber());
   fNumber = functionNumber;
 
   // The system is not assembled and not solved //
@@ -42,7 +42,7 @@ void SystemShowFunctionSpace::solve(void){
     assemble();
 
   // Write Sol
-  const size_t size = dofM->getDofNumber();
+  const size_t size = dofM->getUnfixedDofNumber();
 
   for(size_t i = 0; i < size; i++)
     if(i == fNumber)

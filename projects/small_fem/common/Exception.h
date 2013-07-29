@@ -9,11 +9,11 @@
    @class Exception
    @brief A general class for exceptions
 
-   Exception is a general class for exceptions.@n
+   Exception is a general class for exceptions.
 
-   An Exception is instantiated with a @em string.@n
-   This string is used as a @em description
-   of the @em cause of the exception.
+   An Exception is instantiated with a string.
+   This string is used as a description
+   of the cause of the exception.
  */
 
 class Exception: public std::exception{
@@ -36,8 +36,7 @@ class Exception: public std::exception{
    **
 
    @fn Exception::Exception(const std::string format, ...)
-   @param format A @em formated string
-   of the @em cause of the exception
+   @param format A formated string of the cause of the exception
    @param ... The parameters of the formated string
 
    Instantiates a new Exception with Exception::what()
@@ -49,7 +48,8 @@ class Exception: public std::exception{
    **
 
    @fn const char* Exception::what
-   @return Returns the @em cause of the exception
+   @return Returns the cause of the exception
+   **
  */
 
 #endif

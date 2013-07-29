@@ -1,31 +1,22 @@
 #ifndef _FORMULATION_H_
 #define _FORMULATION_H_
 
-#include "GroupOfDof.h"
 #include "FunctionSpace.h"
 
 /**
    @interface Formulation
    @brief Base interface of a Finite Element formulation
 
-   This is the base interface of a Finite Element formulation.@n
+   This is the base interface of a Finite Element formulation.
 
-   A Finite Element Problem is of the type:@n
-   @f$\mathbf{A}~\mathbf{x} = \mathbf{b}@f$@n
+   A Finite Element problem is of the type:
+   @f$\mathbf{A}~\mathbf{x} = \mathbf{b}@f$
 
-   A Formulation is defined by:
-   @li A Function Space
-   @see FunctionSpace class
-   @li A Bilinear Weak Formulation
-   @li A Right hand Side.@n
+   A Finite Element Eigenvalue problem is a of the type:
+   @f$\qquad(\mathbf{A} - \lambda{}\mathbf{I})\mathbf{x} = \mathbf{b}@f$
 
-   @warning
-   A formulation is defined @em only on @em GroupOfDof%s.
-
-   @todo
-   Add quadrature laws as a paramaeter of a Formulation@n
-   Allow evaluation of non GroupOfDof related Dof.@n
-   virtual weak() is not a good idea with 'fast' assembly
+   A Generalized Finite Element Eigenvalue is a of the type
+   @f$\qquad(\mathbf{A} - \lambda{}\mathbf{B})\mathbf{x} = \mathbf{b}@f$
  */
 
 class Formulation{
@@ -53,36 +44,36 @@ class Formulation{
 
    @fn Formulation::isGeneral
    @return Returns
-   @li @c true, if the problem is a @em generalized Eigenvalue problem
-   @li @c false, if not
+   @li true, if the problem is a generalized Eigenvalue problem
+   @li false, if not
    **
 
    @fn Formulation::weak
-   @param dofI The @em first index of the formulation term
-   @param dofJ The @em second index of the formulation term
-   @param god The @em GroupOfDof associated with the formulation term
+   @param dofI The first index of the formulation term
+   @param dofJ The second index of the formulation term
+   @param elementId The element ID associated with the formulation term
    @return The value of the requested formulation term
    **
 
    @fn Formulation::weakB
-   @param dofI The @em first index of the formulation term
-   @param dofJ The @em second index of the formulation term
-   @param god The @em GroupOfDof associated with the formulation term
+   @param dofI The first index of the formulation term
+   @param dofJ The second index of the formulation term
+   @param elementId The element ID associated with the formulation term
 
-   This method is only valid when Formulation::isGeneral() is @c true
+   This method is only valid when Formulation::isGeneral() is true
 
-   @return The value of the requested @em second formulation term
+   @return The value of the requested second formulation term
    **
 
    @fn Formulation::rhs
-   @param equationI The @em ith equation of the formulation
-   @param god The @em GroupOfDof associated
-   with the @em ith  equation of the formulation
-   @return The value of the @em ith equation Right Hand Side
+   @param equationI The ith equation of the formulation
+   @param elementId The element ID associated
+   with the ith equation of the formulation
+   @return The value of the ith equation Right Hand Side
    **
 
    @fn Formulation::fs
-   @return Returns the Function Space used by this Formulation
+   @return Returns the FunctionSpace used by this Formulation
 */
 
 #endif

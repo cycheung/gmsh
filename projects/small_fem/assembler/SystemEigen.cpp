@@ -45,17 +45,16 @@ SystemEigen::~SystemEigen(void){
   }
 
   delete dofM;
-  // SystemEigen is not responsible for deleting 'Formulations'
 }
 
 void SystemEigen::
 setNumberOfEigenValues(size_t nEigenValues){
-  const size_t nDof = dofM->getDofNumber();
+  const size_t nDof = dofM->getUnfixedDofNumber();
 
   if(nEigenValues > nDof)
     throw
       Exception
-      ("I cannot compute more Eigenvalues (%d) than the number of unknowns (%d)",
+      ("I can't compute more Eigenvalues (%d) than the number of unknowns (%d)",
        nEigenValues, nDof);
 
   else
@@ -67,7 +66,7 @@ void SystemEigen::assemble(void){
   dofM->generateGlobalIdSpace();
 
   // Alloc A //
-  const size_t size = dofM->getDofNumber();
+  const size_t size = dofM->getUnfixedDofNumber();
 
   A = new Mat;
   MatCreate(MPI_COMM_WORLD, A);
@@ -140,7 +139,6 @@ void SystemEigen::solve(void){
 
   // Build Solver //
   EPS solver;
-
   EPSCreate(MPI_COMM_WORLD, &solver);
 
   if(general)
@@ -166,7 +164,7 @@ void SystemEigen::solve(void){
   EPSSolve(solver);
 
   // Get Solution //
-  const size_t size = dofM->getDofNumber();
+  const size_t size = dofM->getUnfixedDofNumber();
 
   PetscScalar  lambdaReal;
   PetscScalar  lambdaImag;

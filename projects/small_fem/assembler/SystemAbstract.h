@@ -18,14 +18,7 @@
    @interface SystemAbstract
    @brief Common Interface for Linear Systems Assemblers
 
-   This is a common Interface for Linear Systems Assemblers
-
-   @warning
-   We can @em only assemble Dof related to a MElement@n
-
-   @todo
-   Assembly of @em NON Element related Dof@n
-   Allow multiple basis for dirichelt@n
+   This is a common interface for Linear Systems Assemblers
  */
 
 class SystemAbstract{
@@ -92,19 +85,18 @@ class SystemAbstract{
 
    @fn SystemAbstract::isAssembled
    @return Returns:
-   @li @c true, if the system has been assembled
-   @li @c false otherwise
+   @li true, if the system has been assembled
+   @li false otherwise
    **
 
    @fn SystemAbstract::isSolved
    @return Returns:
-   @li @c true, if the system has been solved
-   @li @c false otherwise
+   @li true, if the system has been solved
+   @li false otherwise
    **
 
    @fn SystemAbstract::getSize
-   @return Returns the number of @em unknowns
-   of the the linear system
+   @return Returns the number of unknowns in the the linear system
    **
 
    @fn SystemAbstract::getDofManager
@@ -119,26 +111,22 @@ class SystemAbstract{
    @param goe A GroupOfElement
    @param value A real value
 
-   Fixes the Coefficients (Dof%s), associated the the given
+   Fixes the Coefficients (Dof%s), associated to the given
    GroupOfElement, to the given value
-
-   @note These Coefficients are (Dof%s) weights of the
-   Basis Function defined on the given GroupOfElement
    **
 
-   @fn SystemAbstract::dirichlet(const GroupOfElement& goe,  double (*f)(fullVector<double>& xyz));
+   @fn SystemAbstract::dirichlet(GroupOfElement& goe,  double (*f)(fullVector<double>& xyz));
    @param goe A GroupOfElement
    @param f A scalar Function
 
-   Imposes a @em scalar Dirichlet Condition (given by @c f) on the
-   given GroupOfElement
+   Imposes a scalar Dirichlet Condition (given by f) on the given GroupOfElement
    **
 
-   @fn SystemAbstract::dirichlet(const GroupOfElement& goe, fullVector<double> (*f)(fullVector<double>& xyz));
+   @fn SystemAbstract::dirichlet(GroupOfElement& goe, fullVector<double> (*f)(fullVector<double>& xyz));
    @param goe A GroupOfElement
    @param f A vectorial Function
 
-   Imposes a @em vectorial Dirichlet Condition (given by @c f) on the
+   Imposes a vectorial Dirichlet Condition (given by @c f) on the
    given GroupOfElement
    **
 
@@ -148,8 +136,7 @@ class SystemAbstract{
 
    @fn SystemAbstract::solve
    Solves the linear system
-   @note If the SystemAbstract is @em not @em assembled,
-   the assembly method will be called
+   **
 */
 
 //////////////////////
@@ -165,7 +152,7 @@ inline bool SystemAbstract::isSolved(void) const{
 }
 
 inline size_t SystemAbstract::getSize(void) const{
-  return dofM->getDofNumber();
+  return dofM->getUnfixedDofNumber();
 }
 
 inline const DofManager& SystemAbstract::

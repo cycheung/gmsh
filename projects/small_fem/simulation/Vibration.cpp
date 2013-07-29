@@ -6,12 +6,11 @@
 #include "SystemEigen.h"
 
 #include "WriterMsh.h"
-#include "WriterDummy.h"
 #include "Interpolator.h"
 
 #include "FormulationVibration.h"
 
-#include "Gmsh.h"
+#include "SmallFem.h"
 
 using namespace std;
 
@@ -19,21 +18,18 @@ double fDir(fullVector<double>& xyz){
   return 0;
 }
 
-int main(int argc, char** argv){
-  // Init //
-  GmshInitialize(argc, argv);
-  GmshSetOption("General", "Terminal", 1.);
-
+void compute(const Options& option){
   // Get Domain //
-  Mesh msh(argv[1]);
+  Mesh msh(option.getValue("-msh")[0]);
   GroupOfElement domain = msh.getFromPhysical(7);
   GroupOfElement border = msh.getFromPhysical(5);
 
-  // Get Some Data //
+  // Writer //
   WriterMsh writer;
 
-  const size_t order = atoi(argv[2]);
-  const size_t nWave = atoi(argv[3]);
+  // Get Some Data //
+  const size_t order = atoi(option.getValue("-o")[0].c_str());
+  const size_t nWave = atoi(option.getValue("-n")[0].c_str());
 
   // Vibration //
   FormulationVibration vibration(domain, order);
@@ -67,35 +63,43 @@ int main(int argc, char** argv){
          << sqrt(eigenValue[i]) << endl;
 
   // Write Sol //
-  // Number of decimals in nEigenValue
-  // Used for '0' pading in sprintf
-  char fileName[1024];
-  const int nDec = floor(log10(nEigenValue)) + 1;
+  if(!option.getValue("-nopos").size()){
+    // Number of decimals in nEigenValue
+    // Used for '0' pading in sprintf
+    char fileName[1024];
+    const int nDec = floor(log10(nEigenValue)) + 1;
 
-  if(argc == 5){
-    // With VisuMesh
-    Mesh           visuMesh(argv[4]);
-    GroupOfElement visu = visuMesh.getFromPhysical(7);
+    if(option.getValue("-interp").size()){
+      // With VisuMesh
+      Mesh           visuMesh(option.getValue("-interp")[0]);
+      GroupOfElement visu = visuMesh.getFromPhysical(7);
 
-    for(size_t i = 0; i < nEigenValue; i++){
-      sprintf(fileName, "vibration_mode%0*u", nDec, (unsigned int)(i + 1));
+      for(size_t i = 0; i < nEigenValue; i++){
+        sprintf(fileName, "vibration_mode%0*u", nDec, (unsigned int)(i + 1));
 
-      Interpolator intVibration(sysVibration, i, visu);
-      intVibration.write(string(fileName), writer);
+        Interpolator intVibration(sysVibration, i, visu);
+        intVibration.write(string(fileName), writer);
+      }
+    }
+
+    else{
+      // Without VisuMesh
+      for(size_t i = 0; i < nEigenValue; i++){
+        sprintf(fileName, "vibration_mode%0*u", nDec, (unsigned int)(i + 1));
+
+        writer.setValues(sysVibration, i);
+        writer.write(string(fileName));
+      }
     }
   }
+}
 
-  else{
-    // Without VisuMesh
-    for(size_t i = 0; i < nEigenValue; i++){
-      sprintf(fileName, "vibration_mode%0*u", nDec, (unsigned int)(i + 1));
+int main(int argc, char** argv){
+  // Init SmallFem //
+  SmallFem::Initialize(argc, argv);
 
-      writer.setValues(sysVibration, i);
-      writer.write(string(fileName));
-    }
-  }
+  compute(SmallFem::getOptions());
 
-  // Done //
-  GmshFinalize();
+  SmallFem::Finalize();
   return 0;
 }

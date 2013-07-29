@@ -203,7 +203,7 @@ void Interpolator::interpolate(void){
   for(size_t i = 0; i < nGod; i++){
     // Get Element
     MElement& element =
-      const_cast<MElement&>(god[i]->getGeoElement());
+      const_cast<MElement&>(god[i]->getElement());
 
     // Get NodeS
     element.getVertices(node);
@@ -217,14 +217,14 @@ void Interpolator::interpolate(void){
       // If not interpolated: interpolate :-P !
       if(!isInterpolated[id]){
         // Get Dof
-        const vector<const Dof*>& dof  = god[i]->getDof();
-        const size_t              size = dof.size();
+        const vector<Dof>& dof  = god[i]->getDof();
+        const size_t       size = dof.size();
 
         // Get Coef
         vector<double> coef(size);
         for(size_t k = 0; k < size; k++){
           // Dof Global ID
-          globalId = dofM->getGlobalId(*dof[k]);
+          globalId = dofM->getGlobalId(dof[k]);
 
           // If non fixed Dof: look in Solution
           if(globalId != DofManager::isFixedId())
@@ -232,7 +232,7 @@ void Interpolator::interpolate(void){
 
           // If Dof is fixed: get fixed value
           else
-            coef[k] = dofM->getValue(*dof[k]);
+            coef[k] = dofM->getValue(dof[k]);
         }
 
         // Get Node coordinate
@@ -304,14 +304,14 @@ void Interpolator::interpolateOnVisu(void){
       const GroupOfDof& god = fs->getGoDFromElement(*element);
 
       // Get Dof
-      const vector<const Dof*>& dof  = god.getDof();
-      const size_t              size = dof.size();
+      const vector<Dof>& dof  = god.getDof();
+      const size_t       size = dof.size();
 
       // Get Coef
       vector<double> coef(size);
       for(size_t k = 0; k < size; k++){
         // Dof Global ID
-        globalId = dofM->getGlobalId(*dof[k]);
+        globalId = dofM->getGlobalId(dof[k]);
 
         // If non fixed Dof: look in Solution
         if(globalId != DofManager::isFixedId())
@@ -319,7 +319,7 @@ void Interpolator::interpolateOnVisu(void){
 
         // If Dof is fixed: get fixed value
         else
-          coef[k] = dofM->getValue(*dof[k]);
+          coef[k] = dofM->getValue(dof[k]);
       }
 
       // Get Node coordinate

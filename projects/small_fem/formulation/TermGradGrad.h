@@ -7,9 +7,9 @@
 
 /**
    @class TermGradGrad
-   @brief Term of the @c Grad @c Grad type
+   @brief Term of the Grad Grad type
 
-   Term of the @c Grad @c Grad type
+   Term of the Grad Grad type
  */
 
 class TermGradGrad: public Term{

@@ -48,21 +48,18 @@ class Timer{
    @fn Timer::stop
    Stops this Timer
 
-   @note If this Timer hasn't been started,
-   an Exception is thrown
+   If this Timer hasn't been started, an Exception is thrown
    **
 
    @fn Timer::time
-   @return Returns the elapsed time between
-   Timer::start() and Timer::stop()
+   @return Returns the elapsed time between Timer::start() and Timer::stop()
 
-   @note If this Timer hasn't been started
-   @em or stoped, an Exception is thrown
+   If this Timer hasn't been started or stoped, an Exception is thrown
    **
 
    @fn Timer::unit
-   @return Returns a string with the @em unit
-   used by Timer::time()
+   @return Returns a string with the unit used by Timer::time()
+   **
  */
 
 #endif

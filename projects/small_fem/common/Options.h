@@ -10,8 +10,8 @@
    @brief Handel options
 
    An Option is a pair composed two strings:
-   @li The first one is called the @em option
-   @li The second one is called the @em value
+   @li The first one is called the option
+   @li The second one is called the value
 
    This class can store all the pairs (option, value) for latter access.
 */
@@ -21,7 +21,7 @@ class Options{
   std::multimap<std::string, std::string>* optionMap;
 
  public:
-  Options(size_t nArg, const char *const *const arg);
+   Options(size_t nArg, const char *const *const arg);
   ~Options(void);
 
   std::vector<std::string> getValue(std::string option) const;
@@ -40,7 +40,8 @@ class Options{
    Instanciates a new Option with the given vector of string.
 
    The options will taken in the folowing way:
-   (option, value)[i] = (arg[2 * i] + arg[2 * i + 1]) for i = {0, ..., nArg / 2}.
+   (option, value)[i] = (arg[2 * i] + arg[2 * i + 1])
+   for i = {0, ..., nArg / 2}.
 
    All the paires (option, value) will be stored for latter use.
 
@@ -52,9 +53,9 @@ class Options{
    **
 
    @fn Options::getValue
-   @param string A string used as an option
+   @param option A string used as an option
    @return
-   Returns a vector with the values stored for the given option.@n
+   Returns a vector with the values stored for the given option.
    Those values have been stored during instanciation of this Options.
 
    @see Options::Options
@@ -75,8 +76,7 @@ class Options{
    to each entry of the given vector.
    vecCStyle will be populated starting at offset.
 
-   @warning
-   The char* are @em bounded to the given vector.
+   The char* are bounded to the given vector.
    **
  */
 

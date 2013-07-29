@@ -25,7 +25,6 @@ fullVector<double> fDirichlet(fullVector<double>& xyz){
 }
 
 void compute(const Options& option){
-  cout << option.toString() << endl;
   // Get Domain //
   Mesh msh(option.getValue("-msh")[0]);
   GroupOfElement domain = msh.getFromPhysical(7);

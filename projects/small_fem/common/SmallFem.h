@@ -7,7 +7,8 @@
    @class SmallFem
    @brief SmallFem Initialize and finalize
 
-   SmallFem Initialize and Finalize
+   Initialize and Finalize SmallFem.
+   It also gives access to Options.
 */
 
 class SmallFem{
@@ -40,11 +41,22 @@ class SmallFem{
    **
 
    @fn SmallFem::Initialize
-   Class method initializing SmallFem
+   @param argv A vector of char*
+   @param argc The size of the previous vector
+
+   Class method initializes SmallFem. Moreover it
+   takes {argv[1], ..., argv[argc - 1]} as Options.
+
+   @see SmallFem::getOption()
    **
 
    @fn SmallFem::Finalize
-   Class method finalizing SmallFem
+   Class method finalizes SmallFem
+   **
+
+   @fn SmallFem::getOptions
+   @return Returns the Options given in SmallFem::Initialize()
+   **
 */
 
 #endif

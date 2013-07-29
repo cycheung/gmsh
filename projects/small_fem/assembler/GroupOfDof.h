@@ -8,28 +8,28 @@
 
 /**
    @class GroupOfDof
-   @brief Handels a Group of Dof%s with @em geometrical meaning
+   @brief Handels a Group of Dof%s with geometrical meaning
 
-   This class handles a collection of Dof%s with a @em geometrical meaning
-   (@e e.g: Dof%s that belongs to the same (finite) element).@n
+   This class handles a collection of Dof%s that are
+   associated to the same mesh Element.
 
-   It also gives acces to the underlying Geometrical Element.
+   It also gives acces to the underlying mesh Element.
 */
 
 class GroupOfDof{
  private:
-  const MElement*          element;
-  std::vector<const Dof*>* dof;
+  const MElement*  element;
+  std::vector<Dof> dof;
 
  public:
-  GroupOfDof(const MElement& geoElement,
-             const std::vector<const Dof*>& dof);
+  GroupOfDof(const MElement& element,
+             const std::vector<Dof>& dof);
 
   ~GroupOfDof(void);
 
-  size_t                         size(void)          const;
-  const std::vector<const Dof*>& getDof(void)        const;
-  const MElement&                getGeoElement(void) const;
+  size_t                  size(void)       const;
+  const std::vector<Dof>& getDof(void)     const;
+  const MElement&         getElement(void) const;
 
   std::string toString(void) const;
 };
@@ -37,7 +37,7 @@ class GroupOfDof{
 
 /**
    @fn GroupOfDof::GroupOfDof
-   @param geoElement A geomtrical Element (MElement)
+   @param element A mesh Element (MElement)
    @param dof A vector of Dof
 
    Instanciates a new GroupOfDof related to the given
@@ -50,15 +50,15 @@ class GroupOfDof{
    **
 
    @fn GroupOfDof::size
-   @return Returns the number of elements in this GroupOfDof
+   @return Returns the number of Dof%s in this GroupOfDof
    **
 
    @fn GroupOfDof::getDof
-   @return Returns all the Dofs
+   @return Returns all the Dof%s
    **
 
-   @fn GroupOfDof::getGeoElement
-   @return Returns the underlying Geometrical Element
+   @fn GroupOfDof::getElement
+   @return Returns the underlying mesh Element
    **
 
    @fn GroupOfDof::toString
@@ -70,14 +70,14 @@ class GroupOfDof{
 //////////////////////
 
 inline size_t GroupOfDof::size(void) const{
-  return dof->size();
+  return dof.size();
 }
 
-inline const std::vector<const Dof*>& GroupOfDof::getDof(void) const{
-  return *dof;
+inline const std::vector<Dof>& GroupOfDof::getDof(void) const{
+  return dof;
 }
 
-inline const MElement& GroupOfDof::getGeoElement(void) const{
+inline const MElement& GroupOfDof::getElement(void) const{
   return *element;
 }
 

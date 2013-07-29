@@ -1,17 +1,16 @@
 #include "GroupOfDof.h"
 #include <sstream>
 
-GroupOfDof::GroupOfDof(const MElement& geoElement,
-                       const std::vector<const Dof*>& dof){
+GroupOfDof::GroupOfDof(const MElement& element,
+                       const std::vector<Dof>& dof){
   // Geo Element //
-  element = &geoElement;
+  this->element = &element;
 
   // Alloc and Copy //
-  this->dof = new std::vector<const Dof*>(dof);
+  this->dof.assign(dof.begin(), dof.end());
 }
 
 GroupOfDof::~GroupOfDof(void){
-  delete dof;
 }
 
 std::string GroupOfDof::toString(void) const{
@@ -22,8 +21,8 @@ std::string GroupOfDof::toString(void) const{
          << "*************************** " << std::endl
          << "* Associated Dofs:  "         << std::endl;
 
-  for(size_t i = 0; i < dof->size(); i++)
-    stream << "*    -- " << (*dof)[i]->toString() << std::endl;
+  for(size_t i = 0; i < dof.size(); i++)
+    stream << "*    -- " << dof[i].toString() << std::endl;
 
   stream << "*************************** " << std::endl;
 

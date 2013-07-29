@@ -24,7 +24,6 @@ class Term{
   mutable size_t lastCtr;
 
  public:
-  Term(void);
   virtual ~Term(void);
 
   double getTerm(size_t dofI,
@@ -37,6 +36,8 @@ class Term{
                          size_t elementId) const;
 
  protected:
+  Term(void);
+
   void allocA(size_t nFunction);
 
   void computeA(fullMatrix<double>**& bM,
@@ -45,6 +46,18 @@ class Term{
   void clean(fullMatrix<double>**& bM,
              fullMatrix<double>**& cM);
 };
+
+/**
+   @fn Term::~Term
+   Deletes this Term
+   **
+
+   @fn Term::getTerm
+   @param dofI A FunctionSpace function index
+   @param dofJ A FunctionSpace function index
+   @param elementId The ID of an Element
+   @return Returns the finite element term associated to the given values
+ */
 
 /////////////////////
 // Inline Function //

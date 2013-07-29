@@ -7,15 +7,13 @@
    @class SystemShowFunctionSpace
    @brief This class shows a FunctionSpace
 
-   This class is a System shows a FunctionSpace,
+   This class is a System that shows a FunctionSpace,
    by returning the appropriate solution vector.@n
 
    For example, SystemShowFunctionSpace(FunctionSpace&, functionNumber),
    returns the solution vector such that: x(i)
    @li is equal to 1 if i = functionNumber
    @li is equal to 0 otherwise
-
-   This class is a particular System.
  */
 
 class SystemShowFunctionSpace: public System{
@@ -40,10 +38,11 @@ class SystemShowFunctionSpace: public System{
    (of the FunctionSpace) to show
 
    Instantiated a new SystemShowFunctionSpace
-   ***
+   **
 
    @fn SystemShowFunctionSpace::~SystemShowFunctionSpace
    Deletes this SystemShowFunctionSpace
+   **
 */
 
 #endif

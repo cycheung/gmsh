@@ -21,6 +21,7 @@
 using namespace std;
 
 int main(int argc, char** argv){
+
   SmallFem::Initialize(argc, argv);
   #pragma omp parallel for
   for(int i = 0; i < 9; i++)

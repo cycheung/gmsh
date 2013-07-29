@@ -7,9 +7,9 @@
 
 /**
    @class TermCurlCurl
-   @brief Term of the @c Curl @c Curl type
+   @brief Term of the Curl Curl type
 
-   Term of the @c Curl @c Curl type
+   Term of the Curl Curl type
  */
 
 class TermCurlCurl: public Term{

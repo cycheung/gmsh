@@ -9,15 +9,13 @@
    @brief This class assembles an Eigenvalue System
 
    This class assembles an Eigenvalue system,
-   described by a Formulation.@n
+   described by a Formulation.
 
-   The Eigenvalue Problem can be @em generalized or not:
-   @li An Eigenvalue Problem is a of the type
+   The Eigenvalue problem can be generalized or not:
+   @li An Eigenvalue problem is a of the type
    @f$\qquad(\mathbf{A} - \lambda{}\mathbf{I})\mathbf{x} = \mathbf{b}@f$
-   @li An Generalized Eigenvalue Problem is a of the type
+   @li A Generalized Eigenvalue problem is a of the type
    @f$\qquad(\mathbf{A} - \lambda{}\mathbf{B})\mathbf{x} = \mathbf{b}@f$
-
-   @see Formulation::isGeneral()
  */
 
 class SystemEigen: public SystemAbstract{
@@ -37,8 +35,7 @@ class SystemEigen: public SystemAbstract{
 
   bool isGeneral(void) const;
 
-  size_t
-    getEigenValuesNumber(void) const;
+  size_t getEigenValuesNumber(void) const;
 
   const std::vector<std::complex<double> >&
     getEigenValues(void)  const;
@@ -55,7 +52,7 @@ class SystemEigen: public SystemAbstract{
 
 /**
    @fn SystemEigen::SystemEigen
-   @param formulation An Formulation that
+   @param formulation A Formulation that
    gives the way to assemble the Eigenvalue System
 
    Instantiated a new SystemEigen
@@ -67,27 +64,27 @@ class SystemEigen: public SystemAbstract{
 
    @fn SystemEigen::isGeneral
    @return Returns:
-   @li @c true, if the SystemEigen is a Generalized one
-   @li @c false otherwise
+   @li true, if the SystemEigen is a generalized one
+   @li false otherwise
    **
 
-   @fn SystemEigen::getEigenValueNumber
-   @return Returns the number of @em computed
-   Eigenvalues
+   @fn SystemEigen::getEigenValuesNumber
+   @return Returns the number of computed Eigenvalues
    **
 
    @fn SystemEigen::getEigenValues
-   @return Returns the @em computed Eigenvalues
+   @return Returns the computed Eigenvalues
    **
 
    @fn SystemEigen::getEigenVectors
-   @return Returns the @em computed Eigenvectors
+   @return Returns the computed Eigenvectors
    **
 
    @fn SystemEigen::setNumberOfEigenValues
    @param nEigenValues A natural number
-   Set the number of eigenvalues computed by
+   Sets the number of eigenvalues computed by
    the solving method to the given number
+   **
 */
 
 //////////////////////

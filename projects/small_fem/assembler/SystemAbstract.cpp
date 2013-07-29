@@ -32,7 +32,8 @@ dirichlet(GroupOfElement& goe,
   // Check if Scalar Problem //
   if(!fs->isScalar())
     throw
-      Exception("Cannot impose Vectorial Dirichlet Conditions on a Scalar Problem");
+      Exception
+      ("Cannot impose Vectorial Dirichlet Conditions on a Scalar Problem");
 
   // New FunctionSpace, on the Dirichlet Domain: dirFS //
   // WARNING: The support of the dirFS *MUST* have the fs Mesh
@@ -40,7 +41,8 @@ dirichlet(GroupOfElement& goe,
 
   if(&(goe.getMesh()) != &(fs->getSupport().getMesh()))
     throw
-      Exception("Dirichlet Domain must come from the FunctionSpace Domain's Mesh");
+      Exception
+      ("Dirichlet Domain must come from the FunctionSpace Domain's Mesh");
 
   BasisLocal* dirBasis = BasisGenerator::generate(goe.get(0).getType(),
                                                   fs->getBasis(0).getType(),
@@ -56,14 +58,14 @@ dirichlet(GroupOfElement& goe,
   sysProj.solve();
 
   // Fix This System Dofs with sysProj Solution //
-  const vector<const Dof*> dof = dirFS.getAllDofs();
-  const size_t            nDof = dof.size();
+  const vector<Dof> dof = dirFS.getAllDofs();
+  const size_t     nDof = dof.size();
 
   const DofManager&        dirDofM = sysProj.getDofManager();
   const fullVector<double>& dirSol = sysProj.getSol();
 
   for(size_t i = 0; i < nDof; i++)
-    dofM->fixValue(*dof[i], dirSol(dirDofM.getGlobalId(*dof[i])));
+    dofM->fixValue(dof[i], dirSol(dirDofM.getGlobalId(dof[i])));
 
   delete dirBasis;
 }
@@ -75,14 +77,17 @@ dirichlet(GroupOfElement& goe,
   // Check if Scalar Problem //
   if(fs->isScalar())
     throw
-      Exception("Cannot impose Scalar Dirichlet Conditions on a Vectorial Problem");
+      Exception
+      ("Cannot impose Scalar Dirichlet Conditions on a Vectorial Problem");
 
   // New FunctionSpace, on the Dirichlet Domain: dirFS //
   // WARNING: The support of the dirFS *MUST* have the fs Mesh
   //  --> So we have the same Dof Numbering
 
   if(&(goe.getMesh()) != &(fs->getSupport().getMesh()))
-    throw Exception("Dirichlet Domain must come from the FunctionSpace Domain's Mesh");
+    throw
+      Exception
+      ("Dirichlet Domain must come from the FunctionSpace Domain's Mesh");
 
   BasisLocal* dirBasis = BasisGenerator::generate(goe.get(0).getType(),
                                                   fs->getBasis(0).getType(),
@@ -98,14 +103,14 @@ dirichlet(GroupOfElement& goe,
   sysProj.solve();
 
   // Fix This System Dofs with sysProj Solution //
-  const vector<const Dof*> dof = dirFS.getAllDofs();
-  const size_t            nDof = dof.size();
+  const vector<Dof> dof = dirFS.getAllDofs();
+  const size_t     nDof = dof.size();
 
   const DofManager&        dirDofM = sysProj.getDofManager();
   const fullVector<double>& dirSol = sysProj.getSol();
 
   for(size_t i = 0; i < nDof; i++)
-    dofM->fixValue(*dof[i], dirSol(dirDofM.getGlobalId(*dof[i])));
+    dofM->fixValue(dof[i], dirSol(dirDofM.getGlobalId(dof[i])));
 
   delete dirBasis;
 }
@@ -116,7 +121,7 @@ void SystemAbstract::assemble(Mat& A,
                               const GroupOfDof& group,
                               formulationPtr& term){
 
-  const vector<const Dof*>& dof = group.getDof();
+  const vector<Dof>& dof = group.getDof();
   const size_t N = group.size();
 
   size_t dofI;
@@ -127,12 +132,12 @@ void SystemAbstract::assemble(Mat& A,
   //PetscScalar petscV;
 
   for(size_t i = 0; i < N; i++){
-    dofI = dofM->getGlobalId(*(dof[i]));
+    dofI = dofM->getGlobalId(dof[i]);
 
     // If not a fixed Dof line: assemble
     if(dofI != DofManager::isFixedId()){
       for(size_t j = 0; j < N; j++){
-        dofJ = dofM->getGlobalId(*(dof[j]));
+        dofJ = dofM->getGlobalId(dof[j]);
 
         // If not a fixed Dof
         if(dofJ != DofManager::isFixedId()){
@@ -146,7 +151,7 @@ void SystemAbstract::assemble(Mat& A,
         //    add to right hand side (with a minus sign) !
         else{
             VecSetValue(b, dofI,
-                        -1 * dofM->getValue(*(dof[j])) *
+                        -1 * dofM->getValue(dof[j]) *
                         (formulation->*term)(i, j, elementId),
                         ADD_VALUES);
 
@@ -168,7 +173,7 @@ void SystemAbstract::assemble(Mat& A,
                               const GroupOfDof& group,
                               formulationPtr& term){
 
-  const vector<const Dof*>& dof = group.getDof();
+  const vector<Dof>& dof = group.getDof();
   const size_t N = group.size();
 
   size_t dofI;
@@ -179,12 +184,12 @@ void SystemAbstract::assemble(Mat& A,
   //PetscScalar petscV;
 
   for(size_t i = 0; i < N; i++){
-    dofI = dofM->getGlobalId(*(dof[i]));
+    dofI = dofM->getGlobalId(dof[i]);
 
     // If not a fixed Dof line: assemble
     if(dofI != DofManager::isFixedId()){
       for(size_t j = 0; j < N; j++){
-        dofJ = dofM->getGlobalId(*(dof[j]));
+        dofJ = dofM->getGlobalId(dof[j]);
 
         // If not a fixed Dof
         if(dofJ != DofManager::isFixedId()){
@@ -202,7 +207,7 @@ void SystemAbstract::sparsity(PetscInt* nonZero,
                               UniqueSparsity& uniqueSparsity,
                               const GroupOfDof& group){
 
-  const vector<const Dof*>& dof = group.getDof();
+  const vector<Dof>& dof = group.getDof();
   const size_t N = group.size();
 
   size_t dofI;
@@ -211,12 +216,12 @@ void SystemAbstract::sparsity(PetscInt* nonZero,
   // Add each column only one
 
   for(size_t i = 0; i < N; i++){
-    dofI = dofM->getGlobalId(*(dof[i]));
+    dofI = dofM->getGlobalId(dof[i]);
 
     // Add non fixed Dof
     if(dofI != DofManager::isFixedId()){
       for(size_t j = 0; j < N; j++){
-        dofJ = dofM->getGlobalId(*(dof[j]));
+        dofJ = dofM->getGlobalId(dof[j]);
 
         // Add non fixed Dof
         if(dofJ != DofManager::isFixedId()){

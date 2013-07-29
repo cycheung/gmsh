@@ -9,12 +9,9 @@
 
    An Integration Quadrature points and weights
 
-   @note
-   Since an order '1' Quadrangular Basis
-   is bilinear (of order '2'), an order @c N
-   Quadrature over a Quad will compute a quadrature
-   such that a function of order @c 2 @c * @c N
-   can be integrated
+   Since an order '1' Quadrangular Basis is bilinear (of order '2'),
+   an order N Quadrature over a Quad will compute a quadrature
+   such that a function of order 2 * N can be integrated
 */
 
 class Quadrature{
@@ -44,11 +41,9 @@ class Quadrature{
 
    Instantiates a new Quadrature
    over the requested element type and for
-   function of order: @c order @c * @c multiplicty
+   function of order: order * multiplicty
 
-   @note
-   If @c order is zero or less, an order of
-   @em one is assumed
+   If order is zero or less, an order of one is assumed
    **
 
    @fn Quadrature::~Quadrature
@@ -60,7 +55,7 @@ class Quadrature{
    @return Returns a matrix with the integration points
    for this Quadrature
 
-   @note The returned matrix got the following pattern:
+   The returned matrix got the following pattern:
    @li Each row is an integration points
    @li Each column is a dimension
    **
@@ -68,6 +63,7 @@ class Quadrature{
    @fn Quadrature::getWeights
    @return Returns a matrix with the integration weights
    for this Quadrature
+   **
 */
 
 //////////////////////

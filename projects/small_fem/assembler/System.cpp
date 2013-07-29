@@ -58,7 +58,7 @@ void System::assemble(void){
   dofM->generateGlobalIdSpace();
 
   // Alloc //
-  const size_t size = dofM->getDofNumber();
+  const size_t size = dofM->getUnfixedDofNumber();
 
   A      = new Mat;
   b      = new Vec;
@@ -147,7 +147,7 @@ void System::solve(void){
   double* solution;
   VecGetArray(*xPetsc, &solution);
 
-  x = new fullVector<double>(solution, dofM->getDofNumber());
+  x = new fullVector<double>(solution, dofM->getUnfixedDofNumber());
 
   // System solved ! //
   solved = true;

@@ -8,28 +8,14 @@ using namespace std;
 const size_t DofManager::isFixed = 0 - 1; // Largest size_t
 
 DofManager::DofManager(void){
-  globalIdV = NULL;
-  globalIdM = new map<const Dof*, size_t, DofComparator>;
-  fixedDof  = new map<const Dof*, double, DofComparator>;
 }
 
 DofManager::~DofManager(void){
-  if(globalIdV){
-    for(size_t i = 0; i < sizeV; i++)
-      delete[] globalIdV[i].id;
-
-    delete[] globalIdV;
-  }
-
-  if(globalIdM)
-    delete globalIdM;
-
-  delete fixedDof;
 }
 
 void DofManager::addToDofManager(const vector<GroupOfDof*>& god){
   // Check if map is still their //
-  if(!globalIdM)
+  if(!globalIdM.empty())
     throw
       Exception
       ("DofManager: global id space generated -> can't add Dof");
@@ -40,22 +26,19 @@ void DofManager::addToDofManager(const vector<GroupOfDof*>& god){
   // Add to DofManager //
   for(size_t i = 0; i < nGoD; i++){
     // Dof from god[i]
-    const vector<const Dof*>& dof = god[i]->getDof();
+    const vector<Dof>& dof = god[i]->getDof();
 
     // Init map entry
     const size_t nDof = dof.size();
 
     for(size_t j = 0; j < nDof; j++)
-      globalIdM->insert(pair<const Dof*, size_t>(dof[j], 0));
+      globalIdM.insert(pair<Dof, size_t>(dof[j], 0));
   }
 }
 
 void DofManager::generateGlobalIdSpace(void){
-  const map<const Dof*, size_t, DofComparator>::iterator
-    end = globalIdM->end();
-
-  map<const Dof*, size_t, DofComparator>::iterator
-    it = globalIdM->begin();
+  map<Dof, size_t>::iterator end = globalIdM.end();
+  map<Dof, size_t>::iterator it  = globalIdM.begin();
 
   size_t id = 0;
 
@@ -68,61 +51,53 @@ void DofManager::generateGlobalIdSpace(void){
   }
 
   serialize();
-  delete globalIdM;
-  globalIdM = NULL;
+  globalIdM.clear();
 }
 
 void DofManager::serialize(void){
   // Get Data //
-  map<const Dof*, size_t, DofComparator>::iterator end =
-    globalIdM->end();
-
-  map<const Dof*, size_t, DofComparator>::iterator it =
-    globalIdM->begin();
+  map<Dof, size_t>::iterator end = globalIdM.end();
+  map<Dof, size_t>::iterator it  = globalIdM.begin();
 
   // Take the last element *IN* map
   end--;
 
-  first   = it->first->getEntity();
-  last    = end->first->getEntity();
-  sizeV   = last - first + 1;
-  nTotDof = globalIdM->size();
+  first   = it->first.getEntity();
+  last    = end->first.getEntity();
+  nTotDof = globalIdM.size();
 
   // Reset 'end': take the first element *OUTSIDE* map
   end++;
 
 
   // Alloc //
-  globalIdV = new Data[sizeV];
-
+  const size_t sizeV = last - first + 1;
+  globalIdV.resize(sizeV);
 
   // Populate //
-  map<const Dof*, size_t, DofComparator>::iterator
-    currentEntity = it;
+  size_t nDof;
+  map<Dof, size_t>::iterator currentEntity = it;
 
   // Iterate on vector
   for(size_t i = 0; i < sizeV; i++){
-    // No dof for this entity
-    globalIdV[i].nDof = 0;
+    // No dof found
+    nDof = 0;
 
     // 'currentEntity - first' matches 'i' ?
-    if(it != end && currentEntity->first->getEntity() - first == i)
+    if(it != end && currentEntity->first.getEntity() - first == i)
       // Count all elements with same entity in map
       for(; it !=end &&
-            currentEntity->first->getEntity() == it->first->getEntity(); it++)
-        globalIdV[i].nDof++; // New Dof found
+            currentEntity->first.getEntity() == it->first.getEntity(); it++)
+        nDof++; // New Dof found
 
     // Alloc
-    if(globalIdV[i].nDof)
-      globalIdV[i].id = new size_t[globalIdV[i].nDof];
-
-    else
-      globalIdV[i].id = NULL;
+    if(nDof)
+      globalIdV[i].resize(nDof);
 
     // Add globalIds in vector for this entity
     it = currentEntity;
-    for(size_t j = 0; j < globalIdV[i].nDof; j++, it++)
-      globalIdV[i].id[j] = it->second; // Copy globalId from map
+    for(size_t j = 0; j < nDof; j++, it++)
+      globalIdV[i][j] = it->second; // Copy globalId from map
 
     // Current entity is added to vector:
     //                 go to next entity
@@ -131,6 +106,13 @@ void DofManager::serialize(void){
 }
 
 pair<bool, size_t> DofManager::findSafe(const Dof& dof) const{
+  // Is globabId Vector allocated ?-
+  if(globalIdV.empty())
+    throw
+      Exception
+      ("Cannot get Dof %s ID, since global ID space has not been generated",
+       dof.toString().c_str());
+
   // Is 'dof' in globalIdV range ?
   size_t tmpEntity = dof.getEntity();
 
@@ -142,10 +124,12 @@ pair<bool, size_t> DofManager::findSafe(const Dof& dof) const{
   const size_t type   = dof.getType();
 
   // Look for Entity in globalIdV
-  if(globalIdV[entity].nDof > 0 && type <= globalIdV[entity].nDof)
+  const size_t nDof = globalIdV[entity].size();
+
+  if(nDof > 0 && type <= nDof)
     // If we have Dofs associated to this Entity,
     // get the requested Type and return Id
-    return pair<bool, size_t>(true, globalIdV[entity].id[type]);
+    return pair<bool, size_t>(true, globalIdV[entity][type]);
 
   else
     // If no Dof, return false
@@ -163,62 +147,27 @@ size_t DofManager::getGlobalIdSafe(const Dof& dof) const{
     return search.second;
 }
 
-bool DofManager::isUnknown(const Dof& dof) const{
-  if(globalIdM)
-    return isUnknownFromMap(dof);
-
-  else
-    return isUnknownFromVec(dof);
-}
-
-bool DofManager::isUnknownFromVec(const Dof& dof) const{
-  const pair<bool, size_t> search = findSafe(dof);
-
-  if(search.first)
-    return search.second == isFixed;
-
-  else
-    throw Exception("Unknown Dof: %s", dof.toString().c_str());
-}
-
-bool DofManager::isUnknownFromMap(const Dof& dof) const{
-  const map<const Dof*, size_t, DofComparator>::
-    iterator it = globalIdM->find(&dof);
-
-  if(it != globalIdM->end())
-    return it->second == isFixed;
-
-  else
-    throw Exception("Unknown Dof: %s", dof.toString().c_str());
-}
-
 bool DofManager::fixValue(const Dof& dof, double value){
   // Check if map is still their
-  if(!globalIdM)
-    throw
-      Exception
-      ("DofManager: global id space generated -> can't fix values");
+  if(globalIdM.empty())
+    return false;
 
   // Get *REAL* Dof
-  const map<const Dof*, size_t, DofComparator>::iterator it =
-    globalIdM->find(&dof);
+  const map<Dof, size_t>::iterator it = globalIdM.find(dof);
 
   // Check if 'dof' exists
-  if(it == globalIdM->end())
+  if(it == globalIdM.end())
     return false; // 'dof' doesn't exist
 
   // If 'dof' exists: it becomes fixed
-  fixedDof->insert(pair<const Dof*, double>(it->first, value));
+  fixedDof.insert(pair<Dof, double>(it->first, value));
   it->second = isFixed;
   return true;
 }
 
 double DofManager::getValue(const Dof& dof) const{
-  const map<const Dof*, double, DofComparator>::iterator end =
-    fixedDof->end();
-
-  map<const Dof*, double, DofComparator>::iterator it =
-    fixedDof->find(&dof);
+  const map<Dof, double>::const_iterator end = fixedDof.end();
+  const map<Dof, double>::const_iterator  it = fixedDof.find(dof);
 
   if(it == end)
     throw Exception("Dof %s not fixed", dof.toString().c_str());
@@ -226,8 +175,28 @@ double DofManager::getValue(const Dof& dof) const{
   return it->second;
 }
 
+size_t DofManager::getTotalDofNumber(void) const{
+  if(!globalIdM.empty())
+    return globalIdM.size();
+
+  else
+    return nTotDof;
+}
+
+size_t DofManager::getUnfixedDofNumber(void) const{
+  if(!globalIdM.empty())
+    return globalIdM.size() - fixedDof.size();
+
+  else
+    return nTotDof - fixedDof.size();
+}
+
+size_t DofManager::getFixedDofNumber(void) const{
+  return fixedDof.size();
+}
+
 string DofManager::toString(void) const{
-  if(globalIdM)
+  if(!globalIdM.empty())
     return toStringFromMap();
 
   else
@@ -237,20 +206,17 @@ string DofManager::toString(void) const{
 string DofManager::toStringFromMap(void) const{
   stringstream s;
 
-  const map<const Dof*, size_t, DofComparator>::iterator end =
-    globalIdM->end();
-
-  map<const Dof*, size_t, DofComparator>::iterator it =
-    globalIdM->begin();
+  map<Dof, size_t>::const_iterator end = globalIdM.end();
+  map<Dof, size_t>::const_iterator it  = globalIdM.begin();
 
   for(; it != end; it++){
-    s << "("  << it->first->toString() << ": ";
+    s << "("  << it->first.toString() << ": ";
 
     if(it->second == isFixed)
-      s << fixedDof->find(it->first)->second << " -- Fixed value";
+      s << fixedDof.find(it->first)->second << " -- Fixed value";
 
     else
-      s << it->second                        << " -- Global ID";
+      s << it->second                       << " -- Global ID";
 
     s << ")"  << endl;
   }
@@ -259,12 +225,14 @@ string DofManager::toStringFromMap(void) const{
 }
 
 string DofManager::toStringFromVec(void) const{
+  const size_t sizeV = globalIdV.size();
+
   stringstream s;
   size_t nDof;
   pair<bool, size_t> search;
 
   for(size_t entity = 0; entity < sizeV; entity++){
-    nDof = globalIdV[entity].nDof;
+    nDof = globalIdV[entity].size();
 
     for(size_t type = 0; type < nDof; type++){
       Dof dof(entity + first, type);
@@ -274,10 +242,10 @@ string DofManager::toStringFromVec(void) const{
         s << "("  << dof.toString() << ": ";
 
         if(search.second == isFixed)
-          s << fixedDof->find(&dof)->second << " -- Fixed value";
+          s << fixedDof.find(dof)->second << " -- Fixed value";
 
         else
-          s << search.second                << " -- Global ID";
+          s << search.second              << " -- Global ID";
 
         s << ")"  << endl;
       }

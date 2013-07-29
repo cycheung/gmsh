@@ -14,12 +14,14 @@
    @brief Handels Jacobians of an Element
 
    This class handels the Jacobians
-   of an Element (MElement).@n
+   of an Element (MElement).
 
    The Jacobian%s will be computed at a given set
-   of points.@n
+   of points.
 
-   For this class the jacobian matrix is defined as:@n@n
+   For this class the jacobian matrix is defined as:
+
+
    @f$J~=~\left(
    \begin{array}{ccc}
    \displaystyle\frac{\partial{}x}{\partial{}u} &
@@ -85,19 +87,20 @@ class Jacobian{
 /**
    @fn Jacobian::Jacobian
    @param element An Element (MElement)
-   @param point A @c [ @c N @c x @c 3 @c ] matrix
-   (a set of @c N points and their coordinates)
+   @param basis The Basis that must be used to compute the Jacobian%s
+   @param point A [ N x 3 ] matrix
+   (a set of N points and their coordinates)
    @param type A string
 
-   Instanciates a new Jacobian of the given @em type:@n
+   Instanciates a new Jacobian of the given type:
 
-   @li @c jacobian, to compute the jacobian matrices
-   @li @c invert, to comupte the @em inverted jacobian matrices
-   @li @c both, to compute @em both inverted and non inverted
-   jacobian matrices@n@n
+   @li jacobian, to compute the jacobian matrices
+   @li invert, to comupte the inverted jacobian matrices
+   @li both, to compute both inverted and non inverted
+   jacobian matrices
 
    The given matrix defines the set of points
-   where jacobian matrices will be computed@n
+   where jacobian matrices will be computed
    **
 
    @fn Jacobian::~Jacobian
@@ -107,7 +110,7 @@ class Jacobian{
 
    @fn Jacobian::getJacobianMatrix
    @return Returns a vector of pairs.@n
-   The @c i-th element of this vector is such that:
+   The i-th element of this vector is such that:
 
    @li Its first entry is the jacobian matrix
    evaluated at Jacobian::getPoints(i, :)
@@ -116,24 +119,23 @@ class Jacobian{
    determinant evaluated at Jacobian::getPoints(i, :)
 
    @note
-   If Jacobian::getType() is @c invert,
+   If Jacobian::getType() is invert,
    this method throws an Exception
    **
 
-   @fn Jacobian::getInvertJacobian
-   @return Returns a vector of pairs.@n
-   The @c i-th element of this vector is such that:
+   @fn Jacobian::getInvertJacobianMatrix
+   @return Returns a vector of pairs.
+   The i-th element of this vector is such that:
 
-   @li Its first entry is the @em invert
+   @li Its first entry is the invert
    jacobian matrix evaluated at Jacobian::getPoints(i, :)
 
    @li Its second entry is the
-   @em non @em inverted jacobian matrix
+   non inverted jacobian matrix
    detetminant evaluated at Jacobian::getPoints(i, :)
 
    @note
-   If the Jacobian::getType() is @c jacobian,
-   this method throws an Exception
+   If the Jacobian::getType() is jacobian, this method throws an Exception
    **
 
    @fn Jacobian::getElement
@@ -142,18 +144,15 @@ class Jacobian{
    **
 
    @fn Jacobian::getPoints
-   @return Return the set of points on which
-   the jacobians were computed
+   @return Return the set of points on which the jacobians were computed
    **
 
    @fn Jacobian::getType
-   @return Return the type of jacobians
-   that were computed:
+   @return Return the type of jacobians that were computed:
 
-   @li @c jacobian, for the jacobian matrices
-   @li @c invert, for the @em inverted jacobian matrices
-   @li @c both, for @em both inverted and non inverted
-   jacobian matrices
+   @li jacobian, for the jacobian matrices
+   @li invert, for the inverted jacobian matrices
+   @li both, for both inverted and non inverted jacobian matrices
  */
 
 
