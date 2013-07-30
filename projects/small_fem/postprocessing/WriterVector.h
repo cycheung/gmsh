@@ -10,14 +10,12 @@
 
    This class is a Writer for Raw Vector Data.
 
-   These data can be @em scalar or @em vectorial.
+   These data can be scalar or vectorial.
 
-   @note
-   For this Writer, domain has no meaning.@n
-   So, setting a domain has @em no @em effect.
+   For this Writer, domain has no meaning.
+   So, setting a domain has no effect.
 
-   @note
-   The special file name @em stdout will write the
+   The special file name stdout will write the
    vector into the standard outpout.
 */
 
@@ -45,25 +43,19 @@ class WriterVector: public Writer{
    **
 
    @fn void WriterVector::write(const std::string) const
-   @param name The name of the file to write into
-   (@em without extensions)
+   @param name The name of the file to write into (without extensions)
 
    Writes the Writer's Data into the given file
 
-   @note
-   The special file name @em stdout will write the
-   vector into the standard outpout.
+   The special file name stdout will write the vector into the standard outpout.
    **
 
    @fn void WriterVector::write(const std::string, const std::string) const
-   @param name The name of the file to write into
-   (@em without extensions)
+   @param name The name of the file to write into (without extensions)
    @param type A string
 
-   Does the same as WriterVector::writer(const std::string), no matter
-   the @c type field@n
-
-   @see WriterVector::writer(const std::string)
+   Does the same as WriterVector::writer(const std::string),
+   no matter the type field
 */
 
 #endif

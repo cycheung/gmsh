@@ -9,37 +9,31 @@
 /**
    @class WriterMsh
    @brief A Writer for
-   <a href="http://www.geuz.org/gmsh">gmsh</a>
-   .@c msh file format.
+   <a href="http://www.geuz.org/gmsh">gmsh</a> .msh file format.
 
    This class is a Writer implementing the
-   <a href="http://www.geuz.org/gmsh">gmsh</a>
-   .@c msh file format.
+   <a href="http://www.geuz.org/gmsh">gmsh</a> .msh file format.
 
    Let @f$f@f$ be a scalar (or vectorial) function.
 
-   The @em domain of this Writer is a set of MElement%s
+   The domain of this Writer is a set of MElement%s
    defining the geometrical support (a mesh) of @f$f@f$.
 
-   The @em data of this Writer are either:
-   @li A set of scalar (or vectorial) values,
+   The data of this Writer are either:
+   @li A set of scalar (or vectorial) values
    @li A System (or EigenSystem) solution
 
    These data may be defined either:
    @li On the Vertices of each Element
    @li On each Element (Volume)
 
-   A WriterMsh can write a .@c msh file of @f$f@f$
+   A WriterMsh can write a .msh file of @f$f@f$
 
-   @note
-   If no data are given, WriteMsh will write a @c .msh file
-   with @em only the given @em mesh.@n@n
+   If no data are given, WriteMsh will write a .msh file
+   with only the given mesh.
+
    If no domain is given, an Exception will be thrown
    when WriterMsh::write() is called.
-
-   @todo
-   Multi Topology for Hybrid Mesh (Adaptive View)@n
-   Allow mutltiple basis for adaptive view
 */
 
 class WriterMsh: public Writer{
@@ -88,30 +82,27 @@ class WriterMsh: public Writer{
    **
 
    @fn WriterMsh::write(const std::string) const
-   @param name The name of the file to write into
-   (@em without extensions)
+   @param name The name of the file to write into (without extensions)
 
-   Same as WriterMsh::write(@c name, @c vertex);
+   Same as WriterMsh::write(name, vertex);
    **
 
    @fn WriterMsh::write(const std::string, const std::string) const
-   @param name The name of the file to write into
-   (@em without extensions)
+   @param name The name of the file to write into (without extensions)
    @param type A string
 
-   Writes the Writer's Data into the given file@n
+   Writes the Writer's Data into the given file
 
-   If @c type is equal to:
-   @li @c vertex, the given data will be used as @em nodal Values
+   If type is equal to:
+   @li vertex, the given data will be used as nodal Values
    (that is defined on the vertices of an element)
-   @li @c volume, the given data will be used as @em element Values
+   @li volume, the given data will be used as element Values
    (that is defined on an element)
 
-   @note
-   If no data are given, WriteMsh will write a @c .msh file
-   with @em only the given @em mesh.@n@n
-   If no domain is given, an Exception will be thrown
-   when WriterMsh::write() is called.
+   If no data are given, WriteMsh will write a .msh file
+   with only the given mesh.
+
+   If no domain is given, an Exception will be thrown.
 */
 
 #endif

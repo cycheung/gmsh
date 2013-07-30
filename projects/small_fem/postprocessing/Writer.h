@@ -15,18 +15,15 @@
    @interface Writer
    @brief Common interface to Write Data into a file
 
-   This is the common @em interface for Writer%s.@n
+   This is the common interface for Writer%s.
 
-   A Writer is a class that can @em write a set of @em data
-   into a @em file.@n
+   A Writer is a class that can write a set of data
+   into a file.
 
-   Those data @em may be defined on a given @em domain.@n
+   Those data may be defined on a given domain.
 
-   The @em exact meaning of the @em data and of the @em domain
-   @em must be specified by the actual @em implementation.
-
-   @note
-   A Writer is an @em interface, so it @em can't be instanciated
+   The exact meaning of the data and of the domain
+   must be specified by the actual implementation.
  */
 
 class Writer{
@@ -81,67 +78,60 @@ class Writer{
    **
 
    @fn Writer::write(const std::string) const
-   @param name The name of the file to write into
-   (@em without extensions)
+   @param name The name of the file to write into (without extensions)
 
-   Writes the Writer's Data into the given file@n
+   Writes the Writer's Data into the given file
 
-   The given Data are interpreted in the default way
-   @see Writer::write(const std::string, const std::string)
+   If the Data may be interpreted, by a particular Writer,
+   in multiple way, the method uses the default choice
    **
 
    @fn Writer::write(const std::string, const std::string) const
-   @param name The name of the file to write into
-   (@em without extensions)
+   @param name The name of the file to write into (without extensions)
    @param type A string
 
-   Writes the Writer's Data into the given file@n
+   Writes the Writer's Data into the given file
 
    If the Data may be interpreted, by a particular Writer,
-   in multiple way, the filed @c type is used to overcome
-   this situation
+   in multiple way, the filed type is used to overcome this situation
    **
 
    @fn void Writer::setValues(const std::vector<double>& value)
    @param value A set of value (double)
 
-   Sets this Writer's Data to the given values
+   Sets this Writer's Data to the given value
    **
 
    @fn void Writer::setValues(const std::vector<fullVector<double> >& value)
    @param value A set of value (fullVector<double>)
 
-   Sets this Writer's Data to the given values
+   Sets this Writer's Data to the given value
    **
 
    @fn void Writer::setValues(const System&)
    @param system A System
 
-   Uses the given System Solution for Data
+   Uses the solution of the given System as Data
 
-   @warning
-   Writer::setDomain() will be called with the Support
-   of the FunctionSpace of the Formulation of the System
+   Writer::setDomain() will be called with FunctionSpace::getSupport()
+   as argument. The FunctionSpace comes from SystemAbstract::getFunctionSpace()
    **
 
    @fn void Writer::setValues(const SystemEigen& system, size_t)
-   @param system An SystemEigen
+   @param system An Eigen System (SystemEigen)
    @param eigenNumber A natural number
 
-   Uses the given SystemEigen Eigenvector for Data
+   Uses an Eigenvector of the given Eigen System as Data.
+   The Eigenvector is defined by eigenNumber.
 
-   @note The used Eigenvector is defined by @c eigenNumber
-
-   @warning
-   Writer::setDomain() will be called with the Support
-   of the FunctionSpace of the EigenFormulation of the SystemEigen
+   Writer::setDomain() will be called with FunctionSpace::getSupport()
+   as argument. The FunctionSpace comes from SystemAbstract::getFunctionSpace()
    **
 
    @fn Writer::setDomain
    @param domain A GroupOfElement
 
-   Set this Writer's Domain with the given group of elements
-   (GroupOfElement)
+   Set this Writer's Domain with the given group of elements (GroupOfElement)
    **
 
    @internal

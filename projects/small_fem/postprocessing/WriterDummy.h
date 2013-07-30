@@ -7,7 +7,7 @@
    @class WriterDummy
    @brief A Dummy Writer
 
-   This class is a Writer that writes @em noting.
+   This class is a Writer that writes noting.
 */
 
 class WriterDummy: public Writer{
@@ -31,18 +31,16 @@ class WriterDummy: public Writer{
    **
 
    @fn void WriterDummy::write(const std::string) const
-   @param name The name of the file to write into
-   (@em without extensions)
+   @param name The name of the file to write into (without extensions)
 
-   Does @em nothing
+   Does nothing
    **
 
    @fn void WriterDummy::write(const std::string, const std::string) const
-   @param name The name of the file to write into
-   (@em without extensions)
+   @param name The name of the file to write into (without extensions)
    @param type A string
 
-   Does @em nothing
+   Does nothing
    **
 */
 

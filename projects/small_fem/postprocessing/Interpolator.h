@@ -18,17 +18,13 @@
    @class Interpolator
    @brief Interpolating methods for functions and FEM Solutions
 
-   This class allows the interpolation of
-   functions and FEM Solutions.@n
+   This class allows the interpolation of functions and FEM Solutions.
 
-   The interpolation is done on the @em nodes of a given GroupOfElement.@n
-   This GroupOfElement is defined when the Interpolator is Instanciated
+   The interpolation is done on the nodes of a given GroupOfElement.
+   This GroupOfElement is defined when the Interpolator is instanciated
 
-   This class can also @em write the interpolation into a file.@n
+   This class can also write the interpolation into a file.
    The file format is defined by a Writer.
-
-   @todo
-   Allow multiple Basis.
  */
 
 class Interpolator{
@@ -92,10 +88,10 @@ class Interpolator{
    @param system A System
 
    Instanciate a new Interpolator,
-   based on the given System%'s @em Solution
+   based on the given System%'s Solution
 
    @note
-   The interpolation will be done on the  @em support of the
+   The interpolation will be done on the support of the
    System%'s Formulation%'s FunctionSpace.
    **
 
@@ -104,7 +100,7 @@ class Interpolator{
    @param visu The GroupOfElement to use for interpolation
 
    Instanciate a new Interpolator,
-   based on the given System%'s @em Soltuion
+   based on the given System%'s Soltuion
 
    @note
    The interpolation will be done on the given GroupOfElement
@@ -116,10 +112,10 @@ class Interpolator{
 
    Instanciate a new Interpolator,
    based on the given SystemEigen%'s Eigenvector
-   number @c eigenNumber
+   number eigenNumber
 
    @note
-   The interpolation will be done on the  @em support of the
+   The interpolation will be done on the  support of the
    SystemEigen%'s EigenFormulation%'s FunctionSpace.
    **
 
@@ -130,14 +126,14 @@ class Interpolator{
 
    Instanciate a new Interpolator,
    based on the given SystemEigen%'s Eigenvector
-   number @c eigenNumber
+   number eigenNumber
 
    @note
    The interpolation will be done on the given GroupOfElement
    **
 
    @fn Interpolator::Interpolator(double (*f)(fullVector<double>& xyz), const GroupOfElement&)
-   @param f A @em scalar Function
+   @param f A scalar Function
    @param visu The GroupOfElement to use for interpolation
 
    Instanciate a new Interpolator,
@@ -148,7 +144,7 @@ class Interpolator{
    **
 
    @fn Interpolator::Interpolator(fullVector<double> (*f)(fullVector<double>& xyz), const GroupOfElement&)
-   @param f A @em vectorial Function
+   @param f A vectorial Function
    @param visu The GroupOfElement to use for interpolation
 
    Instanciate a new Interpolator,
@@ -163,30 +159,30 @@ class Interpolator{
    **
 
    @fn Interpolator::write
-   @param name The file (@em without extension) where the
+   @param name The file (without extension) where the
    interpolated values will be written
    @param writer The Writer to use
 
-   Writes the interpolated values into the given file@n
+   Writes the interpolated values into the given file
 
    The file format is given by the Writer
    **
 
    @fn Interpolator::isScalar
    @return Returns:
-   @li @c true, if the interpolated values are @em scalar
-   @li @c false, otherwise
+   @li true, if the interpolated values are scalar
+   @li false, otherwise
    **
 
    @fn Interpolator::getNodalScalarValue
-   @return Returns the Interpolated @em scalar values
-   @note If Interpolator::isScalar() is @c false
+   @return Returns the Interpolated scalar values
+   @note If Interpolator::isScalar() is false
    an Exception will be thrown
    **
 
    @fn Interpolator::getNodalVectorValue
-   @return Returns the Interpolated @em vectorial values
-   @note If Interpolator::isScalar() is @c true
+   @return Returns the Interpolated vectorial values
+   @note If Interpolator::isScalar() is true
    an Exception will be thrown
  */
 

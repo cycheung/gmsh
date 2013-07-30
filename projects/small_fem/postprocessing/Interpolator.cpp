@@ -174,9 +174,9 @@ void Interpolator::write(const std::string name, Writer& writer) const{
 
 void Interpolator::interpolate(void){
   // Init
-  const size_t nTotVertex             = mesh->getVertexNumber();
-  const std::vector<GroupOfDof*>& god = fs->getAllGroups();
-  const size_t nGod                   = god.size();
+  const size_t nTotVertex        = mesh->getVertexNumber();
+  const vector<GroupOfDof*>& god = fs->getAllGroups();
+  const size_t nGod              = god.size();
 
   vector<bool> isInterpolated(nTotVertex, false);
   vector<MVertex*> node;
@@ -184,9 +184,6 @@ void Interpolator::interpolate(void){
   // Scalar or Vector ?
   const FunctionSpaceScalar* fsScalar = NULL;
   const FunctionSpaceVector* fsVector = NULL;
-
-  // Temporary //
-  size_t globalId;
 
   if(scalar){
     nodalScalarValue = new vector<double>(nTotVertex);
@@ -198,12 +195,13 @@ void Interpolator::interpolate(void){
     fsVector = static_cast<const FunctionSpaceVector*>(fs);
   }
 
+  // Temporary //
+  size_t globalId;
 
   // Iterate on GroupOfElement
   for(size_t i = 0; i < nGod; i++){
     // Get Element
-    MElement& element =
-      const_cast<MElement&>(god[i]->getElement());
+    MElement& element = const_cast<MElement&>(god[i]->getElement());
 
     // Get NodeS
     element.getVertices(node);

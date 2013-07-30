@@ -13,12 +13,12 @@ WriterMsh::WriterMsh(void){
 WriterMsh::~WriterMsh(void){
 }
 
-void WriterMsh::write(const string name) const{
+void WriterMsh::write(const std::string name) const{
   write(name, "vertex");
 }
 
-void WriterMsh::write(const string name,
-                      const string type) const{
+void WriterMsh::write(const std::string name,
+                      const std::string type) const{
 
   if(type.compare("vertex") == 0)
     writeAsNodalValues(name);

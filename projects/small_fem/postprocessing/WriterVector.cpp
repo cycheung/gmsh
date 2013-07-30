@@ -12,7 +12,7 @@ WriterVector::WriterVector(void){
 WriterVector::~WriterVector(void){
 }
 
-void WriterVector::write(const string name) const{
+void WriterVector::write(const std::string name) const{
   // Check if Nodal Value //
   if(!isNodal)
     throw Exception("WriterVector cannot write non Nodal Values");
@@ -36,12 +36,12 @@ void WriterVector::write(const string name) const{
   }
 }
 
-void WriterVector::write(const string name,
-                         const string type) const{
+void WriterVector::write(const std::string name,
+                         const std::string type) const{
   write(name);
 }
 
-void WriterVector::write(ostream& stream) const{
+void WriterVector::write(std::ostream& stream) const{
   if(isScalar){
     size_t size = scalarValue->size();
 
