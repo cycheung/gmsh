@@ -7,19 +7,14 @@
    @class Mapper
    @brief Set of methods for mapping
 
-   This class provides a set of @em class @em methods
-   for handling mapping between physical
-   and reference spaces.@n
+   This class provides a set of class methods
+   for handling mapping between physical and reference spaces.
 
-   @note
-   Because this class got @em only @em class @em method,
-   it @em doesn't need to be instanciated.
+   Because this class got only class method, it doesn't need to be instanciated.
 
-   The @em pysical space is defined by the
-   @c X, @c Y and @c Z coordinates.@n
+   The pysical space is defined by the X, Y and Z coordinates.
 
-   The @em reference space is defined by the
-   @c U, @c V and @c W coordinates.@n
+   The reference space is defined by the U, V and W coordinates.
 */
 
 class Mapper{
@@ -44,31 +39,45 @@ class Mapper{
 /**
    @fn Mapper::Mapper
    Instanciates a new Mapper
-   @note Mapper got @em only @em class
-   methods (functions), so it is not requiered
-   to instanciate a Mapper
+
+   Mapper got only static methods, so it is not requiered to instanciate it
    **
 
    @fn Mapper::~Mapper
    Deletes this Mapper
    **
- */
 
-/*
-   @fn Mapper::grad(const fullVector<double>& gradUVW, const fullMatrix<double>& invJac)
-   @param gradUVW A gradient in the @em reference space
-   @param invJac The Invert Jacobian Matrix evaluated at @c UVW
-   @returns Returns the given gradient in the
-   @em physical space
+   @fn Mapper::hCurl
+   @param hCurlUVW A set of @f$H(\mathrm{\mathbf{curl}})@f$ fields
+   (each line is a field
+   and each 3 columns (for the 3 coordinates) is a vector of this field)
+   @param row A row index of hCurlUVW
+   @param col A column triplet index of hCurlUVW
+   @param invJac A invert jacobian matrix evaluated at UVW
+   @param hCurlXYZ An allocated 3D vector that will contain the mapped vector
+
+   Fills hCurlXYZ with the mapping (from the UVW to the XYZ space)
+   of a vector given by
+   [hCurlUVW(row, col * 3 + 0);
+    hCurlUVW(row, col * 3 + 1);
+    hCurlUVW(row, col * 3 + 2)]
    **
 
-   @fn Mapper::curl(const fullVector<double>& curlUVW, const fullMatrix<double>& jac, double invDet);
-   @param curlUVW A curl in the @em reference space
-   @param jac The Jacobian Matrix evaluated at @c UVW
-   @param invDet The Invert of the Jacobian Matrix Determinant
-   evaluated at @c UVW
-   @returns Returns the given curl in the
-   @em physical space
+   @fn Mapper::hDiv
+   @param hDivUVW A set of @f$H(\mathrm{div})@f$ fields
+   (each line is a field
+   and each 3 columns (for the 3 coordinates) is a vector of this field)
+   @param row A row index of hDivUVW
+   @param col A column triplet index of hDivUVW
+   @param jac A jacobian matrix evaluated at UVW
+   @param det The determinent of the given matrix
+   @param hDivXYZ An allocated 3D vector that will contain the mapped vector
+
+   Fills hDivXYZ with the mapping (from the UVW to the XYZ space)
+   of a vector given by
+   [hDivUVW(row, col * 3 + 0);
+    hDivUVW(row, col * 3 + 1);
+    hDivUVW(row, col * 3 + 2)]
  */
 
 #endif
