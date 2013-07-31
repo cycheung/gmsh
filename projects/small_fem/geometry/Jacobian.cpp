@@ -105,13 +105,6 @@ void Jacobian::computeJacobians(const Basis& basis){
                                             (*point)(i, 1),
                                             (*point)(i, 2),
                                             *mJac);
-    /*
-    tmp->second = const_cast<MElement*>
-      (element)->getJacobian((*point)(i, 0),
-                             (*point)(i, 1),
-                             (*point)(i, 2),
-                             *mJac);
-    */
     tmp->first = mJac;
     (*jac)[i]  = tmp;
   }
@@ -158,13 +151,6 @@ void Jacobian::computeInvertFromScratch(const Basis& basis){
                                             (*point)(i, 1),
                                             (*point)(i, 2),
                                             *mIJac);
-    /*
-    tmp->second = const_cast<MElement*>
-      (element)->getJacobian((*point)(i, 0),
-      (*point)(i, 1),
-                             (*point)(i, 2),
-                             *mIJac);
-    */
     mIJac->invertInPlace();
 
     tmp->first   = mIJac;

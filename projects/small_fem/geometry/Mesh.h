@@ -17,18 +17,18 @@
    @class Mesh
    @brief Represents a mesh
 
-   This class represents a mesh.@n
+   This class represents a mesh.
 
    This class is responsible of the handling mesh elements
-   (Such as Quads, Tets, Edges, Vertices, ...).@n
+   (Such as Quads, Tets, Edges, Vertices, ...).
 
-   It is also responsible of the @em numbering of those
-   elements.@n
-   Indeed, each element is granted a @em unique @c ID.@n
+   It is also responsible of the numbering of those
+   elements.
+   Indeed, each element is granted a unique ID.
 
    A Mesh is instantiated thanks to a
    <a href="http://www.geuz.org/gmsh">gmsh</a>
-   .@c msh file, wich discribes the mesh.@n
+   .msh file, wich discribes the mesh.
 */
 
 class GroupOfElement;
@@ -75,7 +75,7 @@ class Mesh{
 
 /**
    @fn Mesh::Mesh
-   @param fileName The path to the @c .msh file discribing the Mesh
+   @param fileName The path to the .msh file discribing the Mesh
 
    Instanciates a new Mesh
    **
@@ -90,25 +90,25 @@ class Mesh{
 
    @fn size_t Mesh::getGlobalId(const MElement& element) const
    @param element A MElement
-   @return Returns the @em global @em @c ID (in this Mesh) of the
+   @return Returns the global ID (in this Mesh) of the
    given MElement
    **
 
    @fn size_t Mesh::getGlobalId(const MVertex& vertex) const
    @param vertex A MVertex
-   @return Returns the @em global @em @c ID (in this Mesh) of the
+   @return Returns the global ID (in this Mesh) of the
    given MVertex
    **
 
    @fn size_t Mesh::getGlobalId(const MEdge& edge) const
    @param edge A MEdge
-   @return Returns the @em global @em @c ID (in this Mesh) of the
+   @return Returns the global ID (in this Mesh) of the
    given MEdge
    **
 
    @fn size_t Mesh::getGlobalId(const MFace& face) const
    @param face A MFace
-   @return Returns the @em global @em @c ID (in this Mesh) of the
+   @return Returns the global ID (in this Mesh) of the
    given MFace
    **
 
@@ -118,7 +118,7 @@ class Mesh{
 
    @fn Mesh::getElementNumber
    @return Returns the number of Element in this Mesh
-   @note By Element we mean Quads, Tets, etc@n
+   @note By Element we mean Quads, Tets, etc
    This excludes Vertices, Edges, Faces and Cells
    **
 
@@ -135,12 +135,12 @@ class Mesh{
    **
 
    @fn Mesh::getFromPhysical
-   @param physicalId A physical @c ID
+   @param physicalId A physical ID
    (see <a href="http://www.geuz.org/gmsh">gmsh</a>
    documentation)
 
-   @return @em Instantiate a new GroupOfElement, containing
-   the MElements of the given physical @c ID
+   @return Instantiate a new GroupOfElement, containing
+   the MElements of the given physical ID
    **
 
    @fn Mesh::toString

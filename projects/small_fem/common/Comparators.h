@@ -72,9 +72,9 @@
 
 /**
    @class FaceComparator
-   @brief A comparator for MFace%s (without @em orientation notion)
+   @brief A comparator for MFace%s (without orientation notion)
 
-   This class is able to compare two MFace%s (without @em orientation notion).
+   This class is able to compare two MFace%s (without orientation notion).
 
    With this comparator, two MFace%s with the same points,
    but different orientations, are handled as the same MFace.
@@ -90,9 +90,9 @@
 
 /**
    @class OrientedEdgeComparator
-   @brief A comparator for MEdge%s (with @em orientation notion)
+   @brief A comparator for MEdge%s (with orientation notion)
 
-   This class is able to compare two MEdge%s (with @em orientation notion).
+   This class is able to compare two MEdge%s (with orientation notion).
 
    With this comparator, two MEdge%s with the same points,
    but different orientations, are handled as different MEdge%s.

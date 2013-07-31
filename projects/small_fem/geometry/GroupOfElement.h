@@ -15,12 +15,24 @@
    @class GroupOfElement
    @brief A Group of MElement%s
 
-   This class is collection of @em discrete elements (MElement%s).
+   This class is collection of discrete elements (MElement%s).
 */
 
 class Mesh;
 
 class GroupOfElement{
+ private:
+  class OrientationSort{
+   private:
+    const Basis* basis;
+
+   public:
+     OrientationSort(const Basis& basis);
+    ~OrientationSort(void);
+
+    bool operator()(const MElement* a, const MElement* b) const;
+  };
+
  private:
   const Mesh* mesh;
 
@@ -52,8 +64,8 @@ class GroupOfElement{
 
 /**
    @fn GroupOfElement::GroupOfElement
-   @param begin An std::multimap @em Iterator
-   @param end   An other std::mutltimap @em Iterator
+   @param begin An std::multimap Iterator
+   @param end   An other std::mutltimap Iterator
    @param mesh  A Mesh
 
    Instantiates a new GroupOfElement, associated to the given Mesh
@@ -85,19 +97,18 @@ class GroupOfElement{
    @param basis A Basis
 
    Sort the Element of this GroupOfElement,
-   with respect to the given Basis
+   with respect to the given Basis orientations
 
    @see Basis::getOrientation()
    **
 
    @fn GroupOfElement::getOrientationStats
-   @return A vector where the @c i-th entry is the number
+   @return A vector where the i-th entry is the number
    of element in GroupOfElement::getAll()
-   with a Basis::getOrientation() equal to @c i
+   with a Basis::getOrientation() equal to i
 
-   @warning
    GroupOfElement::orientAllElement must be called
-   before for this method to have a meaning@n
+   before for this method to have a meaning
 
    If not, an Exception is thrown
    **
@@ -118,6 +129,13 @@ class GroupOfElement{
 //////////////////////
 // Inline Functions //
 //////////////////////
+
+inline bool GroupOfElement::OrientationSort::operator()
+(const MElement* a, const MElement* b) const{
+  return
+    basis->getReferenceSpace().getReferenceSpace(*a) <
+    basis->getReferenceSpace().getReferenceSpace(*b);
+}
 
 inline size_t GroupOfElement::getNumber(void) const{
   return element->size();

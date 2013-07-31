@@ -26,6 +26,10 @@ int main(int argc, char** argv){
   #pragma omp parallel for
   for(int i = 0; i < 9; i++)
     printf("%d\n", i);
+
+  QuadReferenceSpace ref;
+  cout << ref.toString() << endl;
+
   SmallFem::Finalize();
 
   return 0;

@@ -7,6 +7,13 @@
 
 using namespace std;
 
+GroupOfElement::OrientationSort::OrientationSort(const Basis& basis){
+  this->basis = &basis;
+}
+
+GroupOfElement::OrientationSort::~OrientationSort(void){
+}
+
 GroupOfElement::GroupOfElement
 (std::multimap<int, const MElement*>::iterator begin,
  std::multimap<int, const MElement*>::iterator end,
