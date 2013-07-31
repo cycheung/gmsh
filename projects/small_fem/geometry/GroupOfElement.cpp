@@ -2,7 +2,6 @@
 #include <sstream>
 #include <list>
 
-#include "OrientationSort.h"
 #include "GroupOfElement.h"
 
 using namespace std;
