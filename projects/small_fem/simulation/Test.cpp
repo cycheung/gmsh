@@ -25,18 +25,8 @@ int main(int argc, char** argv){
   Timer time;
   time.start();
 
-  //TriReferenceSpace ref;
-  //cout << ref.toString() << endl;
-
-  const size_t N = 3;
-  vector<size_t> seq(N);
-  for(size_t i = 0; i < N; i++)
-    seq[i] = i;
-
-  PermutationTree tree(seq);
-  tree.serialize(string("pomme"));
-
-  PermutationTree load(string("pomme"));
+  HexReferenceSpace ref;
+  cout << ref.toString() << endl;
 
   time.stop();
 

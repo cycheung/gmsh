@@ -40,7 +40,8 @@ Quadrature::Quadrature(int elementType,
     break;
 
   case TYPE_HEX:
-    throw Exception("Quadrature on Hexahedron not implemented");
+    gaussIntegration::get(TYPE_HEX, 3 * trueOrder, *gC, *gW);
+    break;
 
   case TYPE_PRI:
     throw Exception("Quadrature on Prism not implemented");
