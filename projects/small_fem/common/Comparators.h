@@ -61,7 +61,7 @@
    With this comparator, two MEdge%s with the same points,
    but different orientations, are handled as the same MEdge.
 
-   @fn bool EdgeComparator::operator()(const MEdge*, const MEdge*)
+   @fn bool EdgeComparator::operator()(const MEdge*, const MEdge*) const
    @param a A MEdge pointer
    @param b A second MEdge pointer
    @return Returns:

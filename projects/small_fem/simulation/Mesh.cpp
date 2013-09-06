@@ -15,7 +15,6 @@ using namespace std;
 int main(int argc, char** argv){
   GmshInitialize(argc, argv);
 
-
   // Get Mesh //
   cout << "## Reading Mesh" << endl << flush;
 
@@ -29,47 +28,20 @@ int main(int argc, char** argv){
   Basis* basis =
     BasisGenerator::generate(domain.get(0).getType(),
                              0, 1, "hierarchical");
+  // Get Reference Space //
+  const ReferenceSpace& refSpace = basis->getReferenceSpace();
 
-
-  // Orientations //
-  cout << "## Orienting" << endl << flush;
-  domain.orientAllElements(*basis);
-
+  // Alloc Orientations //
+  const size_t size = domain.getNumber();
+  vector<double> orientation(size);
 
   // Analyze //
   cout << "## Analyzing" << endl << flush;
 
-  const size_t size = domain.getNumber();
+  for(size_t i = 0; i < size; i++)
+    orientation[i] = (double)(refSpace.getReferenceSpace(domain.get(i)));
 
-  const vector<size_t>& orientationStat =
-    domain.getOrientationStats();
-
-  vector<double> orientation(size);
-
-  size_t i   = 0;
-  size_t j   = 0;
-  size_t sum = orientationStat[j];
-
-  for(size_t i = 0; i < orientationStat.size(); i++)
-    cout << i << ": " << orientationStat[i] << endl;
-
-  while(orientationStat[j] == 0)
-    j++;
-
-  for(; i < size; i++){
-
-    if(i == sum){
-      j++;
-
-      while(orientationStat[j] == 0)
-        j++;
-
-      sum += orientationStat[j];
-    }
-
-    orientation[i] = j;
-  }
-
+  // Mesh //
   cout << "## Mesh" << endl << flush;
   for(size_t i = 0; i < domain.getNumber(); i++){
     const MElement& e = domain.get(i);
@@ -86,6 +58,7 @@ int main(int argc, char** argv){
       cout << v[j] << ", ";
 
     cout << v[N - 1] << "]"
+         << ": #" << orientation[i]
          << endl;
   }
 

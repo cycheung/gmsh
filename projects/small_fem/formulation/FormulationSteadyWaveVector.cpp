@@ -18,8 +18,8 @@ const double FormulationSteadyWaveVector::eps = 1;
 FormulationSteadyWaveVector::FormulationSteadyWaveVector(GroupOfElement& goe,
                                                          double k,
                                                          size_t order){
-  Timer timer, timerGoj;
-  timer.start();
+  //Timer timer, timerGoj;
+  //timer.start();
 
   // Wave Number Squared //
   kSquare = k * k;
@@ -43,20 +43,23 @@ FormulationSteadyWaveVector::FormulationSteadyWaveVector(GroupOfElement& goe,
   // Local Terms //
   basis->preEvaluateDerivatives(gC1);
   basis->preEvaluateFunctions(gC2);
+  //cout << "Jacobians" << endl << flush;
 
-  timerGoj.start();
+  //timerGoj.start();
   GroupOfJacobian jac1(goe, *basis, gC1, "jacobian");
   GroupOfJacobian jac2(goe, *basis, gC2, "invert");
-  timerGoj.stop();
+  //timerGoj.stop();
 
-
+  //cout << "Terms" << endl << flush;
   localTerms1 = new TermCurlCurl(jac1, *basis, gW1);
   localTerms2 = new TermGradGrad(jac2, *basis, gW2);
 
-  timer.stop();
+  //timer.stop();
 
-  cout << "Jacs: " << timerGoj.time() << " " << timerGoj.unit() << endl;
-  cout << "Full: " << timer.time() << " " << timer.unit() << endl;
+  //cout << "Jacs: " << timerGoj.time() << " " << timerGoj.unit()
+  //     << endl << flush;
+  //cout << "Full: " << timer.time() << " " << timer.unit()
+  //     << endl << flush;
 }
 
 FormulationSteadyWaveVector::~FormulationSteadyWaveVector(void){

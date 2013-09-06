@@ -8,6 +8,7 @@
 #include "TriReferenceSpace.h"
 #include "QuadReferenceSpace.h"
 #include "TetReferenceSpace.h"
+#include "HexReferenceSpace.h"
 
 #include "TriNodeBasis.h"
 #include "LineNodeBasis.h"
@@ -21,7 +22,27 @@
 using namespace std;
 
 int main(int argc, char** argv){
+  Timer time;
+  time.start();
 
+  //TriReferenceSpace ref;
+  //cout << ref.toString() << endl;
+
+  const size_t N = 3;
+  vector<size_t> seq(N);
+  for(size_t i = 0; i < N; i++)
+    seq[i] = i;
+
+  PermutationTree tree(seq);
+  tree.serialize(string("pomme"));
+
+  PermutationTree load(string("pomme"));
+
+  time.stop();
+
+  cout << "Time: " << time.time() << " " << time.unit() << endl;
+
+  /*
   SmallFem::Initialize(argc, argv);
   #pragma omp parallel for
   for(int i = 0; i < 9; i++)
@@ -31,7 +52,7 @@ int main(int argc, char** argv){
   cout << ref.toString() << endl;
 
   SmallFem::Finalize();
-
+  */
   return 0;
 
   /*
