@@ -82,6 +82,10 @@ class Jacobian{
   void computeJacobians(const Basis& basis);
   void computeInvertFromJac(void);
   void computeInvertFromScratch(const Basis& basis);
+
+  static void naiveInvert(const fullMatrix<double>& A,
+                          double detA,
+                          fullMatrix<double>& invA);
 };
 
 /**

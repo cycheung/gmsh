@@ -123,7 +123,8 @@ void Jacobian::computeInvertFromJac(void){
     tmp   = new jac_pair;
     mIJac = new fullMatrix<double>(3, 3);
 
-    (*jac)[i]->first->invert(*mIJac);
+    naiveInvert(*(*jac)[i]->first, (*jac)[i]->second, *mIJac);
+    //(*jac)[i]->first->invert(*mIJac);
 
     tmp->first  = mIJac;
     tmp->second = (*jac)[i]->second;
@@ -140,6 +141,7 @@ void Jacobian::computeInvertFromScratch(const Basis& basis){
   // Fill InvJac //
   jac_pair*           tmp;
   fullMatrix<double>* mIJac;
+  fullMatrix<double>  jac(3, 3);
 
   for(size_t i = 0; i < nPoint; i++){
     tmp   = new jac_pair;
@@ -150,12 +152,29 @@ void Jacobian::computeInvertFromScratch(const Basis& basis){
                                             (*point)(i, 0),
                                             (*point)(i, 1),
                                             (*point)(i, 2),
-                                            *mIJac);
-    mIJac->invertInPlace();
+                                            jac);
+    naiveInvert(jac, tmp->second, *mIJac);
+    //mIJac->invertInPlace();
 
     tmp->first   = mIJac;
     (*invJac)[i] = tmp;
   }
+}
+
+void Jacobian::naiveInvert(const fullMatrix<double>& A,
+                           double detA,
+                           fullMatrix<double>& invA){
+  invA(0, 0) = (A(1, 1) * A(2, 2) - A(1, 2) * A(2, 1)) / detA;
+  invA(0, 1) = (A(0, 2) * A(2, 1) - A(0, 1) * A(2, 2)) / detA;
+  invA(0, 2) = (A(0, 1) * A(1, 2) - A(0, 2) * A(1, 1)) / detA;
+
+  invA(1, 0) = (A(1, 2) * A(2, 0) - A(1, 0) * A(2, 2)) / detA;
+  invA(1, 1) = (A(0, 0) * A(2, 2) - A(0, 2) * A(2, 0)) / detA;
+  invA(1, 2) = (A(0, 2) * A(1, 0) - A(0, 0) * A(1, 2)) / detA;
+
+  invA(2, 0) = (A(1, 0) * A(2, 1) - A(1, 1) * A(2, 0)) / detA;
+  invA(2, 1) = (A(0, 1) * A(2, 0) - A(0, 0) * A(2, 1)) / detA;
+  invA(2, 2) = (A(0, 0) * A(1, 1) - A(0, 1) * A(1, 0)) / detA;
 }
 
 string Jacobian::toString(void) const{

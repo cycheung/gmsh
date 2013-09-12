@@ -9,6 +9,8 @@
 #include "QuadReferenceSpace.h"
 #include "TetReferenceSpace.h"
 #include "HexReferenceSpace.h"
+#include "PyrReferenceSpace.h"
+#include "PriReferenceSpace.h"
 
 #include "TriNodeBasis.h"
 #include "LineNodeBasis.h"
@@ -25,7 +27,7 @@ int main(int argc, char** argv){
   Timer time;
   time.start();
 
-  HexReferenceSpace ref;
+  PriReferenceSpace ref;
   cout << ref.toString() << endl;
 
   time.stop();
