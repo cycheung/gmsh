@@ -11,7 +11,7 @@ A) The packages needed to install gmsh are (gmsh has to be install to use cm3app
       - libblas-dev
       - libopenmpi-dev
       - openmpi-bin
-      - liblappack-dev
+      - liblapack-dev
       - g++
       - gfortran
       - swig
