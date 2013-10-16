@@ -14,6 +14,7 @@
 #include "GroupOfElement.h"
 
 #include "fullMatrix.h"
+#include "ThreadVector.h"
 #include "SparseMatrix.h"
 
 /**
@@ -64,7 +65,7 @@ class SystemAbstract{
 
  protected:
   void assemble(SparseMatrix& A,
-                fullVector<double>& b,
+                ThreadVector& b,
                 size_t elementId,
                 const GroupOfDof& group,
                 formulationPtr& term);

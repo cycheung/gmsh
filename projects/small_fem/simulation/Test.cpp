@@ -22,6 +22,7 @@
 #include "PermutationTree.h"
 
 #include "SparseMatrix.h"
+#include "ThreadVector.h"
 #include "SolverMUMPS.h"
 
 using namespace std;
@@ -32,14 +33,14 @@ int main(int argc, char** argv){
   size_t n = 2;
 
   SparseMatrix A(n, n);
-  fullVector<double> b(n);
+  ThreadVector b(n);
   fullVector<double> x(n);
 
   A.add(0, 0, 1);
   A.add(1, 1, 2);
 
-  b(0) = 1;
-  b(1) = 4;
+  b.add(0, 1);
+  b.add(1, 4);
 
   SolverMUMPS solver;
   solver.solve(A, b, x);

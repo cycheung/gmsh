@@ -11,7 +11,7 @@ SolverMUMPS::~SolverMUMPS(void){
 }
 
 void SolverMUMPS::solve(SparseMatrix& A,
-                        fullVector<double>& rhs,
+                        ThreadVector& rhs,
                         fullVector<double>& x){
   // Is the given matrix square ? //
   const int size = A.nRows();
@@ -21,10 +21,10 @@ void SolverMUMPS::solve(SparseMatrix& A,
                     size, A.nColumns());
 
   // Is the right hand side of the good size ? //
-  if(size != rhs.size())
+  if((size_t)(size) != rhs.getSize())
     throw Exception("%s -- %s: %d (matrix is %d)",
                     "SolverMUMPS", "The given rhs do not have the right size",
-                    rhs.size(), size);
+                    rhs.getSize(), size);
 
   // Serialize the given matrix //
   vector<int>    row;
@@ -43,15 +43,15 @@ void SolverMUMPS::solve(SparseMatrix& A,
   dmumps_c(&id);             // Do what is told in struct 'id'
 
   // Define the problem //
-  id.icntl[4]  = 0;      // Matrix in assembled format
-  id.icntl[17] = 0;      // Matrix is centralized on the host
+  id.icntl[4]  = 0;       // Matrix in assembled format
+  id.icntl[17] = 0;       // Matrix is centralized on the host
 
-  id.n   = size;         // Size of the (square) matrix of unknown
-  id.nz  = nNZ;          // Number of non zero entries in the matrix
-  id.irn = row.data();   // Row vector
-  id.jcn = col.data();   // Column vector
-  id.a   = value.data(); // Value vector
-  id.rhs = &rhs(0);      // Right hand side
+  id.n   = size;          // Size of the (square) matrix of unknown
+  id.nz  = nNZ;           // Number of non zero entries in the matrix
+  id.irn = row.data();    // Row vector
+  id.jcn = col.data();    // Column vector
+  id.a   = value.data();  // Value vector
+  id.rhs = rhs.getData(); // Right hand side
 
   // Output Settings //
   id.icntl[0] = -1;  // No Output
@@ -65,7 +65,7 @@ void SolverMUMPS::solve(SparseMatrix& A,
 
   // The Right hand side is now the solution //
   // Turn the 'x' vector into a proxy of 'rhs'
-  x.setAsProxy(rhs, 0, rhs.size());
+  x.setAsProxy(fullVector<double>(rhs.getData(), size), 0, size);
 
   // Terminate MUMPS instance //
   id.job = -2; // Destroy MUMPS Instance

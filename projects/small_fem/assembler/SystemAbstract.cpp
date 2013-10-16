@@ -116,7 +116,7 @@ dirichlet(GroupOfElement& goe,
 }
 
 void SystemAbstract::assemble(SparseMatrix& A,
-                              fullVector<double>& b,
+                              ThreadVector& b,
                               size_t elementId,
                               const GroupOfDof& group,
                               formulationPtr& term){
@@ -142,11 +142,12 @@ void SystemAbstract::assemble(SparseMatrix& A,
         // If fixed Dof (for column 'dofJ'):
         //    add to right hand side (with a minus sign) !
         else
-          b(dofI) +=
-            -1 * dofM->getValue(dof[j]) * (formulation->*term)(i, j, elementId);
+          b.add(dofI,
+                -1 * dofM->getValue(dof[j]) *
+                    (formulation->*term)(i, j, elementId));
       }
 
-      b(dofI) += formulation->rhs(i, elementId);
+      b.add(dofI, formulation->rhs(i, elementId));
     }
   }
 }

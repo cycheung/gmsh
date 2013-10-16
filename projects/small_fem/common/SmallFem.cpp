@@ -46,6 +46,9 @@ void SmallFem::Initialize(int argc, char** argv){
 
     delete[] argCStylePetsc;
 
+    // Stop PETSc when error
+    // PetscPushErrorHandler(PetscAbortErrorHandler, NULL);
+
     // Gmsh Instance
     CTX::instance();
 

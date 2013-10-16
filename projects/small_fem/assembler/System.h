@@ -5,6 +5,7 @@
 // #include <petscvec.h>
 
 #include "SystemAbstract.h"
+#include "ThreadVector.h"
 #include "SparseMatrix.h"
 
 /**
@@ -18,7 +19,7 @@
 class System: public SystemAbstract{
  protected:
   SparseMatrix* A;
-  fullVector<double>* b;
+  ThreadVector* b;
 
   /*
   Mat* A;

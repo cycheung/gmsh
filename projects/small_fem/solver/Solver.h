@@ -2,6 +2,7 @@
 #define _SOLVER_H_
 
 #include "fullMatrix.h"
+#include "ThreadVector.h"
 #include "SparseMatrix.h"
 
 /**
@@ -15,7 +16,7 @@ class Solver{
  public:
   virtual ~Solver(void);
   virtual void solve(SparseMatrix& A,
-                     fullVector<double>& rhs,
+                     ThreadVector& rhs,
                      fullVector<double>& x) = 0;
  protected:
   Solver(void);

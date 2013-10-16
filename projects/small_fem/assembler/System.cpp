@@ -139,12 +139,10 @@ void System::assemble(void){
   const size_t size = dofM->getUnfixedDofNumber();
 
   A = new SparseMatrix(size, size);
-  b = new fullVector<double>(size);
-
-  for(size_t i = 0; i < size; i++)
-    (*b)(i) = 0;
+  b = new ThreadVector(size);
 
   // Assemble //
+  #pragma omp parallel for
   for(size_t i = 0; i < E; i++)
     SystemAbstract::assemble(*A, *b, i, *group[i], term);
 

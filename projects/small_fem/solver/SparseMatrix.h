@@ -119,9 +119,9 @@ class SparseMatrix{
    **
  */
 
-/////////////////////
-// Inline Function //
-/////////////////////
+//////////////////////
+// Inline Functions //
+//////////////////////
 
 inline size_t SparseMatrix::nRows(void) const{
   return nRow;

@@ -22,7 +22,7 @@ class SolverMUMPS: public Solver{
   virtual ~SolverMUMPS(void);
 
   virtual void solve(SparseMatrix& A,
-                     fullVector<double>& rhs,
+                     ThreadVector& rhs,
                      fullVector<double>& x);
 };
 
