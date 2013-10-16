@@ -12,7 +12,9 @@
 #include "FunctionSpace.h"
 #include "Formulation.h"
 #include "GroupOfElement.h"
+
 #include "fullMatrix.h"
+#include "SparseMatrix.h"
 
 /**
    @interface SystemAbstract
@@ -61,6 +63,12 @@ class SystemAbstract{
   virtual void solve(void)    = 0;
 
  protected:
+  void assemble(SparseMatrix& A,
+                fullVector<double>& b,
+                size_t elementId,
+                const GroupOfDof& group,
+                formulationPtr& term);
+
   void assemble(Mat& A,
                 Vec& b,
                 size_t elementId,

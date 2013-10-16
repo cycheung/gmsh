@@ -1,10 +1,11 @@
 #ifndef _SYSTEM_H_
 #define _SYSTEM_H_
 
-#include <petscmat.h>
-#include <petscvec.h>
+// #include <petscmat.h>
+// #include <petscvec.h>
 
 #include "SystemAbstract.h"
+#include "SparseMatrix.h"
 
 /**
    @class System
@@ -16,9 +17,14 @@
 
 class System: public SystemAbstract{
  protected:
+  SparseMatrix* A;
+  fullVector<double>* b;
+
+  /*
   Mat* A;
   Vec* b;
   Vec* xPetsc;
+  */
 
   fullVector<double>* x;
 

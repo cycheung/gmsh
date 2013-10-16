@@ -1,7 +1,8 @@
-#include <petscksp.h>
-#include <petscpc.h>
+// #include <petscksp.h>
+// #include <petscpc.h>
 
 #include "System.h"
+#include "SolverMUMPS.h"
 
 using namespace std;
 
@@ -20,10 +21,16 @@ System::System(const Formulation& formulation){
   dofM->addToDofManager(fs->getAllGroups());
 
   // Init //
+  /*
   A      = NULL;
   b      = NULL;
   xPetsc = NULL;
   x      = NULL;
+  */
+
+  A = NULL;
+  b = NULL;
+  x = NULL;
 
   // The system is not assembled and not solved //
   assembled = false;
@@ -33,6 +40,7 @@ System::System(const Formulation& formulation){
 System::~System(void){
   delete dofM;
 
+  /*
   if(A){
     MatDestroy(A);
     delete A;
@@ -47,16 +55,23 @@ System::~System(void){
     VecDestroy(xPetsc);
     delete xPetsc;
   }
+  */
 
-  if(x){
+  if(A)
+    delete A;
+
+  if(b)
+    delete b;
+
+  if(x)
     delete x;
-  }
 }
 
 void System::assemble(void){
   // Enumerate //
   dofM->generateGlobalIdSpace();
 
+  /*
   // Alloc //
   const size_t size = dofM->getUnfixedDofNumber();
 
@@ -106,13 +121,32 @@ void System::assemble(void){
   MatAssemblyEnd(*A, MAT_FINAL_ASSEMBLY);
   VecAssemblyEnd(*b);
 
-  /*
   PetscViewer fd;
   PetscViewerASCIIOpen(MPI_COMM_WORLD, "mat.m", &fd);
   PetscViewerSetFormat(fd, PETSC_VIEWER_ASCII_MATLAB);
   PetscObjectSetName((PetscObject)(*A), "A");
   MatView(*A, fd);
   */
+
+  // Get GroupOfDofs //
+  const size_t E = fs->getSupport().getNumber();
+  const vector<GroupOfDof*>& group = fs->getAllGroups();
+
+  // Get Formulation Term //
+  formulationPtr term = &Formulation::weak;
+
+  // Alloc //
+  const size_t size = dofM->getUnfixedDofNumber();
+
+  A = new SparseMatrix(size, size);
+  b = new fullVector<double>(size);
+
+  for(size_t i = 0; i < size; i++)
+    (*b)(i) = 0;
+
+  // Assemble //
+  for(size_t i = 0; i < E; i++)
+    SystemAbstract::assemble(*A, *b, i, *group[i], term);
 
   // The system is assembled //
   assembled = true;
@@ -123,6 +157,7 @@ void System::solve(void){
   if(!assembled)
     assemble();
 
+  /*
   // Build Solver //
   KSP solver;
   PC  precond;
@@ -148,6 +183,13 @@ void System::solve(void){
   VecGetArray(*xPetsc, &solution);
 
   x = new fullVector<double>(solution, dofM->getUnfixedDofNumber());
+  */
+
+  // Use SolverMUMPS //
+  SolverMUMPS solver;
+  x = new fullVector<double>;
+
+  solver.solve(*A, *b, *x);
 
   // System solved ! //
   solved = true;

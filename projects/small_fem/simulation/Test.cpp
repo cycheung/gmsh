@@ -21,9 +21,35 @@
 
 #include "PermutationTree.h"
 
+#include "SparseMatrix.h"
+#include "SolverMUMPS.h"
+
 using namespace std;
 
 int main(int argc, char** argv){
+  //SmallFem::Initialize(argc, argv);
+
+  size_t n = 2;
+
+  SparseMatrix A(n, n);
+  fullVector<double> b(n);
+  fullVector<double> x(n);
+
+  A.add(0, 0, 1);
+  A.add(1, 1, 2);
+
+  b(0) = 1;
+  b(1) = 4;
+
+  SolverMUMPS solver;
+  solver.solve(A, b, x);
+
+  for(size_t i = 0; i < n; i++)
+    cout << x(i) << endl;
+
+  //SmallFem::Finalize();
+
+  /*
   Timer time;
   time.start();
 
@@ -33,7 +59,7 @@ int main(int argc, char** argv){
   time.stop();
 
   cout << "Time: " << time.time() << " " << time.unit() << endl;
-
+  */
   /*
   SmallFem::Initialize(argc, argv);
   #pragma omp parallel for

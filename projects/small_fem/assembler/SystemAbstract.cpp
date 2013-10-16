@@ -115,6 +115,42 @@ dirichlet(GroupOfElement& goe,
   delete dirBasis;
 }
 
+void SystemAbstract::assemble(SparseMatrix& A,
+                              fullVector<double>& b,
+                              size_t elementId,
+                              const GroupOfDof& group,
+                              formulationPtr& term){
+
+  const vector<Dof>& dof = group.getDof();
+  const size_t N = group.size();
+
+  size_t dofI;
+  size_t dofJ;
+
+  for(size_t i = 0; i < N; i++){
+    dofI = dofM->getGlobalId(dof[i]);
+
+    // If not a fixed Dof line: assemble
+    if(dofI != DofManager::isFixedId()){
+      for(size_t j = 0; j < N; j++){
+        dofJ = dofM->getGlobalId(dof[j]);
+
+        // If not a fixed Dof
+        if(dofJ != DofManager::isFixedId())
+          A.add(dofI, dofJ, (formulation->*term)(i, j, elementId));
+
+        // If fixed Dof (for column 'dofJ'):
+        //    add to right hand side (with a minus sign) !
+        else
+          b(dofI) +=
+            -1 * dofM->getValue(dof[j]) * (formulation->*term)(i, j, elementId);
+      }
+
+      b(dofI) += formulation->rhs(i, elementId);
+    }
+  }
+}
+
 void SystemAbstract::assemble(Mat& A,
                               Vec& b,
                               size_t elementId,

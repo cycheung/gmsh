@@ -39,6 +39,7 @@ add_subdirectory(common)
 add_subdirectory(formulation)
 add_subdirectory(geometry)
 add_subdirectory(postprocessing)
+add_subdirectory(solver)
 
 ## TO BE REMOVED !!!
 ####################
@@ -53,6 +54,7 @@ include_directories(
   formulation
   geometry
   postprocessing
+  solver
 )
 
 ## Include Path for gmsh
@@ -67,6 +69,22 @@ include_directories(
   ${GMSH_EXTERNAL_INCLUDE_DIRS}
 )
 
+## Include Path for MUMPS
+include_directories(
+  contrib
+)
+
+## Library Path for MUMPS
+set(mumps
+  ${CMAKE_SOURCE_DIR}/contrib/libcmumps.a
+  ${CMAKE_SOURCE_DIR}/contrib/libdmumps.a
+  ${CMAKE_SOURCE_DIR}/contrib/libmumps_common.a
+  ${CMAKE_SOURCE_DIR}/contrib/libpord.a
+  ${CMAKE_SOURCE_DIR}/contrib/libsmumps.a
+  ${CMAKE_SOURCE_DIR}/contrib/libzmumps.a
+  ${CMAKE_SOURCE_DIR}/contrib/libmpiseq.a
+)
+
 ## Compiler Flags
 add_definitions(-pedantic -Wall -Wno-long-long) # -Wno-long-long for PETSc 3.3
 add_definitions(-O3 -march=native)
@@ -75,7 +93,7 @@ add_definitions(-g)
 ## Build SmallFEM Library
 add_library(sf STATIC ${sources})
 set_target_properties(sf PROPERTIES LINKER_LANGUAGE CXX)
-target_link_libraries(sf -lrt)
+target_link_libraries(sf ${mumps} lib ${GMSH_EXTERNAL_LIBRARIES} -lrt)
 
 ## Build Simulations
 add_executable(laplace simulation/Laplace.cpp)
@@ -97,20 +115,20 @@ add_executable(fs   simulation/ShowFunctionSpace.cpp)
 add_executable(test simulation/Test.cpp)
 
 ## Link (Note: 'lib' is gmsh static library)
-target_link_libraries(laplace sf lib ${GMSH_EXTERNAL_LIBRARIES})
-target_link_libraries(poisson sf lib ${GMSH_EXTERNAL_LIBRARIES})
+target_link_libraries(laplace sf)
+target_link_libraries(poisson sf)
 
-target_link_libraries(projvectsin sf lib ${GMSH_EXTERNAL_LIBRARIES})
-target_link_libraries(projvectone sf lib ${GMSH_EXTERNAL_LIBRARIES})
+target_link_libraries(projvectsin sf)
+target_link_libraries(projvectone sf)
 
-target_link_libraries(projscalsin sf lib ${GMSH_EXTERNAL_LIBRARIES})
-target_link_libraries(projscalone sf lib ${GMSH_EXTERNAL_LIBRARIES})
+target_link_libraries(projscalsin sf)
+target_link_libraries(projscalone sf)
 
-target_link_libraries(swavev    sf lib ${GMSH_EXTERNAL_LIBRARIES})
-target_link_libraries(swaves    sf lib ${GMSH_EXTERNAL_LIBRARIES})
-target_link_libraries(cavity    sf lib ${GMSH_EXTERNAL_LIBRARIES})
-target_link_libraries(vibration sf lib ${GMSH_EXTERNAL_LIBRARIES})
+target_link_libraries(swavev    sf)
+target_link_libraries(swaves    sf)
+target_link_libraries(cavity    sf)
+target_link_libraries(vibration sf)
 
-target_link_libraries(mesh sf lib ${GMSH_EXTERNAL_LIBRARIES})
-target_link_libraries(fs   sf lib ${GMSH_EXTERNAL_LIBRARIES})
-target_link_libraries(test sf lib ${GMSH_EXTERNAL_LIBRARIES})
+target_link_libraries(mesh sf)
+target_link_libraries(fs   sf)
+target_link_libraries(test sf)
