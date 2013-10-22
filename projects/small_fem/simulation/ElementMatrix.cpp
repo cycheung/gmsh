@@ -1,11 +1,9 @@
 #include "Mesh.h"
 #include "System.h"
-
-#include "FormulationLaplace.h"
-#include "FormulationCurl.h"
-
-#include "Timer.h"
 #include "SmallFem.h"
+
+#include "FormulationElementGradGrad.h"
+#include "FormulationElementCurlCurl.h"
 
 using namespace std;
 
@@ -21,7 +19,10 @@ void compute(const Options& option){
        domain.getNumber());
 
   // Get Parameters //
-  size_t order = atoi(option.getValue("-o")[0].c_str());
+  size_t order = atoi(option.getValue("-order")[0].c_str());
+
+  // Get Orientation //
+  size_t orientation = atoi(option.getValue("-orient")[0].c_str());
 
   // Assemble the asked matrix //
   string problemName = option.getValue("-type")[0];
@@ -29,10 +30,10 @@ void compute(const Options& option){
   Formulation* formulation;
 
   if(!problemName.compare("grad"))
-    formulation = new FormulationLaplace(domain, order);
+    formulation = new FormulationElementGradGrad(domain, order, orientation);
 
   else if(!problemName.compare("curl"))
-    formulation = new FormulationCurl(domain, order);
+    formulation = new FormulationElementCurlCurl(domain, order, orientation);
 
   else
     throw
