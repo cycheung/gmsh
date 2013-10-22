@@ -114,6 +114,8 @@ add_executable(mesh simulation/Mesh.cpp)
 add_executable(fs   simulation/ShowFunctionSpace.cpp)
 add_executable(test simulation/Test.cpp)
 
+add_executable(stiff simulation/StiffnessMatrix.cpp)
+
 ## Link (Note: 'lib' is gmsh static library)
 target_link_libraries(laplace sf)
 target_link_libraries(poisson sf)
@@ -132,3 +134,5 @@ target_link_libraries(vibration sf)
 target_link_libraries(mesh sf)
 target_link_libraries(fs   sf)
 target_link_libraries(test sf)
+
+target_link_libraries(stiff sf)

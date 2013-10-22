@@ -1,4 +1,5 @@
-#include "sstream"
+#include <sstream>
+#include <fstream>
 #include "SparseMatrix.h"
 
 using namespace std;
@@ -112,14 +113,14 @@ string SparseMatrix::toString(void) const{
   return stream.str();
 }
 
-string SparseMatrix::toMatlab(void) const{
+string SparseMatrix::toMatlab(string matrixName) const{
   // Init
   stringstream stream;
   list<pair<size_t, double> >::iterator it;
   list<pair<size_t, double> >::iterator end;
 
   // Call to 'sparse'
-  stream << "A = sparse(";
+  stream << matrixName << " = sparse(";
 
   // Rows
   stream << "[";
@@ -159,6 +160,13 @@ string SparseMatrix::toMatlab(void) const{
 
   // Return
   return stream.str();
+}
+
+void SparseMatrix::writeToMatlabFile(string fileName, string matrixName) const{
+  ofstream stream;
+  stream.open(fileName.c_str());
+  stream << toMatlab(matrixName) << endl;
+  stream.close();
 }
 
 void SparseMatrix::sortAndReduce(void){

@@ -43,15 +43,16 @@ class SparseMatrix{
 
   size_t nRows(void) const;
   size_t nColumns(void) const;
+  size_t getNumberOfMutexWait(void) const;
 
   void   add(size_t row, size_t col, double value);
   size_t serialize(std::vector<int>&    rowVector,
                    std::vector<int>&    colVector,
                    std::vector<double>& valueVector);
 
-  size_t      getNumberOfMutexWait(void) const;
   std::string toString(void) const;
-  std::string toMatlab(void) const;
+  std::string toMatlab(std::string matrixName) const;
+  void writeToMatlabFile(std::string fileName, std::string matrixName) const;
 
  private:
   SparseMatrix(void);
@@ -84,6 +85,10 @@ class SparseMatrix{
    @return Returns the number of columns of this SparseMatrix
    **
 
+   @fn SparseMatrix::getNumberOfMutexWait
+   @return Returns the total number of threads that were blocked by a mutex
+   **
+
    @fn SparseMatrix::add
    @param row A row index of this SparseMatrix
    @param col A column index of this SparseMatrix
@@ -105,18 +110,21 @@ class SparseMatrix{
    where A is this SparseMatrix.
    **
 
-   @fn SparseMatrix::getNumberOfMutexWait
-   @return Returns the total number of threads that were blocked by a mutex
-   **
-
    @fn SparseMatrix::toString
    @return Returns a string describing this SparseMatrix
    **
 
    @fn SparseMatrix::toMatlab
+   @param matrixName A string
    @return Returns a string that can be used in Octave/Matlab
-   to reproduce this SparseMatrix
+   to reproduce this SparseMatrix, whose name will be the given one
    **
+
+   @fn SparseMatrix::writeToMatlabFile
+   @param fileName A string
+
+   Writes this matrix in Octave/Matlab format into the given file,
+   and with the given name
  */
 
 //////////////////////
@@ -129,6 +137,10 @@ inline size_t SparseMatrix::nRows(void) const{
 
 inline size_t SparseMatrix::nColumns(void) const{
   return nCol;
+}
+
+inline size_t SparseMatrix::getNumberOfMutexWait(void) const{
+  return fail;
 }
 
 inline void SparseMatrix::add(size_t row, size_t col, double value){
@@ -146,10 +158,6 @@ inline void SparseMatrix::add(size_t row, size_t col, double value){
 
   // Free mutex
   omp_unset_lock(&lock[row]);
-}
-
-inline size_t SparseMatrix::getNumberOfMutexWait(void) const{
-  return fail;
 }
 
 inline bool SparseMatrix::sortPredicate(const std::pair<size_t, double>& a,

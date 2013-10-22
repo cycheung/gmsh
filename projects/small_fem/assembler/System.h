@@ -34,6 +34,7 @@ class System: public SystemAbstract{
   virtual ~System(void);
 
   const fullVector<double>& getSol(void) const;
+  void writeMatrix(std::string fileName, std::string matrixName) const;
 
   virtual void assemble(void);
   virtual void solve(void);
@@ -57,6 +58,12 @@ class System: public SystemAbstract{
 
    @fn System::getSol
    @return Returns the solution of the linear system
+   **
+
+   @fn System::writeMatrix
+   @param fileName A string
+
+   Writes this System matrix in Octave/Matlab format into the given file
 */
 
 /////////////////////
@@ -65,6 +72,11 @@ class System: public SystemAbstract{
 
 inline const fullVector<double>& System::getSol(void) const{
   return *x;
+}
+
+inline void System::writeMatrix(std::string fileName,
+                                std::string matrixName) const{
+  A->writeToMatlabFile(fileName, matrixName);
 }
 
 #endif

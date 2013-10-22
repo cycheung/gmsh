@@ -10,6 +10,8 @@ set(src
   FormulationEigenFrequency.cpp
   FormulationVibration.cpp
 
+  FormulationCurl.cpp
+
   Term.cpp
   TermFieldField.cpp
   TermGradGrad.cpp
