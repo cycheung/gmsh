@@ -1,17 +1,17 @@
-#ifndef _FORMULATIONELEMENTCURLCURL_H_
-#define _FORMULATIONELEMENTCURLCURL_H_
+#ifndef _FORMULATIONELEMENTONEFORMONEFORM_H_
+#define _FORMULATIONELEMENTONEFORMONEFORM_H_
 
 #include "FunctionSpaceVector.h"
 #include "Formulation.h"
 
 /**
-   @class FormulationElementCurlCurl
-   @brief Formulation for an elementary curl curl matrix
+   @class FormulationElementOneFormOneForm
+   @brief Formulation for an elementary 1-Form 1-Form matrix
 
-   Formulation for an elementary curl curl matrix
+   Formulation for an elementary 1-Form 1-Form matrix
  */
 
-class FormulationElementCurlCurl: public Formulation{
+class FormulationElementOneFormOneForm: public Formulation{
  private:
   // Basis //
   FunctionSpaceVector* fspace;
@@ -23,11 +23,11 @@ class FormulationElementCurlCurl: public Formulation{
   fullVector<double>* gW;
 
  public:
-  FormulationElementCurlCurl(GroupOfElement& goe,
-                             size_t order,
-                             size_t orientation);
+  FormulationElementOneFormOneForm(GroupOfElement& goe,
+                                   size_t order,
+                                   size_t orientation);
 
-  virtual ~FormulationElementCurlCurl(void);
+  virtual ~FormulationElementOneFormOneForm(void);
 
   virtual bool isGeneral(void) const;
 
@@ -44,16 +44,16 @@ class FormulationElementCurlCurl: public Formulation{
 };
 
 /**
-   @fn FormulationElementCurlCurl::FormulationElementCurlCurl
+   @fn FormulationElementOneFormOneForm::FormulationElementOneFormOneForm
    @param geo A GroupOfElement defining the geomtry to use
    @param order The order of the basis to use
    @param orientation The orientation to use in the generated Basis
 
-   Instantiates a new FormulationElementCurlCurl with the given options.
+   Instantiates a new FormulationElementOneFormOneForm with the given options.
    **
 
-   @fn FormulationElementCurlCurl::~FormulationElementCurlCurl
-   Deletes this FormulationElementCurlCurl
+   @fn FormulationElementOneFormOneForm::~FormulationElementOneFormOneForm
+   Deletes this FormulationElementOneFormOneForm
 */
 
 #endif

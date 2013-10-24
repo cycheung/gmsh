@@ -11,6 +11,7 @@ set(src
   FormulationVibration.cpp
 
   FormulationElementGradGrad.cpp
+  FormulationElementOneFormOneForm.cpp
   FormulationElementCurlCurl.cpp
 
   Term.cpp

@@ -23,9 +23,9 @@ class FormulationElementGradGrad: public Formulation{
   fullVector<double>* gW;
 
  public:
-    FormulationElementGradGrad(GroupOfElement& goe,
-                               size_t order,
-                               size_t orientation);
+  FormulationElementGradGrad(GroupOfElement& goe,
+                             size_t order,
+                             size_t orientation);
 
   virtual ~FormulationElementGradGrad(void);
 

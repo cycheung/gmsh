@@ -41,6 +41,10 @@ int main(int argc, char** argv){
   for(size_t i = 0; i < size; i++)
     orientation[i] = (double)(refSpace.getReferenceSpace(domain.get(i)));
 
+  // Full Mesh //
+  cout << "## Full Mesh data" << endl << flush
+       << msh.toString()      << endl << flush;
+
   // Mesh //
   cout << "## Mesh" << endl << flush;
   for(size_t i = 0; i < domain.getNumber(); i++){
@@ -73,7 +77,6 @@ int main(int argc, char** argv){
   writer.setDomain(domain);
   writer.setValues(orientation);
   writer.write(name.str(), "volume");
-
 
   // Done //
   delete basis;
