@@ -151,7 +151,7 @@ void SystemAbstract::assemble(SparseMatrix& A,
     }
   }
 }
-
+/*
 void SystemAbstract::assemble(Mat& A,
                               Vec& b,
                               size_t elementId,
@@ -271,3 +271,4 @@ void SystemAbstract::sparsity(PetscInt* nonZero,
     }
   }
 }
+*/

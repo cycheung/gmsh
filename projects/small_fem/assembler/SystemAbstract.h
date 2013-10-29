@@ -1,8 +1,8 @@
 #ifndef _SYSTEMABSTRACT_H_
 #define _SYSTEMABSTRACT_H_
 
-#include <petscmat.h>
-#include <petscvec.h>
+//#include <petscmat.h>
+//#include <petscvec.h>
 
 #include <vector>
 #include <set>
@@ -69,7 +69,7 @@ class SystemAbstract{
                 size_t elementId,
                 const GroupOfDof& group,
                 formulationPtr& term);
-
+  /*
   void assemble(Mat& A,
                 Vec& b,
                 size_t elementId,
@@ -84,6 +84,7 @@ class SystemAbstract{
   void sparsity(PetscInt* nonZero,
                 UniqueSparsity& uniqueSparsity,
                 const GroupOfDof& group);
+  */
 };
 
 

@@ -1,9 +1,11 @@
-#include <slepceps.h>
+//#include <slepceps.h>
 #include "SystemEigen.h"
 
 using namespace std;
 
 SystemEigen::SystemEigen(const Formulation& formulation){
+  throw Exception("I need SLEPC");
+  /*
   // Get Formulation //
   this->formulation = &formulation;
   this->fs          = &(formulation.fs());
@@ -25,9 +27,11 @@ SystemEigen::SystemEigen(const Formulation& formulation){
   nEigenValues = 0;
   assembled    = false;
   solved       = false;
+  */
 }
 
 SystemEigen::~SystemEigen(void){
+  /*
   if(eigenVector)
     delete eigenVector;
 
@@ -45,10 +49,12 @@ SystemEigen::~SystemEigen(void){
   }
 
   delete dofM;
+  */
 }
 
 void SystemEigen::
 setNumberOfEigenValues(size_t nEigenValues){
+  /*
   const size_t nDof = dofM->getUnfixedDofNumber();
 
   if(nEigenValues > nDof)
@@ -59,9 +65,11 @@ setNumberOfEigenValues(size_t nEigenValues){
 
   else
     this->nEigenValues = nEigenValues;
+  */
 }
 
 void SystemEigen::assemble(void){
+  /*
   // Enumerate //
   dofM->generateGlobalIdSpace();
 
@@ -125,9 +133,11 @@ void SystemEigen::assemble(void){
 
   // The SystemEigen is assembled //
   assembled = true;
+  */
 }
 
 void SystemEigen::solve(void){
+  /*
   // Check nEigenValues
   if(!nEigenValues)
     throw
@@ -202,4 +212,5 @@ void SystemEigen::solve(void){
 
   // System solved ! //
   solved = true;
+  */
 }
