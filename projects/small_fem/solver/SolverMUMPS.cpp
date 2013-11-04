@@ -1,6 +1,7 @@
 #include "SolverMUMPS.h"
 #include "Exception.h"
 #include "dmumps_c.h"
+#include "mpi.h"
 
 using namespace std;
 
@@ -10,9 +11,12 @@ SolverMUMPS::SolverMUMPS(void){
 SolverMUMPS::~SolverMUMPS(void){
 }
 
-void SolverMUMPS::solve(SparseMatrix& A,
-                        ThreadVector& rhs,
+void SolverMUMPS::solve(SolverMatrix& A,
+                        SolverVector& rhs,
                         fullVector<double>& x){
+  // MPI Self //
+  const int FMPICommSelf = MPI_Comm_c2f(MPI_COMM_SELF);
+
   // Is the given matrix square ? //
   const int size = A.nRows();
 
@@ -35,10 +39,10 @@ void SolverMUMPS::solve(SparseMatrix& A,
   // Init MUMPS //
   DMUMPS_STRUC_C id;
 
-  id.job          =      -1; // Initialize MUMPS instance
-  id.par          =       1; // Host processor participates to the job
-  id.sym          =       0; // Unsymmetric matrix
-  id.comm_fortran = -987654; // Use MPI COMM WORLD
+  id.job          =           -1; // Initialize MUMPS instance
+  id.par          =            1; // Host processor participates to the job
+  id.sym          =            0; // Unsymmetric matrix
+  id.comm_fortran = FMPICommSelf; // Use MPI COMM SELF (Fortran)
 
   dmumps_c(&id);             // Do what is told in struct 'id'
 

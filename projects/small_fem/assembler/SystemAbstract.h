@@ -14,8 +14,8 @@
 #include "GroupOfElement.h"
 
 #include "fullMatrix.h"
-#include "ThreadVector.h"
-#include "SparseMatrix.h"
+#include "SolverVector.h"
+#include "SolverMatrix.h"
 
 /**
    @interface SystemAbstract
@@ -64,8 +64,8 @@ class SystemAbstract{
   virtual void solve(void)    = 0;
 
  protected:
-  void assemble(SparseMatrix& A,
-                ThreadVector& b,
+  void assemble(SolverMatrix& A,
+                SolverVector& b,
                 size_t elementId,
                 const GroupOfDof& group,
                 formulationPtr& term);

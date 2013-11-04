@@ -115,8 +115,8 @@ dirichlet(GroupOfElement& goe,
   delete dirBasis;
 }
 
-void SystemAbstract::assemble(SparseMatrix& A,
-                              ThreadVector& b,
+void SystemAbstract::assemble(SolverMatrix& A,
+                              SolverVector& b,
                               size_t elementId,
                               const GroupOfDof& group,
                               formulationPtr& term){

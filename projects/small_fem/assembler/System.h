@@ -5,8 +5,8 @@
 // #include <petscvec.h>
 
 #include "SystemAbstract.h"
-#include "ThreadVector.h"
-#include "SparseMatrix.h"
+#include "SolverVector.h"
+#include "SolverMatrix.h"
 
 /**
    @class System
@@ -18,8 +18,8 @@
 
 class System: public SystemAbstract{
  protected:
-  SparseMatrix* A;
-  ThreadVector* b;
+  SolverMatrix* A;
+  SolverVector* b;
 
   /*
   Mat* A;

@@ -2,8 +2,8 @@
 #define _SOLVER_H_
 
 #include "fullMatrix.h"
-#include "ThreadVector.h"
-#include "SparseMatrix.h"
+#include "SolverVector.h"
+#include "SolverMatrix.h"
 
 /**
    @interface Solver
@@ -15,8 +15,8 @@
 class Solver{
  public:
   virtual ~Solver(void);
-  virtual void solve(SparseMatrix& A,
-                     ThreadVector& rhs,
+  virtual void solve(SolverMatrix& A,
+                     SolverVector& rhs,
                      fullVector<double>& x) = 0;
  protected:
   Solver(void);
@@ -28,8 +28,8 @@ class Solver{
    **
 
    @fn Solver::solve
-   @param A A SparseMatrix
-   @param rhs A fullVector
+   @param A A SolverMatrix
+   @param rhs A SolverVector
    @param x A fullVector
 
    Solver the linear system Ax = rhs.

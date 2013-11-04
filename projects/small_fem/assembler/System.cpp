@@ -138,8 +138,8 @@ void System::assemble(void){
   // Alloc //
   const size_t size = dofM->getUnfixedDofNumber();
 
-  A = new SparseMatrix(size, size);
-  b = new ThreadVector(size);
+  A = new SolverMatrix(size, size);
+  b = new SolverVector(size);
 
   // Assemble //
   #pragma omp parallel for

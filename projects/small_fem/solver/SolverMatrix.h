@@ -1,5 +1,5 @@
-#ifndef _SPARSEMATRIX_H_
-#define _SPARSEMATRIX_H_
+ #ifndef _SOLVERMATRIX_H_
+#define _SOLVERMATRIX_H_
 
 #include <cstring>
 #include <string>
@@ -8,12 +8,12 @@
 #include <omp.h>
 
 /**
-   @class SparseMatrix
-   @brief A class handling a sparse matrix
+   @class SolverMatrix
+   @brief A class handling a Solver linear system matrix
 
-   This class represents a sparse matrix.
+   This class represents a matrix used by a Solver.
 
-   Once constructed, a SparseMatrix can be serialized into
+   Once constructed, a SolverMatrix can be serialized into
    three vectors, r[], c[] and a[], such that a[k] is
    the entry of the sparse matrix at row (r[k] - 1) and column (c[k] - 1).
 
@@ -21,7 +21,7 @@
    can be added in a thread-safe manner.
 */
 
-class SparseMatrix{
+class SolverMatrix{
  private:
   // Total Number of waiting mutex //
   size_t fail;
@@ -38,8 +38,8 @@ class SparseMatrix{
   omp_lock_t* lock;
 
  public:
-   SparseMatrix(size_t nRow, size_t nCol);
-  ~SparseMatrix(void);
+   SolverMatrix(size_t nRow, size_t nCol);
+  ~SolverMatrix(void);
 
   size_t nRows(void) const;
   size_t nColumns(void) const;
@@ -55,7 +55,7 @@ class SparseMatrix{
   void writeToMatlabFile(std::string fileName, std::string matrixName) const;
 
  private:
-  SparseMatrix(void);
+  SolverMatrix(void);
 
   void sortAndReduce(void);
 
@@ -64,63 +64,63 @@ class SparseMatrix{
 };
 
 /**
-   @fn SparseMatrix::SparseMatrix(size_t nRow, size_t nCol)
-   @param nRow The number of row of this SparseMatrix
-   @param nCol The number of column of this SparseMatrix
+   @fn SolverMatrix::SolverMatrix(size_t nRow, size_t nCol)
+   @param nRow The number of row of this SolverMatrix
+   @param nCol The number of column of this SolverMatrix
 
-   Instanciates an new SparseMatrix of zero values with the given number of
+   Instanciates an new SolverMatrix of zero values with the given number of
    rows and columns
    **
 
-   @fn SparseMatrix::~SparseMatrix
+   @fn SolverMatrix::~SolverMatrix
 
-   Deletes this SparseMatrix
+   Deletes this SolverMatrix
    **
 
-   @fn SparseMatrix::nRows;
-   @return Returns the number of rows of this SparseMatrix
+   @fn SolverMatrix::nRows;
+   @return Returns the number of rows of this SolverMatrix
    **
 
-   @fn SparseMatrix::nColumns;
-   @return Returns the number of columns of this SparseMatrix
+   @fn SolverMatrix::nColumns;
+   @return Returns the number of columns of this SolverMatrix
    **
 
-   @fn SparseMatrix::getNumberOfMutexWait
+   @fn SolverMatrix::getNumberOfMutexWait
    @return Returns the total number of threads that were blocked by a mutex
    **
 
-   @fn SparseMatrix::add
-   @param row A row index of this SparseMatrix
-   @param col A column index of this SparseMatrix
+   @fn SolverMatrix::add
+   @param row A row index of this SolverMatrix
+   @param col A column index of this SolverMatrix
    @param value A real number
 
    Adds the given value at the given row and column
    **
 
-   @fn SparseMatrix::serialize
+   @fn SolverMatrix::serialize
    @param rowVector A vector of integers
    @param colVector A vector of integers
    @param valueVector A vector of reals
 
-   @return Returns the number of non zero entries in this SparseMatrix
+   @return Returns the number of non zero entries in this SolverMatrix
 
-   Serializes this SparseMatrix.
+   Serializes this SolverMatrix.
    The three given vector will be such that:
    A[rowVector[k] - 1, colVector[k] - 1] = valueVector[k],
-   where A is this SparseMatrix.
+   where A is this SolverMatrix.
    **
 
-   @fn SparseMatrix::toString
-   @return Returns a string describing this SparseMatrix
+   @fn SolverMatrix::toString
+   @return Returns a string describing this SolverMatrix
    **
 
-   @fn SparseMatrix::toMatlab
+   @fn SolverMatrix::toMatlab
    @param matrixName A string
    @return Returns a string that can be used in Octave/Matlab
-   to reproduce this SparseMatrix, whose name will be the given one
+   to reproduce this SolverMatrix, whose name will be the given one
    **
 
-   @fn SparseMatrix::writeToMatlabFile
+   @fn SolverMatrix::writeToMatlabFile
    @param fileName A string
 
    Writes this matrix in Octave/Matlab format into the given file,
@@ -131,19 +131,19 @@ class SparseMatrix{
 // Inline Functions //
 //////////////////////
 
-inline size_t SparseMatrix::nRows(void) const{
+inline size_t SolverMatrix::nRows(void) const{
   return nRow;
 }
 
-inline size_t SparseMatrix::nColumns(void) const{
+inline size_t SolverMatrix::nColumns(void) const{
   return nCol;
 }
 
-inline size_t SparseMatrix::getNumberOfMutexWait(void) const{
+inline size_t SolverMatrix::getNumberOfMutexWait(void) const{
   return fail;
 }
 
-inline void SparseMatrix::add(size_t row, size_t col, double value){
+inline void SolverMatrix::add(size_t row, size_t col, double value){
   // Take mutex for the given row
   if(!omp_test_lock(&lock[row])){
     // If we can't we increase the total mutex wait ...
@@ -160,7 +160,7 @@ inline void SparseMatrix::add(size_t row, size_t col, double value){
   omp_unset_lock(&lock[row]);
 }
 
-inline bool SparseMatrix::sortPredicate(const std::pair<size_t, double>& a,
+inline bool SolverMatrix::sortPredicate(const std::pair<size_t, double>& a,
                                         const std::pair<size_t, double>& b){
   return a.first < b.first;
 }

@@ -21,8 +21,8 @@ class SolverMUMPS: public Solver{
 
   virtual ~SolverMUMPS(void);
 
-  virtual void solve(SparseMatrix& A,
-                     ThreadVector& rhs,
+  virtual void solve(SolverMatrix& A,
+                     SolverVector& rhs,
                      fullVector<double>& x);
 };
 

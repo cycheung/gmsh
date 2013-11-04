@@ -21,19 +21,19 @@
 
 #include "PermutationTree.h"
 
-#include "SparseMatrix.h"
-#include "ThreadVector.h"
+#include "SolverMatrix.h"
+#include "SolverVector.h"
 #include "SolverMUMPS.h"
 
 using namespace std;
 
 int main(int argc, char** argv){
-  //SmallFem::Initialize(argc, argv);
+  SmallFem::Initialize(argc, argv);
 
   size_t n = 2;
 
-  SparseMatrix A(n, n);
-  ThreadVector b(n);
+  SolverMatrix A(n, n);
+  SolverVector b(n);
   fullVector<double> x(n);
 
   A.add(0, 0, 1);
@@ -48,7 +48,7 @@ int main(int argc, char** argv){
   for(size_t i = 0; i < n; i++)
     cout << x(i) << endl;
 
-  //SmallFem::Finalize();
+  SmallFem::Finalize();
 
   /*
   Timer time;

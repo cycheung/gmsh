@@ -1,13 +1,13 @@
 #include <sstream>
 #include <fstream>
-#include "SparseMatrix.h"
+#include "SolverMatrix.h"
 
 using namespace std;
 
-SparseMatrix::SparseMatrix(void){
+SolverMatrix::SolverMatrix(void){
 }
 
-SparseMatrix::SparseMatrix(size_t nRow, size_t nCol){
+SolverMatrix::SolverMatrix(size_t nRow, size_t nCol){
   // Mutex wait //
   fail = 0;
 
@@ -24,7 +24,7 @@ SparseMatrix::SparseMatrix(size_t nRow, size_t nCol){
     omp_init_lock(&lock[i]);
 }
 
-SparseMatrix::~SparseMatrix(void){
+SolverMatrix::~SolverMatrix(void){
   for(size_t i = 0; i < nRow; i++)
     omp_destroy_lock(&lock[i]);
 
@@ -32,7 +32,7 @@ SparseMatrix::~SparseMatrix(void){
   delete[] data;
 }
 
-size_t SparseMatrix::serialize(vector<int>&    rowVector,
+size_t SolverMatrix::serialize(vector<int>&    rowVector,
                                vector<int>&    colVector,
                                vector<double>& valueVector){
   // Reduce the data vector such that we don't have redundant entries
@@ -97,7 +97,7 @@ size_t SparseMatrix::serialize(vector<int>&    rowVector,
   return nNZ;
 }
 
-string SparseMatrix::toString(void) const{
+string SolverMatrix::toString(void) const{
   stringstream stream;
   list<pair<size_t, double> >::iterator it;
   list<pair<size_t, double> >::iterator end;
@@ -113,7 +113,7 @@ string SparseMatrix::toString(void) const{
   return stream.str();
 }
 
-string SparseMatrix::toMatlab(string matrixName) const{
+string SolverMatrix::toMatlab(string matrixName) const{
   // Init
   stringstream stream;
   list<pair<size_t, double> >::iterator it;
@@ -162,14 +162,14 @@ string SparseMatrix::toMatlab(string matrixName) const{
   return stream.str();
 }
 
-void SparseMatrix::writeToMatlabFile(string fileName, string matrixName) const{
+void SolverMatrix::writeToMatlabFile(string fileName, string matrixName) const{
   ofstream stream;
   stream.open(fileName.c_str());
   stream << toMatlab(matrixName) << endl;
   stream.close();
 }
 
-void SparseMatrix::sortAndReduce(void){
+void SolverMatrix::sortAndReduce(void){
   // Each thread takes a set of rows
   #pragma omp parallel for
   for(size_t i = 0; i < nRow; i++){

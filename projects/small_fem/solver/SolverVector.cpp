@@ -1,9 +1,9 @@
-#include "ThreadVector.h"
+#include "SolverVector.h"
 
-ThreadVector::ThreadVector(void){
+SolverVector::SolverVector(void){
 }
 
-ThreadVector::ThreadVector(size_t size){
+SolverVector::SolverVector(size_t size){
   // Alloc //
   fail = 0;
   N    = size;
@@ -19,7 +19,7 @@ ThreadVector::ThreadVector(size_t size){
 
 }
 
-ThreadVector::~ThreadVector(void){
+SolverVector::~SolverVector(void){
   delete[] lock;
   delete[] v;
 }

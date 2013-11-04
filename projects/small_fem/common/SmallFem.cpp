@@ -1,4 +1,4 @@
-//#include <mpi.h>
+#include "mpi.h"
 //#include <petsc.h>
 //#include <slepc.h>
 
@@ -24,10 +24,9 @@ SmallFem::~SmallFem(void){
 
 void SmallFem::Initialize(int argc, char** argv){
   // Initialize only once
-
   if(!initOne){
     // Call MPI
-    //MPI_Init(&argc, &argv);
+    MPI_Init(&argc, &argv);
 
     // Get Options (Remove command name)
     option = new Options(argc - 1, argv + 1);
@@ -77,7 +76,7 @@ void SmallFem::Finalize(void){
     // Finalize MPI, PETSc and SLEPc
     //PetscFinalize();
     //SlepcFinalize();
-    //MPI_Finalize();
+    MPI_Finalize();
 
     finaOne = true;
   }

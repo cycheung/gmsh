@@ -30,79 +30,58 @@ macro(append_gmsh_src dir files)
 endmacro(append_gmsh_src)
 ##############################################
 
-## Look for Packages ##
-#######################
+## Includes for CMake ##
+########################
 include(FindPackageHandleStandardArgs)
-include(ExternalProject)
 
-## OpenMP
+## PETSc ##
+###########
+## PETSc dir & arch
+if(NOT DEFINED PETSC_DIR OR NOT DEFINED PETSC_ARCH)
+  set(PETSC_DIR $ENV{PETSC_DIR})
+  set(PETSC_ARCH $ENV{PETSC_ARCH})
+endif(NOT DEFINED PETSC_DIR OR NOT DEFINED PETSC_ARCH)
+
+## PETSc include
+set(PETSC_INCLUDES "${PETSC_DIR}/include;${PETSC_DIR}/${PETSC_ARCH}/include")
+
+## PETSc variables
+file(STRINGS ${PETSC_DIR}/${PETSC_ARCH}/conf/petscvariables
+  PETSC_VARIABLES NEWLINE_CONSUME)
+
+## PETSc external packages
+string(REGEX MATCH "PETSC_WITH_EXTERNAL_LIB = [^\n\r]*"
+  PETSC_LIBS ${PETSC_VARIABLES})
+string(REPLACE "PETSC_WITH_EXTERNAL_LIB = " "" PETSC_LIBS ${PETSC_LIBS})
+string(STRIP ${PETSC_LIBS} PETSC_LIBS)
+
+## PETSc BLAS and LAPACK
+string(REGEX MATCH "BLASLAPACK_LIB = [^\n\r]*"
+  PETSC_BLASLAPACK ${PETSC_VARIABLES})
+string(REPLACE "BLASLAPACK_LIB = " "" PETSC_BLASLAPACK ${PETSC_BLASLAPACK})
+string(STRIP ${PETSC_BLASLAPACK} PETSC_BLASLAPACK)
+
+## OpenMP ##
+############
 find_package(OpenMP)
 if(OPENMP_FOUND)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif(OPENMP_FOUND)
 
-## BLAS
-if(BLAS_LIBRARIES)
-else(BLAS_LIBRARIES)
-  find_package(BLAS)
-endif(BLAS_LIBRARIES)
-
-## LAPACK
-if(LAPACK_LIBRARIES)
-else(LAPACK_LIBRARIES)
-  find_package(LAPACK)
-endif(LAPACK_LIBRARIES)
-
-## Options ##
-#############
-set(BLAS_LIB   "${BLAS_LIBRARIES}"   CACHE STRING "BLAS libraries path")
-set(LAPACK_LIB "${LAPACK_LIBRARIES}" CACHE STRING "LAPACK libraries path")
-
-set(BLAS_LIBRARIES   "${BLAS_LIB}")
-set(LAPACK_LIBRARIES "${LAPACK_LIB}")
+## User Options ##
+##################
+set(PETSC_DIR  "${PETSC_DIR}"  CACHE PATH   "PETSc directory")
+set(PETSC_ARCH "${PETSC_ARCH}" CACHE STRING "PETSc architecture")
 
 ## Include Gmsh ##
 ##################
-set(BLAS_LAPACK_LIBRARIES "${BLAS_LIBRARIES};${LAPACK_LIBRARIES}")
+set(BLAS_LAPACK_LIBRARIES "${PETSC_BLASLAPACK}")
 add_subdirectory(../.. "${CMAKE_CURRENT_BINARY_DIR}/gmsh")
 
-## External Packages ##
-#######################
-## Linker FLAG for MUMPS
-exec_program(${CMAKE_SOURCE_DIR}/script/linker.sh
-  ARGS ${BLAS_LIBRARIES} OUTPUT_VARIABLE BLAS_LINKER_FLAGS)
-
-## Install MUMPS
-ExternalProject_Add(mumps
-  URL http://graal.ens-lyon.fr/MUMPS/MUMPS_4.10.0.tar.gz
-  PREFIX ${CMAKE_CURRENT_BINARY_DIR}/mumps
-  CONFIGURE_COMMAND ""
-  BUILD_IN_SOURCE 1
-  BUILD_COMMAND make all
-  INSTALL_COMMAND ""
-)
-
-ExternalProject_Get_Property(mumps source_dir)
-
-ExternalProject_Add_Step(mumps setBLAS
-  COMMAND ${CMAKE_SOURCE_DIR}/script/replace.sh LIBBLAS "-L${BLAS_LIBRARIES} ${BLAS_LINKER_FLAGS}" ${source_dir}/Make.inc/Makefile.gfortran.SEQ > ${source_dir}/Makefile.inc
-  DEPENDEES configure
-  DEPENDERS build
-)
-
-## MUMPS Include & Libraries
-set(MUMPS_INCLUDE ${source_dir}/include)
-
-set(MUMPS_LIB
-  ${source_dir}/lib/libcmumps.a
-  ${source_dir}/lib/libdmumps.a
-  ${source_dir}/lib/libmumps_common.a
-  ${source_dir}/lib/libpord.a
-  ${source_dir}/lib/libsmumps.a
-  ${source_dir}/lib/libzmumps.a
-  ${source_dir}/libseq/libmpiseq.a
-)
+## Status ##
+############
+message(STATUS "PETSc: ${PETSC_DIR}/{PETSC_ARCH}")
 
 ## Add Sources ##
 #################
@@ -139,8 +118,8 @@ include_directories(
   ../../Mesh
   ../../Solver
 
-  ## MUMPS
-  ${MUMPS_INCLUDE}
+  ## PETSc
+  ${PETSC_INCLUDES}
 )
 
 ## Compiler Flags ##
@@ -154,11 +133,9 @@ add_definitions(-g)
 ## Build
 add_library(sf STATIC ${sources})
 set_target_properties(sf PROPERTIES LINKER_LANGUAGE CXX)
-target_link_libraries(sf
-  ${MUMPS_LIB} lib ${BLAS_LIBRARY} ${LAPACK_LIBRARIES} -lrt)
+target_link_libraries(sf lib ${PETSC_LIBS})
 
 ## Make sure of dependencies
-add_dependencies(sf mumps)
 add_dependencies(sf lib)
 
 ## Build Simulations ##
