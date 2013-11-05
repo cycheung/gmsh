@@ -1,11 +1,9 @@
-//#include <slepceps.h>
+#include "slepceps.h"
 #include "SystemEigen.h"
 
 using namespace std;
 
 SystemEigen::SystemEigen(const Formulation& formulation){
-  throw Exception("I need SLEPC");
-  /*
   // Get Formulation //
   this->formulation = &formulation;
   this->fs          = &(formulation.fs());
@@ -27,11 +25,9 @@ SystemEigen::SystemEigen(const Formulation& formulation){
   nEigenValues = 0;
   assembled    = false;
   solved       = false;
-  */
 }
 
 SystemEigen::~SystemEigen(void){
-  /*
   if(eigenVector)
     delete eigenVector;
 
@@ -49,12 +45,10 @@ SystemEigen::~SystemEigen(void){
   }
 
   delete dofM;
-  */
 }
 
 void SystemEigen::
 setNumberOfEigenValues(size_t nEigenValues){
-  /*
   const size_t nDof = dofM->getUnfixedDofNumber();
 
   if(nEigenValues > nDof)
@@ -65,79 +59,67 @@ setNumberOfEigenValues(size_t nEigenValues){
 
   else
     this->nEigenValues = nEigenValues;
-  */
 }
 
 void SystemEigen::assemble(void){
-  /*
   // Enumerate //
   dofM->generateGlobalIdSpace();
-
-  // Alloc A //
-  const size_t size = dofM->getUnfixedDofNumber();
-
-  A = new Mat;
-  MatCreate(MPI_COMM_WORLD, A);
-  MatSetSizes(*A, size, size, size, size);
-  MatSetType(*A, "seqaij");
-
-  // Alloc B if needed //
-  if(general){
-    B = new Mat;
-    MatCreate(MPI_COMM_WORLD, B);
-    MatSetSizes(*B, size, size, size, size);
-    MatSetType(*B, "seqaij");
-  }
 
   // Get GroupOfDofs //
   const size_t E = fs->getSupport().getNumber();
   const vector<GroupOfDof*>& group = fs->getAllGroups();
 
-  // Get Sparcity Pattern & PreAllocate //
-  UniqueSparsity uniqueSparsity(size);
-  PetscInt* nonZero = new PetscInt[size];
-
-  // Matrix A
-  for(size_t i = 0; i < size; i++)
-    nonZero[i] = 0;
-
-  for(size_t i = 0; i < E; i++)
-    SystemAbstract::sparsity(nonZero, uniqueSparsity, *group[i]);
-
-  MatSeqAIJSetPreallocation(*A, 42, nonZero);
-
-  // Matrix B if needed (same sparsity)
-  if(general)
-    MatSeqAIJSetPreallocation(*B, 42, nonZero);
-
-  delete[] nonZero;
-
-  // Assemble SystemEigen //
+  // Get Formulation Terms //
   formulationPtr termA = &Formulation::weak;
   formulationPtr termB = &Formulation::weakB;
 
+  // Alloc Temp Sparse Matrices (not with PETSc) //
+  const size_t size = dofM->getUnfixedDofNumber();
+
+  SolverVector tmpRHS(size);
+  SolverMatrix tmpA(size, size);
+  SolverMatrix tmpB(size, size);
+
+  // Assemble Systems (tmpA and tmpB) //
+  #pragma omp parallel for
   for(size_t i = 0; i < E; i++)
-    SystemAbstract::assemble(*A, i, *group[i], termA);
+    SystemAbstract::assemble(tmpA, tmpRHS, i, *group[i], termA);
 
   if(general)
+    #pragma omp parallel for
     for(size_t i = 0; i < E; i++)
-      SystemAbstract::assemble(*B, i, *group[i], termB);
+      SystemAbstract::assemble(tmpB, tmpRHS, i, *group[i], termB);
 
-  MatAssemblyBegin(*A, MAT_FINAL_ASSEMBLY);
-  if(general)
-    MatAssemblyBegin(*B, MAT_FINAL_ASSEMBLY);
+  // Copy tmpA into Assembled PETSc matrix //
+  // Data
+  vector<int>    row;
+  vector<int>    col;
+  vector<double> value;
+  int            nNZ;
 
-  MatAssemblyEnd(*A, MAT_FINAL_ASSEMBLY);
-  if(general)
-    MatAssemblyEnd(*B, MAT_FINAL_ASSEMBLY);
+  // Serialize (CStyle) tmpA & Copy
+  nNZ = tmpA.serializeCStyle(row, col, value);
+  A   = new Mat;
+
+  MatCreateSeqAIJFromTriple(MPI_COMM_SELF, size, size,
+                            row.data(), col.data(), value.data(),
+                            A, nNZ, PETSC_FALSE);
+
+  // Copy tmpB (CStyle) into Assembled PETSc matrix (if needed) //
+  if(general){
+    nNZ = tmpB.serializeCStyle(row, col, value);
+    B   = new Mat;
+
+    MatCreateSeqAIJFromTriple(MPI_COMM_SELF, size, size,
+                              row.data(), col.data(), value.data(),
+                              B, nNZ, PETSC_FALSE);
+  }
 
   // The SystemEigen is assembled //
   assembled = true;
-  */
 }
 
 void SystemEigen::solve(void){
-  /*
   // Check nEigenValues
   if(!nEigenValues)
     throw
@@ -149,7 +131,7 @@ void SystemEigen::solve(void){
 
   // Build Solver //
   EPS solver;
-  EPSCreate(MPI_COMM_WORLD, &solver);
+  EPSCreate(MPI_COMM_SELF, &solver);
 
   if(general)
     EPSSetOperators(solver, *A, *B);
@@ -212,5 +194,4 @@ void SystemEigen::solve(void){
 
   // System solved ! //
   solved = true;
-  */
 }

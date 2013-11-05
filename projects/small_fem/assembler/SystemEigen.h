@@ -3,6 +3,7 @@
 
 #include <complex>
 #include "SystemAbstract.h"
+#include "petscmat.h"
 
 /**
    @class SystemEigen
@@ -21,13 +22,11 @@
 class SystemEigen: public SystemAbstract{
  private:
   bool general;
-  /*
+
   Mat* A;
   Mat* B;
 
   PetscInt nEigenValues;
-  */
-  size_t nEigenValues;
   std::vector<std::complex<double> >* eigenValue;
   std::vector<fullVector<std::complex<double> > >* eigenVector;
 

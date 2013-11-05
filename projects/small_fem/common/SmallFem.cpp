@@ -1,9 +1,9 @@
-#include "mpi.h"
-//#include <petsc.h>
-//#include <slepc.h>
-
 #include <vector>
 #include <string>
+
+#include "mpi.h"
+#include "petsc.h"
+#include "slepc.h"
 
 #include "BasisFactory.h"
 #include "Context.h"
@@ -32,7 +32,6 @@ void SmallFem::Initialize(int argc, char** argv){
     option = new Options(argc - 1, argv + 1);
 
     // PETSc And SLEPc
-    /*
     std::vector<std::string> argPetsc = option->getValue("-solver");
     int argPetscSize = argPetsc.size() + 1;
 
@@ -47,8 +46,8 @@ void SmallFem::Initialize(int argc, char** argv){
     delete[] argCStylePetsc;
 
     // Stop PETSc when error
-    // PetscPushErrorHandler(PetscAbortErrorHandler, NULL);
-    */
+    PetscPushErrorHandler(PetscAbortErrorHandler, NULL);
+
     // Gmsh Instance
     CTX::instance();
 
@@ -74,8 +73,8 @@ void SmallFem::Finalize(void){
     option = NULL;
 
     // Finalize MPI, PETSc and SLEPc
-    //PetscFinalize();
-    //SlepcFinalize();
+    PetscFinalize();
+    SlepcFinalize();
     MPI_Finalize();
 
     finaOne = true;

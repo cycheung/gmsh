@@ -18,7 +18,6 @@ SystemShowFunctionSpace::SystemShowFunctionSpace(const FunctionSpace& fs,
   // Alloc //
   A       = NULL;
   b       = NULL;
-  //xPetsc  = NULL;
   x       = new fullVector<double>(dofM->getUnfixedDofNumber());
   fNumber = functionNumber;
 

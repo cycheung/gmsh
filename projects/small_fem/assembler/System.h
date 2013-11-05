@@ -1,12 +1,7 @@
 #ifndef _SYSTEM_H_
 #define _SYSTEM_H_
 
-// #include <petscmat.h>
-// #include <petscvec.h>
-
 #include "SystemAbstract.h"
-#include "SolverVector.h"
-#include "SolverMatrix.h"
 
 /**
    @class System
@@ -18,15 +13,8 @@
 
 class System: public SystemAbstract{
  protected:
-  SolverMatrix* A;
-  SolverVector* b;
-
-  /*
-  Mat* A;
-  Vec* b;
-  Vec* xPetsc;
-  */
-
+  SolverMatrix*       A;
+  SolverVector*       b;
   fullVector<double>* x;
 
  public:

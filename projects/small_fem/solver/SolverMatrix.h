@@ -1,4 +1,4 @@
- #ifndef _SOLVERMATRIX_H_
+#ifndef _SOLVERMATRIX_H_
 #define _SOLVERMATRIX_H_
 
 #include <cstring>
@@ -49,6 +49,10 @@ class SolverMatrix{
   size_t serialize(std::vector<int>&    rowVector,
                    std::vector<int>&    colVector,
                    std::vector<double>& valueVector);
+
+  size_t serializeCStyle(std::vector<int>&    rowVector,
+                         std::vector<int>&    colVector,
+                         std::vector<double>& valueVector);
 
   std::string toString(void) const;
   std::string toMatlab(std::string matrixName) const;
@@ -108,6 +112,19 @@ class SolverMatrix{
    The three given vector will be such that:
    A[rowVector[k] - 1, colVector[k] - 1] = valueVector[k],
    where A is this SolverMatrix.
+   **
+
+   @fn SolverMatrix::serializeCStyle
+
+   @param rowVector A vector of integers
+   @param colVector A vector of integers
+   @param valueVector A vector of reals
+
+   @return Returns the number of non zero entries in this SolverMatrix
+
+   Same as SolverMatrix::serialize, but does the job in C style indexing.
+   Thus, the three given vector will be such that:
+   A[rowVector[k], colVector[k]] = valueVector[k],
    **
 
    @fn SolverMatrix::toString

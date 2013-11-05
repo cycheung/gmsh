@@ -61,6 +61,17 @@ string(REGEX MATCH "BLASLAPACK_LIB = [^\n\r]*"
 string(REPLACE "BLASLAPACK_LIB = " "" PETSC_BLASLAPACK ${PETSC_BLASLAPACK})
 string(STRIP ${PETSC_BLASLAPACK} PETSC_BLASLAPACK)
 
+## SLEPc ##
+###########
+## SLEPc dir
+if(NOT DEFINED SLEPC_DIR)
+  set(SLEPC_DIR $ENV{SLEPC_DIR})
+endif(NOT DEFINED SLEPC_DIR)
+
+## SLEPc lib & include
+set(SLEPC_LIBS     "${SLEPC_DIR}/${PETSC_ARCH}/lib/libslepc.a")
+set(SLEPC_INCLUDES "${SLEPC_DIR}/include;${SLEPC_DIR}/${PETSC_ARCH}/include")
+
 ## OpenMP ##
 ############
 find_package(OpenMP)
@@ -73,6 +84,7 @@ endif(OPENMP_FOUND)
 ##################
 set(PETSC_DIR  "${PETSC_DIR}"  CACHE PATH   "PETSc directory")
 set(PETSC_ARCH "${PETSC_ARCH}" CACHE STRING "PETSc architecture")
+set(SLEPC_DIR  "${SLEPC_DIR}"  CACHE PATH   "SLEPc directory")
 
 ## Include Gmsh ##
 ##################
@@ -81,7 +93,8 @@ add_subdirectory(../.. "${CMAKE_CURRENT_BINARY_DIR}/gmsh")
 
 ## Status ##
 ############
-message(STATUS "PETSc: ${PETSC_DIR}/{PETSC_ARCH}")
+message(STATUS "PETSc: ${PETSC_DIR}/${PETSC_ARCH}")
+message(STATUS "SLEPc: ${SLEPC_DIR}/${PETSC_ARCH}")
 
 ## Add Sources ##
 #################
@@ -118,8 +131,9 @@ include_directories(
   ../../Mesh
   ../../Solver
 
-  ## PETSc
+  ## PETSc & SLEPc
   ${PETSC_INCLUDES}
+  ${SLEPC_INCLUDES}
 )
 
 ## Compiler Flags ##
@@ -133,7 +147,7 @@ add_definitions(-g)
 ## Build
 add_library(sf STATIC ${sources})
 set_target_properties(sf PROPERTIES LINKER_LANGUAGE CXX)
-target_link_libraries(sf lib ${PETSC_LIBS})
+target_link_libraries(sf lib ${SLEPC_LIBS} ${PETSC_LIBS})
 
 ## Make sure of dependencies
 add_dependencies(sf lib)

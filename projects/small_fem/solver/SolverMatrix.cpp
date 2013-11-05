@@ -97,6 +97,23 @@ size_t SolverMatrix::serialize(vector<int>&    rowVector,
   return nNZ;
 }
 
+size_t SolverMatrix::serializeCStyle(vector<int>&    rowVector,
+                                     vector<int>&    colVector,
+                                     vector<double>& valueVector){
+  // Do it Fortran Style
+  const size_t nNZ = serialize(rowVector, colVector, valueVector);
+
+  // And substract 1 from indices
+  for(size_t i = 0; i < nNZ; i++)
+    rowVector[i]--;
+
+  for(size_t i = 0; i < nNZ; i++)
+    colVector[i]--;
+
+  // Return
+  return nNZ;
+}
+
 string SolverMatrix::toString(void) const{
   stringstream stream;
   list<pair<size_t, double> >::iterator it;
