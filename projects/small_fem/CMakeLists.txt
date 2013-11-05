@@ -69,7 +69,8 @@ if(NOT DEFINED SLEPC_DIR)
 endif(NOT DEFINED SLEPC_DIR)
 
 ## SLEPc lib & include
-set(SLEPC_LIBS     "${SLEPC_DIR}/${PETSC_ARCH}/lib/libslepc.a")
+set(SLEPC_LIBS     "-Wl,-rpath,${SLEPC_DIR}/${PETSC_ARCH}/lib")
+set(SLEPC_LIBS     "${SLEPC_LIBS} -L${SLEPC_DIR}/${PETSC_ARCH}/lib  -lslepc")
 set(SLEPC_INCLUDES "${SLEPC_DIR}/include;${SLEPC_DIR}/${PETSC_ARCH}/include")
 
 ## OpenMP ##
