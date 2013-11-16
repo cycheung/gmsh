@@ -119,17 +119,40 @@ A) The packages needed to install gmsh are (gmsh has to be install to use cm3app
 
         My last config (with superlu and mumps: required for multiscale)
 ./config/configure.py --with-debugging=0 --with-blas-lapack-dir=/usr/lib64 --with-mpi-dir=/usr/lib64/ --with-pic --with-shared-libraries=1 --download-mumps=yes --download-scalapack=yes --download-blacs=yes --with-batch --known-mpi-shared-libraries=0 --download-parmetis=yes --download-metis=yes --download-superlu_dist=yes
+        For 3.4 on dragon1 (after loading all the required modules see 5c):
+./config/configure.py --with-debugging=0 --with-blas-lib=$BLASDIR/lib$BLASLIB.so --with-lapack-lib=$LAPACKDIR/lib$LAPACKLIB.so --with-mpi-dir=$MPI_HOME --with-pic --with-shared-libraries=1 --with-clanguage=cxx --with-batch --known-mpi-shared-libraries=0
 
            put --with-debugging=1 for debug
            for more petsc configure options type: ./configure/configure.py -help
            On cluster (6/12 or 4/8 cpu) add --with-batch --known-mpi-shared=0
 
-         5b) On Ceci clusters (hmem and lemaitre2) the configure option create a file that you have to submit to the job manager. Toward this end type 
+         5b) On Ceci clusters (hmemi, dragon1 and lemaitre2) the configure option create a file that you have to submit to the job manager. Toward this end type 
           cp gmsh/project/NonLinearSolver/clusterScript/ceci_petsc.sh $PETSC_DIR
           sbatch ceci_petsc.sh
 Then wait until the job end (the last line of the created file "petsc-install.out" has to be "Finish" the file ./reconfigure-linux-gnu-c-opt.py is created that you have to launch by typing:
            ./reconfigure-linux-gnu-c-opt.py
-          
+        
+        5c) This is a macro that load all the required module on dragon1. You can put it on your .bashrc and then bash; load_module will load the required module
+function load_module()
+{
+  module purge
+  module add GCC/4.7.3
+#  module add ncurses/5.9-GCC-4.7.3
+  module add CMake/2.8.11.1-GCC-4.7.3
+  module add lapack/gcc/3.4.2
+  # hack as the load of module lapack export BLASDIR???
+  export LAPACKDIR=$BLASDIR
+  export LAPACKLIB=$BLASLIB
+  # then load blas
+  module add blas/gcc/3.4.2
+  module add openmpi/1.6.1/gnu64-4.7.3
+  echo "List of loaded modules:"
+  module list
+}
+        5d) Since PETSC-3.4 it seem that there is an issue when you compile Gmsh. You have error message telling that memcpy, memset,... are not defined. To solve this problem you have to add 
+     #include<cstring>
+at the first line of the file $PETSC_DIR/include/petscsys.h
+
         6) If configuration failed ask or search... Otherwise type the command (if it is suggested by configure copy and paste it): 
             make PETSC_DIR=<installation folder> PETSC_ARCH=linux-gnu-c-opt all
 
@@ -207,6 +230,9 @@ B) Now you can install your project(s) (dgshell and/or dG3D and/or msch), NonLin
              ENABLE_DGSHELL = OFF/OFF
              ENABLE_DG3D = ON /OFF
              ENABLE_MSCH = ON / OFF
+
+             On dragon1 some FLTK are present but not all so you have to disable it
+             ENABLE_FLTK = OFF
 
              On hmem it fails to find the mpi version used for petsc so you have to edit the configuration yourself
              (press T to go in advanced mode and you hae to press c one time after put ENABLE_MPI = ON)
