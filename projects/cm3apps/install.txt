@@ -67,6 +67,21 @@ A) The packages needed to install gmsh are (gmsh has to be install to use cm3app
                make
                make install
 
+    ° Cmake (On hmem ceci cluster as CMake version is too old (2.6.4))
+       1) Download the source from cmake website http://www.cmake.org/cmake/resources/software.html
+       2) Untar the archive
+          tar -xvf blabla.tar.gz
+       3) Create in your home (or somewhere else) a cmake directory
+          mkdir cmake
+       4) Go in the extracted folder and do 
+          ./configure --prefix=~/cmake
+          gmake
+          gmake install 
+       5) in your .bashrc add the cmake/bin folder in your path (first like this it is this one that will be picked up)
+          export PATH=$HOME/cmake/bin:$PATH
+       6) bash; cmake --version 
+          should be the version you just install
+
     ° PETSc (has to be installed manually)
 
         1) Download sources : http://www.mcs.anl.gov/petsc/petsc-as/documentation/installation.html
@@ -109,7 +124,7 @@ A) The packages needed to install gmsh are (gmsh has to be install to use cm3app
         for 3.2 version on lemaitre2 and you have to submit a job (see 5b below)
             ./config/configure.py --with-debugging=0 --with-blas-lib=/usr/local/blas/3.2.1/gcc/lib64/libblas.so --with-lapack-lib=/usr/local/lapack/3.2.1/gcc/lib64/liblapack.so --with-mpi-dir=/usr/local/openmpi/1.4.5/gcc/ --with-pic --with-shared-libraries=1 --with-clanguage=cxx --with-batch --known-mpi-shared-libraries=0
   
-        for 3.2 version on hmem (lapack is not install --> installed through petsc) and you have to submit a job (see 5b belo
+        for 3.2 version on hmem (lapack is not install --> installed through petsc) and you have to submit a job (see 5b below)
 ./config/configure.py --with-debugging=0 --download-f-blas-lapack=1 --with-mpi-dir=/usr/local/openmpi/1.5.3-gcc-4.4.4/ --with-pic --with-shared-libraries=1 --with-clanguage=cxx --with-batch --known-mpi-shared-libraries
          for 3.3 version on cm3011
  ./config/configure.py --with-debugging=0 --with-blas-lapack-dir=/usr/lib64 --with-mpi-dir=/usr/lib64/ --with-pic --with-shared-libraries=1 --download-mumps=yes --download-scalapack=yes --download-blacs=yes --download-parmetis=yes --download-metis=yes --download-superlu_dist=yes
@@ -136,16 +151,15 @@ Then wait until the job end (the last line of the created file "petsc-install.ou
 function load_module()
 {
   module purge
-  module add GCC/4.7.3
-#  module add ncurses/5.9-GCC-4.7.3
-  module add CMake/2.8.11.1-GCC-4.7.3
-  module add lapack/gcc/3.4.2
+  module load GCC/4.7.3
+  module load CMake/2.8.11.1-GCC-4.7.3
+  module load lapack/gcc/3.4.2
   # hack as the load of module lapack export BLASDIR???
   export LAPACKDIR=$BLASDIR
   export LAPACKLIB=$BLASLIB
   # then load blas
-  module add blas/gcc/3.4.2
-  module add openmpi/1.6.1/gnu64-4.7.3
+  module load blas/gcc/3.4.2
+  module load openmpi/1.6.1/gnu64-4.7.3
   echo "List of loaded modules:"
   module list
 }
