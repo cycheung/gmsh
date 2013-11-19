@@ -8,21 +8,14 @@
 
 using namespace std;
 
-// Pi  = atan(1) * 4
-// Mu  = 4 * Pi * 10^-7
-// Eps = 8.85418781762 * 10^−12
-//const double FormulationSteadyWaveVectorSlow::mu  = 4 * atan(1) * 4 * 1E-7;
-//const double FormulationSteadyWaveVectorSlow::eps = 8.85418781762E-12;
-
-const double FormulationSteadyWaveVectorSlow::mu  = 1;
-const double FormulationSteadyWaveVectorSlow::eps = 1;
+const double FormulationSteadyWaveVectorSlow::cSquare = 1;
 
 FormulationSteadyWaveVectorSlow::
 FormulationSteadyWaveVectorSlow(GroupOfElement& goe,
-                                double k,
+                                double omega,
                                 size_t order){
-  // Wave Number Squared //
-  kSquare = k * k;
+  // Pulsation Squared //
+  omegaSquare = omega * omega;
 
   // Domain //
   this->goe = &goe;
@@ -104,7 +97,7 @@ double FormulationSteadyWaveVectorSlow::weak(size_t dofI,
     Mapper::hDiv(eCurlFun, dofJ, g, *jac, det, phiJ);
 
     integral1 +=
-      ((phiI * phiJ) / mu) * fabs(det) * (*gW1)(g);
+      ((phiI * phiJ)) * fabs(det) * (*gW1)(g);
   }
 
 
@@ -117,7 +110,7 @@ double FormulationSteadyWaveVectorSlow::weak(size_t dofI,
     Mapper::hCurl(eFun, dofJ, g, *jac, phiJ);
 
     integral2 +=
-      ((phiI * phiJ) * eps * kSquare) * fabs(det) * (*gW2)(g);
+      ((phiI * phiJ) * omegaSquare / cSquare) * fabs(det) * (*gW2)(g);
   }
 
   return integral1 - integral2;

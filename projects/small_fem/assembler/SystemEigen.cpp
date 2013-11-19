@@ -89,7 +89,12 @@ void SystemEigen::assemble(void){
     #pragma omp parallel for
     for(size_t i = 0; i < E; i++)
       SystemAbstract::assemble(tmpB, tmpRHS, i, *group[i], termB);
-
+  /*
+  // Print Assembled Matrices //
+  tmpA.writeToMatlabFile("sfMatA.m", "sfMatA");
+  if(general)
+    tmpB.writeToMatlabFile("sfMatB.m", "sfMatB");
+  */
   // Copy tmpA into Assembled PETSc matrix //
   // Data
   vector<int>    row;
@@ -145,12 +150,32 @@ void SystemEigen::solve(void){
 
   // Set Options //
   EPSSetDimensions(solver, nEigenValues, PETSC_DECIDE, PETSC_DECIDE);
-  EPSSetTolerances(solver, 1E-18, 1E6);
-  EPSSetType(solver, EPSKRYLOVSCHUR);
+  EPSSetTolerances(solver, 1E-12, 1E6);
   EPSSetWhichEigenpairs(solver, EPS_SMALLEST_MAGNITUDE);
+
+  // Use Krylov Schur //
+  EPSSetType(solver, EPSKRYLOVSCHUR);
+  /*
+  // Use Generalized Davidson Solver and LU (MUMPS) preconditioning //
+  KSP linSolver;
+  PC  precond;
+  ST  specT;
+
+  EPSSetType(solver, "gd");
+
+  EPSGetST(solver, &specT);
+  STSetType(specT, "precond");
+  STGetKSP(specT, &linSolver);
+
+  KSPSetType(linSolver, "preonly");
+  KSPGetPC(linSolver, &precond);
+  PCSetType(precond, "lu");
+  PCFactorSetMatSolverPackage(precond, "mumps");
+  */
 
   // Override with PETSc Database //
   EPSSetFromOptions(solver);
+  //STSetFromOptions(specT);
 
   // Solve //
   EPSSolve(solver);

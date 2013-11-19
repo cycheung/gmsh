@@ -12,8 +12,11 @@
 #include "PyrReferenceSpace.h"
 #include "PriReferenceSpace.h"
 
-#include "TriNodeBasis.h"
 #include "LineNodeBasis.h"
+#include "LineEdgeBasis.h"
+#include "LineNedelecBasis.h"
+#include "TriNodeBasis.h"
+#include "QuadNedelecBasis.h"
 
 #include "Mesh.h"
 #include "fullMatrix.h"
@@ -29,7 +32,12 @@ using namespace std;
 
 int main(int argc, char** argv){
   SmallFem::Initialize(argc, argv);
+  LineReferenceSpace ref;
+  cout << ref.toString() << endl;
+  LineNedelecBasis b;//(atoi(argv[1]));
+  cout << endl << b.toString() << endl;
 
+  /*
   size_t n = 2;
 
   SolverMatrix A(n, n);
@@ -47,7 +55,7 @@ int main(int argc, char** argv){
 
   for(size_t i = 0; i < n; i++)
     cout << x(i) << endl;
-
+  */
   SmallFem::Finalize();
 
   /*

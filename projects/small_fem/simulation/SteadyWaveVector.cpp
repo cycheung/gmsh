@@ -13,8 +13,6 @@
 
 using namespace std;
 
-double pi = 3.14159265359;
-
 fullVector<double> fSource(fullVector<double>& xyz){
   fullVector<double> res(3);
 
@@ -54,6 +52,7 @@ void compute(const Options& option){
   const size_t order = atoi(option.getValue("-o")[0].c_str());
 
   // SteadyWaveVector //
+  assemble.start();
   FormulationSteadyWaveVector sWave(domain, puls * 1, order);
   System sys(sWave);
 
@@ -67,7 +66,6 @@ void compute(const Options& option){
        << " --- Pulsation: "               << puls
        << "): " << sys.getSize()           << endl;
 
-  assemble.start();
   sys.assemble();
   assemble.stop();
   cout << "Assembled: " << assemble.time() << assemble.unit()

@@ -17,12 +17,11 @@
 
 class FormulationSteadyWaveVector: public Formulation{
  private:
-  // Physical Values //
-  static const double mu;
-  static const double eps;
+  // Speed of medium squared //
+  static const double cSquare;
 
-  // Wave Number Squared //
-  double kSquare;
+  // Pulsation Squared //
+  double omegaSquare;
 
   // Function Space & Basis //
   FunctionSpaceVector* fspace;
@@ -34,7 +33,7 @@ class FormulationSteadyWaveVector: public Formulation{
 
  public:
   FormulationSteadyWaveVector(GroupOfElement& goe,
-                              double k,
+                              double omega,
                               size_t order);
 
   virtual ~FormulationSteadyWaveVector(void);
@@ -56,14 +55,13 @@ class FormulationSteadyWaveVector: public Formulation{
 /**
    @fn FormulationSteadyWaveVector::FormulationSteadyWaveVector
    @param goe A GroupOfElement
-   @param k A real number
+   @param omega A real number
    @param order A natural number
 
    Instantiates a new FormulationSteadyWaveVector of the given
-   @em order and @em wave @em number (@c k)@n
+   order and pulsation (omega)@n
 
-   The given GroupOfElement will be used as the
-   geomtrical @em domain
+   The given GroupOfElement will be used as the geomtrical domain
    **
 
    @fn FormulationSteadyWaveVector::~FormulationSteadyWaveVector

@@ -1,4 +1,3 @@
-#include <cmath>
 #include <cstdio>
 #include <iostream>
 
@@ -8,7 +7,7 @@
 #include "WriterMsh.h"
 #include "Interpolator.h"
 
-#include "FormulationVibration.h"
+#include "FormulationEigenFrequencyScalar.h"
 
 #include "SmallFem.h"
 
@@ -32,7 +31,7 @@ void compute(const Options& option){
   const size_t nWave = atoi(option.getValue("-n")[0].c_str());
 
   // Vibration //
-  FormulationVibration vibration(domain, order);
+  FormulationEigenFrequencyScalar vibration(domain, order);
   SystemEigen sysVibration(vibration);
 
   //sysVibration.fixCoef(msh.getFromPhysical(5), 0);
@@ -55,12 +54,11 @@ void compute(const Options& option){
     sysVibration.getEigenValues();
 
   cout << endl
-       << "Number\tEigen Value\tEigen Wave Number" << endl;
+       << "Number\tEigen Value" << endl;
 
   for(size_t i = 0; i < nEigenValue; i++)
-    cout << "#" << i + 1        << "\t"
-         << eigenValue[i]       << "\t"
-         << sqrt(eigenValue[i]) << endl;
+    cout << "#" << i + 1  << "\t"
+         << eigenValue[i] << endl;
 
   // Write Sol //
   if(!option.getValue("-nopos").size()){

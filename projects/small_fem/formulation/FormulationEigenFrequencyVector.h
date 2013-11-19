@@ -1,5 +1,5 @@
-#ifndef _FORMULATIONEIGENFREQUENCY_H_
-#define _FORMULATIONEIGENFREQUENCY_H_
+#ifndef _FORMULATIONEIGENFREQUENCYVECTOR_H_
+#define _FORMULATIONEIGENFREQUENCYVECTOR_H_
 
 #include "FunctionSpaceVector.h"
 
@@ -9,17 +9,16 @@
 #include "Formulation.h"
 
 /**
-   @class FormulationEigenFrequency
-   @brief Formulation for the Eigenfrequencies Problem
+   @class FormulationEigenFrequencyVector
+   @brief Formulation for the vectrorial Eigenfrequencies Problem
 
-   Formulation for the Eigenfrequencies Problem
+   Formulation for the vectorial Eigenfrequencies Problem
 */
 
-class FormulationEigenFrequency: public Formulation{
+class FormulationEigenFrequencyVector: public Formulation{
  private:
-  // Physical Values //
-  static const double mu;
-  static const double eps;
+  // Speed of medium squared //
+  static const double cSquare;
 
   // Function Space & Basis //
   FunctionSpaceVector* fspace;
@@ -30,10 +29,10 @@ class FormulationEigenFrequency: public Formulation{
   TermGradGrad* localTerms2;
 
  public:
-  FormulationEigenFrequency(GroupOfElement& goe,
+  FormulationEigenFrequencyVector(GroupOfElement& goe,
                             size_t order);
 
-  virtual ~FormulationEigenFrequency(void);
+  virtual ~FormulationEigenFrequencyVector(void);
 
   virtual bool isGeneral(void) const;
 
@@ -50,16 +49,16 @@ class FormulationEigenFrequency: public Formulation{
 };
 
 /**
-   @fn FormulationEigenFrequency::FormulationEigenFrequency
+   @fn FormulationEigenFrequencyVector::FormulationEigenFrequencyVector
    @param goe A GroupOfElement defining the Domain of the Problem
    @param order A natural number, giving the order of this Formulation
 
-   Instanciates a new EigenFormulation for the
+   Instanciates a new Formulation for the vectorial
    Eigenfrequencies Problem
    **
 
-   @fn FormulationEigenFrequency::~FormulationEigenFrequency
-   Deletes this FormualtionEigenFrequency
+   @fn FormulationEigenFrequencyVector::~FormulationEigenFrequencyVector
+   Deletes this Formualtion
 */
 
 #endif

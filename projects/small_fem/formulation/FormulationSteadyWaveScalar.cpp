@@ -7,25 +7,18 @@
 
 using namespace std;
 
-// Pi  = atan(1) * 4
-// Mu  = 4 * Pi * 10^-7
-// Eps = 8.85418781762 * 10^−12
-//const double FormulationSteadyWaveScalar::mu  = 4 * atan(1) * 4 * 1E-7;
-//const double FormulationSteadyWaveScalar::eps = 8.85418781762E-12;
-
-const double FormulationSteadyWaveScalar::mu  = 1;
-const double FormulationSteadyWaveScalar::eps = 1;
+const double FormulationSteadyWaveScalar::cSquare = 1;
 
 FormulationSteadyWaveScalar::FormulationSteadyWaveScalar(GroupOfElement& goe,
-                                                         double k,
+                                                         double omega,
                                                          size_t order){
   // Can't have 0th order //
   if(order == 0)
     throw
       Exception("Can't have a Scalar SteadyWave formulation of order 0");
 
-  // Wave Number Squared //
-  kSquare = k * k;
+  // Pulsation Squared //
+  omegaSquare = omega * omega;
 
   // Function Space & Basis//
   basis  = BasisGenerator::generate(goe.get(0).getType(),
@@ -65,8 +58,8 @@ FormulationSteadyWaveScalar::~FormulationSteadyWaveScalar(void){
 double FormulationSteadyWaveScalar::weak(size_t dofI, size_t dofJ,
                                          size_t elementId) const{
   return
-    localTerms1->getTerm(dofI, dofJ, elementId) / mu -
-    localTerms2->getTerm(dofI, dofJ, elementId) * eps * kSquare;
+    localTerms1->getTerm(dofI, dofJ, elementId) -
+    localTerms2->getTerm(dofI, dofJ, elementId) * omegaSquare / cSquare;
 }
 
 double FormulationSteadyWaveScalar::rhs(size_t equationI,

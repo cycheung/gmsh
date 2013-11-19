@@ -7,8 +7,9 @@ set(src
   FormulationSteadyWaveVector.cpp
   FormulationSteadyWaveVectorSlow.cpp
   FormulationSteadyWaveScalar.cpp
-  FormulationEigenFrequency.cpp
-  FormulationVibration.cpp
+
+  FormulationEigenFrequencyVector.cpp
+  FormulationEigenFrequencyScalar.cpp
 
   FormulationElementGradGrad.cpp
   FormulationElementOneFormOneForm.cpp

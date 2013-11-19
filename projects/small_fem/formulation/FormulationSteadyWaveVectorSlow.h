@@ -17,12 +17,11 @@
 
 class FormulationSteadyWaveVectorSlow: public Formulation{
  private:
-  // Physical Values //
-  static const double mu;
-  static const double eps;
+  // Speed of medium squared //
+  static const double cSquare;
 
-  // Wave Number Squared //
-  double kSquare;
+  // Pulsation Squared //
+  double omegaSquare;
 
   // Gaussian Quadrature Data (Term One) //
   int G1;
@@ -47,7 +46,7 @@ class FormulationSteadyWaveVectorSlow: public Formulation{
 
  public:
   FormulationSteadyWaveVectorSlow(GroupOfElement& goe,
-                                  double k,
+                                  double omega,
                                   size_t order);
 
   virtual ~FormulationSteadyWaveVectorSlow(void);
@@ -70,14 +69,13 @@ class FormulationSteadyWaveVectorSlow: public Formulation{
 /**
    @fn FormulationSteadyWaveVectorSlow::FormulationSteadyWaveVectorSlow
    @param goe A GroupOfElement
-   @param k A real number
+   @param omega A real number
    @param order A natural number
 
    Instantiates a new FormulationSteadyWaveVectorSlow of the given
-   @em order and @em wave @em number (@c k)@n
+   order and pulsation (omega)@n
 
-   The given GroupOfElement will be used as the
-   geomtrical @em domain
+   The given GroupOfElement will be used as the geomtrical domain
    **
 
    @fn FormulationSteadyWaveVectorSlow::~FormulationSteadyWaveVectorSlow

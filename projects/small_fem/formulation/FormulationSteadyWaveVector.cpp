@@ -1,28 +1,18 @@
 #include "BasisGenerator.h"
 #include "GroupOfJacobian.h"
 #include "Quadrature.h"
-#include "Timer.h"
+
 #include "FormulationSteadyWaveVector.h"
 
 using namespace std;
 
-// Pi  = atan(1) * 4
-// Mu  = 4 * Pi * 10^-7
-// Eps = 8.85418781762 * 10^−12
-//const double FormulationSteadyWaveVector::mu  = 4 * atan(1) * 4 * 1E-7;
-//const double FormulationSteadyWaveVector::eps = 8.85418781762E-12;
-
-const double FormulationSteadyWaveVector::mu  = 1;
-const double FormulationSteadyWaveVector::eps = 1;
+const double FormulationSteadyWaveVector::cSquare = 1;
 
 FormulationSteadyWaveVector::FormulationSteadyWaveVector(GroupOfElement& goe,
-                                                         double k,
+                                                         double omega,
                                                          size_t order){
-  //Timer timer, timerGoj;
-  //timer.start();
-
-  // Wave Number Squared //
-  kSquare = k * k;
+  // Pulsation Squared //
+  omegaSquare = omega * omega;
 
   // Function Space & Basis //
   basis  = BasisGenerator::generate(goe.get(0).getType(),
@@ -43,23 +33,12 @@ FormulationSteadyWaveVector::FormulationSteadyWaveVector(GroupOfElement& goe,
   // Local Terms //
   basis->preEvaluateDerivatives(gC1);
   basis->preEvaluateFunctions(gC2);
-  //cout << "Jacobians" << endl << flush;
 
-  //timerGoj.start();
   GroupOfJacobian jac1(goe, *basis, gC1, "jacobian");
   GroupOfJacobian jac2(goe, *basis, gC2, "invert");
-  //timerGoj.stop();
 
-  //cout << "Terms" << endl << flush;
   localTerms1 = new TermCurlCurl(jac1, *basis, gW1);
   localTerms2 = new TermGradGrad(jac2, *basis, gW2);
-
-  //timer.stop();
-
-  //cout << "Jacs: " << timerGoj.time() << " " << timerGoj.unit()
-  //     << endl << flush;
-  //cout << "Full: " << timer.time() << " " << timer.unit()
-  //     << endl << flush;
 }
 
 FormulationSteadyWaveVector::~FormulationSteadyWaveVector(void){
@@ -73,8 +52,8 @@ FormulationSteadyWaveVector::~FormulationSteadyWaveVector(void){
 double FormulationSteadyWaveVector::weak(size_t dofI, size_t dofJ,
                                          size_t elementId) const{
   return
-    localTerms1->getTerm(dofI, dofJ, elementId) / mu -
-    localTerms2->getTerm(dofI, dofJ, elementId) * eps * kSquare;
+    localTerms1->getTerm(dofI, dofJ, elementId) -
+    localTerms2->getTerm(dofI, dofJ, elementId) * omegaSquare / cSquare;
 }
 
 double FormulationSteadyWaveVector::rhs(size_t equationI,

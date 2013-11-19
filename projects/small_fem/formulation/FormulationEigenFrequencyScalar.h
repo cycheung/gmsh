@@ -1,5 +1,5 @@
-#ifndef _FORMULATIONSTEADYWAVESCALAR_H_
-#define _FORMULATIONSTEADYWAVESCALAR_H_
+#ifndef _FORMULATIONEIGENFREQUENCYSCALAR_H_
+#define _FORMULATIONEIGENFREQUENCYSCALAR_H_
 
 #include "FunctionSpaceScalar.h"
 
@@ -9,19 +9,16 @@
 #include "Formulation.h"
 
 /**
-   @class FormulationSteadyWaveScalar
-   @brief Scalar Formulation for the Steady Wave problem
+   @class FormulationEigenFrequencyScalar
+   @brief Formulation for the scalar Eigenfrequencies Problem
 
-   Scalar Formulation for the @em Steady @em Wave problem
+   Formulation for the scalar Eigenfrequencies Problem
  */
 
-class FormulationSteadyWaveScalar: public Formulation{
+class FormulationEigenFrequencyScalar: public Formulation{
  private:
   // Speed of medium squared //
   static const double cSquare;
-
-  // Pulsation Squared //
-  double omegaSquare;
 
   // Function Space & Basis //
   FunctionSpaceScalar* fspace;
@@ -32,11 +29,10 @@ class FormulationSteadyWaveScalar: public Formulation{
   TermFieldField* localTerms2;
 
  public:
-  FormulationSteadyWaveScalar(GroupOfElement& goe,
-                              double omega,
-                              size_t order);
+  FormulationEigenFrequencyScalar(GroupOfElement& goe,
+                       size_t order);
 
-  virtual ~FormulationSteadyWaveScalar(void);
+  virtual ~FormulationEigenFrequencyScalar(void);
 
   virtual bool isGeneral(void) const;
 
@@ -53,19 +49,17 @@ class FormulationSteadyWaveScalar: public Formulation{
 };
 
 /**
-   @fn FormulationSteadyWaveScalar::FormulationSteadyWaveScalar
+   @fn FormulationEigenFrequencyScalar::FormulationEigenFrequencyScalar
    @param goe A GroupOfElement
-   @param omega A real number
    @param order A natural number
 
-   Instantiates a new FormulationSteadyWaveScalar of the given
-   order and pulsation (omega)@n
+   Instantiates a new FormulationEigenFrequencyScalar of the given order@n
 
    The given GroupOfElement will be used as the geomtrical domain
    **
 
-   @fn FormulationSteadyWaveScalar::~FormulationSteadyWaveScalar
-   Deletes this FormulationSteadyWaveScalar
+   @fn FormulationEigenFrequencyScalar::~FormulationEigenFrequencyScalar
+   Deletes this FormulationEigenFrequencyScalar
 */
 
 #endif
