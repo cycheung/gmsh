@@ -67,7 +67,7 @@ A) The packages needed to install gmsh are (gmsh has to be install to use cm3app
                make
                make install
 
-    ° Cmake (On hmem ceci cluster as CMake version is too old (2.6.4))
+    ° Cmake (On hmem  and hercules ceci cluster as CMake version is too old (2.6.4))
        1) Download the source from cmake website http://www.cmake.org/cmake/resources/software.html
        2) Untar the archive
           tar -xvf blabla.tar.gz
@@ -136,7 +136,7 @@ A) The packages needed to install gmsh are (gmsh has to be install to use cm3app
 ./config/configure.py --with-debugging=0 --with-blas-lapack-dir=/usr/lib64 --with-mpi-dir=/usr/lib64/ --with-pic --with-shared-libraries=1 --download-mumps=yes --download-scalapack=yes --download-blacs=yes --with-batch --known-mpi-shared-libraries=0 --download-parmetis=yes --download-metis=yes --download-superlu_dist=yes
 
 
-        For 3.4 on ceci clusters (dragon1, lemaitre2 and for hmem see below) (after loading all the required modules see 5c):
+        For 3.4 on ceci clusters (dragon1, lemaitre2, hercules 1 and for hmem see below) (after loading all the required modules see 5c):
 ./config/configure.py --with-debugging=0 --with-blas-lib=$BLASDIR/lib$BLASLIB.so --with-lapack-lib=$LAPACKDIR/lib$LAPACKLIB.so --with-mpi-dir=$MPI_HOME --with-pic --with-shared-libraries=1 --with-clanguage=cxx --with-batch --known-mpi-shared-libraries=0
            
         altenrative with multiscale:
@@ -148,11 +148,14 @@ A) The packages needed to install gmsh are (gmsh has to be install to use cm3app
            for the vega cluster lapack is not compiled with -fPIC so the link to the lapack library fail and you have to ask PETSc to download blas and lapack:
 ./config/configure.py --with-debugging=0 --download-f-blas-lapack=1 --with-mpi-dir=$MPI_HOME --with-pic --with-shared-libraries=1 --with-clanguage=cxx --with-batch --known-mpi-shared-libraries=0 
 
+           for the hercules cluster the the mpif90 compilor fails add --with-fc=f90. It is thus not possible to install scalapack:
+
+
            put --with-debugging=1 for debug
            for more petsc configure options type: ./configure/configure.py -help
            On cluster (6/12 or 4/8 cpu) add --with-batch --known-mpi-shared=0
 
-         5b) On Ceci clusters (hmemi, vega, dragon1 and lemaitre2) the configure option create a file that you have to submit to the job manager. Toward this end type (on vega the script is different) 
+         5b) On Ceci clusters (hmemi, vega, dragon1, hercules and lemaitre2) the configure option create a file that you have to submit to the job manager. Toward this end type (on vega the script is different) 
           cp gmsh/projects/NonLinearSolver/clusterScript/ceci_petsc.sh $PETSC_DIR or on vega cp gmsh/project/NonLinearSolver/clusterScript/vega_petsc.sh $PETSC_DIR
           sbatch ceci_petsc.sh (vega_petsc.sh)
 Then wait until the job end (the last line of the created file "petsc-install.out" has to be "Finish" the file ./reconfigure-linux-gnu-c-opt.py is created that you have to launch by typing:
@@ -160,21 +163,21 @@ Then wait until the job end (the last line of the created file "petsc-install.ou
         
         5c) This is a macro that load all the required module on ceci cluster. Be aware that the macro is cluster dependant as the version of the mpackages var from one cluster to others. "module avail" will list all the available modules (including different compiler and MPI versions) so you may change this macro to fit your needs. You can put it on your .bashrc and then bash; load_module will load the required module
             - dragon1:
-function load_module()
-{
-  module purge
-  module load GCC/4.7.3
-  module load CMake/2.8.11.1-GCC-4.7.3
-  module load lapack/gcc/3.4.2
-  # hack as the load of module lapack export BLASDIR???
-  export LAPACKDIR=$BLASDIR
-  export LAPACKLIB=$BLASLIB
-  # then load blas
-  module load blas/gcc/3.4.2
-  module load openmpi/1.6.1/gnu64-4.7.3
-  echo "List of loaded modules:"
-  module list
-}
+	function load_module()
+	{
+	  module purge
+	  module load GCC/4.7.3
+	  module load CMake/2.8.11.1-GCC-4.7.3
+	  module load lapack/gcc/3.4.2
+	  # hack as the load of module lapack export BLASDIR???
+	  export LAPACKDIR=$BLASDIR
+	  export LAPACKLIB=$BLASLIB
+	  # then load blas
+	  module load blas/gcc/3.4.2
+	  module load openmpi/1.6.1/gnu64-4.7.3
+	  echo "List of loaded modules:"
+	  module list
+	}
            - hmem:
                 function load_module()
                 {
@@ -184,20 +187,35 @@ function load_module()
                 }
 
            -lemaitre2:
-function load_module() # as initadd seems not working
-{
-  module purge
-  # hack as LAPACK uses BLASDIR BLASLIB
-  module add lapack/gcc/3.2.1
-  export LAPACKDIR=$BLASDIR
-  export LAPACKLIB=$BLASLIB
-  # then load blas
-  module add blas/gcc/3.2.1
-  module add cmake/2.8.11.2
-  module add gcc/4.7.2
-  module add openmpi/1.6.5/gcc-4.7.2
-  module add python/2.7.3
-}
+	function load_module() # as initadd seems not working
+	{
+	  module purge
+	  # hack as LAPACK uses BLASDIR BLASLIB
+	  module add lapack/gcc/3.2.1
+	  export LAPACKDIR=$BLASDIR
+	  export LAPACKLIB=$BLASLIB
+	  # then load blas
+	  module add blas/gcc/3.2.1
+	  module add cmake/2.8.11.2
+	  module add gcc/4.7.2
+	  module add openmpi/1.6.5/gcc-4.7.2
+	  module add python/2.7.3
+	}
+	- hercules:
+	function load_module()
+	{
+	        #module purge
+	        #module load blast/2.2.26
+	        module load openmpi/1.4.3/gcc/4.3.2-64
+		export LAPACKDIR=/usr/lib
+        	export LAPACKLIB=lapack
+        	export BLASDIR=/usr/lib
+        	export BLASLIB=blas
+		export MPI_HOME=$OPENMPI
+		export MPI_INC=$OPENMPI_INC
+	        module list
+	}
+
 
 
         5d) Since PETSC-3.4 it seem that there is an issue when you compile Gmsh. You have error message telling that memcpy, memset,... are not defined. To solve this problem you have to add 
