@@ -6,13 +6,12 @@
 #include <map>
 
 #include "GroupOfDof.h"
-#include "Comparators.h"
 
 /**
    @class DofManager
-   @brief This class manages the Degrees of Freedom (Dof)
+   @brief This class manages the degrees of freedom (Dof)
 
-   This class numbers the Degrees of Freedom (Dof).
+   This class numbers the degrees of freedom (Dof).
 
    It can map a Dof to a unique number, called global ID.
 
@@ -73,7 +72,7 @@ class DofManager{
 
    Fixed Dof got a special global ID (which is the highest possible number).
 
-   @return The special ID of fixed Dof
+   @return Returns the special ID of fixed Dof
    **
 
    @fn DofManager::DofManager

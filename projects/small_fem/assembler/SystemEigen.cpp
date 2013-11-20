@@ -89,12 +89,7 @@ void SystemEigen::assemble(void){
     #pragma omp parallel for
     for(size_t i = 0; i < E; i++)
       SystemAbstract::assemble(tmpB, tmpRHS, i, *group[i], termB);
-  /*
-  // Print Assembled Matrices //
-  tmpA.writeToMatlabFile("sfMatA.m", "sfMatA");
-  if(general)
-    tmpB.writeToMatlabFile("sfMatB.m", "sfMatB");
-  */
+
   // Copy tmpA into Assembled PETSc matrix //
   // Data
   vector<int>    row;

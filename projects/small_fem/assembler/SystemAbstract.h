@@ -1,9 +1,8 @@
 #ifndef _SYSTEMABSTRACT_H_
 #define _SYSTEMABSTRACT_H_
 
-#include <vector>
+#include <string>
 
-#include "Dof.h"
 #include "DofManager.h"
 #include "FunctionSpace.h"
 #include "Formulation.h"
@@ -15,9 +14,9 @@
 
 /**
    @interface SystemAbstract
-   @brief Common Interface for Linear Systems Assemblers
+   @brief Common interface for linear systems assemblers
 
-   This is a common interface for Linear Systems Assemblers
+   This is a common interface for linear systems assemblers
  */
 
 class SystemAbstract{
@@ -52,6 +51,8 @@ class SystemAbstract{
   void dirichlet(GroupOfElement& goe,
                  fullVector<double> (*f)(fullVector<double>& xyz));
 
+  virtual void writeMatrix(std::string fileName, std::string matrixName) const;
+
   virtual void assemble(void) = 0;
   virtual void solve(void)    = 0;
 
@@ -82,22 +83,22 @@ class SystemAbstract{
    **
 
    @fn SystemAbstract::getSize
-   @return Returns the number of unknowns in the the linear system
+   @return Returns the number of unknowns in this linear system
    **
 
    @fn SystemAbstract::getDofManager
-   @return Returns the DofManager used by the system
+   @return Returns the DofManager used by this system
    **
 
    @fn SystemAbstract::getFunctionSpace
-   @return Returns the FunctionSpace used by the system
+   @return Returns the FunctionSpace used by this system
    **
 
    @fn SystemAbstract::fixCoef
    @param goe A GroupOfElement
    @param value A real value
 
-   Fixes the Coefficients (Dof%s), associated to the given
+   Fixes the coefficients (Dof%s), associated to the given
    GroupOfElement, to the given value
    **
 
@@ -116,13 +117,32 @@ class SystemAbstract{
    given GroupOfElement
    **
 
-   @fn SystemAbstract::assemble
-   Assembles the linear system
+   @fn SystemAbstract::writeMatrix
+   @param fileName A string
+   @param matrixName A string
+
+   Writes this system matrix in Octave/Matlab format, with the given name,
+   into the given file
    **
 
-   @fn SystemAbstract::solve
-   Solves the linear system
+   @fn SystemAbstract::assemble(void)
+   Assembles this linear system
    **
+
+   @fn SystemAbstract::solve(void)
+   Solves this linear system
+   **
+
+   @internal
+   @fn SystemAbstract::assemble(SolverMatrix&, SolverVector&, size_t, const GroupOfDof&, formulationPtr&)
+   @param A The matrix to assemble
+   @param b The right hand side to assemble
+   @param elementId The mesh Element ID to assemble
+   @param group The GroupOfDof to assemble
+   @param term The Formulation to use in the assembly
+
+   Assembles the given values
+   @endinternal
 */
 
 //////////////////////

@@ -5,11 +5,11 @@
 
 /**
    @class Dof
-   @brief This class represent a Degree of Freedom
+   @brief This class represent a degree of freedom
 
-   This class represents a Degree of Freedom.
+   This class represents a degree of freedom.
 
-   A Dof is defined by a pair of to integers called (entity, type).
+   A Dof is defined by a pair of two integers called (entity, type).
    By themselfs, these integers have no meaning, they just define a Dof.
 */
 
@@ -65,11 +65,11 @@ class Dof{
    **
 
    @fn Dof::getEntity
-   @return Returns the associated entity of the Dof
+   @return Returns the associated entity of this Dof
    **
 
    @fn Dof::getType
-   @return Returns the associated type of the Dof
+   @return Returns the associated type of this Dof
    **
 
    @fn Dof::setEntity
@@ -108,7 +108,7 @@ class Dof{
    @fn bool Dof::operator==(const Dof& other) const
    @param other An other Dof to compare with the current one
    @return Returns :
-   @li true if the current Dof is  equal to the other one
+   @li true if the current Dof is equal to the other one
    @li false otherwise
    **
 

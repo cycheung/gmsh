@@ -7,16 +7,17 @@
 
 /**
    @class SystemEigen
-   @brief This class assembles an Eigenvalue System
+   @brief This class assembles an eigenvalue system
 
-   This class assembles an Eigenvalue system,
-   described by a Formulation.
+   This class assembles an eigenvalue system described by a Formulation.
 
-   The Eigenvalue problem can be generalized or not:
-   @li An Eigenvalue problem is a of the type
+   The eigenvalue problem can be generalized or not:
+   @li An eigenvalue problem is a of the type
    @f$\qquad(\mathbf{A} - \lambda{}\mathbf{I})\mathbf{x} = \mathbf{b}@f$
    @li A Generalized Eigenvalue problem is a of the type
    @f$\qquad(\mathbf{A} - \lambda{}\mathbf{B})\mathbf{x} = \mathbf{b}@f$
+
+   The Solver used is <a href="http://www.grycap.upv.es/slepc/">SLEPc</a>.
  */
 
 class SystemEigen: public SystemAbstract{
@@ -54,9 +55,9 @@ class SystemEigen: public SystemAbstract{
 /**
    @fn SystemEigen::SystemEigen
    @param formulation A Formulation that
-   gives the way to assemble the Eigenvalue System
+   gives the way to assemble the eigenvalue system
 
-   Instantiated a new SystemEigen
+   Instantiates a new SystemEigen
    ***
 
    @fn SystemEigen::~SystemEigen
@@ -70,21 +71,22 @@ class SystemEigen: public SystemAbstract{
    **
 
    @fn SystemEigen::getEigenValuesNumber
-   @return Returns the number of computed Eigenvalues
+   @return Returns the number of computed eigenvalues
    **
 
    @fn SystemEigen::getEigenValues
-   @return Returns the computed Eigenvalues
+   @return Returns the computed eigenvalues
    **
 
    @fn SystemEigen::getEigenVectors
-   @return Returns the computed Eigenvectors
+   @return Returns the computed eigenvectors
    **
 
    @fn SystemEigen::setNumberOfEigenValues
    @param nEigenValues A natural number
+
    Sets the number of eigenvalues computed by
-   the solving method to the given number
+   SystemEigen::solve() to the given number
    **
 */
 

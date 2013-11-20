@@ -1,3 +1,5 @@
+#include <fstream>
+
 #include "FormulationProjectionScalar.h"
 #include "FormulationProjectionVector.h"
 #include "BasisGenerator.h"
@@ -150,4 +152,12 @@ void SystemAbstract::assemble(SolverMatrix& A,
       b.add(dofI, formulation->rhs(i, elementId));
     }
   }
+}
+
+void SystemAbstract::writeMatrix(std::string fileName,
+                                 std::string matrixName) const{
+  ofstream stream;
+  stream.open(fileName.c_str());
+  stream << "writeMatrix not implemented for this system" << endl;
+  stream.close();
 }

@@ -40,6 +40,11 @@ System::~System(void){
     delete x;
 }
 
+void System::writeMatrix(std::string fileName,
+                         std::string matrixName) const{
+  A->writeToMatlabFile(fileName, matrixName);
+}
+
 void System::assemble(void){
   // Enumerate //
   dofM->generateGlobalIdSpace();

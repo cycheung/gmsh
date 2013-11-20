@@ -8,7 +8,7 @@
 
 /**
    @class GroupOfDof
-   @brief Handels a Group of Dof%s with geometrical meaning
+   @brief Handels a group of Dof%s with a geometrical meaning
 
    This class handles a collection of Dof%s that are
    associated to the same mesh Element.

@@ -8,7 +8,7 @@
    @brief This class shows a FunctionSpace
 
    This class is a System that shows a FunctionSpace,
-   by returning the appropriate solution vector.@n
+   by returning the appropriate solution vector.
 
    For example, SystemShowFunctionSpace(FunctionSpace&, functionNumber),
    returns the solution vector such that: x(i)

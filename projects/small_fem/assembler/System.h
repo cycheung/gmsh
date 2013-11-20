@@ -7,8 +7,10 @@
    @class System
    @brief This class assembles a linear system
 
-   This class assembles a linear system,
-   described by a Formulation
+   This class assembles a linear system described by a Formulation.
+
+   The Solver used is <a href="http://graal.ens-lyon.fr/MUMPS/index.php">MUMPS
+   </a>.
  */
 
 class System: public SystemAbstract{
@@ -22,7 +24,8 @@ class System: public SystemAbstract{
   virtual ~System(void);
 
   const fullVector<double>& getSol(void) const;
-  void writeMatrix(std::string fileName, std::string matrixName) const;
+
+  virtual void writeMatrix(std::string fileName, std::string matrixName) const;
 
   virtual void assemble(void);
   virtual void solve(void);
@@ -34,24 +37,19 @@ class System: public SystemAbstract{
 
 /**
    @fn System::System(const Formulation&)
-   @param formulation A Formulation that
-   gives the way to assemble the system
+   @param formulation A Formulation that gives the way to assemble the system
 
-   Instantiated a new System
-   ***
+   Instantiates a new System
+   **
 
    @fn System::~System
+
    Deletes this System
    **
 
    @fn System::getSol
    @return Returns the solution of the linear system
    **
-
-   @fn System::writeMatrix
-   @param fileName A string
-
-   Writes this System matrix in Octave/Matlab format into the given file
 */
 
 /////////////////////
@@ -60,11 +58,6 @@ class System: public SystemAbstract{
 
 inline const fullVector<double>& System::getSol(void) const{
   return *x;
-}
-
-inline void System::writeMatrix(std::string fileName,
-                                std::string matrixName) const{
-  A->writeToMatlabFile(fileName, matrixName);
 }
 
 #endif
