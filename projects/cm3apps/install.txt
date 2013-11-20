@@ -139,6 +139,9 @@ A) The packages needed to install gmsh are (gmsh has to be install to use cm3app
         For 3.4 on ceci clusters (dragon1, lemaitre2 and for hmem see below) (after loading all the required modules see 5c):
 ./config/configure.py --with-debugging=0 --with-blas-lib=$BLASDIR/lib$BLASLIB.so --with-lapack-lib=$LAPACKDIR/lib$LAPACKLIB.so --with-mpi-dir=$MPI_HOME --with-pic --with-shared-libraries=1 --with-clanguage=cxx --with-batch --known-mpi-shared-libraries=0
            
+        altenrative with multiscale:
+             ./config/configure.py --with-debugging=0 --with-blas-lib=$BLASDIR/lib$BLASLIB.so --with-lapack-lib=$LAPACKDIR/lib$LAPACKLIB.so --download-mumps=yes --download-scalapack=yes --download-blacs=yes --with-mpi-dir=$MPI_HOME --with-pic --with-shared-libraries=1 --with-clanguage=cxx --with-batch --known-mpi-shared-libraries=0  --download-parmetis=yes --download-metis=yes --download-superlu_dist=yes
+
           for the hmem cluster blas and lapack module does not exist so use 
 ./config/configure.py --with-debugging=0 --download-f-blas-lapack=1 --with-mpi-dir=$MPI_HOME --with-pic --with-shared-libraries=1 --with-clanguage=cxx --with-batch --known-mpi-shared-libraries=0
 
@@ -150,7 +153,7 @@ A) The packages needed to install gmsh are (gmsh has to be install to use cm3app
            On cluster (6/12 or 4/8 cpu) add --with-batch --known-mpi-shared=0
 
          5b) On Ceci clusters (hmemi, vega, dragon1 and lemaitre2) the configure option create a file that you have to submit to the job manager. Toward this end type (on vega the script is different) 
-          cp gmsh/project/NonLinearSolver/clusterScript/ceci_petsc.sh $PETSC_DIR or on vega cp gmsh/project/NonLinearSolver/clusterScript/vega_petsc.sh $PETSC_DIR
+          cp gmsh/projects/NonLinearSolver/clusterScript/ceci_petsc.sh $PETSC_DIR or on vega cp gmsh/project/NonLinearSolver/clusterScript/vega_petsc.sh $PETSC_DIR
           sbatch ceci_petsc.sh (vega_petsc.sh)
 Then wait until the job end (the last line of the created file "petsc-install.out" has to be "Finish" the file ./reconfigure-linux-gnu-c-opt.py is created that you have to launch by typing:
            ./reconfigure-linux-gnu-c-opt.py
