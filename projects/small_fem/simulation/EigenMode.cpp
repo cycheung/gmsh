@@ -8,12 +8,23 @@
 #include "Interpolator.h"
 
 #include "FormulationEigenFrequencyScalar.h"
+#include "FormulationEigenFrequencyVector.h"
 
 #include "SmallFem.h"
 
 using namespace std;
 
-double fDir(fullVector<double>& xyz){
+fullVector<double> fDirichletVec(fullVector<double>& xyz){
+  fullVector<double> f(3);
+
+  f(0) = 0;
+  f(1) = 0;
+  f(2) = 0;
+
+  return f;
+}
+
+double fDirichletScal(fullVector<double>& xyz){
   return 0;
 }
 
@@ -26,32 +37,52 @@ void compute(const Options& option){
   // Writer //
   WriterMsh writer;
 
-  // Get Some Data //
+  // Get Parameters //
   const size_t order = atoi(option.getValue("-o")[0].c_str());
   const size_t nWave = atoi(option.getValue("-n")[0].c_str());
 
-  // Vibration //
-  FormulationEigenFrequencyScalar vibration(domain, order);
-  SystemEigen sysVibration(vibration);
+  // Chose write formulation for Eigenvalues and boundary condition //
+  Formulation* eig = NULL;
+  SystemEigen* sys = NULL;
 
-  //sysVibration.fixCoef(msh.getFromPhysical(5), 0);
-  sysVibration.dirichlet(border, fDir);
+  if(option.getValue("-type")[0].compare("vector") == 0){
+    eig = new FormulationEigenFrequencyVector(domain, order);
+    sys = new SystemEigen(*eig);
 
-  cout << "Vibration: " << sysVibration.getSize() << endl;
+    sys->dirichlet(border, fDirichletVec);
+    cout << "Vectorial ";
+  }
 
+  else if(option.getValue("-type")[0].compare("scalar") == 0){
+    eig = new FormulationEigenFrequencyScalar(domain, order);
+    sys = new SystemEigen(*eig);
+
+    sys->dirichlet(border, fDirichletScal);
+    cout << "Scalar ";
+  }
+
+  else
+    throw Exception("No -type given");
+
+  cout << "Eigenvalues problem: " << sys->getSize() << endl;
+
+  // Assemble and Solve //
   cout << "Assembling..." << endl << flush;
-  sysVibration.assemble();
+  sys->assemble();
 
   cout << "Solving..." << endl << flush;
-  sysVibration.setNumberOfEigenValues(nWave);
-  sysVibration.solve();
+  sys->setNumberOfEigenValues(nWave);
+  sys->solve();
 
   // Display //
   const size_t nEigenValue =
-    sysVibration.getEigenValuesNumber();
+    sys->getEigenValuesNumber();
 
   const vector<complex<double> >& eigenValue =
-    sysVibration.getEigenValues();
+    sys->getEigenValues();
+
+  cout << "Number of found Eigenvalues: " << nEigenValue
+       << endl;
 
   cout << endl
        << "Number\tEigen Value" << endl;
@@ -73,28 +104,32 @@ void compute(const Options& option){
       GroupOfElement visu = visuMesh.getFromPhysical(7);
 
       for(size_t i = 0; i < nEigenValue; i++){
-        sprintf(fileName, "vibration_mode%0*u", nDec, (unsigned int)(i + 1));
+        sprintf(fileName, "eigen_mode%0*u", nDec, (unsigned int)(i + 1));
 
-        Interpolator intVibration(sysVibration, i, visu);
-        intVibration.write(string(fileName), writer);
+        Interpolator intCavity(*sys, i, visu);
+        intCavity.write(string(fileName), writer);
       }
     }
 
     else{
       // Without VisuMesh
       for(size_t i = 0; i < nEigenValue; i++){
-        sprintf(fileName, "vibration_mode%0*u", nDec, (unsigned int)(i + 1));
+        sprintf(fileName, "eigen_mode%0*u", nDec, (unsigned int)(i + 1));
 
-        writer.setValues(sysVibration, i);
+        writer.setValues(*sys, i);
         writer.write(string(fileName));
       }
     }
   }
+
+  // Clean //
+  delete sys;
+  delete eig;
 }
 
 int main(int argc, char** argv){
   // Init SmallFem //
-  SmallFem::Keywords("-msh,-o,-n,-nopos,-interp");
+  SmallFem::Keywords("-msh,-o,-n,-nopos,-interp,-type");
   SmallFem::Initialize(argc, argv);
 
   compute(SmallFem::getOptions());
