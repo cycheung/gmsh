@@ -31,81 +31,11 @@
 using namespace std;
 
 int main(int argc, char** argv){
+  SmallFem::Keywords("-msh,-o");
   SmallFem::Initialize(argc, argv);
-  LineReferenceSpace ref;
-  cout << ref.toString() << endl;
-  LineNedelecBasis b;//(atoi(argv[1]));
-  cout << endl << b.toString() << endl;
 
-  /*
-  size_t n = 2;
-
-  SolverMatrix A(n, n);
-  SolverVector b(n);
-  fullVector<double> x(n);
-
-  A.add(0, 0, 1);
-  A.add(1, 1, 2);
-
-  b.add(0, 1);
-  b.add(1, 4);
-
-  SolverMUMPS solver;
-  solver.solve(A, b, x);
-
-  for(size_t i = 0; i < n; i++)
-    cout << x(i) << endl;
-  */
-  SmallFem::Finalize();
-
-  /*
-  Timer time;
-  time.start();
-
-  PriReferenceSpace ref;
-  cout << ref.toString() << endl;
-
-  time.stop();
-
-  cout << "Time: " << time.time() << " " << time.unit() << endl;
-  */
-  /*
-  SmallFem::Initialize(argc, argv);
-  #pragma omp parallel for
-  for(int i = 0; i < 9; i++)
-    printf("%d\n", i);
-
-  QuadReferenceSpace ref;
-  cout << ref.toString() << endl;
+  Options& option = SmallFem::getOptions();
+  cout << option.toString() << endl;
 
   SmallFem::Finalize();
-  */
-  return 0;
-
-  /*
-  const size_t N = 387 * 10;
-  const size_t M = 28224 * 10;
-
-  Timer   timer;
-  double* ma = new double[N * M];
-
-  for(size_t i = 0; i < N * M; i++)
-    ma[i] = 0;
-
-  timer.start();
-
-#pragma omp parallel for
-  for(size_t j = 0; j < M; j++)
-    for(size_t i = 0; i < N; i++)
-      ma[i + N * j] = i + N * j;
-
-  timer.stop();
-
-  cout << timer.time() << " "
-       << timer.unit() << endl
-       << flush;
-
-  delete[] ma;
-  return 0;
-  */
 }

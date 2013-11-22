@@ -103,6 +103,7 @@ void compute(const Options& option){
 
 int main(int argc, char** argv){
   // Init SmallFem //
+  SmallFem::Keywords("-msh,-o,-n,-nopos,-interp");
   SmallFem::Initialize(argc, argv);
 
   compute(SmallFem::getOptions());

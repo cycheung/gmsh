@@ -139,6 +139,7 @@ class SolverMatrix{
 
    @fn SolverMatrix::writeToMatlabFile
    @param fileName A string
+   @param matrixName A string
 
    Writes this matrix in Octave/Matlab format into the given file,
    and with the given name

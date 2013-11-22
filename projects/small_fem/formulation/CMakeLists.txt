@@ -1,6 +1,5 @@
 set(src
   Formulation.cpp
-  FormulationLaplace.cpp
   FormulationPoisson.cpp
   FormulationProjectionVector.cpp
   FormulationProjectionScalar.cpp
@@ -10,10 +9,6 @@ set(src
 
   FormulationEigenFrequencyVector.cpp
   FormulationEigenFrequencyScalar.cpp
-
-  FormulationElementGradGrad.cpp
-  FormulationElementOneFormOneForm.cpp
-  FormulationElementCurlCurl.cpp
 
   Term.cpp
   TermFieldField.cpp

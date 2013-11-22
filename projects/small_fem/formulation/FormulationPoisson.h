@@ -18,9 +18,6 @@
 
 class FormulationPoisson: public Formulation{
  private:
-  // Source Term //
-  static const size_t sourceOrder;
-
   // Function Space & Basis //
   FunctionSpaceScalar* fspace;
   Basis*               basis;
@@ -29,8 +26,12 @@ class FormulationPoisson: public Formulation{
   TermGradGrad*        localTermsL;
   TermProjectionField* localTermsR;
 
+  // Source Term //
+  double (*fSource)(fullVector<double>& xyz);
+
  public:
   FormulationPoisson(GroupOfElement& goe,
+                     double (*f)(fullVector<double>& xyz),
                      size_t order);
 
   virtual ~FormulationPoisson(void);
@@ -47,17 +48,16 @@ class FormulationPoisson: public Formulation{
                      size_t elementId) const;
 
   virtual const FunctionSpace& fs(void) const;
-
- private:
-  static double gSource(fullVector<double>& xyz);
 };
 
 /**
    @fn FormulationPoisson::FormulationPoisson
    @param goe A GroupOfElement
+   @param f A scalar function
    @param order A natural number
 
-   Instantiates a new FormulationPoisson of the given order@n
+   Instantiates a new FormulationPoisson of the given order,
+   and with the given function as source term@n
 
    The given GroupOfElement will be used as the
    geomtrical @em domain

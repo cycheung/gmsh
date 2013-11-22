@@ -155,7 +155,6 @@ add_dependencies(sf lib)
 
 ## Build Simulations ##
 #######################
-add_executable(laplace simulation/Laplace.cpp)
 add_executable(poisson simulation/Poisson.cpp)
 
 add_executable(projvectsin simulation/ProjectionVectorSin.cpp)
@@ -173,11 +172,8 @@ add_executable(mesh simulation/Mesh.cpp)
 add_executable(fs   simulation/ShowFunctionSpace.cpp)
 add_executable(test simulation/Test.cpp)
 
-add_executable(matrix simulation/ElementMatrix.cpp)
-
 ## Link ##
 ##########
-target_link_libraries(laplace sf)
 target_link_libraries(poisson sf)
 
 target_link_libraries(projvectsin sf)
@@ -194,5 +190,3 @@ target_link_libraries(vibration sf)
 target_link_libraries(mesh sf)
 target_link_libraries(fs   sf)
 target_link_libraries(test sf)
-
-target_link_libraries(matrix sf)

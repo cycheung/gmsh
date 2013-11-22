@@ -1,5 +1,4 @@
 #include <vector>
-#include <string>
 
 #include "mpi.h"
 #include "petsc.h"
@@ -8,11 +7,15 @@
 #include "BasisFactory.h"
 #include "Context.h"
 
+#include "Exception.h"
 #include "SmallFem.h"
 
-bool     SmallFem::initOne = false;
-bool     SmallFem::finaOne = false;
-Options* SmallFem::option  = NULL;
+using namespace std;
+
+bool     SmallFem::initOne    = false;
+bool     SmallFem::finaOne    = false;
+Options* SmallFem::option     = NULL;
+string   SmallFem::myKeywords = "-solver";
 
 SmallFem::SmallFem(void){
 }
@@ -22,14 +25,24 @@ SmallFem::~SmallFem(void){
     delete option;
 }
 
+void SmallFem::Keywords(const std::string& keywords){
+  if(initOne)
+    throw Exception("SmallFem: cannot set Keywords after Initialize");
+
+  if(!keywords.empty()){
+    myKeywords.append(",");
+    myKeywords.append(keywords);
+  }
+}
+
 void SmallFem::Initialize(int argc, char** argv){
   // Initialize only once
   if(!initOne){
     // Call MPI
     MPI_Init(&argc, &argv);
 
-    // Get Options (Remove command name)
-    option = new Options(argc - 1, argv + 1);
+    // Get Options
+    option = new Options(argc, argv, myKeywords);
 
     // PETSc And SLEPc
     std::vector<std::string> argPetsc = option->getValue("-solver");

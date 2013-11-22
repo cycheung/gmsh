@@ -5,17 +5,17 @@
 
 /**
    @interface Formulation
-   @brief Base interface of a Finite Element formulation
+   @brief Base interface of a finite element formulation
 
-   This is the base interface of a Finite Element formulation.
+   This is the base interface of a finite element formulation.
 
-   A Finite Element problem is of the type:
+   A finite element problem is of the type:
    @f$\mathbf{A}~\mathbf{x} = \mathbf{b}@f$
 
-   A Finite Element Eigenvalue problem is a of the type:
+   A finite element eigenvalue problem is a of the type:
    @f$\qquad(\mathbf{A} - \lambda{}\mathbf{I})\mathbf{x} = \mathbf{b}@f$
 
-   A Generalized Finite Element Eigenvalue is a of the type
+   A generalized finite element eigenvalue problem is a of the type
    @f$\qquad(\mathbf{A} - \lambda{}\mathbf{B})\mathbf{x} = \mathbf{b}@f$
  */
 
@@ -44,7 +44,7 @@ class Formulation{
 
    @fn Formulation::isGeneral
    @return Returns
-   @li true, if the problem is a generalized Eigenvalue problem
+   @li true, if the problem is a generalized eigenvalue problem
    @li false, if not
    **
 
@@ -69,7 +69,7 @@ class Formulation{
    @param equationI The ith equation of the formulation
    @param elementId The element ID associated
    with the ith equation of the formulation
-   @return The value of the ith equation Right Hand Side
+   @return The value of the ith equation right hand side
    **
 
    @fn Formulation::fs

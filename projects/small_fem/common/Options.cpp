@@ -1,20 +1,54 @@
 #include <sstream>
-#include "Exception.h"
+#include <set>
+#include <list>
+
 #include "Options.h"
 
 using namespace std;
 
-Options::Options(size_t nArg, const char *const *const arg){
-  // Get Size
-  const size_t size = nArg / 2;
+Options::Options(int argc,char** argv, const string& keywords){
+  // Set of keywords //
+  size_t      it  = 0;
+  size_t      pos = 0;
+  set<string> key;
 
-  // Init Map
-  optionMap = new multimap<string, string>;
+  do{
+    it = keywords.find(",", pos);
 
-  // Fill map
-  for(size_t i = 0; i < size; i++)
-    optionMap->insert(pair<string, string>(string(arg[2 * i]),
-                                           string(arg[2 * i + 1])));
+    if(it != string::npos)
+      key.insert(keywords.substr(pos, it - pos));
+
+    else
+      key.insert(keywords.substr(pos, it));
+
+    pos = it + 1;
+  }while(it != string::npos);
+
+  // Go to first option //
+  int offset = 0;
+  while(offset < argc && key.count(string(argv[offset])) != 1)
+    offset++;
+
+  // Parse options if any //
+  list<pair<string, string> > list;
+  string opt;
+
+  if(offset != argc){
+    opt = string(argv[offset]);
+
+    for(int i = offset + 1; i < argc; i++){
+      if(key.count(string(argv[i])) == 1)
+        // A new option is found
+        opt = string(argv[i]);
+
+      else
+        // Enlist this option arguments
+        list.push_back(pair<string, string>(opt, string(argv[i])));
+    }
+  }
+
+  // Save fifo
+  optionMap = new multimap<string, string>(list.begin(), list.end());
 }
 
 Options::~Options(void){

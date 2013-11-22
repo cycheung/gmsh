@@ -14,6 +14,9 @@
    @li The second one is called the value
 
    This class can store all the pairs (option, value) for latter access.
+
+   The possible values of the options are given by a set of keywords.
+   These keywords are represented by a comma separated string.
 */
 
 class Options{
@@ -21,7 +24,7 @@ class Options{
   std::multimap<std::string, std::string>* optionMap;
 
  public:
-   Options(size_t nArg, const char *const *const arg);
+  Options(int argc, char** argv, const std::string& keywords);
   ~Options(void);
 
   std::vector<std::string> getValue(std::string option) const;
@@ -34,14 +37,14 @@ class Options{
 
 /**
    @fn Options::Options
-   @param arg A vector of string
-   @param nArg The size of this vector
+   @param argv A vector of char*
+   @param argc The size of the previous vector
+   @param keywords A string
 
-   Instanciates a new Option with the given vector of string.
+   Instanciates a new Options.
 
-   The options will taken in the folowing way:
-   (option, value)[i] = (arg[2 * i] + arg[2 * i + 1])
-   for i = {0, ..., nArg / 2}.
+   This method will parse the given char* and will store all the
+   (option, value) pairs, with the given keywords as possible options.
 
    All the paires (option, value) will be stored for latter use.
 
