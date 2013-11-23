@@ -57,7 +57,7 @@ A) The packages needed to install gmsh are (gmsh has to be install to use cm3app
 
         1) Download sources from http://www.swig.org/download.html Be aware 2.0.4 seems not working on Lemaitre2 used instead the 2.0.2 version 
 
-        2) untar the archive (by default it's install in usr/lib so perform installation in superuser and the place of extraction is not important. If you cannot be logged in root (on clusters for example) add --predix=$HOME/swig to ./configure command it will instal locally swig in the folder swig in your home directory 
+        2) untar the archive (by default it's install in usr/lib so perform installation in superuser and the place of extraction is not important. If you cannot be logged in root (on clusters for example) add --prefix=$HOME/swig to ./configure command it will instal locally swig in the folder swig in your home directory 
 
         3) go in the extracted folder
 
@@ -148,9 +148,6 @@ A) The packages needed to install gmsh are (gmsh has to be install to use cm3app
            for the vega cluster lapack is not compiled with -fPIC so the link to the lapack library fail and you have to ask PETSc to download blas and lapack:
 ./config/configure.py --with-debugging=0 --download-f-blas-lapack=1 --with-mpi-dir=$MPI_HOME --with-pic --with-shared-libraries=1 --with-clanguage=cxx --with-batch --known-mpi-shared-libraries=0 
 
-           for the hercules cluster the the mpif90 compilor fails add --with-fc=f90. It is thus not possible to install scalapack:
-
-
            put --with-debugging=1 for debug
            for more petsc configure options type: ./configure/configure.py -help
            On cluster (6/12 or 4/8 cpu) add --with-batch --known-mpi-shared=0
@@ -205,8 +202,7 @@ Then wait until the job end (the last line of the created file "petsc-install.ou
 	function load_module()
 	{
 	        #module purge
-	        #module load blast/2.2.26
-	        module load openmpi/1.4.3/gcc/4.3.2-64
+	        module load openmpi/1.4.5/gcc/4.7.2
 		export LAPACKDIR=/usr/lib
         	export LAPACKLIB=lapack
         	export BLASDIR=/usr/lib
