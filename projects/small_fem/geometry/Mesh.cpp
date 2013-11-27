@@ -157,6 +157,21 @@ const vector<const MVertex*> Mesh::getAllVertex(void) const{
   return v;
 }
 
+void Mesh::getAllVertexCoordinate(fullMatrix<double>& coord) const{
+  // Get All Vertex
+  const vector<const MVertex*>  vertex = getAllVertex();
+  const size_t                 nVertex = vertex.size();
+
+  // Allocate 'coord' and populate
+  coord.resize(nVertex, 3);
+
+  for(size_t i = 0; i < nVertex; i++){
+    coord(i, 0) = vertex[i]->x();
+    coord(i, 1) = vertex[i]->y();
+    coord(i, 2) = vertex[i]->z();
+  }
+}
+
 void Mesh::number(void){
   // Get Iterators //
   const map<const MElement*, size_t, ElementComparator>::iterator

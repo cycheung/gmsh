@@ -49,6 +49,8 @@ class SystemEigen: public SystemAbstract{
 
   virtual void assemble(void);
   virtual void solve(void);
+
+  virtual void addSolution(FEMSolution& feSol) const;
 };
 
 

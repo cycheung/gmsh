@@ -3,8 +3,6 @@
 
 #include "Mesh.h"
 #include "System.h"
-#include "Interpolator.h"
-#include "WriterMsh.h"
 
 #include "FormulationPoisson.h"
 
@@ -25,9 +23,6 @@ double fSource(fullVector<double>& xyz){
 }
 
 void compute(const Options& option){
-  // Writer //
-  WriterMsh writer;
-
   // Get Domains //
   Mesh msh(option.getValue("-msh")[0]);
   GroupOfElement    domain = msh.getFromPhysical(7);
@@ -56,27 +51,15 @@ void compute(const Options& option){
 
   // Write Sol //
   if(!option.getValue("-nopos").size()){
-    if(option.getValue("-interp").size()){
-      // Interpolated View //
-      // Visu Mesh
-      Mesh visuMesh(option.getValue("-interp")[0]);
-      GroupOfElement visu = visuMesh.getFromPhysical(7);
-
-      Interpolator interp(sysPoisson, visu);
-      interp.write("poisson", writer);
-    }
-
-    else{
-      // Adaptive View //
-      writer.setValues(sysPoisson);
-      writer.write("poisson");
-    }
+    FEMSolution feSol;
+    sysPoisson.addSolution(feSol);
+    feSol.write("poisson");
   }
 }
 
 int main(int argc, char** argv){
   // Init SmallFem //
-  SmallFem::Keywords("-msh,-o,-nopos,-interp");
+  SmallFem::Keywords("-msh,-o,-nopos");
   SmallFem::Initialize(argc, argv);
 
   compute(SmallFem::getOptions());

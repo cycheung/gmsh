@@ -7,6 +7,7 @@
 #include "FunctionSpace.h"
 #include "Formulation.h"
 #include "GroupOfElement.h"
+#include "FEMSolution.h"
 
 #include "fullMatrix.h"
 #include "SolverVector.h"
@@ -51,10 +52,11 @@ class SystemAbstract{
   void dirichlet(GroupOfElement& goe,
                  fullVector<double> (*f)(fullVector<double>& xyz));
 
-  virtual void writeMatrix(std::string fileName, std::string matrixName) const;
-
   virtual void assemble(void) = 0;
   virtual void solve(void)    = 0;
+
+  virtual void addSolution(FEMSolution& feSol) const = 0;
+  virtual void writeMatrix(std::string fileName, std::string matrixName) const;
 
  protected:
   void assemble(SolverMatrix& A,
@@ -117,20 +119,27 @@ class SystemAbstract{
    given GroupOfElement
    **
 
-   @fn SystemAbstract::writeMatrix
-   @param fileName A string
-   @param matrixName A string
-
-   Writes this system matrix in Octave/Matlab format, with the given name,
-   into the given file
-   **
-
    @fn SystemAbstract::assemble(void)
    Assembles this linear system
    **
 
    @fn SystemAbstract::solve(void)
    Solves this linear system
+   **
+
+   @fn SystemAbstract::addSolution(FEMSolution& feSol)
+   @param feSol A FEMSolution
+
+   Adds to the given FEMSolution the computed finite element solution.
+   If no solution has been computed, and Exception is throw.
+   **
+
+   @fn SystemAbstract::writeMatrix
+   @param fileName A string
+   @param matrixName A string
+
+   Writes this system matrix in Octave/Matlab format, with the given name,
+   into the given file
    **
 
    @internal

@@ -1,11 +1,7 @@
 close all;
 clear all;
 
-%% l2 [Order][Mesh]
-
-%% f = [Sin(10x),  Sin(10y)]
-
-h = [1, 1/2, 1/4, 1/8, 1/16];
+h = [1, 0.5, 0.25, 0.125, 0.0625];
 p = [1:5];
 
 l2 = ...
@@ -23,9 +19,9 @@ H = size(h, 2);
 delta = zeros(P, H - 1);
 
 for i = 1:H-1
-    delta(:, i) = ...
-        (log10(l2(:, i + 1)) - log10(l2(:, i))) / ...
-        (log10(1/h(i + 1))   - log10(1/h(i)));
+  delta(:, i) = ...
+    (log10(l2(:, i + 1)) - log10(l2(:, i))) / ...
+    (log10(1/h(i + 1))   - log10(1/h(i)));
 end
 
 delta
@@ -33,3 +29,7 @@ delta
 figure;
 loglog(1./h, l2', '-*');
 grid;
+title('quad: Edge');
+
+xlabel('1/h [-]');
+ylabel('L2 Error [-]');

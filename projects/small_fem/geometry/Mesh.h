@@ -5,6 +5,8 @@
 #include <string>
 
 #include "Comparators.h"
+#include "fullMatrix.h"
+
 #include "GModel.h"
 
 #include "GroupOfElement.h"
@@ -58,6 +60,7 @@ class Mesh{
   size_t getGlobalId(const MFace& face) const;
 
   const std::vector<const MVertex*> getAllVertex(void) const;
+  void getAllVertexCoordinate(fullMatrix<double>& coord) const;
 
   size_t getElementNumber(void) const;
   size_t getVertexNumber(void) const;
@@ -114,6 +117,20 @@ class Mesh{
 
    @fn Mesh::getAllVertex
    @return Returns all the Vertices of this Mesh
+   **
+
+   @fn Mesh::getAllVertexCoordinate;
+   @param coord A matrix
+
+   Allocates and populates this matrix with the coordinates
+   of this Mesh vertices.
+
+   The entry row i and column j of this matrix means:
+   @li ith vertex of this Mesh
+   @li jth coordinate of the ith vertex
+
+   Since every vertex has 3D coordinate, coord will has 3 columns
+   and Mesh::getAllVertex().size() rows.
    **
 
    @fn Mesh::getElementNumber

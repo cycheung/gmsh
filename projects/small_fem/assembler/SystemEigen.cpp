@@ -215,3 +215,12 @@ void SystemEigen::solve(void){
   // System solved ! //
   solved = true;
 }
+
+void SystemEigen::addSolution(FEMSolution& feSol) const{
+  if(!solved)
+    throw Exception("System: addSolution -- System not solved");
+
+  for(int i = 0; i < nEigenValues; i++)
+    feSol.addCoefficients
+      (i * 2, 0, *fs, *dofM, (*eigenVector)[i]);
+}

@@ -40,11 +40,6 @@ System::~System(void){
     delete x;
 }
 
-void System::writeMatrix(std::string fileName,
-                         std::string matrixName) const{
-  A->writeToMatlabFile(fileName, matrixName);
-}
-
 void System::assemble(void){
   // Enumerate //
   dofM->generateGlobalIdSpace();
@@ -84,4 +79,16 @@ void System::solve(void){
 
   // System solved ! //
   solved = true;
+}
+
+void System::addSolution(FEMSolution& feSol) const{
+  if(!solved)
+    throw Exception("System: addSolution -- System not solved");
+
+  feSol.addCoefficients(0, 0, *fs, *dofM, *x);
+}
+
+void System::writeMatrix(std::string fileName,
+                         std::string matrixName) const{
+  A->writeToMatlabFile(fileName, matrixName);
 }

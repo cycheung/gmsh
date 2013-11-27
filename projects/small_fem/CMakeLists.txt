@@ -130,7 +130,7 @@ include_directories(
   ../../Numeric
   ../../Geo
   ../../Mesh
-  ../../Solver
+  ../../Post
 
   ## PETSc & SLEPc
   ${PETSC_INCLUDES}
@@ -151,21 +151,15 @@ set_target_properties(sf PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(sf lib ${SLEPC_LIBS} ${PETSC_LIBS})
 
 ## Make sure of dependencies
-add_dependencies(sf lib)
+add_dependencies(sf lib gmsh)
 
 ## Build Simulations ##
 #######################
 add_executable(poisson simulation/Poisson.cpp)
+add_executable(swave   simulation/SteadyWave.cpp)
+add_executable(emode   simulation/EigenMode.cpp)
 
-add_executable(projvectsin simulation/ProjectionVectorSin.cpp)
-add_executable(projvectone simulation/ProjectionVectorSinOneTime.cpp)
-
-add_executable(projscalsin simulation/ProjectionScalarSin.cpp)
-add_executable(projscalone simulation/ProjectionScalarSinOneTime.cpp)
-
-add_executable(swave    simulation/SteadyWave.cpp)
-add_executable(emode    simulation/EigenMode.cpp)
-
+add_executable(proj simulation/Projection.cpp)
 add_executable(mesh simulation/Mesh.cpp)
 add_executable(fs   simulation/ShowFunctionSpace.cpp)
 add_executable(test simulation/Test.cpp)
@@ -173,16 +167,10 @@ add_executable(test simulation/Test.cpp)
 ## Link ##
 ##########
 target_link_libraries(poisson sf)
-
-target_link_libraries(projvectsin sf)
-target_link_libraries(projvectone sf)
-
-target_link_libraries(projscalsin sf)
-target_link_libraries(projscalone sf)
-
 target_link_libraries(swave sf)
 target_link_libraries(emode sf)
 
+target_link_libraries(proj sf)
 target_link_libraries(mesh sf)
 target_link_libraries(fs   sf)
 target_link_libraries(test sf)

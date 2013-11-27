@@ -25,10 +25,11 @@ class System: public SystemAbstract{
 
   const fullVector<double>& getSol(void) const;
 
-  virtual void writeMatrix(std::string fileName, std::string matrixName) const;
-
   virtual void assemble(void);
   virtual void solve(void);
+
+  virtual void addSolution(FEMSolution& feSol) const;
+  virtual void writeMatrix(std::string fileName, std::string matrixName) const;
 
  protected:
   System(void);

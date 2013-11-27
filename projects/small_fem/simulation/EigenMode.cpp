@@ -1,11 +1,7 @@
-#include <cstdio>
 #include <iostream>
 
 #include "Mesh.h"
 #include "SystemEigen.h"
-
-#include "WriterMsh.h"
-#include "Interpolator.h"
 
 #include "FormulationEigenFrequencyScalar.h"
 #include "FormulationEigenFrequencyVector.h"
@@ -33,9 +29,6 @@ void compute(const Options& option){
   Mesh msh(option.getValue("-msh")[0]);
   GroupOfElement domain = msh.getFromPhysical(7);
   GroupOfElement border = msh.getFromPhysical(5);
-
-  // Writer //
-  WriterMsh writer;
 
   // Get Parameters //
   const size_t order = atoi(option.getValue("-o")[0].c_str());
@@ -93,33 +86,9 @@ void compute(const Options& option){
 
   // Write Sol //
   if(!option.getValue("-nopos").size()){
-    // Number of decimals in nEigenValue
-    // Used for '0' pading in sprintf
-    char fileName[1024];
-    const int nDec = floor(log10(nEigenValue)) + 1;
-
-    if(option.getValue("-interp").size()){
-      // With VisuMesh
-      Mesh           visuMesh(option.getValue("-interp")[0]);
-      GroupOfElement visu = visuMesh.getFromPhysical(7);
-
-      for(size_t i = 0; i < nEigenValue; i++){
-        sprintf(fileName, "eigen_mode%0*u", nDec, (unsigned int)(i + 1));
-
-        Interpolator intCavity(*sys, i, visu);
-        intCavity.write(string(fileName), writer);
-      }
-    }
-
-    else{
-      // Without VisuMesh
-      for(size_t i = 0; i < nEigenValue; i++){
-        sprintf(fileName, "eigen_mode%0*u", nDec, (unsigned int)(i + 1));
-
-        writer.setValues(*sys, i);
-        writer.write(string(fileName));
-      }
-    }
+    FEMSolution feSol;
+    sys->addSolution(feSol);
+    feSol.write("eigen_mode");
   }
 
   // Clean //
@@ -129,7 +98,7 @@ void compute(const Options& option){
 
 int main(int argc, char** argv){
   // Init SmallFem //
-  SmallFem::Keywords("-msh,-o,-n,-nopos,-interp,-type");
+  SmallFem::Keywords("-msh,-o,-n,-nopos,-type");
   SmallFem::Initialize(argc, argv);
 
   compute(SmallFem::getOptions());

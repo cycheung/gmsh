@@ -6,7 +6,6 @@ set(src
   SystemAbstract.cpp
   System.cpp
   SystemEigen.cpp
-  SystemShowFunctionSpace.cpp
 )
 
 add_sources(assembler "${src}")

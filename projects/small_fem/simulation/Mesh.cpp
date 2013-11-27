@@ -1,27 +1,24 @@
 #include <cstdlib>
 #include <iostream>
 #include <sstream>
+#include <vector>
 
 #include "Mesh.h"
-#include "WriterMsh.h"
-#include "Gmsh.h"
-
-#include <vector>
 #include "Basis.h"
 #include "BasisGenerator.h"
 
+#include "ElementSolution.h"
+#include "SmallFem.h"
+
 using namespace std;
 
-int main(int argc, char** argv){
-  GmshInitialize(argc, argv);
-
+void compute(const Options& option){
   // Get Mesh //
   cout << "## Reading Mesh" << endl << flush;
 
-  Mesh msh(argv[1]);
-  size_t       physical = atoi(argv[2]);
+  Mesh msh(option.getValue("-msh")[0]);
+  size_t       physical = atoi(option.getValue("-phys")[0].c_str());
   GroupOfElement domain = msh.getFromPhysical(physical);
-
 
   // Select Basis //
   cout << "## Generate Basis" << endl << flush;
@@ -67,19 +64,27 @@ int main(int argc, char** argv){
   }
 
   // Printing //
-  WriterMsh writer;
   stringstream name;
-
   name << "analyze" << physical;
 
   cout << "## Writing Results" << endl << flush;
 
-  writer.setDomain(domain);
-  writer.setValues(orientation);
-  writer.write(name.str(), "volume");
+  ElementSolution sol;
+  sol.addValues(0, 0, domain, orientation);
+  sol.write(name.str());
 
   // Done //
   delete basis;
-  GmshFinalize();
   cout << "## Done" << endl << flush;
+}
+
+int main(int argc, char** argv){
+  // Init SmallFem //
+  SmallFem::Keywords("-msh,-phys");
+  SmallFem::Initialize(argc, argv);
+
+  compute(SmallFem::getOptions());
+
+  SmallFem::Finalize();
+  return 0;
 }

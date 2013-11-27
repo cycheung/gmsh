@@ -1,41 +1,28 @@
-#include <cmath>
-
 #include "BasisGenerator.h"
 #include "FunctionSpaceScalar.h"
 #include "FunctionSpaceVector.h"
 
+#include "FEMSolution.h"
+#include "fullMatrix.h"
+#include "DofManager.h"
 #include "Mesh.h"
-#include "SystemShowFunctionSpace.h"
-#include "WriterMsh.h"
-#include "Interpolator.h"
 
 #include "Exception.h"
-#include "Gmsh.h"
+#include "SmallFem.h"
 
 using namespace std;
 
-int main(int argc, char** argv){
-  // Const
-  const char* lagrange = "lagrange";
-  const char* scalar   = "scalar";
-  const char* vector   = "vector";
-
-  // Init //
-  GmshInitialize(argc, argv);
-
-  // Writer //
-  WriterMsh writer;
-
+void compute(const Options& option){
   // Get Domains //
-  Mesh msh(argv[1]);
+  Mesh msh(option.getValue("-msh")[0]);
   GroupOfElement domain = msh.getFromPhysical(7);
 
   // Get FunctionSpace //
-  const size_t   order = atoi(argv[3]);
+  const size_t   order = atoi(option.getValue("-o")[0].c_str());
   Basis*         basis;
   FunctionSpace* fSpace;
 
-  if(!strcmp(argv[2], lagrange)){
+  if(option.getValue("-type")[0].compare("lagrange") == 0){
     // If Lagrange
     basis =
       BasisGenerator::generate(domain.get(0).getType(),
@@ -44,7 +31,7 @@ int main(int argc, char** argv){
     fSpace = new FunctionSpaceScalar(domain, *basis);
   }
 
-  else if(!strcmp(argv[2], scalar)){
+  else if(option.getValue("-type")[0].compare("scalar") == 0){
     // If Scalar
     basis =
       BasisGenerator::generate(domain.get(0).getType(),
@@ -53,7 +40,7 @@ int main(int argc, char** argv){
     fSpace = new FunctionSpaceScalar(domain, *basis);
   }
 
-  else if(!strcmp(argv[2], vector)){
+  else if(option.getValue("-type")[0].compare("vector") == 0){
     // If Vector
     basis =
       BasisGenerator::generate(domain.get(0).getType(),
@@ -64,45 +51,48 @@ int main(int argc, char** argv){
 
   else
     throw Exception("Unknown FunctionSpace type: %s",
-                    argv[2]);
+                    option.getValue("-type")[0].c_str());
 
-  // Compute all Basis //
-  const size_t nDof = fSpace->dofNumber();
+  // Enumerate Dofs //
+  DofManager dofM;
+  dofM.addToDofManager(fSpace->getAllGroups());
+  dofM.generateGlobalIdSpace();
 
-  // View names
-  char fileName[1024];
-  const int nDec = floor(log10(nDof)) + 1;
+  // FunctionSpace is solution of FEM problem                   //
+  // For every global basis, a vector with all zero excepte one //
+  // (associated to the basis) can be created                   //
 
-  for(size_t i = 0; i < nDof; i++){
-    SystemShowFunctionSpace sys(*fSpace, i);
+  // Do this with FEMSolution //
+  const size_t nCoef = fSpace->dofNumber();
+  fullVector<double> coef(nCoef);
+  FEMSolution sol;
 
-    sys.assemble();
-    sys.solve();
+  // Init coefs to 0
+  for(size_t i = 0; i < nCoef; i++)
+    coef(i) = 0;
 
-    // View
-    sprintf(fileName, "functionSpace_basis%0*u", nDec, (unsigned int)(i + 1));
-
-    if(argc == 5){
-      // Interpolated View //
-      Mesh visuMesh(argv[4]);
-      GroupOfElement visu = visuMesh.getFromPhysical(7);
-
-      Interpolator interp(sys, visu);
-      interp.write(string(fileName), writer);
-    }
-
-    else{
-      // Adaptive View //
-      writer.setValues(sys);
-      writer.write(string(fileName));
-    }
+  // Set each coef to one (one at a time)
+  for(size_t i = 0; i < nCoef; i++){
+    coef(i) = 1;
+    sol.addCoefficients(i, i, *fSpace, dofM, coef);
+    coef(i) = 0;
   }
 
-  // Return //
-  GmshFinalize();
+  // Write //
+  sol.write("function_space");
 
+  // Clean //
   delete fSpace;
   delete basis;
+}
 
+int main(int argc, char** argv){
+  // Init SmallFem //
+  SmallFem::Keywords("-msh,-o,-type");
+  SmallFem::Initialize(argc, argv);
+
+  compute(SmallFem::getOptions());
+
+  SmallFem::Finalize();
   return 0;
 }

@@ -2,8 +2,6 @@
 
 #include "Mesh.h"
 #include "System.h"
-#include "Interpolator.h"
-#include "WriterMsh.h"
 
 #include "FormulationSteadyWaveScalar.h"
 #include "FormulationSteadyWaveVector.h"
@@ -46,9 +44,6 @@ void compute(const Options& option){
   // Start Timer //
   Timer timer, assemble, solve;
   timer.start();
-
-  // Writer //
-  WriterMsh writer;
 
   // Get Domains //
   Mesh msh(option.getValue("-msh")[0]);
@@ -116,21 +111,9 @@ void compute(const Options& option){
 
   // Write Sol //
   if(!option.getValue("-nopos").size()){
-    if(option.getValue("-interp").size()){
-      // Interpolated View //
-      // Visu Mesh
-      Mesh visuMsh(option.getValue("-interp")[0]);
-      GroupOfElement visu = visuMsh.getFromPhysical(7);
-
-      Interpolator interp(*sys, visu);
-      interp.write("swavev", writer);
-    }
-
-    else{
-      // Adaptive View //
-      writer.setValues(*sys);
-      writer.write("swavev");
-    }
+    FEMSolution feSol;
+    sys->addSolution(feSol);
+    feSol.write("swave");
   }
 
   // Clean //
@@ -146,7 +129,7 @@ void compute(const Options& option){
 
 int main(int argc, char** argv){
   // Init SmallFem //
-  SmallFem::Keywords("-msh,-o,-k,-nopos,-interp,-type");
+  SmallFem::Keywords("-msh,-o,-k,-nopos,-type");
   SmallFem::Initialize(argc, argv);
 
   compute(SmallFem::getOptions());
