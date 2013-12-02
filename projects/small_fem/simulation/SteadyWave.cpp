@@ -57,8 +57,8 @@ void compute(const Options& option){
 
 
   // Chose write formulation for Steady Wave and boundary condition //
-  Formulation* wave = NULL;
-  System*      sys  = NULL;
+  FormulationTyped<double>* wave = NULL;
+  System*                   sys  = NULL;
 
   if(option.getValue("-type")[0].compare("vector") == 0){
     assemble.start();

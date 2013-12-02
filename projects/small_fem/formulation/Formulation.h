@@ -1,6 +1,7 @@
 #ifndef _FORMULATION_H_
 #define _FORMULATION_H_
 
+#include <string>
 #include "FunctionSpace.h"
 
 /**
@@ -17,24 +18,18 @@
 
    A generalized finite element eigenvalue problem is a of the type
    @f$\qquad(\mathbf{A} - \lambda{}\mathbf{B})\mathbf{x} = \mathbf{b}@f$
+
+   To conclude a Formulation may be of multiple scalar type.
+   See FormulationTyped for more informations.
  */
 
 class Formulation{
  public:
   virtual ~Formulation(void);
 
-  virtual bool isGeneral(void) const = 0;
-
-  virtual double weak(size_t dofI, size_t dofJ,
-                      size_t elementId) const = 0;
-
-  virtual double weakB(size_t dofI, size_t dofJ,
-                       size_t elementId) const = 0;
-
-  virtual double rhs(size_t equationI,
-                     size_t elementId) const = 0;
-
-  virtual const FunctionSpace& fs(void) const = 0;
+  virtual bool                 isGeneral(void) const = 0;
+  virtual const FunctionSpace& fs(void)        const = 0;
+  virtual std::string          getType(void)   const = 0;
 };
 
 /**
@@ -48,32 +43,13 @@ class Formulation{
    @li false, if not
    **
 
-   @fn Formulation::weak
-   @param dofI The first index of the formulation term
-   @param dofJ The second index of the formulation term
-   @param elementId The element ID associated with the formulation term
-   @return The value of the requested formulation term
-   **
-
-   @fn Formulation::weakB
-   @param dofI The first index of the formulation term
-   @param dofJ The second index of the formulation term
-   @param elementId The element ID associated with the formulation term
-
-   This method is only valid when Formulation::isGeneral() is true
-
-   @return The value of the requested second formulation term
-   **
-
-   @fn Formulation::rhs
-   @param equationI The ith equation of the formulation
-   @param elementId The element ID associated
-   with the ith equation of the formulation
-   @return The value of the ith equation right hand side
-   **
-
    @fn Formulation::fs
    @return Returns the FunctionSpace used by this Formulation
+   **
+
+   @fn Formulation::getType
+   @return Returns a string specifying of which type this Formulation is
+   @see FormulationTyped
 */
 
 #endif

@@ -7,7 +7,7 @@
 #include "TermGradGrad.h"
 #include "TermProjectionGrad.h"
 
-#include "Formulation.h"
+#include "FormulationTyped.h"
 
 /**
    @class FormulationProjectionVector
@@ -16,7 +16,7 @@
    Vectorial Formulation for the @em L2 @em Projection problem
  */
 
-class FormulationProjectionVector: public Formulation{
+class FormulationProjectionVector: public FormulationTyped<double>{
  private:
   // Function Space & Basis //
   FunctionSpaceVector* fspace;

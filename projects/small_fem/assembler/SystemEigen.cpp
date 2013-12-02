@@ -3,7 +3,8 @@
 
 using namespace std;
 
-SystemEigen::SystemEigen(const Formulation& formulation){
+SystemEigen::
+SystemEigen(const FormulationTyped<std::complex<double> >& formulation){
   // Get Formulation //
   this->formulation = &formulation;
   this->fs          = &(formulation.fs());
@@ -47,6 +48,27 @@ SystemEigen::~SystemEigen(void){
   delete dofM;
 }
 
+bool SystemEigen::isGeneral(void) const{
+  return general;
+}
+
+size_t SystemEigen::getNComputedSolution(void) const{
+  return nEigenValues;
+}
+
+void SystemEigen::getSolution(fullVector<std::complex<double> >& sol,
+                              size_t nSol) const{
+  sol.setAsProxy((*eigenVector)[nSol], 0, (*eigenVector)[nSol].size());
+}
+
+void SystemEigen::getSolution(fullVector<std::complex<double> >& sol) const{
+  getSolution(sol, 0);
+}
+
+void SystemEigen::getEigenValues(fullVector<std::complex<double> >& eig) const{
+  eig.setAsProxy(*eigenValue, 0, eigenValue->size());
+}
+
 void SystemEigen::
 setNumberOfEigenValues(size_t nEigenValues){
   const size_t nDof = dofM->getUnfixedDofNumber();
@@ -70,32 +92,32 @@ void SystemEigen::assemble(void){
   const vector<GroupOfDof*>& group = fs->getAllGroups();
 
   // Get Formulation Terms //
-  formulationPtr termA = &Formulation::weak;
-  formulationPtr termB = &Formulation::weakB;
+  formulationPtr termA = &FormulationTyped<std::complex<double> >::weak;
+  formulationPtr termB = &FormulationTyped<std::complex<double> >::weakB;
 
   // Alloc Temp Sparse Matrices (not with PETSc) //
   const size_t size = dofM->getUnfixedDofNumber();
 
-  SolverVector tmpRHS(size);
-  SolverMatrix tmpA(size, size);
-  SolverMatrix tmpB(size, size);
+  SolverVector<std::complex<double> > tmpRHS(size);
+  SolverMatrix<std::complex<double> > tmpA(size, size);
+  SolverMatrix<std::complex<double> > tmpB(size, size);
 
   // Assemble Systems (tmpA and tmpB) //
   #pragma omp parallel for
   for(size_t i = 0; i < E; i++)
-    SystemAbstract::assemble(tmpA, tmpRHS, i, *group[i], termA);
+    SystemTyped::assemble(tmpA, tmpRHS, i, *group[i], termA);
 
   if(general)
     #pragma omp parallel for
     for(size_t i = 0; i < E; i++)
-      SystemAbstract::assemble(tmpB, tmpRHS, i, *group[i], termB);
+      SystemTyped::assemble(tmpB, tmpRHS, i, *group[i], termB);
 
   // Copy tmpA into Assembled PETSc matrix //
   // Data
-  vector<int>    row;
-  vector<int>    col;
-  vector<double> value;
-  int            nNZ;
+  vector<int>                   row;
+  vector<int>                   col;
+  vector<std::complex<double> > value;
+  int                           nNZ;
 
   // Serialize (CStyle) tmpA & Copy
   nNZ = tmpA.serializeCStyle(row, col, value);
@@ -178,38 +200,30 @@ void SystemEigen::solve(void){
   // Get Solution //
   const size_t size = dofM->getUnfixedDofNumber();
 
-  PetscScalar  lambdaReal;
-  PetscScalar  lambdaImag;
-  PetscScalar* xReal;
-  PetscScalar* xImag;
-  Vec          xRealPetsc;
-  Vec          xImagPetsc;
+  PetscScalar  lambda;
+  PetscScalar* x;
+  Vec          xPetsc;
 
-  MatGetVecs(*A, PETSC_NULL, &xRealPetsc);
-  MatGetVecs(*A, PETSC_NULL, &xImagPetsc);
+  MatGetVecs(*A, PETSC_NULL, &xPetsc);
 
   EPSGetConverged(solver, &nEigenValues);
 
-  eigenValue  = new vector<complex<double> >(nEigenValues);
+  eigenValue  = new fullVector<complex<double> >(nEigenValues);
   eigenVector = new vector<fullVector<complex<double> > >(nEigenValues);
 
   for(PetscInt i = 0; i < nEigenValues; i++){
-    EPSGetEigenpair(solver, i,
-                    &lambdaReal, &lambdaImag,
-                    xRealPetsc, xImagPetsc);
+    EPSGetEigenpair(solver, i, &lambda, NULL, xPetsc, NULL);
 
-    VecGetArray(xRealPetsc, &xReal);
-    VecGetArray(xImagPetsc, &xImag);
+    VecGetArray(xPetsc, &x);
 
     (*eigenVector)[i].resize(size);
     for(size_t j = 0; j < size; j++)
-      (*eigenVector)[i](j) = complex<double>(xReal[j], xImag[j]);
+      (*eigenVector)[i](j) = x[j];
 
-    (*eigenValue)[i] = complex<double>(lambdaReal, lambdaImag);
+    (*eigenValue)(i) = lambda;
   }
 
-  VecDestroy(&xRealPetsc);
-  VecDestroy(&xImagPetsc);
+  VecDestroy(&xPetsc);
   EPSDestroy(&solver);
 
   // System solved ! //

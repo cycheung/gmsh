@@ -15,14 +15,14 @@
     <a href="http://graal.ens-lyon.fr/MUMPS">http://graal.ens-lyon.fr/MUMPS</a>.
 */
 
-class SolverMUMPS: public Solver{
+class SolverMUMPS: public Solver<double>{
  public:
   SolverMUMPS(void);
 
   virtual ~SolverMUMPS(void);
 
-  virtual void solve(SolverMatrix& A,
-                     SolverVector& rhs,
+  virtual void solve(SolverMatrix<double>& A,
+                     SolverVector<double>& rhs,
                      fullVector<double>& x);
 };
 

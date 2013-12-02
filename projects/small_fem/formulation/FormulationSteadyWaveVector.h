@@ -6,7 +6,7 @@
 #include "TermCurlCurl.h"
 #include "TermGradGrad.h"
 
-#include "Formulation.h"
+#include "FormulationTyped.h"
 
 /**
    @class FormulationSteadyWaveVector
@@ -15,7 +15,7 @@
    Vectorial Formulation for the @em Steady @em Wave problem
  */
 
-class FormulationSteadyWaveVector: public Formulation{
+class FormulationSteadyWaveVector: public FormulationTyped<double>{
  private:
   // Speed of medium squared //
   static const double cSquare;

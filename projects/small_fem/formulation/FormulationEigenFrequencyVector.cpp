@@ -46,21 +46,26 @@ FormulationEigenFrequencyVector::~FormulationEigenFrequencyVector(void){
   delete localTerms2;
 }
 
-double FormulationEigenFrequencyVector::weak(size_t dofI, size_t dofJ,
-                                             size_t elementId) const{
+std::complex<double>
+FormulationEigenFrequencyVector::weak(size_t dofI, size_t dofJ,
+                                      size_t elementId) const{
 
-  return localTerms1->getTerm(dofI, dofJ, elementId);
+  return std::complex<double>
+    (localTerms1->getTerm(dofI, dofJ, elementId), 0);
 }
 
-double FormulationEigenFrequencyVector::weakB(size_t dofI, size_t dofJ,
-                                              size_t elementId) const{
+std::complex<double>
+FormulationEigenFrequencyVector::weakB(size_t dofI, size_t dofJ,
+                                       size_t elementId) const{
 
-  return localTerms2->getTerm(dofI, dofJ, elementId) / cSquare;
+  return std::complex<double>
+    (localTerms2->getTerm(dofI, dofJ, elementId) / cSquare, 0);
 }
 
-double FormulationEigenFrequencyVector::rhs(size_t dofI,
-                                            size_t elementId) const{
-  return 0;
+std::complex<double>
+FormulationEigenFrequencyVector::rhs(size_t dofI,
+                                     size_t elementId) const{
+  return std::complex<double>(0, 0);
 }
 
 bool FormulationEigenFrequencyVector::isGeneral(void) const{

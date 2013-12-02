@@ -6,7 +6,7 @@
 #include "TermGradGrad.h"
 #include "TermFieldField.h"
 
-#include "Formulation.h"
+#include "FormulationTyped.h"
 
 /**
    @class FormulationSteadyWaveScalar
@@ -15,7 +15,7 @@
    Scalar Formulation for the @em Steady @em Wave problem
  */
 
-class FormulationSteadyWaveScalar: public Formulation{
+class FormulationSteadyWaveScalar: public FormulationTyped<double>{
  private:
   // Speed of medium squared //
   static const double cSquare;

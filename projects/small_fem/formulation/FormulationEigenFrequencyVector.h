@@ -1,12 +1,13 @@
 #ifndef _FORMULATIONEIGENFREQUENCYVECTOR_H_
 #define _FORMULATIONEIGENFREQUENCYVECTOR_H_
 
+#include <complex>
 #include "FunctionSpaceVector.h"
 
 #include "TermCurlCurl.h"
 #include "TermGradGrad.h"
 
-#include "Formulation.h"
+#include "FormulationTyped.h"
 
 /**
    @class FormulationEigenFrequencyVector
@@ -15,7 +16,8 @@
    Formulation for the vectorial Eigenfrequencies Problem
 */
 
-class FormulationEigenFrequencyVector: public Formulation{
+class FormulationEigenFrequencyVector:
+public FormulationTyped<std::complex<double> >{
  private:
   // Speed of medium squared //
   static const double cSquare;
@@ -36,14 +38,14 @@ class FormulationEigenFrequencyVector: public Formulation{
 
   virtual bool isGeneral(void) const;
 
-  virtual double weak(size_t dofI, size_t dofJ,
-                      size_t elementId) const;
+  virtual std::complex<double> weak(size_t dofI, size_t dofJ,
+                                    size_t elementId) const;
 
-  virtual double weakB(size_t dofI, size_t dofJ,
-                       size_t elementId) const;
+  virtual std::complex<double> weakB(size_t dofI, size_t dofJ,
+                                     size_t elementId) const;
 
-  virtual double rhs(size_t equationI,
-                     size_t elementId) const;
+  virtual std::complex<double> rhs(size_t equationI,
+                                   size_t elementId) const;
 
   virtual const FunctionSpace& fs(void) const;
 };

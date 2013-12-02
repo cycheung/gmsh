@@ -52,22 +52,27 @@ FormulationEigenFrequencyScalar::~FormulationEigenFrequencyScalar(void){
   delete localTerms2;
 }
 
-double FormulationEigenFrequencyScalar::weak(size_t dofI, size_t dofJ,
-                                             size_t elementId) const{
+std::complex<double>
+FormulationEigenFrequencyScalar::weak(size_t dofI, size_t dofJ,
+                                      size_t elementId) const{
 
-  return localTerms1->getTerm(dofI, dofJ, elementId);
+  return std::complex<double>
+    (localTerms1->getTerm(dofI, dofJ, elementId), 0);
 }
 
 
-double FormulationEigenFrequencyScalar::weakB(size_t dofI, size_t dofJ,
-                                              size_t elementId) const{
+std::complex<double>
+FormulationEigenFrequencyScalar::weakB(size_t dofI, size_t dofJ,
+                                       size_t elementId) const{
 
-  return localTerms2->getTerm(dofI, dofJ, elementId) / cSquare;
+  return std::complex<double>
+    (localTerms2->getTerm(dofI, dofJ, elementId) / cSquare, 0);
 }
 
-double FormulationEigenFrequencyScalar::rhs(size_t equationI,
-                                            size_t elementId) const{
-  return 0;
+std::complex<double>
+FormulationEigenFrequencyScalar::rhs(size_t equationI,
+                                     size_t elementId) const{
+  return std::complex<double>(0, 0);
 }
 
 bool FormulationEigenFrequencyScalar::isGeneral(void) const{

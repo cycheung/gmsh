@@ -5,31 +5,23 @@
 
 #include "DofManager.h"
 #include "FunctionSpace.h"
-#include "Formulation.h"
 #include "GroupOfElement.h"
 #include "FEMSolution.h"
-
-#include "fullMatrix.h"
-#include "SolverVector.h"
-#include "SolverMatrix.h"
 
 /**
    @interface SystemAbstract
    @brief Common interface for linear systems assemblers
 
-   This is a common interface for linear systems assemblers
+   This is a common interface for linear systems assemblers.
+   A SystemAbstract may be of multiple scalar type:
+   see SystemTyped for more informations.
  */
 
 class SystemAbstract{
  protected:
-  typedef double (Formulation::*formulationPtr)(size_t dofI,
-                                                size_t dofJ,
-                                                size_t elementId) const;
- protected:
   bool assembled;
   bool solved;
 
-  const Formulation*   formulation;
   const FunctionSpace* fs;
   DofManager*          dofM;
 
@@ -55,15 +47,11 @@ class SystemAbstract{
   virtual void assemble(void) = 0;
   virtual void solve(void)    = 0;
 
-  virtual void addSolution(FEMSolution& feSol) const = 0;
-  virtual void writeMatrix(std::string fileName, std::string matrixName) const;
-
- protected:
-  void assemble(SolverMatrix& A,
-                SolverVector& b,
-                size_t elementId,
-                const GroupOfDof& group,
-                formulationPtr& term);
+  virtual std::string getType(void)                       const = 0;
+  virtual size_t      getNComputedSolution(void)          const = 0;
+  virtual void        addSolution(FEMSolution& feSol)     const = 0;
+  virtual void        writeMatrix(std::string fileName,
+                                  std::string matrixName) const;
 };
 
 
@@ -127,10 +115,19 @@ class SystemAbstract{
    Solves this linear system
    **
 
+   @fn SystemAbstract::getType
+   @return Returns a string specifying of which type this SystemAbstract is
+   @see SystemTyped
+   **
+
+   @fn SystemAbstract::getNComputedSolution(void)
+   @return The number of computed solution by SystemAbstract::solve()
+
+   **
    @fn SystemAbstract::addSolution(FEMSolution& feSol)
    @param feSol A FEMSolution
 
-   Adds to the given FEMSolution the computed finite element solution.
+   Adds to the given FEMSolution the computed finite element solutions.
    If no solution has been computed, and Exception is throw.
    **
 
@@ -140,18 +137,6 @@ class SystemAbstract{
 
    Writes this system matrix in Octave/Matlab format, with the given name,
    into the given file
-   **
-
-   @internal
-   @fn SystemAbstract::assemble(SolverMatrix&, SolverVector&, size_t, const GroupOfDof&, formulationPtr&)
-   @param A The matrix to assemble
-   @param b The right hand side to assemble
-   @param elementId The mesh Element ID to assemble
-   @param group The GroupOfDof to assemble
-   @param term The Formulation to use in the assembly
-
-   Assembles the given values
-   @endinternal
 */
 
 //////////////////////

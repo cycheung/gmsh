@@ -4,6 +4,7 @@ set(src
   GroupOfDof.cpp
 
   SystemAbstract.cpp
+  SystemTyped.cpp
   System.cpp
   SystemEigen.cpp
 )

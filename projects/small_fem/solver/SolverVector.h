@@ -12,13 +12,18 @@
 
    During the construction of the vector, multiple values
    can be added in a thread-safe manner.
+
+   Finaly, a SolverVector may be of the following scalar types:
+   @li Real
+   @li Complex
  */
 
+template<typename scalar>
 class SolverVector{
  private:
   size_t      fail;
   size_t      N;
-  double*     v;
+  scalar*     v;
   omp_lock_t* lock;
 
  public:
@@ -28,9 +33,9 @@ class SolverVector{
   size_t getSize(void) const;
   size_t getNumberOfMutexWait(void) const;
 
-  void add(size_t i, double value);
+  void add(size_t i, scalar value);
 
-  double* getData(void);
+  scalar* getData(void);
 
  private:
   SolverVector(void);
@@ -68,19 +73,23 @@ class SolverVector{
    of this SolverVector
 */
 
-//////////////////////
-// Inline Functions //
-//////////////////////
 
-inline size_t SolverVector::getSize(void) const{
-  return N;
-}
+//////////////////////////////////////
+// Templates Implementations:       //
+// Inclusion compilation model      //
+//                                  //
+// Damn you gcc: we want 'export' ! //
+//////////////////////////////////////
 
-inline size_t SolverVector::getNumberOfMutexWait(void) const{
-  return fail;
-}
+#include "SolverVectorInclusion.h"
 
-inline void SolverVector::add(size_t i, double value){
+/////////////////////
+// Inline Function //
+/////////////////////
+
+template<typename scalar>
+inline
+void SolverVector<scalar>::add(size_t i, scalar value){
   // Take mutex for the given index
   if(!omp_test_lock(&lock[i])){
     // If we can't we increase the total mutex wait ...
@@ -95,10 +104,6 @@ inline void SolverVector::add(size_t i, double value){
 
   // Free mutex
   omp_unset_lock(&lock[i]);
-}
-
-inline double* SolverVector::getData(void){
-  return v;
 }
 
 #endif

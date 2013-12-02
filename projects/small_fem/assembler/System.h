@@ -1,7 +1,7 @@
 #ifndef _SYSTEM_H_
 #define _SYSTEM_H_
 
-#include "SystemAbstract.h"
+#include "SystemTyped.h"
 
 /**
    @class System
@@ -13,26 +13,26 @@
    </a>.
  */
 
-class System: public SystemAbstract{
+class System: public SystemTyped<double>{
  protected:
-  SolverMatrix*       A;
-  SolverVector*       b;
-  fullVector<double>* x;
+  SolverMatrix<double>* A;
+  SolverVector<double>* b;
+  fullVector<double>*   x;
 
  public:
-  System(const Formulation& formulation);
+  System(const FormulationTyped<double>& formulation);
   virtual ~System(void);
 
-  const fullVector<double>& getSol(void) const;
+  virtual size_t getNComputedSolution(void)                        const;
+  virtual void   getSolution(fullVector<double>& sol, size_t nSol) const;
+  virtual void   getSolution(fullVector<double>& sol)              const;
 
   virtual void assemble(void);
   virtual void solve(void);
 
-  virtual void addSolution(FEMSolution& feSol) const;
-  virtual void writeMatrix(std::string fileName, std::string matrixName) const;
-
- protected:
-  System(void);
+  virtual void   addSolution(FEMSolution& feSol) const;
+  virtual void   writeMatrix(std::string fileName,
+                             std::string matrixName) const;
 };
 
 
@@ -46,19 +46,6 @@ class System: public SystemAbstract{
    @fn System::~System
 
    Deletes this System
-   **
-
-   @fn System::getSol
-   @return Returns the solution of the linear system
-   **
 */
-
-/////////////////////
-// Inline Function //
-/////////////////////
-
-inline const fullVector<double>& System::getSol(void) const{
-  return *x;
-}
 
 #endif

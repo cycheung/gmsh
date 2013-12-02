@@ -63,8 +63,9 @@ dirichlet(GroupOfElement& goe,
   const vector<Dof> dof = dirFS.getAllDofs();
   const size_t     nDof = dof.size();
 
-  const DofManager&        dirDofM = sysProj.getDofManager();
-  const fullVector<double>& dirSol = sysProj.getSol();
+  const DofManager&  dirDofM = sysProj.getDofManager();
+  fullVector<double> dirSol;
+  sysProj.getSolution(dirSol);
 
   for(size_t i = 0; i < nDof; i++)
     dofM->fixValue(dof[i], dirSol(dirDofM.getGlobalId(dof[i])));
@@ -108,50 +109,14 @@ dirichlet(GroupOfElement& goe,
   const vector<Dof> dof = dirFS.getAllDofs();
   const size_t     nDof = dof.size();
 
-  const DofManager&        dirDofM = sysProj.getDofManager();
-  const fullVector<double>& dirSol = sysProj.getSol();
+  const DofManager&  dirDofM = sysProj.getDofManager();
+  fullVector<double> dirSol;
+  sysProj.getSolution(dirSol);
 
   for(size_t i = 0; i < nDof; i++)
     dofM->fixValue(dof[i], dirSol(dirDofM.getGlobalId(dof[i])));
 
   delete dirBasis;
-}
-
-void SystemAbstract::assemble(SolverMatrix& A,
-                              SolverVector& b,
-                              size_t elementId,
-                              const GroupOfDof& group,
-                              formulationPtr& term){
-
-  const vector<Dof>& dof = group.getDof();
-  const size_t N = group.size();
-
-  size_t dofI;
-  size_t dofJ;
-
-  for(size_t i = 0; i < N; i++){
-    dofI = dofM->getGlobalId(dof[i]);
-
-    // If not a fixed Dof line: assemble
-    if(dofI != DofManager::isFixedId()){
-      for(size_t j = 0; j < N; j++){
-        dofJ = dofM->getGlobalId(dof[j]);
-
-        // If not a fixed Dof
-        if(dofJ != DofManager::isFixedId())
-          A.add(dofI, dofJ, (formulation->*term)(i, j, elementId));
-
-        // If fixed Dof (for column 'dofJ'):
-        //    add to right hand side (with a minus sign) !
-        else
-          b.add(dofI,
-                -1 * dofM->getValue(dof[j]) *
-                    (formulation->*term)(i, j, elementId));
-      }
-
-      b.add(dofI, formulation->rhs(i, elementId));
-    }
-  }
 }
 
 void SystemAbstract::writeMatrix(std::string fileName,

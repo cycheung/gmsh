@@ -11,8 +11,8 @@ SolverMUMPS::SolverMUMPS(void){
 SolverMUMPS::~SolverMUMPS(void){
 }
 
-void SolverMUMPS::solve(SolverMatrix& A,
-                        SolverVector& rhs,
+void SolverMUMPS::solve(SolverMatrix<double>& A,
+                        SolverVector<double>& rhs,
                         fullVector<double>& x){
   // MPI Self //
   const int FMPICommSelf = MPI_Comm_c2f(MPI_COMM_SELF);

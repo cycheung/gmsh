@@ -1,4 +1,5 @@
 #include <iostream>
+#include <complex>
 
 #include "Mesh.h"
 #include "SystemEigen.h"
@@ -35,7 +36,7 @@ void compute(const Options& option){
   const size_t nWave = atoi(option.getValue("-n")[0].c_str());
 
   // Chose write formulation for Eigenvalues and boundary condition //
-  Formulation* eig = NULL;
+  FormulationTyped<complex<double> >* eig = NULL;
   SystemEigen* sys = NULL;
 
   if(option.getValue("-type")[0].compare("vector") == 0){
@@ -68,11 +69,9 @@ void compute(const Options& option){
   sys->solve();
 
   // Display //
-  const size_t nEigenValue =
-    sys->getEigenValuesNumber();
-
-  const vector<complex<double> >& eigenValue =
-    sys->getEigenValues();
+  fullVector<complex<double> > eigenValue;
+  const size_t nEigenValue = sys->getNComputedSolution();
+  sys->getEigenValues(eigenValue);
 
   cout << "Number of found Eigenvalues: " << nEigenValue
        << endl;
@@ -82,7 +81,7 @@ void compute(const Options& option){
 
   for(size_t i = 0; i < nEigenValue; i++)
     cout << "#" << i + 1  << "\t"
-         << eigenValue[i] << endl;
+         << eigenValue(i) << endl;
 
   // Write Sol //
   if(!option.getValue("-nopos").size()){

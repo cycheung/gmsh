@@ -19,8 +19,13 @@
 
    During the construction of the matrix, multiple values
    can be added in a thread-safe manner.
+
+   Finaly, a SolverMatrix may be of the following scalar types:
+   @li Real
+   @li Complex
 */
 
+template<typename scalar>
 class SolverMatrix{
  private:
   // Total Number of waiting mutex //
@@ -32,7 +37,7 @@ class SolverMatrix{
 
   // Data //
   // Each row is a list of the column entries
-  std::list<std::pair<size_t, double> >* data;
+  std::list<std::pair<size_t, scalar> >* data;
 
   // Each row got also an omp lock to be thread-safe
   omp_lock_t* lock;
@@ -45,14 +50,14 @@ class SolverMatrix{
   size_t nColumns(void) const;
   size_t getNumberOfMutexWait(void) const;
 
-  void   add(size_t row, size_t col, double value);
+  void   add(size_t row, size_t col, scalar value);
   size_t serialize(std::vector<int>&    rowVector,
                    std::vector<int>&    colVector,
-                   std::vector<double>& valueVector);
+                   std::vector<scalar>& valueVector);
 
   size_t serializeCStyle(std::vector<int>&    rowVector,
                          std::vector<int>&    colVector,
-                         std::vector<double>& valueVector);
+                         std::vector<scalar>& valueVector);
 
   std::string toString(void) const;
   std::string toMatlab(std::string matrixName) const;
@@ -61,10 +66,11 @@ class SolverMatrix{
  private:
   SolverMatrix(void);
 
-  void sortAndReduce(void);
+  void        sortAndReduce(void);
+  std::string matlabCommon(std::string matrixName) const;
 
-  static bool sortPredicate(const std::pair<size_t, double>& a,
-                            const std::pair<size_t, double>& b);
+  static bool sortPredicate(const std::pair<size_t, scalar>& a,
+                            const std::pair<size_t, scalar>& b);
 };
 
 /**
@@ -145,23 +151,23 @@ class SolverMatrix{
    and with the given name
  */
 
+
+//////////////////////////////////////
+// Templates Implementations:       //
+// Inclusion compilation model      //
+//                                  //
+// Damn you gcc: we want 'export' ! //
+//////////////////////////////////////
+
+#include "SolverMatrixInclusion.h"
+
 //////////////////////
 // Inline Functions //
 //////////////////////
 
-inline size_t SolverMatrix::nRows(void) const{
-  return nRow;
-}
-
-inline size_t SolverMatrix::nColumns(void) const{
-  return nCol;
-}
-
-inline size_t SolverMatrix::getNumberOfMutexWait(void) const{
-  return fail;
-}
-
-inline void SolverMatrix::add(size_t row, size_t col, double value){
+template<typename scalar>
+inline
+void SolverMatrix<scalar>::add(size_t row, size_t col, scalar value){
   // Take mutex for the given row
   if(!omp_test_lock(&lock[row])){
     // If we can't we increase the total mutex wait ...
@@ -172,16 +178,17 @@ inline void SolverMatrix::add(size_t row, size_t col, double value){
   }
 
   // Add the given pair (column, value)
-  data[row].push_back(std::pair<size_t, double>(col, value));
+  data[row].push_back(std::pair<size_t, scalar>(col, value));
 
   // Free mutex
   omp_unset_lock(&lock[row]);
 }
 
-inline bool SolverMatrix::sortPredicate(const std::pair<size_t, double>& a,
-                                        const std::pair<size_t, double>& b){
+template<typename scalar>
+inline
+bool SolverMatrix<scalar>::sortPredicate(const std::pair<size_t, scalar>& a,
+                                         const std::pair<size_t, scalar>& b){
   return a.first < b.first;
 }
-
 
 #endif

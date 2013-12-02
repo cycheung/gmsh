@@ -2,7 +2,7 @@
 #define _SYSTEMEIGEN_H_
 
 #include <complex>
-#include "SystemAbstract.h"
+#include "SystemTyped.h"
 #include "petscmat.h"
 
 /**
@@ -20,30 +20,29 @@
    The Solver used is <a href="http://www.grycap.upv.es/slepc/">SLEPc</a>.
  */
 
-class SystemEigen: public SystemAbstract{
- private:
+class SystemEigen: public SystemTyped<std::complex<double> >{
+ protected:
   bool general;
 
   Mat* A;
   Mat* B;
 
   PetscInt nEigenValues;
-  std::vector<std::complex<double> >* eigenValue;
+  fullVector<std::complex<double> >* eigenValue;
   std::vector<fullVector<std::complex<double> > >* eigenVector;
 
  public:
-  SystemEigen(const Formulation& formulation);
+  SystemEigen(const FormulationTyped<std::complex<double> >& formulation);
   virtual ~SystemEigen(void);
 
   bool isGeneral(void) const;
 
-  size_t getEigenValuesNumber(void) const;
+  virtual size_t getNComputedSolution(void)                          const;
+  virtual void   getSolution(fullVector<std::complex<double> >& sol,
+                             size_t nSol)                            const;
+  virtual void   getSolution(fullVector<std::complex<double> >& sol) const;
 
-  const std::vector<std::complex<double> >&
-    getEigenValues(void)  const;
-
-  const std::vector<fullVector<std::complex<double> > >&
-    getEigenVectors(void) const;
+  void getEigenValues(fullVector<std::complex<double> >& eig)  const;
 
   void setNumberOfEigenValues(size_t nEigenValues);
 
@@ -72,16 +71,9 @@ class SystemEigen: public SystemAbstract{
    @li false otherwise
    **
 
-   @fn SystemEigen::getEigenValuesNumber
-   @return Returns the number of computed eigenvalues
-   **
-
    @fn SystemEigen::getEigenValues
-   @return Returns the computed eigenvalues
-   **
-
-   @fn SystemEigen::getEigenVectors
-   @return Returns the computed eigenvectors
+   @param eig
+   Allocate and populates eig with the eigenvalues of this SystemEigen
    **
 
    @fn SystemEigen::setNumberOfEigenValues
@@ -89,29 +81,6 @@ class SystemEigen: public SystemAbstract{
 
    Sets the number of eigenvalues computed by
    SystemEigen::solve() to the given number
-   **
 */
-
-//////////////////////
-// Inline Functions //
-//////////////////////
-
-inline bool SystemEigen::isGeneral(void) const{
-  return general;
-}
-
-inline size_t SystemEigen::getEigenValuesNumber(void) const{
-  return nEigenValues;
-}
-
-inline const std::vector<std::complex<double> >&
-SystemEigen::getEigenValues(void) const{
-  return *eigenValue;
-}
-
-inline const std::vector<fullVector<std::complex<double> > >&
-SystemEigen::getEigenVectors(void) const{
-  return *eigenVector;
-}
 
 #endif
