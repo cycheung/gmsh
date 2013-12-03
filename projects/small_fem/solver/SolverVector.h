@@ -21,27 +21,37 @@
 template<typename scalar>
 class SolverVector{
  private:
-  size_t      fail;
-  size_t      N;
-  scalar*     v;
-  omp_lock_t* lock;
+  size_t  N;
+  scalar* v;
+
+  mutable size_t      fail;
+  mutable omp_lock_t* lock;
 
  public:
+   SolverVector(void);
    SolverVector(size_t size);
   ~SolverVector(void);
 
   size_t getSize(void) const;
   size_t getNumberOfMutexWait(void) const;
+  scalar get(size_t i) const;
 
-  void add(size_t i, scalar value);
-
+  void    clear(void);
+  void    resize(size_t size);
+  void    add(size_t i, scalar value);
   scalar* getData(void);
 
  private:
-  SolverVector(void);
+  void init(size_t size);
 };
 
 /**
+   @fn SolverVector::SolverVector()
+   @param size An integer
+
+   Instanciates a new SolverVector of size zero.
+   **
+
    @fn SolverVector::SolverVector(size_t)
    @param size An integer
 
@@ -59,6 +69,23 @@ class SolverVector{
 
    @fn SolverVector::getNumberOfMutexWait
    @return Returns the total number of threads that were blocked by a mutex
+   **
+
+   @fn SolverVector::get
+   @param i A valid index of this SolverVector
+   @return Returns a @em copy of the value of this SolverVector
+   stored at the ith index (stating at index 0)
+   **
+
+   @fn SolverVector::clear
+   Sets this SolverVector size to zero
+   **
+
+   @fn SolverVector::resize
+   @param size An integer
+
+   Clears this SolverVector and intialises a new one of the given size
+   and with null values
    **
 
    @fn SolverVector::add
@@ -83,9 +110,34 @@ class SolverVector{
 
 #include "SolverVectorInclusion.h"
 
-/////////////////////
-// Inline Function //
-/////////////////////
+//////////////////////
+// Inline Functions //
+//////////////////////
+
+template<typename scalar>
+inline
+scalar SolverVector<scalar>::get(size_t i) const{
+  // Temp
+  scalar tmp;
+
+  // Take mutex for the given index
+  if(!omp_test_lock(&lock[i])){
+    // If we can't we increase the total mutex wait ...
+    fail++;
+
+    // End we retry to take the lock
+    omp_set_lock(&lock[i]);
+  }
+
+  // Add the given pair (column, value)
+  tmp = v[i];
+
+  // Free mutex
+  omp_unset_lock(&lock[i]);
+
+  // Return
+  return tmp;
+}
 
 template<typename scalar>
 inline

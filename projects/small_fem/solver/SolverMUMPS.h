@@ -1,7 +1,10 @@
 #ifndef _SOLVERMUMPS_H_
 #define _SOLVERMUMPS_H_
 
+#include <vector>
+#include <complex>
 #include "Solver.h"
+#include "mumps_c_types.h"
 
 /**
    @class SolverMUMPS
@@ -15,15 +18,27 @@
     <a href="http://graal.ens-lyon.fr/MUMPS">http://graal.ens-lyon.fr/MUMPS</a>.
 */
 
-class SolverMUMPS: public Solver<double>{
+template<typename scalar>
+class SolverMUMPS: public Solver<scalar>{
  public:
   SolverMUMPS(void);
 
   virtual ~SolverMUMPS(void);
 
-  virtual void solve(SolverMatrix<double>& A,
-                     SolverVector<double>& rhs,
-                     fullVector<double>& x);
+  virtual void solve(SolverMatrix<scalar>& A,
+                     SolverVector<scalar>& rhs,
+                     fullVector<scalar>& x);
+ private:
+  void toMUMPSComplex(std::vector<std::complex<double> >& data,
+                      mumps_double_complex** out);
+  void toMUMPSComplex(SolverVector<std::complex<double> >& data,
+                      mumps_double_complex** out);
+  void fromMUMPSComplex(mumps_double_complex** in,
+                        size_t size,
+                        std::vector<std::complex<double> >& data);
+  void fromMUMPSComplex(mumps_double_complex** in,
+                        size_t size,
+                        SolverVector<std::complex<double> >& data);
 };
 
 /**
@@ -34,5 +49,15 @@ class SolverMUMPS: public Solver<double>{
    @fn SolverMUMPS::~SolverMUMPS
    Deletes this SolverMUMPS
 */
+
+
+//////////////////////////////////////
+// Templates Implementations:       //
+// Inclusion compilation model      //
+//                                  //
+// Damn you gcc: we want 'export' ! //
+//////////////////////////////////////
+
+#include "SolverMUMPSInclusion.h"
 
 #endif

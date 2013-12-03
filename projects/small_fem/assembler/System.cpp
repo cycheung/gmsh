@@ -76,7 +76,7 @@ void System::solve(void){
     assemble();
 
   // Use SolverMUMPS //
-  SolverMUMPS solver;
+  SolverMUMPS<double> solver;
   x = new fullVector<double>;
 
   solver.solve(*A, *b, *x);
