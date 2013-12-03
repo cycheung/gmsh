@@ -1,22 +1,22 @@
 /* --------------------------------------------------------------------------
-    This is a sample GetDP problem definition file                           
+    This is a sample GetDP problem definition file
 
     This file includes the file 'Magnetostatics.pro'
 
     (C) 1998 P. Dular, C. Geuzaine
    -------------------------------------------------------------------------- */
 
-/* 
+/*
    To solve the problem
    with scalar potential, type 'getdp test -pre MagSta_phi -cal -pos phi'
    with vector potential, type 'getdp test -pre MagSta_a -cal -pos a'
 */
 
 Group {
-  
-  /* The numbers correspond to physical regions defined in 'test.geo' (the input 
+
+  /* The numbers correspond to physical regions defined in 'test.geo' (the input
      to the GMSH meshing tool) */
-  
+
   Air     = Region[ 102 ];
   AirInf  = Region[ 101 ];
   Core    = Region[ 106 ];
@@ -35,17 +35,17 @@ Group {
   Domain_S   = Region[ {/*IndP1, IndP2*/} ] ;
   Domain_M   = Region[ {Mag} ] ;
 
-  DefineConstant[Val_Rint = {0.2, Path "Parameters/Geometry/1"},
-                 Val_Rext = {0.3, Path "Parameters/Geometry/2"}];
+  DefineConstant[Val_Rint = {0.2, Name "Parameters/Geometry/1Rint"},
+                 Val_Rext = {0.3, Name "Parameters/Geometry/2Rext"}];
 }
 
 Function {
 
   mu0     = 4.e-7 * Pi ;
-  DefineConstant[ murCore = {10., Path "Parameters/Materials"} ];
-  DefineConstant[ murMag = {1, Path "Parameters/Materials"} ];
+  DefineConstant[ murCore = {10., Name "Parameters/Materials/mur Core"} ];
+  DefineConstant[ murMag = {1, Name "Parameters/Materials/mur Mag"} ];
   If(murCore == 100)
-    DefineConstant[ SimplifiedModel = {0, Choices{0, 1}} ];
+    DefineConstant[ SimplifiedModel = {0, Choices{0, 1}, Name "Simplified model?"} ];
   EndIf
 
   nu [ Region[{Air, IndP1, IndP2, IndS1, IndS2, AirInf, Gap}] ]  = 1. / mu0 ;
@@ -56,7 +56,7 @@ Function {
   mu [ Core ]  = murCore * mu0;
   mu [ Mag ]   = murMag * mu0 ;
 
-  DefineConstant[ Hc = {920000, ShortHelp "Coercive H field", Path "Parameters/Sources"} ];
+  DefineConstant[ Hc = {920000, Name "Parameters/Sources/Coercive H field"} ];
   hc [ Mag ]   = Vector[0., Hc, 0.] ;
 
   Itot = 4737;

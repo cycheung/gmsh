@@ -3,7 +3,7 @@
 
 // MAX TEMP AT DERMIS-EPIDERMIS INTERFACE
 
-// DefineConstant [DERMIS = {0.05, Label "Mesh size", Path "Parameters/Skin/3"}];
+// DefineConstant [DERMIS = {0.05, Name "Parameters/Skin/3Mesh size"}];
 
 Plugin(Probe).View=0;
 Plugin(Probe).X=1.e-6;

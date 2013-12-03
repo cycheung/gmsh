@@ -1,11 +1,11 @@
 
-DefineConstant[ L = {1, Path "1Geometry/", Label "Length - L [m]"}];
-DefineConstant[ A = {0.1, Path "1Geometry/", Label "Height - A [m]"}];
-DefineConstant[ B = {0.1, Path "1Geometry/", Label "Width - B [m]"}];
+DefineConstant[ L = {1, Name "1Geometry/Length - L [m]"}];
+DefineConstant[ A = {0.1, Name "1Geometry/Height - A [m]"}];
+DefineConstant[ B = {0.1, Name "1Geometry/Width - B [m]"}];
 
-DefineConstant[CLAMPING = {1, Path "1Geometry/", Label "Clamping",
+DefineConstant[CLAMPING = {1, Name "1Geometry/Clamping",
 			   Choices{1="One side", 2="Both sides"} }] ;
-DefineConstant[STRUCTURED = {1, Path "1Geometry/", Label "Mesh",
+DefineConstant[STRUCTURED = {1, Name "1Geometry/Mesh",
 			   Choices{0="Unstructured", 1="Structured"} }] ;
 
 /*  == S T R U C T U R E D   M E S H ==  */
@@ -32,7 +32,7 @@ Transfinite Line {1, 3} = NbLayY;
 Transfinite Line {2, 4} = NbLayZ;
 Transfinite Surface {10} Right;
 Recombine Surface {10};
-Extrude Surface { 10, {L, 0, 0} } {Layers{NbLayX-1}; Recombine; } ;   
+Extrude Surface { 10, {L, 0, 0} } {Layers{NbLayX-1}; Recombine; } ;
 
 Physical Volume("Volume")={1};
 Physical Surface("LoadSurf")={23};

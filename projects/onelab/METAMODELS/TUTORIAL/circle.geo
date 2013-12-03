@@ -1,8 +1,8 @@
-DefineConstant[lc = {0.03, Path "Geometry/", ShortHelp "Mesh size"}] ;
+DefineConstant[lc = {0.03, Name "Geometry/Mesh size"}] ;
 r =0.99;
 
 Point(1) = { 0, 0, 0, lc};
-Point(2) = { 0, r, 0, lc}; 
+Point(2) = { 0, r, 0, lc};
 Line(1) = {1,2};
 
 Point(3) = { r, 0, 0, lc};

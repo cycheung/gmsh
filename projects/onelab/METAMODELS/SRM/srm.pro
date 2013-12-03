@@ -4,23 +4,23 @@ Include "srm_data.pro";
 /*
 These variables are pointles when the model is called from a python metamodel
 
-DefineConstant[ ComputeCommand = {"-solve -v 1", Path "getdp/9"} ];
+DefineConstant[ C = {"-solve -v 1", Name "getdp/9ComputeCommand"} ];
 // with "-solve -v 1 -v2" a mesh-based Gmsh output is issued, i.e.
-// all view are appended to the same file and appear superimposed in the GUI 
-DefineConstant[ ResolutionChoices = {"MagSta", Path "getdp/1"} ];
-DefineConstant[ PostOperationChoices = {"Torque", Path "getdp/2"} ];
+// all view are appended to the same file and appear superimposed in the GUI
+DefineConstant[ R = {"MagSta", Name "getdp/1ResolutionChoices"} ];
+DefineConstant[ P = {"Torque", Name "getdp/2PostOperationChoices"} ];
 */
 
 /*
 Re-declaration of onelab parameter, to make the .pro file selfconsistent
 The parameters are already declared in the main python script
 */
-DefineConstant[ POSITION = {30., Path "IO/1", Label "Rotor Position [deg]"}];
-DefineConstant[ MST = {0., Path "IO/2", Label "Torque (MST) [Nm]"}];
-DefineConstant[ VWP = {0., Path "IO/3", Label "Torque (VWP) [Nm]"}];
-DefineConstant[ IR = {  1, Path "IO/4", Label "Current phase R [A]"} ];
-DefineConstant[ IS = {  0, Path "IO/5", Label "Current phase S [A]"} ];
-DefineConstant[ IT = {  0, Path "IO/6", Label "Current phase T [A]"} ];
+DefineConstant[ POSITION = {30., Name "IO/1Rotor Position [deg]"}];
+DefineConstant[ MST = {0., Name "IO/2Torque (MST) [Nm]"}];
+DefineConstant[ VWP = {0., Name "IO/3Torque (VWP) [Nm]"}];
+DefineConstant[ IR = {  1, Name "IO/4Current phase R [A]"} ];
+DefineConstant[ IS = {  0, Name "IO/5Current phase S [A]"} ];
+DefineConstant[ IT = {  0, Name "IO/6Current phase T [A]"} ];
 
 angleR = POSITION ;// angular rotor position
 
@@ -155,7 +155,7 @@ Function {
   // fixed rotor position or inital position (in rad) in case of rotation
   th0 = angleR*Pi/180 ;
   // end angle (in rad)
-  th1 = (angleR+180)*Pi/180 ; 
+  th1 = (angleR+180)*Pi/180 ;
 
   // imposed speed and current profile per phase
   rpm = 5000 ; // in rpm
@@ -308,7 +308,7 @@ Constraint {
  //Kinetics
  { Name CurrentPosition ;
    Case {
-     { Region DomainKin ; Type Init ; Value 0.#66 ; }  
+     { Region DomainKin ; Type Init ; Value 0.#66 ; }
    }
  }
 

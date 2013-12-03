@@ -1,16 +1,24 @@
 mm = 1.e-3;
 
-DefineConstant[ H = {2*mm, Min 1*mm, Max 4*mm, Step 0.5*mm, Path "Parameters/1Geometry",ShortHelp "Skin thickness"} ];
-DefineConstant[ L = {4*mm, Min 2*mm, Max 6*mm, Step 0.5*mm, Path "Parameters/1Geometry",ShortHelp "Model length"} ];
-DefineConstant[ R = {2*mm, Min 1*mm, Max L-1*mm, Step 0.5*mm, Path "Parameters/1Geometry",ShortHelp "Radius"} ];
+DefineConstant[ H = {2*mm, Min 1*mm, Max 4*mm, Step 0.5*mm,
+    Name "Parameters/1Geometry/Skin thickness"} ];
+DefineConstant[ L = {4*mm, Min 2*mm, Max 6*mm, Step 0.5*mm,
+    Name "Parameters/1Geometry/Model length"} ];
+DefineConstant[ R = {2*mm, Min 1*mm, Max L-1*mm, Step 0.5*mm,
+    Name "Parameters/1Geometry/Radius"} ];
 
-//DefineConstant[ lambda = {0.9, Min 0.7, Max 1, Step 0.05, Path "Parameters/1Geometry",ShortHelp "lambda"} ];
+//DefineConstant[ lambda = {0.9, Min 0.7, Max 1, Step 0.05,
+//  Name "Parameters/1Geometry/lambda"} ];
 lambda=0.9;
-DefineConstant[ Xloc = {lambda*R*Cos(Pi/4), Path "Parameters/1Geometry",ShortHelp "x coord of probepoint"} ];
-DefineConstant[ Yloc = {lambda*R*Sin(Pi/4)+H, Path "Parameters/1Geometry",ShortHelp "y coord of probepoint"} ];
+DefineConstant[ Xloc = {lambda*R*Cos(Pi/4),
+    Name "Parameters/1Geometry/x coord of probepoint"} ];
+DefineConstant[ Yloc = {lambda*R*Sin(Pi/4)+H,
+    Name "Parameters/1Geometry/y coord of probepoint"} ];
 
-//DefineConstant[ Refine = {1, Min 0.01, Max 10, Path "Parameters/1Geometry",ShortHelp "Mesh Size"} ];
-DefineConstant[ Refine = {1, Path "Parameters/1Geometry",ShortHelp "Mesh Size"} ];
+//DefineConstant[ Refine = {1, Min 0.01, Max 10,
+//  Name "Parameters/1Geometry/Mesh Size"} ];
+DefineConstant[ Refine = {1,
+    Name "Parameters/1Geometry/Mesh Size"} ];
 
 lc=0.05*H*Refine;
 
@@ -20,7 +28,7 @@ Point(3) = {L, H, 0, lc};
 Point(4) = {0, H, 0, lc};
 Point(5) = {R, H, 0, lc};
 Point(6) = {0, H+R, 0, lc};
- 
+
 Line(1) = {1, 2};
 Line(2) = {2, 3};
 Line(3) = {3, 5};

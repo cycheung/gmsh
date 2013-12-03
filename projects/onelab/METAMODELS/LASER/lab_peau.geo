@@ -1,17 +1,17 @@
 
 // Parameters shared with onelab need be defined here for consistency:
-// EPIDERMIS = 0.12 mm (hairless) or 0.05 mm (hairy) 
+// EPIDERMIS = 0.12 mm (hairless) or 0.05 mm (hairy)
 
-DefineConstant[EPIDERMIS = {0.05, Path "Parameters/Skin/2", ShortHelp "Thickness of epidermis [mm]"}];
-DefineConstant[DERMIS = {1.5, Path "Parameters/Skin/3", ShortHelp "Thickness of dermis [mm]"}];
-DefineConstant[BEAMRADIUS = {3, Path "Parameters/Laser/2", ShortHelp "Radius of the beam [mm]"}];
+DefineConstant[EPIDERMIS = {0.05, Name "Parameters/Skin/2Thickness of epidermis [mm]"}];
+DefineConstant[DERMIS = {1.5, Name "Parameters/Skin/3Thickness of dermis [mm]"}];
+DefineConstant[BEAMRADIUS = {3, Name "Parameters/Laser/2Radius of the beam [mm]"}];
 
 // Gmsh specific parameter
-DefineConstant[Nb1 = {9, Path "Gmsh/", ShortHelp "Elements on spot surface", Closed "1"} ]; 
-DefineConstant[Nb2 = {6, Path "Gmsh/", ShortHelp "Elements across epidermis"}];
-DefineConstant[Nb3 = {6, Path "Gmsh/", ShortHelp "Elements across dermis"}]; 
-DefineConstant[Nb4 = {4, Path "Gmsh/", ShortHelp "Elements on free surface"}]; 
-DefineConstant[Ref = {3, Path "Gmsh/", ShortHelp "Refinement factor (1-5)"}]; 
+DefineConstant[Nb1 = {9, Name "Gmsh/Elements on spot surface", Closed "1"} ];
+DefineConstant[Nb2 = {6, Name "Gmsh/Elements across epidermis"}];
+DefineConstant[Nb3 = {6, Name "Gmsh/Elements across dermis"}];
+DefineConstant[Nb4 = {4, Name "Gmsh/Elements on free surface"}];
+DefineConstant[Ref = {3, Name "Gmsh/Refinement factor (1-5)"}];
 
 mm=1.e-3;
 L = 7*mm;
@@ -21,7 +21,7 @@ H2 = EPIDERMIS * mm;
 
 lc = H2/10;
 lc2 = H1/4;
-Point(1) = {0, 0, 0, lc2}; 
+Point(1) = {0, 0, 0, lc2};
 Point(2) = {D, 0, 0, lc2};
 Point(3) = {L, 0, 0, lc2};
 Point(4) = {0, H1, 0, lc};
@@ -55,7 +55,7 @@ Plane Surface(4) = {4};
 
 Physical Surface("Dermis") = {1,2};
 Physical Surface("Epidermis") = {3,4};
-Physical Line("Bottom") = {1,2}; 
+Physical Line("Bottom") = {1,2};
 Physical Line("Axis") = {5,6};
 Physical Line("Side") = {3,4};
 Physical Line("LaserSpot") = {10};

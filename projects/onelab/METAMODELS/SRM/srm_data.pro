@@ -1,6 +1,6 @@
 // Switched Reluctance Motor Parameter File (2D)
 
-DefineConstant[Flag_Symmetry = {1,Choices {0,1}}] ;//0 => Full model; 1 => Half model
+DefineConstant[Flag_Symmetry = {1,Choices {0,1},Name "Symmetry"}] ;//0 => Full model; 1 => Half model
 
 //------------------------------------------------------------
 //------------------------------------------------------------
