@@ -2,7 +2,10 @@
 
 #include "Mesh.h"
 #include "System.h"
+#include "BasisGenerator.h"
 
+#include "FormulationProjectionScalar.h"
+#include "FormulationProjectionVector.h"
 #include "FormulationSteadyWaveScalar.h"
 #include "FormulationSteadyWaveVector.h"
 #include "FormulationSteadyWaveVectorSlow.h"
@@ -40,6 +43,42 @@ double fWallScal(fullVector<double>& xyz){
   return 0;
 }
 
+void constraint(SystemAbstract& sys,
+                GroupOfElement& goe,
+                double (*f)(fullVector<double>& xyz)){
+
+  const FunctionSpace& fs = sys.getFunctionSpace();
+
+  Basis* basis = BasisGenerator::generate(goe.get(0).getType(),
+                                          fs.getBasis(0).getType(),
+                                          fs.getBasis(0).getOrder(),
+                                          "hierarchical");
+
+  FunctionSpaceScalar         constraint(goe, *basis);
+  FormulationProjectionScalar projection(f, constraint);
+  sys.constraint(projection);
+
+  delete basis;
+}
+
+void constraint(SystemAbstract& sys,
+                GroupOfElement& goe,
+                fullVector<double> (*f)(fullVector<double>& xyz)){
+
+  const FunctionSpace& fs = sys.getFunctionSpace();
+
+  Basis* basis = BasisGenerator::generate(goe.get(0).getType(),
+                                          fs.getBasis(0).getType(),
+                                          fs.getBasis(0).getOrder(),
+                                          "hierarchical");
+
+  FunctionSpaceVector         constraint(goe, *basis);
+  FormulationProjectionVector projection(f, constraint);
+  sys.constraint(projection);
+
+  delete basis;
+}
+
 void compute(const Options& option){
   // Start Timer //
   Timer timer, assemble, solve;
@@ -65,8 +104,8 @@ void compute(const Options& option){
     wave = new FormulationSteadyWaveVector(domain, puls * 1, order);
     sys  = new System(*wave);
 
-    sys->dirichlet(source, fSourceVec);
-    sys->dirichlet(wall,   fWallVec);
+    constraint(*sys, source, fSourceVec);
+    constraint(*sys, wall,   fWallVec);
     cout << "Vectorial ";
   }
 
@@ -75,8 +114,8 @@ void compute(const Options& option){
     wave = new FormulationSteadyWaveVectorSlow(domain, puls * 1, order);
     sys  = new System(*wave);
 
-    sys->dirichlet(source, fSourceVec);
-    sys->dirichlet(wall,   fWallVec);
+    constraint(*sys, source, fSourceVec);
+    constraint(*sys, wall,   fWallVec);
     cout << "Slow Vectorial ";
   }
 
@@ -85,8 +124,8 @@ void compute(const Options& option){
     wave = new FormulationSteadyWaveScalar(domain, puls * 1, order);
     sys  = new System(*wave);
 
-    sys->dirichlet(source, fSourceScal);
-    sys->dirichlet(wall,   fWallScal);
+    constraint(*sys, source, fSourceScal);
+    constraint(*sys, wall,   fWallScal);
     cout << "Scalar ";
   }
 

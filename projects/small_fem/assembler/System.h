@@ -30,9 +30,9 @@ class System: public SystemTyped<double>{
   virtual void assemble(void);
   virtual void solve(void);
 
-  virtual void   addSolution(FEMSolution& feSol) const;
-  virtual void   writeMatrix(std::string fileName,
-                             std::string matrixName) const;
+  virtual void addSolution(FEMSolution& feSol) const;
+  virtual void writeMatrix(std::string fileName,
+                           std::string matrixName) const;
 };
 
 

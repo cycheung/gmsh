@@ -3,7 +3,10 @@
 
 #include "Mesh.h"
 #include "SystemEigen.h"
+#include "BasisGenerator.h"
 
+#include "FormulationProjectionScalar.h"
+#include "FormulationProjectionVector.h"
 #include "FormulationEigenFrequencyScalar.h"
 #include "FormulationEigenFrequencyVector.h"
 
@@ -25,6 +28,42 @@ double fDirichletScal(fullVector<double>& xyz){
   return 0;
 }
 
+void constraint(SystemAbstract& sys,
+                GroupOfElement& goe,
+                double (*f)(fullVector<double>& xyz)){
+
+  const FunctionSpace& fs = sys.getFunctionSpace();
+
+  Basis* basis = BasisGenerator::generate(goe.get(0).getType(),
+                                          fs.getBasis(0).getType(),
+                                          fs.getBasis(0).getOrder(),
+                                          "hierarchical");
+
+  FunctionSpaceScalar         constraint(goe, *basis);
+  FormulationProjectionScalar projection(f, constraint);
+  sys.constraint(projection);
+
+  delete basis;
+}
+
+void constraint(SystemAbstract& sys,
+                GroupOfElement& goe,
+                fullVector<double> (*f)(fullVector<double>& xyz)){
+
+  const FunctionSpace& fs = sys.getFunctionSpace();
+
+  Basis* basis = BasisGenerator::generate(goe.get(0).getType(),
+                                          fs.getBasis(0).getType(),
+                                          fs.getBasis(0).getOrder(),
+                                          "hierarchical");
+
+  FunctionSpaceVector         constraint(goe, *basis);
+  FormulationProjectionVector projection(f, constraint);
+  sys.constraint(projection);
+
+  delete basis;
+}
+
 void compute(const Options& option){
   // Get Domain //
   Mesh msh(option.getValue("-msh")[0]);
@@ -43,7 +82,7 @@ void compute(const Options& option){
     eig = new FormulationEigenFrequencyVector(domain, order);
     sys = new SystemEigen(*eig);
 
-    sys->dirichlet(border, fDirichletVec);
+    constraint(*sys, border, fDirichletVec);
     cout << "Vectorial ";
   }
 
@@ -51,7 +90,7 @@ void compute(const Options& option){
     eig = new FormulationEigenFrequencyScalar(domain, order);
     sys = new SystemEigen(*eig);
 
-    sys->dirichlet(border, fDirichletScal);
+    constraint(*sys, border, fDirichletScal);
     cout << "Scalar ";
   }
 

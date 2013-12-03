@@ -59,7 +59,7 @@ int main(int argc, char** argv){
 
   solver.solve(a, b, x);
 
-  for(size_t i = 0; i < x.size(); i++)
+  for(int i = 0; i < x.size(); i++)
     cout << x(i) << endl;
 
   a.writeToMatlabFile("a.m", "a");

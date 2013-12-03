@@ -4,6 +4,7 @@
 #include <string>
 
 #include "DofManager.h"
+#include "Formulation.h"
 #include "FunctionSpace.h"
 #include "GroupOfElement.h"
 #include "FEMSolution.h"
@@ -35,14 +36,7 @@ class SystemAbstract{
   const DofManager&    getDofManager(void)    const;
   const FunctionSpace& getFunctionSpace(void) const;
 
-  void fixCoef(const GroupOfElement& goe,
-               double value);
-
-  void dirichlet(GroupOfElement& goe,
-                 double (*f)(fullVector<double>& xyz));
-
-  void dirichlet(GroupOfElement& goe,
-                 fullVector<double> (*f)(fullVector<double>& xyz));
+  void constraint(const Formulation& formulation);
 
   virtual void assemble(void) = 0;
   virtual void solve(void)    = 0;
@@ -84,27 +78,10 @@ class SystemAbstract{
    @return Returns the FunctionSpace used by this system
    **
 
-   @fn SystemAbstract::fixCoef
-   @param goe A GroupOfElement
-   @param value A real value
-
-   Fixes the coefficients (Dof%s), associated to the given
-   GroupOfElement, to the given value
-   **
-
-   @fn SystemAbstract::dirichlet(GroupOfElement& goe,  double (*f)(fullVector<double>& xyz));
-   @param goe A GroupOfElement
-   @param f A scalar Function
-
-   Imposes a scalar Dirichlet Condition (given by f) on the given GroupOfElement
-   **
-
-   @fn SystemAbstract::dirichlet(GroupOfElement& goe, fullVector<double> (*f)(fullVector<double>& xyz));
-   @param goe A GroupOfElement
-   @param f A vectorial Function
-
-   Imposes a vectorial Dirichlet Condition (given by @c f) on the
-   given GroupOfElement
+   @fn SystemAbstract::constraint
+   @param formulation A Formulation
+   Assembles and solves the given Formulation.
+   The resulting solution will be used as a constraint for this AbstractSystem.
    **
 
    @fn SystemAbstract::assemble(void)
