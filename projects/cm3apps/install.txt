@@ -145,8 +145,8 @@ A) The packages needed to install gmsh are (gmsh has to be install to use cm3app
           for the hmem cluster blas and lapack module does not exist so use 
 ./config/configure.py --with-debugging=0 --download-f-blas-lapack=1 --with-mpi-dir=$MPI_HOME --with-pic --with-shared-libraries=1 --with-clanguage=cxx --with-batch --known-mpi-shared-libraries=0
 
-           for the vega cluster lapack is not compiled with -fPIC so the link to the lapack library fail and you have to ask PETSc to download blas and lapack:
-./config/configure.py --with-debugging=0 --download-f-blas-lapack=1 --with-mpi-dir=$MPI_HOME --with-pic --with-shared-libraries=1 --with-clanguage=cxx --with-batch --known-mpi-shared-libraries=0 
+           for the vega cluster lapack you should use the openblas module that also contains lapack (the module lapack seems not being com;piled with -fPIC:
+./config/configure.py --with-debugging=0 --with-blas-lib=$BLASDIR/lib$BLASLIB.so --with-lapack-lib=$LAPACK_DIR/liblapack.so --with-mpi-dir=$MPI_HOME --with-pic --with-shared-libraries=1 --with-clanguage=cxx --with-batch --known-mpi-shared-libraries=0
 
            put --with-debugging=1 for debug
            for more petsc configure options type: ./configure/configure.py -help
@@ -212,6 +212,14 @@ Then wait until the job end (the last line of the created file "petsc-install.ou
 	        module list
 	}
 
+        - vega: (this cluster load common module in the user .bashrc so I do not define a function but I add the module directly in the .bashrc):
+alredy in your .bashrc
+      (module load gcc)
+      (module load slurm)
+add these ones
+      module load openblas/0.2.8/gcc/4.7.0 # contains lapack too
+      module load cmake/2.8.12/gcc/4.7.0
+      module load openmpi/1.6.4/gcc/4.7.0
 
 
         5d) Since PETSC-3.4 it seem that there is an issue when you compile Gmsh. You have error message telling that memcpy, memset,... are not defined. To solve this problem you have to add 
