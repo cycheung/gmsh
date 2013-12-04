@@ -157,7 +157,7 @@ add_dependencies(sf lib gmsh)
 #######################
 add_executable(poisson simulation/Poisson.cpp)
 add_executable(swave   simulation/SteadyWave.cpp)
-add_executable(emode   simulation/EigenMode.cpp)
+#add_executable(emode   simulation/EigenMode.cpp)
 
 add_executable(proj simulation/Projection.cpp)
 add_executable(mesh simulation/Mesh.cpp)
@@ -168,7 +168,7 @@ add_executable(test simulation/Test.cpp)
 ##########
 target_link_libraries(poisson sf)
 target_link_libraries(swave sf)
-target_link_libraries(emode sf)
+#target_link_libraries(emode sf)
 
 target_link_libraries(proj sf)
 target_link_libraries(mesh sf)

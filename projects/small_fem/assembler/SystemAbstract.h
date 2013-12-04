@@ -9,22 +9,32 @@
 #include "GroupOfElement.h"
 #include "FEMSolution.h"
 
+#include "SolverMatrix.h"
+#include "SolverVector.h"
+#include "fullMatrix.h"
+
 /**
    @interface SystemAbstract
    @brief Common interface for linear systems assemblers
 
    This is a common interface for linear systems assemblers.
-   A SystemAbstract may be of multiple scalar type:
-   see SystemTyped for more informations.
+   A SystemAbstract may be of multiple scalar type.
  */
 
+template<typename scalar>
 class SystemAbstract{
+ protected:
+  typedef
+    scalar (Formulation<scalar>::*formulationPtr)(size_t dofI,
+                                                  size_t dofJ,
+                                                  size_t elementId) const;
  protected:
   bool assembled;
   bool solved;
 
-  const FunctionSpace* fs;
-  DofManager*          dofM;
+  const Formulation<scalar>* formulation;
+  const FunctionSpace*       fs;
+  DofManager*                dofM;
 
  public:
   virtual ~SystemAbstract(void);
@@ -36,16 +46,26 @@ class SystemAbstract{
   const DofManager&    getDofManager(void)    const;
   const FunctionSpace& getFunctionSpace(void) const;
 
-  void constraint(const Formulation& formulation);
+  void constraint(const std::map<Dof, scalar>& constr);
 
   virtual void assemble(void) = 0;
   virtual void solve(void)    = 0;
 
-  virtual std::string getType(void)                       const = 0;
-  virtual size_t      getNComputedSolution(void)          const = 0;
-  virtual void        addSolution(FEMSolution& feSol)     const = 0;
-  virtual void        writeMatrix(std::string fileName,
-                                  std::string matrixName) const;
+  virtual size_t getNComputedSolution(void)                           const = 0;
+  virtual void   getSolution(fullVector<scalar>& sol, size_t nSol)    const = 0;
+  virtual void   getSolution(fullVector<scalar>& sol)                 const = 0;
+  virtual void   getSolution(std::map<Dof, scalar>& sol, size_t nSol) const = 0;
+  virtual void   getSolution(std::map<Dof, scalar>& sol)              const = 0;
+  virtual void   getSolution(FEMSolution& feSol)                      const = 0;
+
+  virtual void  writeMatrix(std::string fileName, std::string matrixName) const;
+
+ protected:
+  void assemble(SolverMatrix<scalar>& A,
+                SolverVector<scalar>& b,
+                size_t elementId,
+                const GroupOfDof& group,
+                formulationPtr& term);
 };
 
 
@@ -79,9 +99,9 @@ class SystemAbstract{
    **
 
    @fn SystemAbstract::constraint
-   @param formulation A Formulation
-   Assembles and solves the given Formulation.
-   The resulting solution will be used as a constraint for this AbstractSystem.
+   @param constr A map of Dof%s and scalar
+   Constraints this SystemAbstract with the given Dof%s
+   and their associated values
    **
 
    @fn SystemAbstract::assemble(void)
@@ -92,16 +112,36 @@ class SystemAbstract{
    Solves this linear system
    **
 
-   @fn SystemAbstract::getType
-   @return Returns a string specifying of which type this SystemAbstract is
-   @see SystemTyped
-   **
-
    @fn SystemAbstract::getNComputedSolution(void)
    @return The number of computed solution by SystemAbstract::solve()
-
    **
-   @fn SystemAbstract::addSolution(FEMSolution& feSol)
+
+   @fn SystemAbstract::getSolution(fullVector<scalar>&, size_t)
+   @param sol A vector
+   @param nSol An integer
+   Allocates and populates the given vector with the nSolth solution vector
+   computed by SystemAbstract::solve()
+   **
+
+   @fn SystemAbstract::getSolution(fullVector<scalar>&)
+   @param sol A vector
+   Same as SystemAbstract::getSolution(sol, 0)
+   **
+
+   @fn SystemAbstract::getSolution(std::map<Dof, scalar>&, size_t)
+   @param sol A map mapping a Dof to a scalar
+   @param nSol An integer
+   Fills to given map with the given pairs
+   (Dof, solution associated to this Dof)
+   for the nSolth solution of this SystemAbstract.
+   **
+
+   @fn SystemAbstract::getSolution(std::map<Dof, scalar>&)
+   @param sol A map mapping a Dof to a scalar
+   Same as SystemAbstract::getSolution(sol, 0)
+   **
+
+   @fn SystemAbstract::getSolution(FEMSolution& feSol)
    @param feSol A FEMSolution
 
    Adds to the given FEMSolution the computed finite element solutions.
@@ -114,32 +154,26 @@ class SystemAbstract{
 
    Writes this system matrix in Octave/Matlab format, with the given name,
    into the given file
+
+   @internal
+   @fn SystemAbstract::assemble
+   @param A The matrix to assemble
+   @param b The right hand side to assemble
+   @param elementId The mesh Element ID to assemble
+   @param group The GroupOfDof to assemble
+   @param term The Formulation to use in the assembly
+
+   Assembles the given values
+   @endinternal
 */
 
-//////////////////////
-// Inline Functions //
-//////////////////////
+//////////////////////////////////////
+// Templates Implementations:       //
+// Inclusion compilation model      //
+//                                  //
+// Damn you gcc: we want 'export' ! //
+//////////////////////////////////////
 
-inline bool SystemAbstract::isAssembled(void) const{
-  return assembled;
-}
-
-inline bool SystemAbstract::isSolved(void) const{
-  return solved;
-}
-
-inline size_t SystemAbstract::getSize(void) const{
-  return dofM->getUnfixedDofNumber();
-}
-
-inline const DofManager& SystemAbstract::
-getDofManager(void) const{
-  return *dofM;
-}
-
-inline const FunctionSpace& SystemAbstract::
-getFunctionSpace(void) const{
-  return *fs;
-}
+#include "SystemAbstractInclusion.h"
 
 #endif

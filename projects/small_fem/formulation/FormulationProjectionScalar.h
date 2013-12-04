@@ -7,7 +7,7 @@
 #include "TermFieldField.h"
 #include "TermProjectionField.h"
 
-#include "FormulationTyped.h"
+#include "Formulation.h"
 
 /**
    @class FormulationProjectionScalar
@@ -16,7 +16,7 @@
    Scalar Formulation for the @em L2 @em Projection problem
  */
 
-class FormulationProjectionScalar: public FormulationTyped<double>{
+class FormulationProjectionScalar: public Formulation<double>{
  private:
   // Function Space & Basis //
   FunctionSpaceScalar* fspace;

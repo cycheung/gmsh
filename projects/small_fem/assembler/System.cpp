@@ -3,16 +3,7 @@
 
 using namespace std;
 
-System::System(const FormulationTyped<double>& formulation){
-  // Check Formulation type //
-  string formulationType = formulation.getType();
-  string systemType      = getType();
-
-  if(formulationType.compare(systemType) != 0)
-    throw Exception("This System is of real type %s, but the Formulation is %s",
-                    systemType.c_str(),
-                    formulationType.c_str());
-
+System::System(const Formulation<double>& formulation){
   // Get Formulation //
   this->formulation = &formulation;
   this->fs          = &(formulation.fs());
@@ -53,7 +44,7 @@ void System::assemble(void){
   const vector<GroupOfDof*>& group = fs->getAllGroups();
 
   // Get Formulation Term //
-  formulationPtr term = &FormulationTyped<double>::weak;
+  formulationPtr term = &Formulation<double>::weak;
 
   // Alloc //
   const size_t size = dofM->getUnfixedDofNumber();
@@ -64,7 +55,7 @@ void System::assemble(void){
   // Assemble //
   #pragma omp parallel for
   for(size_t i = 0; i < E; i++)
-    SystemTyped::assemble(*A, *b, i, *group[i], term);
+    SystemAbstract::assemble(*A, *b, i, *group[i], term);
 
   // The system is assembled //
   assembled = true;
@@ -97,8 +88,21 @@ void System::getSolution(fullVector<double>& sol) const{
   getSolution(sol, 0);
 }
 
+void System::getSolution(std::map<Dof, double>& sol, size_t nSol) const{
+  // Get All Dofs
+  const vector<Dof> dof = fs->getAllDofs();
+  const size_t     nDof = dof.size();
 
-void System::addSolution(FEMSolution& feSol) const{
+  // Fill Map
+  for(size_t i = 0; i < nDof; i++)
+    sol.insert(pair<Dof, double>(dof[i], (*x)(dofM->getGlobalId(dof[i]))));
+}
+
+void System::getSolution(std::map<Dof, double>& sol) const{
+  getSolution(sol, 0);
+}
+
+void System::getSolution(FEMSolution& feSol) const{
   if(!solved)
     throw Exception("System: addSolution -- System not solved");
 

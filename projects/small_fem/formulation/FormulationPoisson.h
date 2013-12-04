@@ -7,7 +7,7 @@
 #include "TermGradGrad.h"
 #include "TermProjectionField.h"
 
-#include "FormulationTyped.h"
+#include "Formulation.h"
 
 /**
    @class FormulationPoisson
@@ -16,7 +16,7 @@
    Formulation for the @em Poisson problem
  */
 
-class FormulationPoisson: public FormulationTyped<double>{
+class FormulationPoisson: public Formulation<double>{
  private:
   // Function Space & Basis //
   FunctionSpaceScalar* fspace;

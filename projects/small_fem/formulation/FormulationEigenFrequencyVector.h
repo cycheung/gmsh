@@ -7,7 +7,7 @@
 #include "TermCurlCurl.h"
 #include "TermGradGrad.h"
 
-#include "FormulationTyped.h"
+#include "Formulation.h"
 
 /**
    @class FormulationEigenFrequencyVector
@@ -17,7 +17,7 @@
 */
 
 class FormulationEigenFrequencyVector:
-public FormulationTyped<std::complex<double> >{
+public Formulation<std::complex<double> >{
  private:
   // Speed of medium squared //
   static const double cSquare;

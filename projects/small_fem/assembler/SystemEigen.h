@@ -2,7 +2,7 @@
 #define _SYSTEMEIGEN_H_
 
 #include <complex>
-#include "SystemTyped.h"
+#include "SystemAbstract.h"
 #include "petscmat.h"
 
 /**
@@ -20,7 +20,7 @@
    The Solver used is <a href="http://www.grycap.upv.es/slepc/">SLEPc</a>.
  */
 
-class SystemEigen: public SystemTyped<std::complex<double> >{
+class SystemEigen: public SystemAbstract<std::complex<double> >{
  protected:
   bool general;
 
@@ -32,24 +32,25 @@ class SystemEigen: public SystemTyped<std::complex<double> >{
   std::vector<fullVector<std::complex<double> > >* eigenVector;
 
  public:
-  SystemEigen(const FormulationTyped<std::complex<double> >& formulation);
+  SystemEigen(const Formulation<std::complex<double> >& formulation);
   virtual ~SystemEigen(void);
 
-  bool isGeneral(void) const;
-
-  virtual size_t getNComputedSolution(void)                          const;
+  virtual size_t getNComputedSolution(void)                             const;
   virtual void   getSolution(fullVector<std::complex<double> >& sol,
-                             size_t nSol)                            const;
-  virtual void   getSolution(fullVector<std::complex<double> >& sol) const;
+                             size_t nSol)                               const;
+  virtual void   getSolution(fullVector<std::complex<double> >& sol)    const;
+  virtual void   getSolution(std::map<Dof, std::complex<double> >& sol,
+                             size_t nSol)                               const;
+  virtual void   getSolution(std::map<Dof, std::complex<double> >& sol) const;
+  virtual void   getSolution(FEMSolution& feSol)                        const;
 
-  void getEigenValues(fullVector<std::complex<double> >& eig)  const;
-
+  bool isGeneral(void) const;
+  void getEigenValues(fullVector<std::complex<double> >& eig) const;
   void setNumberOfEigenValues(size_t nEigenValues);
 
   virtual void assemble(void);
   virtual void solve(void);
 
-  virtual void addSolution(FEMSolution& feSol) const;
 };
 
 

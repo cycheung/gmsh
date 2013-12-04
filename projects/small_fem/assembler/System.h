@@ -1,7 +1,7 @@
 #ifndef _SYSTEM_H_
 #define _SYSTEM_H_
 
-#include "SystemTyped.h"
+#include "SystemAbstract.h"
 
 /**
    @class System
@@ -13,24 +13,26 @@
    </a>.
  */
 
-class System: public SystemTyped<double>{
+class System: public SystemAbstract<double>{
  protected:
   SolverMatrix<double>* A;
   SolverVector<double>* b;
   fullVector<double>*   x;
 
  public:
-  System(const FormulationTyped<double>& formulation);
+  System(const Formulation<double>& formulation);
   virtual ~System(void);
 
-  virtual size_t getNComputedSolution(void)                        const;
-  virtual void   getSolution(fullVector<double>& sol, size_t nSol) const;
-  virtual void   getSolution(fullVector<double>& sol)              const;
+  virtual size_t getNComputedSolution(void)                           const;
+  virtual void   getSolution(fullVector<double>& sol, size_t nSol)    const;
+  virtual void   getSolution(fullVector<double>& sol)                 const;
+  virtual void   getSolution(std::map<Dof, double>& sol, size_t nSol) const;
+  virtual void   getSolution(std::map<Dof, double>& sol)              const;
+  virtual void   getSolution(FEMSolution& feSol)                      const;
 
   virtual void assemble(void);
   virtual void solve(void);
 
-  virtual void addSolution(FEMSolution& feSol) const;
   virtual void writeMatrix(std::string fileName,
                            std::string matrixName) const;
 };

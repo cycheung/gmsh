@@ -28,7 +28,7 @@ double fDirichletScal(fullVector<double>& xyz){
   return 0;
 }
 
-void constraint(SystemAbstract& sys,
+void constraint(SystemAbstract<complex<double> >& sys,
                 GroupOfElement& goe,
                 double (*f)(fullVector<double>& xyz)){
 
@@ -75,7 +75,7 @@ void compute(const Options& option){
   const size_t nWave = atoi(option.getValue("-n")[0].c_str());
 
   // Chose write formulation for Eigenvalues and boundary condition //
-  FormulationTyped<complex<double> >* eig = NULL;
+  Formulation<complex<double> >* eig = NULL;
   SystemEigen* sys = NULL;
 
   if(option.getValue("-type")[0].compare("vector") == 0){
@@ -125,7 +125,7 @@ void compute(const Options& option){
   // Write Sol //
   if(!option.getValue("-nopos").size()){
     FEMSolution feSol;
-    sys->addSolution(feSol);
+    sys->getSolution(feSol);
     feSol.write("eigen_mode");
   }
 

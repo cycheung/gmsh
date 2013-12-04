@@ -5,7 +5,7 @@
 
 #include "FunctionSpaceVector.h"
 #include "GroupOfJacobian.h"
-#include "FormulationTyped.h"
+#include "Formulation.h"
 
 /**
    @class FormulationSteadyWaveVectorSlow
@@ -15,7 +15,7 @@
    the fast integration algorithm
  */
 
-class FormulationSteadyWaveVectorSlow: public FormulationTyped<double>{
+class FormulationSteadyWaveVectorSlow: public Formulation<double>{
  private:
   // Speed of medium squared //
   static const double cSquare;

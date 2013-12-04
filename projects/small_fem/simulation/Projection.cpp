@@ -237,7 +237,7 @@ void fem(double (*f)(fullVector<double>& xyz),
     FEMSolution feSol;
     stream << "projection_Mesh" << domain.getNumber() << "_Order" << order;
 
-    sysProj.addSolution(feSol);
+    sysProj.getSolution(feSol);
     feSol.write(stream.str());
   }
 }
@@ -275,7 +275,7 @@ void fem(fullVector<double> (*f)(fullVector<double>& xyz),
     FEMSolution feSol;
     stream << "projection_Mesh" << domain.getNumber() << "_Order" << order;
 
-    sysProj.addSolution(feSol);
+    sysProj.getSolution(feSol);
     feSol.write(stream.str());
   }
 }

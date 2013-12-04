@@ -3,9 +3,8 @@
 
 #include "Mesh.h"
 #include "System.h"
+#include "SystemHelper.h"
 
-#include "BasisGenerator.h"
-#include "FormulationProjectionScalar.h"
 #include "FormulationPoisson.h"
 
 #include "SmallFem.h"
@@ -22,24 +21,6 @@ double fDirichlet1(fullVector<double>& xyz){
 
 double fSource(fullVector<double>& xyz){
   return 1;
-}
-
-void constraint(SystemAbstract& sys,
-                GroupOfElement& goe,
-                double (*f)(fullVector<double>& xyz)){
-
-  const FunctionSpace& fs = sys.getFunctionSpace();
-
-  Basis* basis = BasisGenerator::generate(goe.get(0).getType(),
-                                          fs.getBasis(0).getType(),
-                                          fs.getBasis(0).getOrder(),
-                                          "hierarchical");
-
-  FunctionSpaceScalar         constraint(goe, *basis);
-  FormulationProjectionScalar projection(f, constraint);
-  sys.constraint(projection);
-
-  delete basis;
 }
 
 void compute(const Options& option){
@@ -59,8 +40,8 @@ void compute(const Options& option){
   FormulationPoisson poisson(domain, fSource, order);
   System sysPoisson(poisson);
 
-  constraint(sysPoisson, boundary0, fDirichlet0);
-  constraint(sysPoisson, boundary1, fDirichlet1);
+  SystemHelper<double>::dirichlet(sysPoisson, boundary0, fDirichlet0);
+  SystemHelper<double>::dirichlet(sysPoisson, boundary1, fDirichlet1);
 
   cout << "Poisson -- Order " << order
        << ": " << sysPoisson.getSize()
@@ -72,7 +53,7 @@ void compute(const Options& option){
   // Write Sol //
   if(!option.getValue("-nopos").size()){
     FEMSolution feSol;
-    sysPoisson.addSolution(feSol);
+    sysPoisson.getSolution(feSol);
     feSol.write("poisson");
   }
 }

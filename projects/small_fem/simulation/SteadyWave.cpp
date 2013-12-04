@@ -2,10 +2,8 @@
 
 #include "Mesh.h"
 #include "System.h"
-#include "BasisGenerator.h"
+#include "SystemHelper.h"
 
-#include "FormulationProjectionScalar.h"
-#include "FormulationProjectionVector.h"
 #include "FormulationSteadyWaveScalar.h"
 #include "FormulationSteadyWaveVector.h"
 #include "FormulationSteadyWaveVectorSlow.h"
@@ -43,42 +41,6 @@ double fWallScal(fullVector<double>& xyz){
   return 0;
 }
 
-void constraint(SystemAbstract& sys,
-                GroupOfElement& goe,
-                double (*f)(fullVector<double>& xyz)){
-
-  const FunctionSpace& fs = sys.getFunctionSpace();
-
-  Basis* basis = BasisGenerator::generate(goe.get(0).getType(),
-                                          fs.getBasis(0).getType(),
-                                          fs.getBasis(0).getOrder(),
-                                          "hierarchical");
-
-  FunctionSpaceScalar         constraint(goe, *basis);
-  FormulationProjectionScalar projection(f, constraint);
-  sys.constraint(projection);
-
-  delete basis;
-}
-
-void constraint(SystemAbstract& sys,
-                GroupOfElement& goe,
-                fullVector<double> (*f)(fullVector<double>& xyz)){
-
-  const FunctionSpace& fs = sys.getFunctionSpace();
-
-  Basis* basis = BasisGenerator::generate(goe.get(0).getType(),
-                                          fs.getBasis(0).getType(),
-                                          fs.getBasis(0).getOrder(),
-                                          "hierarchical");
-
-  FunctionSpaceVector         constraint(goe, *basis);
-  FormulationProjectionVector projection(f, constraint);
-  sys.constraint(projection);
-
-  delete basis;
-}
-
 void compute(const Options& option){
   // Start Timer //
   Timer timer, assemble, solve;
@@ -96,16 +58,16 @@ void compute(const Options& option){
 
 
   // Chose write formulation for Steady Wave and boundary condition //
-  FormulationTyped<double>* wave = NULL;
-  System*                   sys  = NULL;
+  Formulation<double>* wave = NULL;
+  System*              sys  = NULL;
 
   if(option.getValue("-type")[0].compare("vector") == 0){
     assemble.start();
     wave = new FormulationSteadyWaveVector(domain, puls * 1, order);
     sys  = new System(*wave);
 
-    constraint(*sys, source, fSourceVec);
-    constraint(*sys, wall,   fWallVec);
+    SystemHelper<double>::dirichlet(*sys, source, fSourceVec);
+    SystemHelper<double>::dirichlet(*sys, wall,   fWallVec);
     cout << "Vectorial ";
   }
 
@@ -114,8 +76,8 @@ void compute(const Options& option){
     wave = new FormulationSteadyWaveVectorSlow(domain, puls * 1, order);
     sys  = new System(*wave);
 
-    constraint(*sys, source, fSourceVec);
-    constraint(*sys, wall,   fWallVec);
+    SystemHelper<double>::dirichlet(*sys, source, fSourceVec);
+    SystemHelper<double>::dirichlet(*sys, wall,   fWallVec);
     cout << "Slow Vectorial ";
   }
 
@@ -124,8 +86,8 @@ void compute(const Options& option){
     wave = new FormulationSteadyWaveScalar(domain, puls * 1, order);
     sys  = new System(*wave);
 
-    constraint(*sys, source, fSourceScal);
-    constraint(*sys, wall,   fWallScal);
+    SystemHelper<double>::dirichlet(*sys, source, fSourceScal);
+    SystemHelper<double>::dirichlet(*sys, wall,   fWallScal);
     cout << "Scalar ";
   }
 
@@ -151,7 +113,7 @@ void compute(const Options& option){
   // Write Sol //
   if(!option.getValue("-nopos").size()){
     FEMSolution feSol;
-    sys->addSolution(feSol);
+    sys->getSolution(feSol);
     feSol.write("swave");
   }
 

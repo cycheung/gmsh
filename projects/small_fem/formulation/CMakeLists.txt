@@ -1,7 +1,4 @@
 set(src
-  Formulation.cpp
-  FormulationTyped.cpp
-
   FormulationPoisson.cpp
   FormulationProjectionVector.cpp
   FormulationProjectionScalar.cpp

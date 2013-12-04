@@ -3,8 +3,7 @@
 
 using namespace std;
 
-SystemEigen::
-SystemEigen(const FormulationTyped<std::complex<double> >& formulation){
+SystemEigen::SystemEigen(const Formulation<std::complex<double> >& formulation){
   // Get Formulation //
   this->formulation = &formulation;
   this->fs          = &(formulation.fs());
@@ -65,6 +64,22 @@ void SystemEigen::getSolution(fullVector<std::complex<double> >& sol) const{
   getSolution(sol, 0);
 }
 
+void SystemEigen::getSolution(std::map<Dof, std::complex<double> >& sol,
+                              size_t nSol) const{
+  // Get All Dofs
+  const vector<Dof> dof = fs->getAllDofs();
+  const size_t     nDof = dof.size();
+
+  // Fill Map
+  for(size_t i = 0; i < nDof; i++)
+    sol.insert(pair<Dof, std::complex<double> >
+               (dof[i], (*eigenVector)[nSol](dofM->getGlobalId(dof[i]))));
+}
+
+void SystemEigen::getSolution(std::map<Dof, std::complex<double> >& sol) const{
+  getSolution(sol, 0);
+}
+
 void SystemEigen::getEigenValues(fullVector<std::complex<double> >& eig) const{
   eig.setAsProxy(*eigenValue, 0, eigenValue->size());
 }
@@ -92,8 +107,8 @@ void SystemEigen::assemble(void){
   const vector<GroupOfDof*>& group = fs->getAllGroups();
 
   // Get Formulation Terms //
-  formulationPtr termA = &FormulationTyped<std::complex<double> >::weak;
-  formulationPtr termB = &FormulationTyped<std::complex<double> >::weakB;
+  formulationPtr termA = &Formulation<std::complex<double> >::weak;
+  formulationPtr termB = &Formulation<std::complex<double> >::weakB;
 
   // Alloc Temp Sparse Matrices (not with PETSc) //
   const size_t size = dofM->getUnfixedDofNumber();
@@ -105,12 +120,12 @@ void SystemEigen::assemble(void){
   // Assemble Systems (tmpA and tmpB) //
   #pragma omp parallel for
   for(size_t i = 0; i < E; i++)
-    SystemTyped::assemble(tmpA, tmpRHS, i, *group[i], termA);
+    SystemAbstract::assemble(tmpA, tmpRHS, i, *group[i], termA);
 
   if(general)
     #pragma omp parallel for
     for(size_t i = 0; i < E; i++)
-      SystemTyped::assemble(tmpB, tmpRHS, i, *group[i], termB);
+      SystemAbstract::assemble(tmpB, tmpRHS, i, *group[i], termB);
 
   // Copy tmpA into Assembled PETSc matrix //
   // Data
@@ -230,7 +245,7 @@ void SystemEigen::solve(void){
   solved = true;
 }
 
-void SystemEigen::addSolution(FEMSolution& feSol) const{
+void SystemEigen::getSolution(FEMSolution& feSol) const{
   if(!solved)
     throw Exception("System: addSolution -- System not solved");
 
