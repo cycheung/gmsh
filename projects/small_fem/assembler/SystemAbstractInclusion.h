@@ -28,7 +28,7 @@ size_t SystemAbstract<scalar>::getSize(void) const{
 }
 
 template<typename scalar>
-const DofManager& SystemAbstract<scalar>::getDofManager(void) const{
+const DofManager<scalar>& SystemAbstract<scalar>::getDofManager(void) const{
   return *dofM;
 }
 
@@ -73,20 +73,21 @@ assemble(SolverMatrix<scalar>& A,
     dofI = dofM->getGlobalId(dof[i]);
 
     // If not a fixed Dof line: assemble
-    if(dofI != DofManager::isFixedId()){
+    if(dofI != DofManager<scalar>::isFixedId()){
       for(size_t j = 0; j < N; j++){
         dofJ = dofM->getGlobalId(dof[j]);
 
         // If not a fixed Dof
-        if(dofJ != DofManager::isFixedId())
+        if(dofJ != DofManager<scalar>::isFixedId())
           A.add(dofI, dofJ, (formulation->*term)(i, j, elementId));
 
         // If fixed Dof (for column 'dofJ'):
         //    add to right hand side (with a minus sign) !
         else
           b.add(dofI,
-                -1 * dofM->getValue(dof[j]) *
-                    (formulation->*term)(i, j, elementId));
+                minusSign * dofM->getValue(dof[j]) *
+                           (formulation->*term)(i, j, elementId));
+
       }
 
       b.add(dofI, formulation->rhs(i, elementId));

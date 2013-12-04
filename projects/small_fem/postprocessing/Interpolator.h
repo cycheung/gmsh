@@ -21,7 +21,7 @@ class Interpolator{
   ~Interpolator(void);
 
   static void interpolate(const FunctionSpace& fs,
-                          const DofManager& dofM,
+                          const DofManager<double>& dofM,
                           const fullVector<double>& coef,
                           const fullMatrix<double>& point,
                           fullMatrix<double>& values);

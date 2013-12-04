@@ -29,12 +29,15 @@ class SystemAbstract{
                                                   size_t dofJ,
                                                   size_t elementId) const;
  protected:
+  static const scalar minusSign;
+
+ protected:
   bool assembled;
   bool solved;
 
   const Formulation<scalar>* formulation;
   const FunctionSpace*       fs;
-  DofManager*                dofM;
+  DofManager<scalar>*        dofM;
 
  public:
   virtual ~SystemAbstract(void);
@@ -42,9 +45,9 @@ class SystemAbstract{
   bool isAssembled(void) const;
   bool isSolved(void)    const;
 
-  size_t               getSize(void)          const;
-  const DofManager&    getDofManager(void)    const;
-  const FunctionSpace& getFunctionSpace(void) const;
+  size_t                    getSize(void)          const;
+  const DofManager<scalar>& getDofManager(void)    const;
+  const FunctionSpace&      getFunctionSpace(void) const;
 
   void constraint(const std::map<Dof, scalar>& constr);
 
@@ -56,7 +59,7 @@ class SystemAbstract{
   virtual void   getSolution(fullVector<scalar>& sol)                 const = 0;
   virtual void   getSolution(std::map<Dof, scalar>& sol, size_t nSol) const = 0;
   virtual void   getSolution(std::map<Dof, scalar>& sol)              const = 0;
-  virtual void   getSolution(FEMSolution& feSol)                      const = 0;
+  virtual void   getSolution(FEMSolution<scalar>& feSol)              const = 0;
 
   virtual void  writeMatrix(std::string fileName, std::string matrixName) const;
 

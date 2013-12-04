@@ -9,7 +9,7 @@ System::System(const Formulation<double>& formulation){
   this->fs          = &(formulation.fs());
 
   // Get Dof Manager //
-  dofM = new DofManager();
+  dofM = new DofManager<double>();
   dofM->addToDofManager(fs->getAllGroups());
 
   // Init //
@@ -102,7 +102,7 @@ void System::getSolution(std::map<Dof, double>& sol) const{
   getSolution(sol, 0);
 }
 
-void System::getSolution(FEMSolution& feSol) const{
+void System::getSolution(FEMSolution<double>& feSol) const{
   if(!solved)
     throw Exception("System: addSolution -- System not solved");
 

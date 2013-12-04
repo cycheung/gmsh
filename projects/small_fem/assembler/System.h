@@ -28,7 +28,7 @@ class System: public SystemAbstract<double>{
   virtual void   getSolution(fullVector<double>& sol)                 const;
   virtual void   getSolution(std::map<Dof, double>& sol, size_t nSol) const;
   virtual void   getSolution(std::map<Dof, double>& sol)              const;
-  virtual void   getSolution(FEMSolution& feSol)                      const;
+  virtual void   getSolution(FEMSolution<double>& feSol)              const;
 
   virtual void assemble(void);
   virtual void solve(void);

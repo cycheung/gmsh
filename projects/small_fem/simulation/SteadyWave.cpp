@@ -112,7 +112,7 @@ void compute(const Options& option){
 
   // Write Sol //
   if(!option.getValue("-nopos").size()){
-    FEMSolution feSol;
+    FEMSolution<double> feSol;
     sys->getSolution(feSol);
     feSol.write("swave");
   }

@@ -31,6 +31,7 @@
    Differents steps may have the same time.
  */
 
+template<typename scalar>
 class FEMSolution{
  private:
   PViewDataGModel* pView;
@@ -43,14 +44,8 @@ class FEMSolution{
   void addCoefficients(size_t step,
                        double time,
                        const FunctionSpace& fs,
-                       const DofManager& dofM,
-                       const fullVector<double>& coef);
-
-  void addCoefficients(size_t step,
-                       double time,
-                       const FunctionSpace& fs,
-                       const DofManager& dofM,
-                       const fullVector<std::complex<double> >& coef);
+                       const DofManager<scalar>& dofM,
+                       const fullVector<scalar>& coef);
 
   void write(std::string fileName) const;
 };
@@ -70,7 +65,7 @@ class FEMSolution{
    This FEMSolution is now empty
    **
 
-   @fn FEMSolution::addCoefficients(size_t,double,const FunctionSpace&,const DofManager&,const fullVector<double>&)
+   @fn FEMSolution::addCoefficients(size_t,double,const FunctionSpace&,const DofManager&,const fullVector<scalar>&)
    @param step An integer value
    @param time A real value
    @param fs A FunctionSpace
@@ -87,21 +82,6 @@ class FEMSolution{
    of coefficient in the Lagrange basis for each elements.
    **
 
-   @fn FEMSolution::addCoefficients(size_t,double,const FunctionSpace&,const DofManager&,const fullVector<std::complex<double> >&)
-   @param step An even integer value
-   @param time A real value
-   @param fs A FunctionSpace
-   @param dofM A DofManager
-   @param coef A set of coefficient, whose indexes are related to the DofManager
-
-   Same as FEMSolution::addCoefficients(size_t,double,const FunctionSpace&,const DofManager&,const fullVector<double>&)
-   but with complex coefficients:
-   @li step is related to the real part
-   @li step + 1 is related to the imaginary part
-
-   If the given step is odd, an Exception is throw
-   **
-
    @fn FEMSolution::write
    @param fileName A file name (without extension)
 
@@ -109,5 +89,14 @@ class FEMSolution{
    <a href="http://www.geuz.org/gmsh">gmsh</a> .msh file format
    into the given file
  */
+
+//////////////////////////////////////
+// Templates Implementations:       //
+// Inclusion compilation model      //
+//                                  //
+// Damn you gcc: we want 'export' ! //
+//////////////////////////////////////
+
+#include "FEMSolutionInclusion.h"
 
 #endif

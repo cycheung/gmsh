@@ -12,7 +12,7 @@ Interpolator::~Interpolator(void){
 }
 
 void Interpolator::interpolate(const FunctionSpace& fs,
-                               const DofManager& dofM,
+                               const DofManager<double>& dofM,
                                const fullVector<double>& coef,
                                const fullMatrix<double>& point,
                                fullMatrix<double>& values){
@@ -69,7 +69,7 @@ void Interpolator::interpolate(const FunctionSpace& fs,
         const size_t globalId = dofM.getGlobalId(dof[k]);
 
         // If non fixed Dof: look in Solution
-        if(globalId != DofManager::isFixedId())
+        if(globalId != DofManager<double>::isFixedId())
           thisCoef[k] = coef(globalId);
 
         // If Dof is fixed: get fixed value

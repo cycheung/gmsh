@@ -3,10 +3,8 @@
 
 #include "Mesh.h"
 #include "SystemEigen.h"
-#include "BasisGenerator.h"
+#include "SystemHelper.h"
 
-#include "FormulationProjectionScalar.h"
-#include "FormulationProjectionVector.h"
 #include "FormulationEigenFrequencyScalar.h"
 #include "FormulationEigenFrequencyVector.h"
 
@@ -14,54 +12,18 @@
 
 using namespace std;
 
-fullVector<double> fDirichletVec(fullVector<double>& xyz){
-  fullVector<double> f(3);
+fullVector<complex<double> > fDirichletVec(fullVector<double>& xyz){
+  fullVector<complex<double> > f(3);
 
-  f(0) = 0;
-  f(1) = 0;
-  f(2) = 0;
+  f(0) = complex<double>(0, 0);
+  f(1) = complex<double>(0, 0);
+  f(2) = complex<double>(0, 0);
 
   return f;
 }
 
-double fDirichletScal(fullVector<double>& xyz){
-  return 0;
-}
-
-void constraint(SystemAbstract<complex<double> >& sys,
-                GroupOfElement& goe,
-                double (*f)(fullVector<double>& xyz)){
-
-  const FunctionSpace& fs = sys.getFunctionSpace();
-
-  Basis* basis = BasisGenerator::generate(goe.get(0).getType(),
-                                          fs.getBasis(0).getType(),
-                                          fs.getBasis(0).getOrder(),
-                                          "hierarchical");
-
-  FunctionSpaceScalar         constraint(goe, *basis);
-  FormulationProjectionScalar projection(f, constraint);
-  sys.constraint(projection);
-
-  delete basis;
-}
-
-void constraint(SystemAbstract& sys,
-                GroupOfElement& goe,
-                fullVector<double> (*f)(fullVector<double>& xyz)){
-
-  const FunctionSpace& fs = sys.getFunctionSpace();
-
-  Basis* basis = BasisGenerator::generate(goe.get(0).getType(),
-                                          fs.getBasis(0).getType(),
-                                          fs.getBasis(0).getOrder(),
-                                          "hierarchical");
-
-  FunctionSpaceVector         constraint(goe, *basis);
-  FormulationProjectionVector projection(f, constraint);
-  sys.constraint(projection);
-
-  delete basis;
+complex<double> fDirichletScal(fullVector<double>& xyz){
+  return complex<double>(0, 0);
 }
 
 void compute(const Options& option){
@@ -82,7 +44,7 @@ void compute(const Options& option){
     eig = new FormulationEigenFrequencyVector(domain, order);
     sys = new SystemEigen(*eig);
 
-    constraint(*sys, border, fDirichletVec);
+    //SystemHelper<complex<double> >::dirichlet(*sys, border, fDirichletVec);
     cout << "Vectorial ";
   }
 
@@ -90,7 +52,7 @@ void compute(const Options& option){
     eig = new FormulationEigenFrequencyScalar(domain, order);
     sys = new SystemEigen(*eig);
 
-    constraint(*sys, border, fDirichletScal);
+    //SystemHelper<complex<double> >::dirichlet(*sys, border, fDirichletScal);
     cout << "Scalar ";
   }
 
@@ -124,7 +86,7 @@ void compute(const Options& option){
 
   // Write Sol //
   if(!option.getValue("-nopos").size()){
-    FEMSolution feSol;
+    FEMSolution<complex<double> > feSol;
     sys->getSolution(feSol);
     feSol.write("eigen_mode");
   }

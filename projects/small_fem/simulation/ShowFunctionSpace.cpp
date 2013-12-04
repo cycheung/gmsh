@@ -54,7 +54,7 @@ void compute(const Options& option){
                     option.getValue("-type")[0].c_str());
 
   // Enumerate Dofs //
-  DofManager dofM;
+  DofManager<double> dofM;
   dofM.addToDofManager(fSpace->getAllGroups());
   dofM.generateGlobalIdSpace();
 
@@ -65,7 +65,7 @@ void compute(const Options& option){
   // Do this with FEMSolution //
   const size_t nCoef = fSpace->dofNumber();
   fullVector<double> coef(nCoef);
-  FEMSolution sol;
+  FEMSolution<double> sol;
 
   // Init coefs to 0
   for(size_t i = 0; i < nCoef; i++)

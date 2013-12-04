@@ -9,7 +9,7 @@ SystemEigen::SystemEigen(const Formulation<std::complex<double> >& formulation){
   this->fs          = &(formulation.fs());
 
   // Get Dof Manager //
-  dofM = new DofManager();
+  dofM = new DofManager<std::complex<double> >();
   dofM->addToDofManager(fs->getAllGroups());
 
   // Is the Problem a General EigenValue Problem ? //
@@ -245,11 +245,10 @@ void SystemEigen::solve(void){
   solved = true;
 }
 
-void SystemEigen::getSolution(FEMSolution& feSol) const{
+void SystemEigen::getSolution(FEMSolution<std::complex<double> >& feSol) const{
   if(!solved)
     throw Exception("System: addSolution -- System not solved");
 
   for(int i = 0; i < nEigenValues; i++)
-    feSol.addCoefficients
-      (i * 2, 0, *fs, *dofM, (*eigenVector)[i]);
+    feSol.addCoefficients(i, 0, *fs, *dofM, (*eigenVector)[i]);
 }

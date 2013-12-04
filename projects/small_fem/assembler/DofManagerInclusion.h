@@ -1,19 +1,27 @@
+///////////////////////////////////////////////
+// Templates Implementations for DofManager: //
+// Inclusion compilation model               //
+//                                           //
+// Damn you gcc: we want 'export' !          //
+///////////////////////////////////////////////
+
 #include <sstream>
 #include "Exception.h"
 #include "GroupOfDof.h"
-#include "DofManager.h"
 
-using namespace std;
+template<typename scalar>
+const size_t DofManager<scalar>::isFixed = 0 - 1; // Largest size_t
 
-const size_t DofManager::isFixed = 0 - 1; // Largest size_t
-
-DofManager::DofManager(void){
+template<typename scalar>
+DofManager<scalar>::DofManager(void){
 }
 
-DofManager::~DofManager(void){
+template<typename scalar>
+DofManager<scalar>::~DofManager(void){
 }
 
-void DofManager::addToDofManager(const vector<GroupOfDof*>& god){
+template<typename scalar>
+void DofManager<scalar>::addToDofManager(const std::vector<GroupOfDof*>& god){
   // Check if map is still their //
   if(!globalIdM.empty())
     throw
@@ -26,19 +34,20 @@ void DofManager::addToDofManager(const vector<GroupOfDof*>& god){
   // Add to DofManager //
   for(size_t i = 0; i < nGoD; i++){
     // Dof from god[i]
-    const vector<Dof>& dof = god[i]->getDof();
+    const std::vector<Dof>& dof = god[i]->getDof();
 
     // Init map entry
     const size_t nDof = dof.size();
 
     for(size_t j = 0; j < nDof; j++)
-      globalIdM.insert(pair<Dof, size_t>(dof[j], 0));
+      globalIdM.insert(std::pair<Dof, size_t>(dof[j], 0));
   }
 }
 
-void DofManager::generateGlobalIdSpace(void){
-  map<Dof, size_t>::iterator end = globalIdM.end();
-  map<Dof, size_t>::iterator it  = globalIdM.begin();
+template<typename scalar>
+void DofManager<scalar>::generateGlobalIdSpace(void){
+  std::map<Dof, size_t>::iterator end = globalIdM.end();
+  std::map<Dof, size_t>::iterator it  = globalIdM.begin();
 
   size_t id = 0;
 
@@ -54,10 +63,11 @@ void DofManager::generateGlobalIdSpace(void){
   globalIdM.clear();
 }
 
-void DofManager::serialize(void){
+template<typename scalar>
+void DofManager<scalar>::serialize(void){
   // Get Data //
-  map<Dof, size_t>::iterator end = globalIdM.end();
-  map<Dof, size_t>::iterator it  = globalIdM.begin();
+  std::map<Dof, size_t>::iterator end = globalIdM.end();
+  std::map<Dof, size_t>::iterator it  = globalIdM.begin();
 
   // Take the last element *IN* map
   end--;
@@ -76,7 +86,7 @@ void DofManager::serialize(void){
 
   // Populate //
   size_t nDof;
-  map<Dof, size_t>::iterator currentEntity = it;
+  std::map<Dof, size_t>::iterator currentEntity = it;
 
   // Iterate on vector
   for(size_t i = 0; i < sizeV; i++){
@@ -105,7 +115,8 @@ void DofManager::serialize(void){
   }
 }
 
-pair<bool, size_t> DofManager::findSafe(const Dof& dof) const{
+template<typename scalar>
+std::pair<bool, size_t> DofManager<scalar>::findSafe(const Dof& dof) const{
   // Is globabId Vector allocated ?-
   if(globalIdV.empty())
     throw
@@ -117,7 +128,7 @@ pair<bool, size_t> DofManager::findSafe(const Dof& dof) const{
   size_t tmpEntity = dof.getEntity();
 
   if(tmpEntity < first || tmpEntity > last)
-    return pair<bool, size_t>(false, 42);
+    return std::pair<bool, size_t>(false, 42);
 
   // Offset Entity & Get Type
   const size_t entity = tmpEntity - first;
@@ -129,15 +140,16 @@ pair<bool, size_t> DofManager::findSafe(const Dof& dof) const{
   if(nDof > 0 && type <= nDof)
     // If we have Dofs associated to this Entity,
     // get the requested Type and return Id
-    return pair<bool, size_t>(true, globalIdV[entity][type]);
+    return std::pair<bool, size_t>(true, globalIdV[entity][type]);
 
   else
     // If no Dof, return false
-    return pair<bool, size_t>(false, 42);
+    return std::pair<bool, size_t>(false, 42);
 }
 
-size_t DofManager::getGlobalIdSafe(const Dof& dof) const{
-  const pair<bool, size_t> search = findSafe(dof);
+template<typename scalar>
+size_t DofManager<scalar>::getGlobalIdSafe(const Dof& dof) const{
+  const std::pair<bool, size_t> search = findSafe(dof);
 
   if(!search.first)
     throw
@@ -147,27 +159,29 @@ size_t DofManager::getGlobalIdSafe(const Dof& dof) const{
     return search.second;
 }
 
-bool DofManager::fixValue(const Dof& dof, double value){
+template<typename scalar>
+bool DofManager<scalar>::fixValue(const Dof& dof, scalar value){
   // Check if map is still their
   if(globalIdM.empty())
     return false;
 
   // Get *REAL* Dof
-  const map<Dof, size_t>::iterator it = globalIdM.find(dof);
+  const std::map<Dof, size_t>::iterator it = globalIdM.find(dof);
 
   // Check if 'dof' exists
   if(it == globalIdM.end())
     return false; // 'dof' doesn't exist
 
   // If 'dof' exists: it becomes fixed
-  fixedDof.insert(pair<Dof, double>(it->first, value));
+  fixedDof.insert(std::pair<Dof, scalar>(it->first, value));
   it->second = isFixed;
   return true;
 }
 
-double DofManager::getValue(const Dof& dof) const{
-  const map<Dof, double>::const_iterator end = fixedDof.end();
-  const map<Dof, double>::const_iterator  it = fixedDof.find(dof);
+template<typename scalar>
+scalar DofManager<scalar>::getValue(const Dof& dof) const{
+  typename std::map<Dof, scalar>::const_iterator end = fixedDof.end();
+  typename std::map<Dof, scalar>::const_iterator  it = fixedDof.find(dof);
 
   if(it == end)
     throw Exception("Dof %s not fixed", dof.toString().c_str());
@@ -175,7 +189,8 @@ double DofManager::getValue(const Dof& dof) const{
   return it->second;
 }
 
-size_t DofManager::getTotalDofNumber(void) const{
+template<typename scalar>
+size_t DofManager<scalar>::getTotalDofNumber(void) const{
   if(!globalIdM.empty())
     return globalIdM.size();
 
@@ -183,7 +198,8 @@ size_t DofManager::getTotalDofNumber(void) const{
     return nTotDof;
 }
 
-size_t DofManager::getUnfixedDofNumber(void) const{
+template<typename scalar>
+size_t DofManager<scalar>::getUnfixedDofNumber(void) const{
   if(!globalIdM.empty())
     return globalIdM.size() - fixedDof.size();
 
@@ -191,11 +207,13 @@ size_t DofManager::getUnfixedDofNumber(void) const{
     return nTotDof - fixedDof.size();
 }
 
-size_t DofManager::getFixedDofNumber(void) const{
+template<typename scalar>
+size_t DofManager<scalar>::getFixedDofNumber(void) const{
   return fixedDof.size();
 }
 
-string DofManager::toString(void) const{
+template<typename scalar>
+std::string DofManager<scalar>::toString(void) const{
   if(!globalIdM.empty())
     return toStringFromMap();
 
@@ -203,11 +221,12 @@ string DofManager::toString(void) const{
     return toStringFromVec();
 }
 
-string DofManager::toStringFromMap(void) const{
-  stringstream s;
+template<typename scalar>
+std::string DofManager<scalar>::toStringFromMap(void) const{
+  std::stringstream s;
 
-  map<Dof, size_t>::const_iterator end = globalIdM.end();
-  map<Dof, size_t>::const_iterator it  = globalIdM.begin();
+  std::map<Dof, size_t>::const_iterator end = globalIdM.end();
+  std::map<Dof, size_t>::const_iterator it  = globalIdM.begin();
 
   for(; it != end; it++){
     s << "("  << it->first.toString() << ": ";
@@ -218,18 +237,19 @@ string DofManager::toStringFromMap(void) const{
     else
       s << it->second                       << " -- Global ID";
 
-    s << ")"  << endl;
+    s << ")"  << std::endl;
   }
 
   return s.str();
 }
 
-string DofManager::toStringFromVec(void) const{
+template<typename scalar>
+std::string DofManager<scalar>::toStringFromVec(void) const{
   const size_t sizeV = globalIdV.size();
 
-  stringstream s;
+  std::stringstream s;
   size_t nDof;
-  pair<bool, size_t> search;
+  std::pair<bool, size_t> search;
 
   for(size_t entity = 0; entity < sizeV; entity++){
     nDof = globalIdV[entity].size();
@@ -247,7 +267,7 @@ string DofManager::toStringFromVec(void) const{
         else
           s << search.second              << " -- Global ID";
 
-        s << ")"  << endl;
+        s << ")"  << std::endl;
       }
     }
   }

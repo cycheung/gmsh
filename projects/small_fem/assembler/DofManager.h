@@ -24,13 +24,14 @@
    (total number of Dof - number of fixed Dof - 1).
 */
 
+template<typename scalar>
 class DofManager{
  private:
   static const size_t isFixed;
 
   std::vector<std::vector<size_t> > globalIdV;
   std::map<Dof, size_t>             globalIdM;
-  std::map<Dof, double>             fixedDof;
+  std::map<Dof, scalar>             fixedDof;
 
   size_t first;
   size_t last;
@@ -49,8 +50,8 @@ class DofManager{
   size_t getGlobalId(const Dof& dof)     const;
   size_t getGlobalIdSafe(const Dof& dof) const;
 
-  bool   fixValue(const Dof& dof, double value);
-  double getValue(const Dof& dof) const;
+  bool   fixValue(const Dof& dof, scalar value);
+  scalar getValue(const Dof& dof) const;
 
   size_t getTotalDofNumber(void) const;
   size_t getUnfixedDofNumber(void) const;
@@ -168,12 +169,23 @@ class DofManager{
 // Inline Functions //
 //////////////////////
 
-inline const size_t DofManager::isFixedId(void){
+template<typename scalar>
+inline const size_t DofManager<scalar>::isFixedId(void){
   return isFixed;
 }
 
-inline size_t DofManager::getGlobalId(const Dof& dof) const{
+template<typename scalar>
+inline size_t DofManager<scalar>::getGlobalId(const Dof& dof) const{
   return globalIdV[dof.getEntity() - first][dof.getType()];
 }
+
+//////////////////////////////////////
+// Templates Implementations:       //
+// Inclusion compilation model      //
+//                                  //
+// Damn you gcc: we want 'export' ! //
+//////////////////////////////////////
+
+#include "DofManagerInclusion.h"
 
 #endif
