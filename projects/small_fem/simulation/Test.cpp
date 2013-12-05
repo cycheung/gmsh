@@ -1,9 +1,10 @@
+#include <complex>
 #include <iostream>
 
 #include "SmallFem.h"
 
 #include "Timer.h"
-#include "TriLagrangeBasis.h"
+
 #include "LineReferenceSpace.h"
 #include "TriReferenceSpace.h"
 #include "QuadReferenceSpace.h"
@@ -12,11 +13,17 @@
 #include "PyrReferenceSpace.h"
 #include "PriReferenceSpace.h"
 
+#include "BasisGenerator.h"
+#include "TriLagrangeBasis.h"
 #include "LineNodeBasis.h"
 #include "LineEdgeBasis.h"
 #include "LineNedelecBasis.h"
 #include "TriNodeBasis.h"
 #include "QuadNedelecBasis.h"
+
+#include "System.h"
+#include "FormulationProjectionScalar.h"
+#include "FormulationProjectionVector.h"
 
 #include "Mesh.h"
 #include "fullMatrix.h"
@@ -30,39 +37,65 @@
 
 using namespace std;
 
+complex<double> fScal(fullVector<double>& xyz){
+  double tmp =
+    sin(10 * xyz(0)) +
+    sin(10 * xyz(1)) +
+    sin(10 * xyz(2));
+
+  return complex<double>(1, 1) * tmp;
+}
+
+fullVector<complex<double> > fVect(fullVector<double>& xyz){
+  complex<double> tmp = complex<double>(1, 1);
+  fullVector<complex<double> > res(3);
+
+  res(0) = sin(10 * xyz(0)) * tmp;
+  res(1) = sin(10 * xyz(1)) * tmp;
+  res(2) = sin(10 * xyz(2)) * tmp;
+
+  return res;
+}
+
 int main(int argc, char** argv){
+  // SmallFEM
+  SmallFem::Keywords("-msh,-o");
   SmallFem::Initialize(argc, argv);
 
-  SolverMatrix<complex<double> > a(5, 5);
-  SolverVector<complex<double> > b(5);
-  fullVector<complex<double> >   x;
-  SolverMUMPS<complex<double> >  solver;
+  // Options //
+  const Options& option = SmallFem::getOptions();
 
-  a.add(1 - 1, 2 - 1, complex<double>(+3.0, 1.0));
-  a.add(2 - 1, 3 - 1, complex<double>(-3.0, 1.0));
-  a.add(4 - 1, 3 - 1, complex<double>(+2.0, 1.0));
-  a.add(5 - 1, 5 - 1, complex<double>(+1.0, 1.0));
-  a.add(2 - 1, 1 - 1, complex<double>(+3.0, 1.0));
-  a.add(1 - 1, 1 - 1, complex<double>(+2.0, 1.0));
-  a.add(5 - 1, 2 - 1, complex<double>(+4.0, 1.0));
-  a.add(3 - 1, 4 - 1, complex<double>(+2.0, 1.0));
-  a.add(2 - 1, 5 - 1, complex<double>(+6.0, 1.0));
-  a.add(3 - 1, 2 - 1, complex<double>(-1.0, 1.0));
-  a.add(1 - 1, 3 - 1, complex<double>(+4.0, 1.0));
-  a.add(3 - 1, 3 - 1, complex<double>(+1.0, 1.0));
+  // Input //
+  Mesh           msh(option.getValue("-msh")[0]);
+  GroupOfElement domain = msh.getFromPhysical(7);
+  int            order  = atoi(option.getValue("-o")[0].c_str());
 
-  b.add(1 - 1, complex<double>(+20.0, 0.0));
-  b.add(2 - 1, complex<double>(+24.0, 0.0));
-  b.add(3 - 1, complex<double>(+09.0, 0.0));
-  b.add(4 - 1, complex<double>(+06.0, 0.0));
-  b.add(5 - 1, complex<double>(+13.0, 0.0));
+  // Formulation //
+  /*
+  Basis* basis = BasisGenerator::generate(domain.get(0).getType(),
+                                          0, order, "hierarchical");
 
-  solver.solve(a, b, x);
+  FunctionSpaceScalar fSpace(domain, *basis);
+  FormulationProjectionScalar<complex<double> > projection(fScal, fSpace);
+  */
 
-  for(int i = 0; i < x.size(); i++)
-    cout << x(i) << endl;
+  Basis* basis = BasisGenerator::generate(domain.get(0).getType(),
+                                          1, order, "hierarchical");
 
-  a.writeToMatlabFile("a.m", "a");
+  FunctionSpaceVector fSpace(domain, *basis);
+  FormulationProjectionVector<complex<double> > projection(fVect, fSpace);
 
+  // System //
+  System<complex<double> > sys(projection);
+  sys.assemble();
+  sys.solve();
+
+  // Solution //
+  FEMSolution<complex<double> > feSol;
+  sys.getSolution(feSol);
+  feSol.write("test");
+
+  // Finalize //
+  delete basis;
   SmallFem::Finalize();
 }

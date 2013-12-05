@@ -38,7 +38,7 @@ void compute(const Options& option){
 
   // Compute //
   FormulationPoisson poisson(domain, fSource, order);
-  System sysPoisson(poisson);
+  System<double> sysPoisson(poisson);
 
   SystemHelper<double>::dirichlet(sysPoisson, boundary0, fDirichlet0);
   SystemHelper<double>::dirichlet(sysPoisson, boundary1, fDirichlet1);

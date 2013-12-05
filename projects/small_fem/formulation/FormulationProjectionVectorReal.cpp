@@ -7,7 +7,8 @@
 
 using namespace std;
 
-FormulationProjectionVector::
+template<>
+FormulationProjectionVector<double>::
 FormulationProjectionVector(fullVector<double> (*f)(fullVector<double>& xyz),
                             FunctionSpaceVector& fs){
   // Save fspace //
@@ -32,33 +33,43 @@ FormulationProjectionVector(fullVector<double> (*f)(fullVector<double>& xyz),
   localTerms2 = new TermProjectionGrad(jac, *basis, gW, gC, f);
 }
 
-FormulationProjectionVector::~FormulationProjectionVector(void){
+template<>
+FormulationProjectionVector<double>::
+~FormulationProjectionVector(void){
   delete localTerms1;
   delete localTerms2;
 }
 
-double FormulationProjectionVector::weak(size_t dofI, size_t dofJ,
-                                         size_t elementId) const{
+template<>
+double FormulationProjectionVector<double>::
+weak(size_t dofI, size_t dofJ, size_t elementId) const{
 
   return localTerms1->getTerm(dofI, dofJ, elementId);
 }
 
-double FormulationProjectionVector::rhs(size_t equationI,
-                                        size_t elementId) const{
+template<>
+double FormulationProjectionVector<double>::
+rhs(size_t equationI, size_t elementId) const{
 
   return localTerms2->getTerm(0, equationI, elementId);
 }
 
-bool FormulationProjectionVector::isGeneral(void) const{
+template<>
+bool FormulationProjectionVector<double>::isGeneral(void) const{
+
   return false;
 }
 
-double FormulationProjectionVector::weakB(size_t dofI,
-                                          size_t dofJ,
-                                          size_t elementId) const{
+template<>
+double FormulationProjectionVector<double>::
+weakB(size_t dofI, size_t dofJ, size_t elementId) const{
+
   return 0;
 }
 
-const FunctionSpace& FormulationProjectionVector::fs(void) const{
+template<>
+const FunctionSpace& FormulationProjectionVector<double>::
+fs(void) const{
+
   return *fspace;
 }

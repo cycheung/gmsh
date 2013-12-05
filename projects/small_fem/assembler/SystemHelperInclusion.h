@@ -34,11 +34,11 @@ dirichlet(SystemAbstract<scalar>& sys,
                                           fs.getBasis(0).getOrder(),
                                           "hierarchical");
 
-  FunctionSpaceScalar         formFS(goe, *basis);
-  FormulationProjectionScalar form(f, formFS);
+  FunctionSpaceScalar                 formFS(goe, *basis);
+  FormulationProjectionScalar<scalar> form(f, formFS);
 
-  std::map<Dof, double> constr;
-  System projection(form);
+  std::map<Dof, scalar> constr;
+  System<scalar> projection(form);
   projection.assemble();
   projection.solve();
   projection.getSolution(constr);
@@ -61,11 +61,11 @@ dirichlet(SystemAbstract<scalar>& sys,
                                           fs.getBasis(0).getOrder(),
                                           "hierarchical");
 
-  FunctionSpaceVector         formFS(goe, *basis);
-  FormulationProjectionVector form(f, formFS);
+  FunctionSpaceVector                 formFS(goe, *basis);
+  FormulationProjectionVector<scalar> form(f, formFS);
 
-  std::map<Dof, double> constr;
-  System projection(form);
+  std::map<Dof, scalar> constr;
+  System<scalar> projection(form);
   projection.assemble();
   projection.solve();
   projection.getSolution(constr);

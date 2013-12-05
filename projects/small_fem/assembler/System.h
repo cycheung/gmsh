@@ -12,23 +12,23 @@
    The Solver used is <a href="http://graal.ens-lyon.fr/MUMPS/index.php">MUMPS
    </a>.
  */
-
-class System: public SystemAbstract<double>{
+template<typename scalar>
+class System: public SystemAbstract<scalar>{
  protected:
-  SolverMatrix<double>* A;
-  SolverVector<double>* b;
-  fullVector<double>*   x;
+  SolverMatrix<scalar>* A;
+  SolverVector<scalar>* b;
+  fullVector<scalar>*   x;
 
  public:
-  System(const Formulation<double>& formulation);
+  System(const Formulation<scalar>& formulation);
   virtual ~System(void);
 
   virtual size_t getNComputedSolution(void)                           const;
-  virtual void   getSolution(fullVector<double>& sol, size_t nSol)    const;
-  virtual void   getSolution(fullVector<double>& sol)                 const;
-  virtual void   getSolution(std::map<Dof, double>& sol, size_t nSol) const;
-  virtual void   getSolution(std::map<Dof, double>& sol)              const;
-  virtual void   getSolution(FEMSolution<double>& feSol)              const;
+  virtual void   getSolution(fullVector<scalar>& sol, size_t nSol)    const;
+  virtual void   getSolution(fullVector<scalar>& sol)                 const;
+  virtual void   getSolution(std::map<Dof, scalar>& sol, size_t nSol) const;
+  virtual void   getSolution(std::map<Dof, scalar>& sol)              const;
+  virtual void   getSolution(FEMSolution<scalar>& feSol)              const;
 
   virtual void assemble(void);
   virtual void solve(void);
@@ -49,5 +49,15 @@ class System: public SystemAbstract<double>{
 
    Deletes this System
 */
+
+//////////////////////////////////////
+// Templates Implementations:       //
+// Inclusion compilation model      //
+//                                  //
+// Damn you gcc: we want 'export' ! //
+//////////////////////////////////////
+
+#include "SystemInclusion.h"
+
 
 #endif

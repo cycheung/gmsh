@@ -216,8 +216,8 @@ void fem(double (*f)(fullVector<double>& xyz),
                                            0, order, "hierarchical");
   // Projection //
   FunctionSpaceScalar fSpace(domain, *basis);
-  FormulationProjectionScalar projection(f, fSpace);
-  System sysProj(projection);
+  FormulationProjectionScalar<double> projection(f, fSpace);
+  System<double> sysProj(projection);
 
   // Assemble and Solve //
   sysProj.assemble();
@@ -240,6 +240,9 @@ void fem(double (*f)(fullVector<double>& xyz),
     sysProj.getSolution(feSol);
     feSol.write(stream.str());
   }
+
+  // Free //
+  delete basis;
 }
 
 void fem(fullVector<double> (*f)(fullVector<double>& xyz),
@@ -254,8 +257,8 @@ void fem(fullVector<double> (*f)(fullVector<double>& xyz),
                                            1, order, "hierarchical");
   // Projection //
   FunctionSpaceVector fSpace(domain, *basis);
-  FormulationProjectionVector projection(f, fSpace);
-  System sysProj(projection);
+  FormulationProjectionVector<double> projection(f, fSpace);
+  System<double> sysProj(projection);
 
   // Assemble and Solve //
   sysProj.assemble();
@@ -278,6 +281,9 @@ void fem(fullVector<double> (*f)(fullVector<double>& xyz),
     sysProj.getSolution(feSol);
     feSol.write(stream.str());
   }
+
+  // Free //
+  delete basis;
 }
 
 double l2Norm(const fullMatrix<double>& val){

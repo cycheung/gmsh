@@ -3,7 +3,6 @@ set(src
   GroupOfDof.cpp
 
   SystemAbstract.cpp
-  System.cpp
   SystemEigen.cpp
 )
 

@@ -1,6 +1,7 @@
 #ifndef _FORMULATIONPROJECTIONSCALAR_H_
 #define _FORMULATIONPROJECTIONSCALAR_H_
 
+#include <complex>
 #include "FunctionSpaceScalar.h"
 #include "fullMatrix.h"
 
@@ -13,35 +14,38 @@
    @class FormulationProjectionScalar
    @brief Formulation for the Projection of a Scalar Function problem
 
-   Scalar Formulation for the @em L2 @em Projection problem
+   Scalar Formulation for the L2 projection problem
  */
 
-class FormulationProjectionScalar: public Formulation<double>{
+template<typename scalar>
+class FormulationProjectionScalar: public Formulation<scalar>{
  private:
   // Function Space & Basis //
   FunctionSpaceScalar* fspace;
   const Basis*         basis;
 
-  // Local Terms //
+  // For real version (Local Terms) //
   TermFieldField*      localTerms1;
   TermProjectionField* localTerms2;
 
+  // For complex version //
+  std::complex<double> (*f)(fullVector<double>& xyz);
+  GroupOfElement*     goe;
+  fullMatrix<double>* gC;
+  fullVector<double>* gW;
+  GroupOfJacobian*    jac;
+
  public:
-  FormulationProjectionScalar(double (*f)(fullVector<double>& xyz),
+  FormulationProjectionScalar(scalar (*f)(fullVector<double>& xyz),
                               FunctionSpaceScalar& fs);
 
   virtual ~FormulationProjectionScalar(void);
 
   virtual bool isGeneral(void) const;
 
-  virtual double weak(size_t dofI, size_t dofJ,
-                      size_t elementId) const;
-
-  virtual double weakB(size_t dofI, size_t dofJ,
-                       size_t elementId) const;
-
-  virtual double rhs(size_t equationI,
-                     size_t elementId) const;
+  virtual scalar weak(size_t dofI, size_t dofJ, size_t elementId)  const;
+  virtual scalar weakB(size_t dofI, size_t dofJ, size_t elementId) const;
+  virtual scalar rhs(size_t equationI, size_t elementId)           const;
 
   virtual const FunctionSpace& fs(void) const;
 };

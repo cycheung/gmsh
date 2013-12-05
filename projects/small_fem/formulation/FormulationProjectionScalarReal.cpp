@@ -7,7 +7,8 @@
 
 using namespace std;
 
-FormulationProjectionScalar::
+template<>
+FormulationProjectionScalar<double>::
 FormulationProjectionScalar(double (*f)(fullVector<double>& xyz),
                             FunctionSpaceScalar& fs){
   // Save fspace //
@@ -31,33 +32,38 @@ FormulationProjectionScalar(double (*f)(fullVector<double>& xyz),
   localTerms2 = new TermProjectionField(jac, *basis, gW, gC, f);
 }
 
-FormulationProjectionScalar::~FormulationProjectionScalar(void){
+template<>
+FormulationProjectionScalar<double>::~FormulationProjectionScalar(void){
   delete localTerms2;
   delete localTerms1;
 }
 
-double FormulationProjectionScalar::weak(size_t dofI, size_t dofJ,
-                                         size_t elementId) const{
+template<>
+double FormulationProjectionScalar<double>::weak(size_t dofI, size_t dofJ,
+                                                 size_t elementId) const{
 
   return localTerms1->getTerm(dofI, dofJ, elementId);
 }
 
-double FormulationProjectionScalar::rhs(size_t equationI,
-                                        size_t elementId) const{
+template<>
+double FormulationProjectionScalar<double>::rhs(size_t equationI,
+                                                size_t elementId) const{
 
   return localTerms2->getTerm(0, equationI, elementId);
 }
 
-bool FormulationProjectionScalar::isGeneral(void) const{
+template<>
+bool FormulationProjectionScalar<double>::isGeneral(void) const{
   return false;
 }
 
-double FormulationProjectionScalar::weakB(size_t dofI,
-                                          size_t dofJ,
-                                          size_t elementId) const{
+template<>
+double FormulationProjectionScalar<double>::weakB(size_t dofI, size_t dofJ,
+                                                  size_t elementId) const{
   return 0;
 }
 
-const FunctionSpace& FormulationProjectionScalar::fs(void) const{
+template<>
+const FunctionSpace& FormulationProjectionScalar<double>::fs(void) const{
   return *fspace;
 }

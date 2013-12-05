@@ -1,7 +1,9 @@
 set(src
   FormulationPoisson.cpp
-  FormulationProjectionVector.cpp
-  FormulationProjectionScalar.cpp
+  FormulationProjectionVectorReal.cpp
+  FormulationProjectionVectorComplex.cpp
+  FormulationProjectionScalarReal.cpp
+  FormulationProjectionScalarComplex.cpp
   FormulationSteadyWaveVector.cpp
   FormulationSteadyWaveVectorSlow.cpp
   FormulationSteadyWaveScalar.cpp

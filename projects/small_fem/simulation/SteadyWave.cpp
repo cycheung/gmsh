@@ -59,12 +59,12 @@ void compute(const Options& option){
 
   // Chose write formulation for Steady Wave and boundary condition //
   Formulation<double>* wave = NULL;
-  System*              sys  = NULL;
+  System<double>*      sys  = NULL;
 
   if(option.getValue("-type")[0].compare("vector") == 0){
     assemble.start();
     wave = new FormulationSteadyWaveVector(domain, puls * 1, order);
-    sys  = new System(*wave);
+    sys  = new System<double>(*wave);
 
     SystemHelper<double>::dirichlet(*sys, source, fSourceVec);
     SystemHelper<double>::dirichlet(*sys, wall,   fWallVec);
@@ -74,7 +74,7 @@ void compute(const Options& option){
   else if(option.getValue("-type")[0].compare("slow") == 0){
     assemble.start();
     wave = new FormulationSteadyWaveVectorSlow(domain, puls * 1, order);
-    sys  = new System(*wave);
+    sys  = new System<double>(*wave);
 
     SystemHelper<double>::dirichlet(*sys, source, fSourceVec);
     SystemHelper<double>::dirichlet(*sys, wall,   fWallVec);
@@ -84,7 +84,7 @@ void compute(const Options& option){
   else if(option.getValue("-type")[0].compare("scalar") == 0){
     assemble.start();
     wave = new FormulationSteadyWaveScalar(domain, puls * 1, order);
-    sys  = new System(*wave);
+    sys  = new System<double>(*wave);
 
     SystemHelper<double>::dirichlet(*sys, source, fSourceScal);
     SystemHelper<double>::dirichlet(*sys, wall,   fWallScal);
