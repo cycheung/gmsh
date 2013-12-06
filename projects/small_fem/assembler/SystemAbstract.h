@@ -36,19 +36,18 @@ class SystemAbstract{
   bool solved;
 
   const Formulation<scalar>* formulation;
+  const FunctionSpace*       fs;
   DofManager<scalar>*        dofM;
 
  public:
   virtual ~SystemAbstract(void);
 
-  int addFormulation(const Formulation<scalar>& formulation);
-  const Formulation<scalar>& getFormulation(int tag) const;
-
   bool isAssembled(void) const;
   bool isSolved(void)    const;
 
-  size_t                    getSize(void)       const;
-  const DofManager<scalar>& getDofManager(void) const;
+  size_t                    getSize(void)          const;
+  const DofManager<scalar>& getDofManager(void)    const;
+  const FunctionSpace&      getFunctionSpace(void) const;
 
   void constraint(const std::map<Dof, scalar>& constr);
 
@@ -96,6 +95,10 @@ class SystemAbstract{
 
    @fn SystemAbstract::getDofManager
    @return Returns the DofManager used by this system
+   **
+
+   @fn SystemAbstract::getFunctionSpace
+   @return Returns the FunctionSpace used by this system
    **
 
    @fn SystemAbstract::constraint

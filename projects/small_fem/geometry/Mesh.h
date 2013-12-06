@@ -24,7 +24,8 @@
    This class is responsible of the handling mesh elements
    (Such as Quads, Tets, Edges, Vertices, ...).
 
-   It is also responsible of the numbering of those elements.
+   It is also responsible of the numbering of those
+   elements.
    Indeed, each element is granted a unique ID.
 
    A Mesh is instantiated thanks to a
@@ -92,29 +93,33 @@ class Mesh{
 
    @fn size_t Mesh::getGlobalId(const MElement& element) const
    @param element A MElement
-   @return Returns the global ID (in this Mesh) of the given MElement
+   @return Returns the global ID (in this Mesh) of the
+   given MElement
    **
 
    @fn size_t Mesh::getGlobalId(const MVertex& vertex) const
    @param vertex A MVertex
-   @return Returns the global ID (in this Mesh) of the given MVertex
+   @return Returns the global ID (in this Mesh) of the
+   given MVertex
    **
 
    @fn size_t Mesh::getGlobalId(const MEdge& edge) const
    @param edge A MEdge
-   @return Returns the global ID (in this Mesh) of the given MEdge
+   @return Returns the global ID (in this Mesh) of the
+   given MEdge
    **
 
    @fn size_t Mesh::getGlobalId(const MFace& face) const
    @param face A MFace
-   @return Returns the global ID (in this Mesh) of the given MFace
+   @return Returns the global ID (in this Mesh) of the
+   given MFace
    **
 
    @fn Mesh::getAllVertex
    @return Returns all the Vertices of this Mesh
    **
 
-   @fn Mesh::getAllVertexCoordinate
+   @fn Mesh::getAllVertexCoordinate;
    @param coord A matrix
 
    Allocates and populates this matrix with the coordinates
@@ -130,8 +135,7 @@ class Mesh{
 
    @fn Mesh::getElementNumber
    @return Returns the number of Element in this Mesh
-
-   By Element we mean Quads, Tets, etc.
+   @note By Element we mean Quads, Tets, etc
    This excludes Vertices, Edges, Faces and Cells
    **
 
@@ -149,15 +153,40 @@ class Mesh{
 
    @fn Mesh::getFromPhysical
    @param physicalId A physical ID
-   (see <a href="http://www.geuz.org/gmsh">gmsh</a> documentation)
+   (see <a href="http://www.geuz.org/gmsh">gmsh</a>
+   documentation)
 
-   @return Instantiate a new GroupOfElement,
-   containing the MElements of the given physical ID
+   @return Instantiate a new GroupOfElement, containing
+   the MElements of the given physical ID
    **
 
    @fn Mesh::toString
    @return Returns a description of this Mesh
    **
 */
+
+//////////////////////
+// Inline Functions //
+//////////////////////
+
+inline GModel& Mesh::getModel(void) const{
+  return *model;
+}
+
+inline size_t Mesh::getElementNumber(void) const{
+  return element->size();
+}
+
+inline size_t Mesh::getVertexNumber(void) const{
+  return vertex->size();
+}
+
+inline size_t Mesh::getEdgeNumber(void) const{
+  return edge->size();
+}
+
+inline size_t Mesh::getFaceNumber(void) const{
+  return face->size();
+}
 
 #endif

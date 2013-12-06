@@ -25,11 +25,14 @@ template<typename scalar>
 void SystemHelper<scalar>::
 dirichlet(SystemAbstract<scalar>& sys,
           GroupOfElement& goe,
-          size_t order,
           scalar (*f)(fullVector<double>& xyz)){
 
+  const FunctionSpace& fs = sys.getFunctionSpace();
+
   Basis* basis = BasisGenerator::generate(goe.get(0).getType(),
-                                          0, order, "hierarchical");
+                                          fs.getBasis(0).getType(),
+                                          fs.getBasis(0).getOrder(),
+                                          "hierarchical");
 
   FunctionSpaceScalar                 formFS(goe, *basis);
   FormulationProjectionScalar<scalar> form(f, formFS);
@@ -49,11 +52,14 @@ template<typename scalar>
 void SystemHelper<scalar>::
 dirichlet(SystemAbstract<scalar>& sys,
           GroupOfElement& goe,
-          size_t order,
           fullVector<scalar> (*f)(fullVector<double>& xyz)){
 
+  const FunctionSpace& fs = sys.getFunctionSpace();
+
   Basis* basis = BasisGenerator::generate(goe.get(0).getType(),
-                                          1, order, "hierarchical");
+                                          fs.getBasis(0).getType(),
+                                          fs.getBasis(0).getOrder(),
+                                          "hierarchical");
 
   FunctionSpaceVector                 formFS(goe, *basis);
   FormulationProjectionVector<scalar> form(f, formFS);

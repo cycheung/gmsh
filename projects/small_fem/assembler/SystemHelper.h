@@ -19,12 +19,10 @@ class SystemHelper{
 
   static void dirichlet(SystemAbstract<scalar>& sys,
                         GroupOfElement& goe,
-                        size_t order,
                         scalar (*f)(fullVector<double>& xyz));
 
   static void dirichlet(SystemAbstract<scalar>& sys,
                         GroupOfElement& goe,
-                        size_t order,
                         fullVector<scalar> (*f)(fullVector<double>& xyz));
 };
 
@@ -40,23 +38,19 @@ class SystemHelper{
    @fn SystemHelper::dirichlet(SystemAbstract<scalar>&, GroupOfElement&, scalar (*f)(fullVector<double>& xyz))
    @param sys A SystemAbstract
    @param goe A GroupOfElement
-   @param order An integer
    @param f A scalar function
 
    Imposes on the given SystemAbstract a dirichlet condition
-   on the given GroupOfElement, with the given function,
-   and with the given order
+   on the given GroupOfElement and with the given function
    **
 
    @fn SystemHelper::dirichlet(SystemAbstract<scalar>&, GroupOfElement&, fullVector<scalar> (*f)(fullVector<double>& xyz))
    @param sys A SystemAbstract
    @param goe A GroupOfElement
-   @param order An integer
    @param f A vectorial function
 
    Imposes on the given SystemAbstract a dirichlet condition
-   on the given GroupOfElement, with the given function,
-   and with the given order
+   on the given GroupOfElement and with the given function
  */
 
 //////////////////////////////////////

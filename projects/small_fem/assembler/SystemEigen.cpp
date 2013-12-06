@@ -6,10 +6,11 @@ using namespace std;
 SystemEigen::SystemEigen(const Formulation<std::complex<double> >& formulation){
   // Get Formulation //
   this->formulation = &formulation;
+  this->fs          = &(formulation.fs());
 
   // Get Dof Manager //
   dofM = new DofManager<std::complex<double> >();
-  dofM->addToDofManager(formulation.fs().getAllGroups());
+  dofM->addToDofManager(fs->getAllGroups());
 
   // Is the Problem a General EigenValue Problem ? //
   general = formulation.isGeneral();
@@ -66,7 +67,7 @@ void SystemEigen::getSolution(fullVector<std::complex<double> >& sol) const{
 void SystemEigen::getSolution(std::map<Dof, std::complex<double> >& sol,
                               size_t nSol) const{
   // Get All Dofs
-  const vector<Dof> dof = formulation->fs().getAllDofs();
+  const vector<Dof> dof = fs->getAllDofs();
   const size_t     nDof = dof.size();
 
   // Fill Map
@@ -102,8 +103,8 @@ void SystemEigen::assemble(void){
   dofM->generateGlobalIdSpace();
 
   // Get GroupOfDofs //
-  const size_t E = formulation->fs().getSupport().getNumber();
-  const vector<GroupOfDof*>& group = formulation->fs().getAllGroups();
+  const size_t E = fs->getSupport().getNumber();
+  const vector<GroupOfDof*>& group = fs->getAllGroups();
 
   // Get Formulation Terms //
   formulationPtr termA = &Formulation<std::complex<double> >::weak;
@@ -249,5 +250,5 @@ void SystemEigen::getSolution(FEMSolution<std::complex<double> >& feSol) const{
     throw Exception("System: addSolution -- System not solved");
 
   for(int i = 0; i < nEigenValues; i++)
-    feSol.addCoefficients(i, 0, formulation->fs(), *dofM, (*eigenVector)[i]);
+    feSol.addCoefficients(i, 0, *fs, *dofM, (*eigenVector)[i]);
 }

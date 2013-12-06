@@ -11,10 +11,11 @@ template<typename scalar>
 System<scalar>::System(const Formulation<scalar>& formulation){
   // Get Formulation //
   this->formulation = &formulation;
+  this->fs          = &(formulation.fs());
 
   // Get Dof Manager //
   this->dofM = new DofManager<scalar>();
-  this->dofM->addToDofManager(this->formulation->fs().getAllGroups());
+  this->dofM->addToDofManager(this->fs->getAllGroups());
 
   // Init //
   A = NULL;
@@ -46,9 +47,8 @@ void System<scalar>::assemble(void){
   this->dofM->generateGlobalIdSpace();
 
   // Get GroupOfDofs //
-  const size_t E = this->formulation->fs().getSupport().getNumber();
-  const std::vector<GroupOfDof*>& group =
-    this->formulation->fs().getAllGroups();
+  const size_t                        E = this->fs->getSupport().getNumber();
+  const std::vector<GroupOfDof*>& group = this->fs->getAllGroups();
 
   // Get Formulation Term //
   typename SystemAbstract<scalar>::formulationPtr term =
@@ -103,7 +103,7 @@ void System<scalar>::getSolution(fullVector<scalar>& sol) const{
 template<typename scalar>
 void System<scalar>::getSolution(std::map<Dof, scalar>& sol, size_t nSol) const{
   // Get All Dofs
-  const std::vector<Dof> dof = this->formulation->fs().getAllDofs();
+  const std::vector<Dof> dof = this->fs->getAllDofs();
   const size_t          nDof = dof.size();
 
   // Fill Map
@@ -122,7 +122,7 @@ void System<scalar>::getSolution(FEMSolution<scalar>& feSol) const{
   if(!this->solved)
     throw Exception("System: addSolution -- System not solved");
 
-  feSol.addCoefficients(0, 0, this->formulation->fs(), *this->dofM, *x);
+  feSol.addCoefficients(0, 0, *this->fs, *this->dofM, *x);
 }
 
 template<typename scalar>

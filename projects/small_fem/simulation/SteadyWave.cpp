@@ -66,8 +66,8 @@ void compute(const Options& option){
     wave = new FormulationSteadyWaveVector(domain, puls * 1, order);
     sys  = new System<double>(*wave);
 
-    SystemHelper<double>::dirichlet(*sys, source, order, fSourceVec);
-    SystemHelper<double>::dirichlet(*sys, wall,   order, fWallVec);
+    SystemHelper<double>::dirichlet(*sys, source, fSourceVec);
+    SystemHelper<double>::dirichlet(*sys, wall,   fWallVec);
     cout << "Vectorial ";
   }
 
@@ -76,8 +76,8 @@ void compute(const Options& option){
     wave = new FormulationSteadyWaveVectorSlow(domain, puls * 1, order);
     sys  = new System<double>(*wave);
 
-    SystemHelper<double>::dirichlet(*sys, source, order, fSourceVec);
-    SystemHelper<double>::dirichlet(*sys, wall,   order, fWallVec);
+    SystemHelper<double>::dirichlet(*sys, source, fSourceVec);
+    SystemHelper<double>::dirichlet(*sys, wall,   fWallVec);
     cout << "Slow Vectorial ";
   }
 
@@ -86,8 +86,8 @@ void compute(const Options& option){
     wave = new FormulationSteadyWaveScalar(domain, puls * 1, order);
     sys  = new System<double>(*wave);
 
-    SystemHelper<double>::dirichlet(*sys, source, order, fSourceScal);
-    SystemHelper<double>::dirichlet(*sys, wall,   order, fWallScal);
+    SystemHelper<double>::dirichlet(*sys, source, fSourceScal);
+    SystemHelper<double>::dirichlet(*sys, wall,   fWallScal);
     cout << "Scalar ";
   }
 

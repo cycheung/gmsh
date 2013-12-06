@@ -33,6 +33,11 @@ const DofManager<scalar>& SystemAbstract<scalar>::getDofManager(void) const{
 }
 
 template<typename scalar>
+const FunctionSpace& SystemAbstract<scalar>::getFunctionSpace(void) const{
+  return *fs;
+}
+
+template<typename scalar>
 void SystemAbstract<scalar>::constraint(const std::map<Dof, scalar>& constr){
   typename std::map<Dof, scalar>::const_iterator it  = constr.begin();
   typename std::map<Dof, scalar>::const_iterator end = constr.end();

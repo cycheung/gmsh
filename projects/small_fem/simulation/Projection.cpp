@@ -227,9 +227,11 @@ void fem(double (*f)(fullVector<double>& xyz),
   fullVector<double> sysSol;
   sysProj.getSolution(sysSol);
 
-  Interpolator::
-    interpolate(fSpace, sysProj.getDofManager(), sysSol, point, sol);
-
+  Interpolator::interpolate(sysProj.getFunctionSpace(),
+                            sysProj.getDofManager(),
+                            sysSol,
+                            point,
+                            sol);
   // Post-processing //
   if(!nopos){
     FEMSolution<double> feSol;
@@ -266,9 +268,11 @@ void fem(fullVector<double> (*f)(fullVector<double>& xyz),
   fullVector<double> sysSol;
   sysProj.getSolution(sysSol);
 
-  Interpolator::
-    interpolate(fSpace, sysProj.getDofManager(), sysSol, point, sol);
-
+  Interpolator::interpolate(sysProj.getFunctionSpace(),
+                            sysProj.getDofManager(),
+                            sysSol,
+                            point,
+                            sol);
   // Post-processing //
   if(!nopos){
     FEMSolution<double> feSol;

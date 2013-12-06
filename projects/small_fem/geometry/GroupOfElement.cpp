@@ -2,7 +2,6 @@
 #include <sstream>
 #include <list>
 
-#include "Exception.h"
 #include "GroupOfElement.h"
 
 using namespace std;
@@ -27,67 +26,53 @@ GroupOfElement::GroupOfElement
 
   // Alloc //
   this->mesh = &mesh;
-  element.assign(lst.begin(), lst.end());
+  element = new vector<const MElement*>(lst.begin(), lst.end());
 
-  orientationStat.clear();
+  orientationStat = NULL;
 }
 
 GroupOfElement::~GroupOfElement(void){
-}
+  delete element;
 
-size_t GroupOfElement::getNumber(void) const{
-  return element.size();
-}
-
-const std::vector<const MElement*>& GroupOfElement::getAll(void) const{
-  return element;
-}
-
-
-const Mesh& GroupOfElement::getMesh(void) const{
-  return *mesh;
+  if(orientationStat)
+    delete orientationStat;
 }
 
 void GroupOfElement::
 orientAllElements(const Basis& basis){
   // If already oriented, delete old orientation //
-  if(orientationStat.size() != 0)
+  if(orientationStat)
     throw Exception
       ("GroupOfElement already oriented");
 
   // Sort //
-  OrientationSort predicate(basis);
-  sort(element.begin(), element.end(), predicate);
+  OrientationSort sortPredicate(basis);
+  sort(element->begin(), element->end(), sortPredicate);
 
   // Get Orientation Stats //
   // Get some Data
   const size_t nOrient  = basis.getReferenceSpace().getNReferenceSpace();
-  const size_t nElement = element.size();
+  const size_t nElement = element->size();
 
   // Init
-  orientationStat.resize(nOrient);
+  orientationStat = new vector<size_t>(nOrient);
 
   for(size_t i = 0; i < nOrient; i++)
-    orientationStat[i] = 0;
+    (*orientationStat)[i] = 0;
 
   // Compute
   for(size_t i = 0; i < nElement; i++)
-    orientationStat[basis.getReferenceSpace().getReferenceSpace(*element[i])]++;
+    (*orientationStat)
+      [basis.getReferenceSpace().getReferenceSpace(*(*element)[i])]++;
 
   // The last line is cool isn't it :-) ?
 }
 
-const std::vector<size_t>& GroupOfElement::getOrientationStats(void) const{
-  if(orientationStat.size() != 0)
-    return orientationStat;
-
-  else
-    throw Exception("Orientation of GroupOfElement not computed");
-}
-
-
 void GroupOfElement::unoriented(void){
-  orientationStat.clear();
+  if(orientationStat)
+    delete orientationStat;
+
+  orientationStat = NULL;
 }
 
 string GroupOfElement::toString(void) const{
@@ -104,9 +89,9 @@ string GroupOfElement::toString(void) const{
          << "* This group contains the following Elements: *"
          << endl;
 
-  for(size_t i = 0; i < element.size(); i++)
+  for(size_t i = 0; i < element->size(); i++)
     stream << "*   -- Element #"
-           << mesh->getGlobalId(*element[i])
+           << mesh->getGlobalId(*(*element)[i])
            << endl;
 
   stream << "*                                             *"
@@ -114,7 +99,7 @@ string GroupOfElement::toString(void) const{
          << "***********************************************"
          << endl;
 
-  if(orientationStat.size() == 0)
+  if(!orientationStat)
     return stream.str();
 
 
@@ -123,9 +108,9 @@ string GroupOfElement::toString(void) const{
          << "* This group has the following Orientations:  *"
          << endl;
 
-  for(size_t i = 0; i < orientationStat.size(); i++)
+  for(size_t i = 0; i < orientationStat->size(); i++)
     stream << "*   -- Elements with Orientation " << i << " - "
-           << orientationStat[i] << endl;
+           << (*orientationStat)[i] << endl;
 
   stream << "*                                             *"
          << endl
