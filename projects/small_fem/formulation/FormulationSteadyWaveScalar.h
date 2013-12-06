@@ -12,10 +12,11 @@
    @class FormulationSteadyWaveScalar
    @brief Scalar Formulation for the Steady Wave problem
 
-   Scalar Formulation for the @em Steady @em Wave problem
+   Scalar Formulation for the steady wave problem
  */
 
-class FormulationSteadyWaveScalar: public Formulation<double>{
+template<typename scalar>
+class FormulationSteadyWaveScalar: public Formulation<scalar>{
  private:
   // Speed of medium squared //
   static const double cSquare;
@@ -40,14 +41,9 @@ class FormulationSteadyWaveScalar: public Formulation<double>{
 
   virtual bool isGeneral(void) const;
 
-  virtual double weak(size_t dofI, size_t dofJ,
-                      size_t elementId) const;
-
-  virtual double weakB(size_t dofI, size_t dofJ,
-                       size_t elementId) const;
-
-  virtual double rhs(size_t equationI,
-                     size_t elementId) const;
+  virtual scalar weak(size_t dofI, size_t dofJ, size_t elementId)  const;
+  virtual scalar weakB(size_t dofI, size_t dofJ, size_t elementId) const;
+  virtual scalar rhs(size_t equationI, size_t elementId)           const;
 
   virtual const FunctionSpace& fs(void) const;
 };

@@ -42,6 +42,26 @@ System<scalar>::~System(void){
 }
 
 template<typename scalar>
+void System<scalar>::addBorderTerm(const Formulation<scalar>& formulation){
+  // Get the FunctionSpace of the given formulation
+  const FunctionSpace& fs = formulation.fs();
+
+  // Get GroupOfDofs //
+  const size_t                        E = fs.getSupport().getNumber();
+  const std::vector<GroupOfDof*>& group = fs.getAllGroups();
+
+  // Get Formulation Term //
+  typename SystemAbstract<scalar>::formulationPtr term =
+    &Formulation<scalar>::weak;
+
+  // Assemble //
+  #pragma omp parallel for
+  for(size_t i = 0; i < E; i++)
+    SystemAbstract<scalar>::
+      assemble(*A, *b, i, *group[i], term, formulation);
+}
+
+template<typename scalar>
 void System<scalar>::assemble(void){
   // Enumerate //
   this->dofM->generateGlobalIdSpace();
@@ -63,7 +83,8 @@ void System<scalar>::assemble(void){
   // Assemble //
   #pragma omp parallel for
   for(size_t i = 0; i < E; i++)
-    SystemAbstract<scalar>::assemble(*A, *b, i, *group[i], term);
+    SystemAbstract<scalar>::
+      assemble(*A, *b, i, *group[i], term, *this->formulation);
 
   // The system is assembled //
   this->assembled = true;

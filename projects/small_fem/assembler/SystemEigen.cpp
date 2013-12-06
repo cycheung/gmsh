@@ -120,12 +120,12 @@ void SystemEigen::assemble(void){
   // Assemble Systems (tmpA and tmpB) //
   #pragma omp parallel for
   for(size_t i = 0; i < E; i++)
-    SystemAbstract::assemble(tmpA, tmpRHS, i, *group[i], termA);
+    SystemAbstract::assemble(tmpA, tmpRHS, i, *group[i], termA, *formulation);
 
   if(general)
     #pragma omp parallel for
     for(size_t i = 0; i < E; i++)
-      SystemAbstract::assemble(tmpB, tmpRHS, i, *group[i], termB);
+      SystemAbstract::assemble(tmpB, tmpRHS, i, *group[i], termB, *formulation);
 
   // Copy tmpA into Assembled PETSc matrix //
   // Data

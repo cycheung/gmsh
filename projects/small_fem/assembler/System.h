@@ -23,6 +23,8 @@ class System: public SystemAbstract<scalar>{
   System(const Formulation<scalar>& formulation);
   virtual ~System(void);
 
+  void addBorderTerm(const Formulation<scalar>& formulation);
+
   virtual size_t getNComputedSolution(void)                           const;
   virtual void   getSolution(fullVector<scalar>& sol, size_t nSol)    const;
   virtual void   getSolution(fullVector<scalar>& sol)                 const;

@@ -56,7 +56,6 @@ void compute(const Options& option){
   const double puls  = atof(option.getValue("-k")[0].c_str());
   const size_t order = atoi(option.getValue("-o")[0].c_str());
 
-
   // Chose write formulation for Steady Wave and boundary condition //
   Formulation<double>* wave = NULL;
   System<double>*      sys  = NULL;
@@ -83,7 +82,7 @@ void compute(const Options& option){
 
   else if(option.getValue("-type")[0].compare("scalar") == 0){
     assemble.start();
-    wave = new FormulationSteadyWaveScalar(domain, puls * 1, order);
+    wave = new FormulationSteadyWaveScalar<double>(domain, puls * 1, order);
     sys  = new System<double>(*wave);
 
     SystemHelper<double>::dirichlet(*sys, source, fSourceScal);

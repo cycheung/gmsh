@@ -22,6 +22,10 @@
 #include "QuadNedelecBasis.h"
 
 #include "System.h"
+#include "SystemHelper.h"
+
+#include "FormulationNeumann.h"
+#include "FormulationSteadyWaveScalar.h"
 #include "FormulationProjectionScalar.h"
 #include "FormulationProjectionVector.h"
 
@@ -37,65 +41,53 @@
 
 using namespace std;
 
-complex<double> fScal(fullVector<double>& xyz){
-  double tmp =
-    sin(10 * xyz(0)) +
-    sin(10 * xyz(1)) +
-    sin(10 * xyz(2));
-
-  return complex<double>(1, 1) * tmp;
-}
-
-fullVector<complex<double> > fVect(fullVector<double>& xyz){
-  complex<double> tmp = complex<double>(1, 1);
-  fullVector<complex<double> > res(3);
-
-  res(0) = sin(10 * xyz(0)) * tmp;
-  res(1) = sin(10 * xyz(1)) * tmp;
-  res(2) = sin(10 * xyz(2)) * tmp;
-
-  return res;
+complex<double> fSource(fullVector<double>& xyz){
+  return complex<double>(1, 0);
 }
 
 int main(int argc, char** argv){
   // SmallFEM
-  SmallFem::Keywords("-msh,-o");
+  SmallFem::Keywords("-msh,-o,-k");
   SmallFem::Initialize(argc, argv);
 
   // Options //
   const Options& option = SmallFem::getOptions();
 
-  // Input //
-  Mesh           msh(option.getValue("-msh")[0]);
+  // Get Domains //
+  Mesh msh(option.getValue("-msh")[0]);
   GroupOfElement domain = msh.getFromPhysical(7);
-  int            order  = atoi(option.getValue("-o")[0].c_str());
+  GroupOfElement source = msh.getFromPhysical(5);
+  GroupOfElement wall   = msh.getFromPhysical(6);
 
-  // Formulation //
-  /*
-  Basis* basis = BasisGenerator::generate(domain.get(0).getType(),
-                                          0, order, "hierarchical");
+  // Get Parameters //
+  const double puls  = atof(option.getValue("-k")[0].c_str());
+  const size_t order = atoi(option.getValue("-o")[0].c_str());
 
-  FunctionSpaceScalar fSpace(domain, *basis);
-  FormulationProjectionScalar<complex<double> > projection(fScal, fSpace);
-  */
-
-  Basis* basis = BasisGenerator::generate(domain.get(0).getType(),
-                                          1, order, "hierarchical");
-
-  FunctionSpaceVector fSpace(domain, *basis);
-  FormulationProjectionVector<complex<double> > projection(fVect, fSpace);
+  // Formulations //
+  FormulationSteadyWaveScalar<complex<double> > wave(domain, puls, order);
+  FormulationNeumann                           neumann(wall, puls, order);
 
   // System //
-  System<complex<double> > sys(projection);
-  sys.assemble();
-  sys.solve();
+  // Init
+  System<complex<double> > system(wave);
 
-  // Solution //
+  // Dirichlet
+  SystemHelper<complex<double> >::dirichlet(system, source, fSource);
+
+  // Assemble with Dirichlet
+  system.assemble();
+
+  // Assemble Neumann term
+  system.addBorderTerm(neumann);
+
+  // Solve
+  system.solve();
+
+  // Write Solution //
   FEMSolution<complex<double> > feSol;
-  sys.getSolution(feSol);
-  feSol.write("test");
+  system.getSolution(feSol);
+  feSol.write("neumann");
 
   // Finalize //
-  delete basis;
   SmallFem::Finalize();
 }

@@ -6,7 +6,10 @@ set(src
   FormulationProjectionScalarComplex.cpp
   FormulationSteadyWaveVector.cpp
   FormulationSteadyWaveVectorSlow.cpp
-  FormulationSteadyWaveScalar.cpp
+  FormulationSteadyWaveScalarReal.cpp
+  FormulationSteadyWaveScalarComplex.cpp
+
+  FormulationNeumann.cpp
 
   FormulationEigenFrequencyVector.cpp
   FormulationEigenFrequencyScalar.cpp

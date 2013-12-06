@@ -7,11 +7,12 @@
 
 using namespace std;
 
-const double FormulationSteadyWaveScalar::cSquare = 1;
+template<>
+const double FormulationSteadyWaveScalar<double>::cSquare = 1;
 
-FormulationSteadyWaveScalar::FormulationSteadyWaveScalar(GroupOfElement& goe,
-                                                         double omega,
-                                                         size_t order){
+template<>
+FormulationSteadyWaveScalar<double>::
+FormulationSteadyWaveScalar(GroupOfElement& goe, double omega, size_t order){
   // Can't have 0th order //
   if(order == 0)
     throw
@@ -47,7 +48,8 @@ FormulationSteadyWaveScalar::FormulationSteadyWaveScalar(GroupOfElement& goe,
   localTerms2 = new TermFieldField(jac2, *basis, gW2);
 }
 
-FormulationSteadyWaveScalar::~FormulationSteadyWaveScalar(void){
+template<>
+FormulationSteadyWaveScalar<double>::~FormulationSteadyWaveScalar(void){
   delete basis;
   delete fspace;
 
@@ -55,28 +57,33 @@ FormulationSteadyWaveScalar::~FormulationSteadyWaveScalar(void){
   delete localTerms2;
 }
 
-double FormulationSteadyWaveScalar::weak(size_t dofI, size_t dofJ,
-                                         size_t elementId) const{
+template<>
+double FormulationSteadyWaveScalar<double>::weak(size_t dofI, size_t dofJ,
+                                                 size_t elementId) const{
   return
     localTerms1->getTerm(dofI, dofJ, elementId) -
     localTerms2->getTerm(dofI, dofJ, elementId) * omegaSquare / cSquare;
 }
 
-double FormulationSteadyWaveScalar::rhs(size_t equationI,
-                                        size_t elementId) const{
+template<>
+double FormulationSteadyWaveScalar<double>::rhs(size_t equationI,
+                                                size_t elementId) const{
   return 0;
 }
 
-bool FormulationSteadyWaveScalar::isGeneral(void) const{
+template<>
+bool FormulationSteadyWaveScalar<double>::isGeneral(void) const{
   return false;
 }
 
-double FormulationSteadyWaveScalar::weakB(size_t dofI,
-                                          size_t dofJ,
-                                          size_t elementId) const{
+template<>
+double FormulationSteadyWaveScalar<double>::weakB(size_t dofI,
+                                                  size_t dofJ,
+                                                  size_t elementId) const{
   return 0;
 }
 
-const FunctionSpace& FormulationSteadyWaveScalar::fs(void) const{
+template<>
+const FunctionSpace& FormulationSteadyWaveScalar<double>::fs(void) const{
   return *fspace;
 }

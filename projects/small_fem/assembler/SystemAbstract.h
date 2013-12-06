@@ -68,7 +68,8 @@ class SystemAbstract{
                 SolverVector<scalar>& b,
                 size_t elementId,
                 const GroupOfDof& group,
-                formulationPtr& term);
+                formulationPtr& term,
+                const Formulation<scalar>& formulation);
 };
 
 

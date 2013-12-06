@@ -61,7 +61,8 @@ assemble(SolverMatrix<scalar>& A,
          SolverVector<scalar>& b,
          size_t elementId,
          const GroupOfDof& group,
-         formulationPtr& term){
+         formulationPtr& term,
+         const Formulation<scalar>& formulation){
 
   const std::vector<Dof>& dof = group.getDof();
   const size_t N = group.size();
@@ -79,18 +80,18 @@ assemble(SolverMatrix<scalar>& A,
 
         // If not a fixed Dof
         if(dofJ != DofManager<scalar>::isFixedId())
-          A.add(dofI, dofJ, (formulation->*term)(i, j, elementId));
+          A.add(dofI, dofJ, (formulation.*term)(i, j, elementId));
 
         // If fixed Dof (for column 'dofJ'):
         //    add to right hand side (with a minus sign) !
         else
           b.add(dofI,
                 minusSign * dofM->getValue(dof[j]) *
-                           (formulation->*term)(i, j, elementId));
+                           (formulation.*term)(i, j, elementId));
 
       }
 
-      b.add(dofI, formulation->rhs(i, elementId));
+      b.add(dofI, formulation.rhs(i, elementId));
     }
   }
 }
