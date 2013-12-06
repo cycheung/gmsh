@@ -83,6 +83,10 @@ Mesh::~Mesh(void){
   delete model;
 }
 
+GModel& Mesh::getModel(void) const{
+  return *model;
+}
+
 size_t Mesh::getGlobalId(const MElement& element) const{
   map<const MElement*,
       size_t,
@@ -170,6 +174,22 @@ void Mesh::getAllVertexCoordinate(fullMatrix<double>& coord) const{
     coord(i, 1) = vertex[i]->y();
     coord(i, 2) = vertex[i]->z();
   }
+}
+
+size_t Mesh::getElementNumber(void) const{
+  return element->size();
+}
+
+size_t Mesh::getVertexNumber(void) const{
+  return vertex->size();
+}
+
+size_t Mesh::getEdgeNumber(void) const{
+  return edge->size();
+}
+
+size_t Mesh::getFaceNumber(void) const{
+  return face->size();
 }
 
 void Mesh::number(void){

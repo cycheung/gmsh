@@ -7,9 +7,8 @@
 
 #include "Mesh.h"
 #include "MElement.h"
-
 #include "Basis.h"
-#include "Exception.h"
+#include "ElementType.h"
 
 /**
    @class GroupOfElement
@@ -36,8 +35,8 @@ class GroupOfElement{
  private:
   const Mesh* mesh;
 
-  std::vector<const MElement*>* element;
-  std::vector<size_t>*          orientationStat;
+  std::vector<const MElement*> element;
+  std::vector<size_t>  orientationStat;
 
  public:
    GroupOfElement(std::multimap<int, const MElement*>::iterator begin,
@@ -46,13 +45,10 @@ class GroupOfElement{
 
   ~GroupOfElement(void);
 
-  size_t    getNumber(void)     const;
-  const MElement& get(size_t i) const;
-
-  const std::vector<const MElement*>&
-    getAll(void) const;
-
-  const Mesh& getMesh(void) const;
+  size_t                              getNumber(void) const;
+  const MElement&                     get(size_t i)   const;
+  const std::vector<const MElement*>& getAll(void)    const;
+  const Mesh&                         getMesh(void)   const;
 
   void orientAllElements(const Basis& basis);
   const std::vector<size_t>& getOrientationStats(void) const;
@@ -80,8 +76,7 @@ class GroupOfElement{
    **
 
    @fn GroupOfElement::get
-   @param i An interger ranging from 0
-   to GroupOfElement::getNumber() - 1
+   @param i An interger ranging from 0 to GroupOfElement::getNumber() - 1
    @return Returns the ith element of the GroupOfElement
    **
 
@@ -115,8 +110,7 @@ class GroupOfElement{
 
    @fn GroupOfElement::unoriented
 
-   The elements of this GroupOfElement
-   are unoriented
+   The elements of this GroupOfElement are unoriented
 
    @see Basis::getOrientation()
    **
@@ -137,30 +131,8 @@ inline bool GroupOfElement::OrientationSort::operator()
     basis->getReferenceSpace().getReferenceSpace(*b);
 }
 
-inline size_t GroupOfElement::getNumber(void) const{
-  return element->size();
-}
-
 inline const MElement& GroupOfElement::get(size_t i) const{
-  return *(*element)[i];
-}
-
-inline const std::vector<const MElement*>&
-GroupOfElement::getAll(void) const{
-  return *element;
-}
-
-inline const Mesh& GroupOfElement::getMesh(void) const{
-  return *mesh;
-}
-
-inline const std::vector<size_t>&
-GroupOfElement::getOrientationStats(void) const{
-  if(orientationStat)
-    return *orientationStat;
-
-  else
-    throw Exception("Orientation of GroupOfElement not computed");
+  return *element[i];
 }
 
 #endif

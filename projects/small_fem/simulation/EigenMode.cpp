@@ -44,7 +44,8 @@ void compute(const Options& option){
     eig = new FormulationEigenFrequencyVector(domain, order);
     sys = new SystemEigen(*eig);
 
-    SystemHelper<complex<double> >::dirichlet(*sys, border, fDirichletVec);
+    SystemHelper<complex<double> >::
+      dirichlet(*sys, border, order, fDirichletVec);
     cout << "Vectorial ";
   }
 
@@ -52,7 +53,8 @@ void compute(const Options& option){
     eig = new FormulationEigenFrequencyScalar(domain, order);
     sys = new SystemEigen(*eig);
 
-    SystemHelper<complex<double> >::dirichlet(*sys, border, fDirichletScal);
+    SystemHelper<complex<double> >::
+      dirichlet(*sys, border, order, fDirichletScal);
     cout << "Scalar ";
   }
 

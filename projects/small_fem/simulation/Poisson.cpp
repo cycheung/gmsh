@@ -40,8 +40,8 @@ void compute(const Options& option){
   FormulationPoisson poisson(domain, fSource, order);
   System<double> sysPoisson(poisson);
 
-  SystemHelper<double>::dirichlet(sysPoisson, boundary0, fDirichlet0);
-  SystemHelper<double>::dirichlet(sysPoisson, boundary1, fDirichlet1);
+  SystemHelper<double>::dirichlet(sysPoisson, boundary0, order, fDirichlet0);
+  SystemHelper<double>::dirichlet(sysPoisson, boundary1, order, fDirichlet1);
 
   cout << "Poisson -- Order " << order
        << ": " << sysPoisson.getSize()
