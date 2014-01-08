@@ -56,9 +56,7 @@ class SystemAbstract{
 
   virtual size_t getNComputedSolution(void)                           const = 0;
   virtual void   getSolution(fullVector<scalar>& sol, size_t nSol)    const = 0;
-  virtual void   getSolution(fullVector<scalar>& sol)                 const = 0;
   virtual void   getSolution(std::map<Dof, scalar>& sol, size_t nSol) const = 0;
-  virtual void   getSolution(std::map<Dof, scalar>& sol)              const = 0;
   virtual void   getSolution(FEMSolution<scalar>& feSol)              const = 0;
 
   virtual void  writeMatrix(std::string fileName, std::string matrixName) const;
@@ -127,22 +125,11 @@ class SystemAbstract{
    computed by SystemAbstract::solve()
    **
 
-   @fn SystemAbstract::getSolution(fullVector<scalar>&)
-   @param sol A vector
-   Same as SystemAbstract::getSolution(sol, 0)
-   **
-
    @fn SystemAbstract::getSolution(std::map<Dof, scalar>&, size_t)
    @param sol A map mapping a Dof to a scalar
    @param nSol An integer
-   Fills to given map with the given pairs
-   (Dof, solution associated to this Dof)
-   for the nSolth solution of this SystemAbstract.
-   **
-
-   @fn SystemAbstract::getSolution(std::map<Dof, scalar>&)
-   @param sol A map mapping a Dof to a scalar
-   Same as SystemAbstract::getSolution(sol, 0)
+   Takes every Dof in the given map and set its assoicated value to
+   the nSolth solution of this SystemAbstract
    **
 
    @fn SystemAbstract::getSolution(FEMSolution& feSol)

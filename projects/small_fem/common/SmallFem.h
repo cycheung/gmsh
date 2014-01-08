@@ -2,6 +2,7 @@
 #define _SMALLFEM_H_
 
 #include <string>
+#include "mpi.h"
 #include "Options.h"
 
 /**

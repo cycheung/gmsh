@@ -117,25 +117,14 @@ void System<scalar>::getSolution(fullVector<scalar>& sol, size_t nSol) const{
 }
 
 template<typename scalar>
-void System<scalar>::getSolution(fullVector<scalar>& sol) const{
-  getSolution(sol, 0);
-}
-
-template<typename scalar>
 void System<scalar>::getSolution(std::map<Dof, scalar>& sol, size_t nSol) const{
   // Get All Dofs
-  const std::vector<Dof> dof = this->fs->getAllDofs();
-  const size_t          nDof = dof.size();
+  typename std::map<Dof, scalar>::iterator it  = sol.begin();
+  typename std::map<Dof, scalar>::iterator end = sol.end();
 
-  // Fill Map
-  for(size_t i = 0; i < nDof; i++)
-    sol.insert(std::pair<Dof, scalar>
-               (dof[i], (*x)(this->dofM->getGlobalId(dof[i]))));
-}
-
-template<typename scalar>
-void System<scalar>::getSolution(std::map<Dof, scalar>& sol) const{
-  getSolution(sol, 0);
+  // Loop on Dofs and set Values
+  for(; it != end; it++)
+    it->second = (*x)(this->dofM->getGlobalId(it->first));
 }
 
 template<typename scalar>

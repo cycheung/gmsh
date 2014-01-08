@@ -27,6 +27,7 @@ dirichlet(SystemAbstract<scalar>& sys,
           GroupOfElement& goe,
           scalar (*f)(fullVector<double>& xyz)){
 
+  // Get Function Space for Projection (formFS) //
   const FunctionSpace& fs = sys.getFunctionSpace();
 
   Basis* basis = BasisGenerator::generate(goe.get(0).getType(),
@@ -34,15 +35,26 @@ dirichlet(SystemAbstract<scalar>& sys,
                                           fs.getBasis(0).getOrder(),
                                           "hierarchical");
 
-  FunctionSpaceScalar                 formFS(goe, *basis);
+  FunctionSpaceScalar formFS(goe, *basis);
+
+  // Solve Projection //
   FormulationProjectionScalar<scalar> form(f, formFS);
 
-  std::map<Dof, scalar> constr;
   System<scalar> projection(form);
   projection.assemble();
   projection.solve();
-  projection.getSolution(constr);
 
+  // Map of Dofs //
+  const std::set<Dof>& dof = formFS.getAllDofs();
+  std::set<Dof>::iterator it  = dof.begin();
+  std::set<Dof>::iterator end = dof.end();
+
+  std::map<Dof, scalar> constr;
+  for(; it != end; it++)
+    constr.insert(std::pair<Dof, scalar>(*it, 0));
+
+  // Get Solution and Dirichlet Constraint //
+  projection.getSolution(constr, 0);
   sys.constraint(constr);
 
   delete basis;
@@ -54,6 +66,7 @@ dirichlet(SystemAbstract<scalar>& sys,
           GroupOfElement& goe,
           fullVector<scalar> (*f)(fullVector<double>& xyz)){
 
+  // Get Function Space for Projection (formFS) //
   const FunctionSpace& fs = sys.getFunctionSpace();
 
   Basis* basis = BasisGenerator::generate(goe.get(0).getType(),
@@ -61,15 +74,26 @@ dirichlet(SystemAbstract<scalar>& sys,
                                           fs.getBasis(0).getOrder(),
                                           "hierarchical");
 
-  FunctionSpaceVector                 formFS(goe, *basis);
+  FunctionSpaceVector formFS(goe, *basis);
+
+  // Solve Projection //
   FormulationProjectionVector<scalar> form(f, formFS);
 
-  std::map<Dof, scalar> constr;
   System<scalar> projection(form);
   projection.assemble();
   projection.solve();
-  projection.getSolution(constr);
 
+  // Map of Dofs //
+  const std::set<Dof>& dof = formFS.getAllDofs();
+  std::set<Dof>::iterator it  = dof.begin();
+  std::set<Dof>::iterator end = dof.end();
+
+  std::map<Dof, scalar> constr;
+  for(; it != end; it++)
+    constr.insert(std::pair<Dof, scalar>(*it, 0));
+
+  // Get Solution and Dirichlet Constraint //
+  projection.getSolution(constr, 0);
   sys.constraint(constr);
 
   delete basis;

@@ -38,10 +38,8 @@ class SystemEigen: public SystemAbstract<std::complex<double> >{
   virtual size_t getNComputedSolution(void)                             const;
   virtual void   getSolution(fullVector<std::complex<double> >& sol,
                              size_t nSol)                               const;
-  virtual void   getSolution(fullVector<std::complex<double> >& sol)    const;
   virtual void   getSolution(std::map<Dof, std::complex<double> >& sol,
                              size_t nSol)                               const;
-  virtual void   getSolution(std::map<Dof, std::complex<double> >& sol) const;
   virtual void   getSolution(FEMSolution<std::complex<double> >& feSol) const;
 
   bool isGeneral(void) const;
