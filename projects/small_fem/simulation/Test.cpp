@@ -93,7 +93,6 @@ int main(int argc, char** argv){
   const size_t maxIteration = 20;
 
   Formulation<complex<double> >* wave;
-  Formulation<complex<double> >* neumann;
   Formulation<complex<double> >* emda;
   System<complex<double> >*      system;
 
@@ -144,12 +143,8 @@ int main(int argc, char** argv){
       cout << " --- " << endl;
     }
     */
-    // Neumann and EMDA terms
-    neumann = new FormulationNeumann(*ddm, wavenum, order);
-    emda    = new FormulationEMDA
-      (static_cast<const FunctionSpaceScalar&>(neumann->fs()), *ddmDof);
-
-    system->addBorderTerm(*neumann);
+    // EMDA terms
+    emda = new FormulationEMDA(*ddm, wavenum, order, *ddmDof);
     system->addBorderTerm(*emda);
 
     // Solve
@@ -289,7 +284,6 @@ int main(int argc, char** argv){
     feSol.write(feSolName.str());
 
     // Clean //
-    delete neumann;
     delete emda;
     delete wave;
     delete system;

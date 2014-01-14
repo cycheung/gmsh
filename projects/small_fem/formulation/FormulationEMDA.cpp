@@ -1,36 +1,56 @@
+#include "BasisGenerator.h"
 #include "GroupOfJacobian.h"
-#include "GroupOfElement.h"
 #include "Quadrature.h"
 
+#include "Exception.h"
 #include "FormulationEMDA.h"
 
 using namespace std;
 
 FormulationEMDA::
-FormulationEMDA(const FunctionSpaceScalar& fs,
+FormulationEMDA(GroupOfElement& goe,
+                double k,
+                size_t order,
                 const std::map<Dof, std::complex<double> >& ddmDof){
-  // Save fspace //
-  fspace = &fs;
-  basis  = &fs.getBasis(0);
+  // Can't have 0th order //
+  if(order == 0)
+    throw
+      Exception("Can't have a Scalar SteadyWave formulation of order 0");
+
+  // Wavenumber //
+  this->k = k;
+
+  // Function Space & Basis//
+  basis  = BasisGenerator::generate(goe.get(0).getType(),
+                                    0, order, "hierarchical");
+
+  fspace = new FunctionSpaceScalar(goe, *basis);
 
   // Domain //
-  goe = &fs.getSupport();
+  this->goe = &goe;
 
   // Gaussian Quadrature //
-  Quadrature gauss(goe->get(0).getType(), basis->getOrder(), 2);
+  Quadrature gauss(goe.get(0).getType(), basis->getOrder(), 2);
 
   gC = new fullMatrix<double>(gauss.getPoints());
   gW = new fullVector<double>(gauss.getWeights());
 
   // Pre-evalution //
   basis->preEvaluateFunctions(*gC);
-  jac = new GroupOfJacobian(*goe, *basis, *gC, "jacobian");
+  jac = new GroupOfJacobian(goe, *basis, *gC, "jacobian");
+
+  // Local Terms //
+  localTerms = new TermFieldField(*jac, *basis, *gW);
 
   // DDM //
   this->ddmDof = &ddmDof;
 }
 
 FormulationEMDA::~FormulationEMDA(void){
+  delete localTerms;
+  delete basis;
+  delete fspace;
+
   delete gC;
   delete gW;
   delete jac;
@@ -38,7 +58,8 @@ FormulationEMDA::~FormulationEMDA(void){
 
 complex<double> FormulationEMDA::weak(size_t dofI, size_t dofJ,
                                       size_t elementId) const{
-  return complex<double>(0, 0);
+  return
+    complex<double>(0, -1 * k * localTerms->getTerm(dofI, dofJ, elementId));
 }
 
 complex<double> FormulationEMDA::rhs(size_t equationI, size_t elementId) const{

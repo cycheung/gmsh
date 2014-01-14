@@ -3,6 +3,7 @@
 
 #include <complex>
 #include "FunctionSpaceScalar.h"
+#include "TermFieldField.h"
 #include "Formulation.h"
 
 /**
@@ -14,12 +15,18 @@
 
 class FormulationEMDA: public Formulation<std::complex<double> >{
  private:
+  // Wavenumber //
+  double k;
+
   // Function Space & Basis //
-  const FunctionSpaceScalar* fspace;
-  const Basis*                basis;
+  FunctionSpaceScalar* fspace;
+  Basis*                basis;
 
   // Domain //
-  const GroupOfElement* goe;
+  GroupOfElement* goe;
+
+  // Local Terms (Projection u_i*u_j) //
+  TermFieldField* localTerms;
 
   // Qudrature //
   fullMatrix<double>* gC;
@@ -30,7 +37,9 @@ class FormulationEMDA: public Formulation<std::complex<double> >{
   const std::map<Dof, std::complex<double> >* ddmDof;
 
  public:
-  FormulationEMDA(const FunctionSpaceScalar& fs,
+  FormulationEMDA(GroupOfElement& goe,
+                  double k,
+                  size_t order,
                   const std::map<Dof, std::complex<double> >& ddmDof);
 
   virtual ~FormulationEMDA(void);
@@ -55,10 +64,15 @@ class FormulationEMDA: public Formulation<std::complex<double> >{
 
 /**
    @fn FormulationEMDA::FormulationEMDA
-   @param fs A FunctionSpaceScalar
+   @param goe A GroupOfElement
+   @param k A real number
+   @param order A natural number
    @param ddmDof A map with the DDM Dof%s and their associated values
 
-   Instantiates a new FormulationEMDA with the given FunctionSpace and ddm Dof%s
+   Instantiates a new FormulationEMDA of the given order, wavenumber (k)
+   and ddm Dof%s
+
+   The given GroupOfElement will be used as the geomtrical domain
    **
 
    @fn FormulationEMDA::~FormulationEMDA
