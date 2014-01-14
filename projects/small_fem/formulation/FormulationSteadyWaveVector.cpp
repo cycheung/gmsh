@@ -6,13 +6,11 @@
 
 using namespace std;
 
-const double FormulationSteadyWaveVector::cSquare = 1;
-
 FormulationSteadyWaveVector::FormulationSteadyWaveVector(GroupOfElement& goe,
-                                                         double omega,
+                                                         double k,
                                                          size_t order){
-  // Pulsation Squared //
-  omegaSquare = omega * omega;
+  // Wavenumber Squared //
+  kSquare = k * k;
 
   // Function Space & Basis //
   basis  = BasisGenerator::generate(goe.get(0).getType(),
@@ -53,7 +51,7 @@ double FormulationSteadyWaveVector::weak(size_t dofI, size_t dofJ,
                                          size_t elementId) const{
   return
     localTerms1->getTerm(dofI, dofJ, elementId) -
-    localTerms2->getTerm(dofI, dofJ, elementId) * omegaSquare / cSquare;
+    localTerms2->getTerm(dofI, dofJ, elementId) * kSquare;
 }
 
 double FormulationSteadyWaveVector::rhs(size_t equationI,

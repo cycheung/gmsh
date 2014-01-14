@@ -15,8 +15,8 @@
 
 class FormulationNeumann: public Formulation<std::complex<double> >{
  private:
-  // Pulsation //
-  double omega;
+  // Wavenumber //
+  double k;
 
   // Function Space & Basis //
   FunctionSpaceScalar* fspace;
@@ -27,8 +27,8 @@ class FormulationNeumann: public Formulation<std::complex<double> >{
 
  public:
   FormulationNeumann(GroupOfElement& goe,
-                              double omega,
-                              size_t order);
+                     double k,
+                     size_t order);
 
   virtual ~FormulationNeumann(void);
 
@@ -49,11 +49,11 @@ class FormulationNeumann: public Formulation<std::complex<double> >{
 /**
    @fn FormulationNeumann::FormulationNeumann
    @param goe A GroupOfElement
-   @param omega A real number
+   @param k A real number
    @param order A natural number
 
    Instantiates a new FormulationNeumann of the given
-   order and pulsation (omega)@n
+   order and wavenumber (k)@n
 
    The given GroupOfElement will be used as the geomtrical domain
    **

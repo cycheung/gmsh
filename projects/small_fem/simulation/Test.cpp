@@ -68,8 +68,8 @@ int main(int argc, char** argv){
   const Options& option = SmallFem::getOptions();
 
   // Get Parameters //
-  const double puls  = atof(option.getValue("-k")[0].c_str());
-  const size_t order = atoi(option.getValue("-o")[0].c_str());
+  const double wavenum = atof(option.getValue("-k")[0].c_str());
+  const size_t order   = atoi(option.getValue("-o")[0].c_str());
 
   // Get Domains //
   Mesh msh(option.getValue("-msh")[0]);
@@ -90,7 +90,7 @@ int main(int argc, char** argv){
   }
 
   // DDM Loop //
-  const size_t maxIteration = 10;
+  const size_t maxIteration = 20;
 
   Formulation<complex<double> >* wave;
   Formulation<complex<double> >* neumann;
@@ -102,7 +102,8 @@ int main(int argc, char** argv){
   for(size_t k = 0; k < maxIteration; k++){
     // Formulations //
     wave =
-      new FormulationSteadyWaveScalar<complex<double> > (*domain, puls, order);
+      new FormulationSteadyWaveScalar<complex<double> >
+                                                      (*domain, wavenum, order);
 
     // System //
     // Init
@@ -144,7 +145,7 @@ int main(int argc, char** argv){
     }
     */
     // Neumann and EMDA terms
-    neumann = new FormulationNeumann(*ddm, puls, order);
+    neumann = new FormulationNeumann(*ddm, wavenum, order);
     emda    = new FormulationEMDA
       (static_cast<const FunctionSpaceScalar&>(neumann->fs()), *ddmDof);
 
@@ -157,7 +158,7 @@ int main(int argc, char** argv){
     // Get DDM Solution //
     map<Dof, complex<double> > oldDdmDof = *ddmDof;
     system->getSolution(*ddmDof, 0);
-    /*
+
     if(myId == 1){// && (k == 0 || k == maxIteration - 1)){
       map<Dof, complex<double> >::iterator it  = ddmDof->begin();
       map<Dof, complex<double> >::iterator end = ddmDof->end();
@@ -167,7 +168,7 @@ int main(int argc, char** argv){
              << ": " << it->second << endl;
       cout << " --- " << endl;
     }
-    */
+
     // Update DDM //
     // Upade my Values
     map<Dof, complex<double> >::iterator it;
@@ -186,7 +187,7 @@ int main(int argc, char** argv){
       if(it->first == it2->first){
         // g_new = 2*j*k*u + g_old
         it->second =
-          (it->second * (complex<double>(0, 2 * puls))) + it2->second;
+          (it->second * (complex<double>(0, 2 * wavenum))) + it2->second;
       }
 
       else

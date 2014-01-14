@@ -8,18 +8,15 @@
 using namespace std;
 
 template<>
-const double FormulationSteadyWaveScalar<double>::cSquare = 1;
-
-template<>
 FormulationSteadyWaveScalar<double>::
-FormulationSteadyWaveScalar(GroupOfElement& goe, double omega, size_t order){
+FormulationSteadyWaveScalar(GroupOfElement& goe, double k, size_t order){
   // Can't have 0th order //
   if(order == 0)
     throw
       Exception("Can't have a Scalar SteadyWave formulation of order 0");
 
-  // Pulsation Squared //
-  omegaSquare = omega * omega;
+  // Wavenumber Squared //
+  kSquare = k * k;
 
   // Function Space & Basis//
   basis  = BasisGenerator::generate(goe.get(0).getType(),
@@ -62,7 +59,7 @@ double FormulationSteadyWaveScalar<double>::weak(size_t dofI, size_t dofJ,
                                                  size_t elementId) const{
   return
     localTerms1->getTerm(dofI, dofJ, elementId) -
-    localTerms2->getTerm(dofI, dofJ, elementId) * omegaSquare / cSquare;
+    localTerms2->getTerm(dofI, dofJ, elementId) * kSquare;
 }
 
 template<>

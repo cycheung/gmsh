@@ -53,7 +53,7 @@ void compute(const Options& option){
   GroupOfElement wall   = msh.getFromPhysical(6);
 
   // Get Parameters //
-  const double puls  = atof(option.getValue("-k")[0].c_str());
+  const double k     = atof(option.getValue("-k")[0].c_str());
   const size_t order = atoi(option.getValue("-o")[0].c_str());
 
   // Chose write formulation for Steady Wave and boundary condition //
@@ -62,7 +62,7 @@ void compute(const Options& option){
 
   if(option.getValue("-type")[0].compare("vector") == 0){
     assemble.start();
-    wave = new FormulationSteadyWaveVector(domain, puls * 1, order);
+    wave = new FormulationSteadyWaveVector(domain, k, order);
     sys  = new System<double>(*wave);
 
     SystemHelper<double>::dirichlet(*sys, source, fSourceVec);
@@ -72,7 +72,7 @@ void compute(const Options& option){
 
   else if(option.getValue("-type")[0].compare("slow") == 0){
     assemble.start();
-    wave = new FormulationSteadyWaveVectorSlow(domain, puls * 1, order);
+    wave = new FormulationSteadyWaveVectorSlow(domain, k, order);
     sys  = new System<double>(*wave);
 
     SystemHelper<double>::dirichlet(*sys, source, fSourceVec);
@@ -82,7 +82,7 @@ void compute(const Options& option){
 
   else if(option.getValue("-type")[0].compare("scalar") == 0){
     assemble.start();
-    wave = new FormulationSteadyWaveScalar<double>(domain, puls * 1, order);
+    wave = new FormulationSteadyWaveScalar<double>(domain, k, order);
     sys  = new System<double>(*wave);
 
     SystemHelper<double>::dirichlet(*sys, source, fSourceScal);
@@ -94,7 +94,7 @@ void compute(const Options& option){
     throw Exception("No -type given");
 
   cout << "Steady Wave (Order: "  << order
-       << " --- Pulsation: "      << puls
+       << " --- Wavenumber: "     << k
        << "): " << sys->getSize() << endl;
 
   // Assemble and solve //

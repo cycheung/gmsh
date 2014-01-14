@@ -8,14 +8,12 @@
 
 using namespace std;
 
-const double FormulationSteadyWaveVectorSlow::cSquare = 1;
-
 FormulationSteadyWaveVectorSlow::
 FormulationSteadyWaveVectorSlow(GroupOfElement& goe,
-                                double omega,
+                                double k,
                                 size_t order){
-  // Pulsation Squared //
-  omegaSquare = omega * omega;
+  // Wavenumber Squared //
+  kSquare = k * k;
 
   // Domain //
   this->goe = &goe;
@@ -110,7 +108,7 @@ double FormulationSteadyWaveVectorSlow::weak(size_t dofI,
     Mapper::hCurl(eFun, dofJ, g, *jac, phiJ);
 
     integral2 +=
-      ((phiI * phiJ) * omegaSquare / cSquare) * fabs(det) * (*gW2)(g);
+      ((phiI * phiJ) * kSquare) * fabs(det) * (*gW2)(g);
   }
 
   return integral1 - integral2;
