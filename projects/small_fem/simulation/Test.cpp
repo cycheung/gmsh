@@ -25,6 +25,7 @@
 #include "SystemHelper.h"
 
 #include "FormulationNeumann.h"
+#include "FormulationEMDA.h"
 #include "FormulationSteadyWaveScalar.h"
 #include "FormulationProjectionScalar.h"
 #include "FormulationProjectionVector.h"
@@ -61,7 +62,7 @@ int main(int argc, char** argv){
   MPI_Comm_rank(MPI_COMM_WORLD,&myId);
 
   if(numProcs != 2)
-    ;//throw Exception("I just do two MPI Processes");
+    throw Exception("I just do two MPI Processes");
 
   // Options //
   const Options& option = SmallFem::getOptions();
@@ -93,6 +94,7 @@ int main(int argc, char** argv){
 
   Formulation<complex<double> >* wave;
   Formulation<complex<double> >* neumann;
+  Formulation<complex<double> >* emda;
   System<complex<double> >*      system;
 
   map<Dof, complex<double> >* ddmDof;
@@ -122,15 +124,6 @@ int main(int argc, char** argv){
         ddmDof->insert(pair<Dof, complex<double> >(*it, 0));
     }
 
-    if(myId == 0){// && (k == 0 || k == maxIteration - 1)){
-      map<Dof, complex<double> >::iterator it  = ddmDof->begin();
-      map<Dof, complex<double> >::iterator end = ddmDof->end();
-
-      for(; it != end; it++)
-        cout << it->first.toString() << ": " << it->second << endl;
-      cout << " --- " << endl;
-    }
-
     // Constraint
     if(myId == 0)
       SystemHelper<complex<double> >::dirichlet(*system, *border, fSource);
@@ -139,16 +132,148 @@ int main(int argc, char** argv){
 
     // Assemble
     system->assemble();
+    /*
+    if(myId == 1){// && (k == 0 || k == maxIteration - 1)){
+      map<Dof, complex<double> >::iterator it  = ddmDof->begin();
+      map<Dof, complex<double> >::iterator end = ddmDof->end();
 
-    // Assemble Neumann term
+      for(; it != end; it++)
+        cout << "g" << myId << ": " << it->first.toString()
+             << ": " << it->second << endl;
+      cout << " --- " << endl;
+    }
+    */
+    // Neumann and EMDA terms
     neumann = new FormulationNeumann(*ddm, puls, order);
+    emda    = new FormulationEMDA
+      (static_cast<const FunctionSpaceScalar&>(neumann->fs()), *ddmDof);
+
     system->addBorderTerm(*neumann);
+    system->addBorderTerm(*emda);
 
     // Solve
     system->solve();
 
     // Get DDM Solution //
+    map<Dof, complex<double> > oldDdmDof = *ddmDof;
     system->getSolution(*ddmDof, 0);
+    /*
+    if(myId == 1){// && (k == 0 || k == maxIteration - 1)){
+      map<Dof, complex<double> >::iterator it  = ddmDof->begin();
+      map<Dof, complex<double> >::iterator end = ddmDof->end();
+
+      for(; it != end; it++)
+        cout << "u" << myId << ": " << it->first.toString()
+             << ": " << it->second << endl;
+      cout << " --- " << endl;
+    }
+    */
+    // Update DDM //
+    // Upade my Values
+    map<Dof, complex<double> >::iterator it;
+    map<Dof, complex<double> >::iterator end;
+
+    map<Dof, complex<double> >::iterator it2;
+    map<Dof, complex<double> >::iterator end2;
+
+    it  = ddmDof->begin();
+    end = ddmDof->end();
+
+    it2  = oldDdmDof.begin();
+    end2 = oldDdmDof.end();
+
+    for(; it != end; it++, it2++){
+      if(it->first == it2->first){
+        // g_new = 2*j*k*u + g_old
+        it->second =
+          (it->second * (complex<double>(0, 2 * puls))) + it2->second;
+      }
+
+      else
+        throw Exception("Snif");
+    }
+    // Serialize my Values
+    const size_t             ddmDofSize = ddmDof->size();
+    vector<int>              ddmDofEntity(ddmDofSize, 0);
+    vector<int>              ddmDofType(ddmDofSize, 0);
+    vector<complex<double> > ddmDofValue(ddmDofSize, 0);
+
+    vector<int>              incomingDdmDofEntity(ddmDofSize, 0);
+    vector<int>              incomingDdmDofType(ddmDofSize, 0);
+    vector<complex<double> > incomingDdmDofValue(ddmDofSize, 0);
+
+    it  = ddmDof->begin();
+    end = ddmDof->end();
+
+    for(size_t i = 0; it != end; i++, it++){
+      ddmDofEntity[i] = (int)(it->first.getEntity());
+      ddmDofType[i]   = (int)(it->first.getType());
+      ddmDofValue[i]  = it->second;
+    }
+
+    // Exchange
+    if(myId == 0){
+      // Send to 1
+      MPI_Status status;
+
+      MPI_Ssend((void*)(ddmDofEntity.data()), ddmDofSize,
+                MPI_INT, 1, 0, MPI_COMM_WORLD);
+      MPI_Ssend((void*)(ddmDofType.data()), ddmDofSize,
+                MPI_INT, 1, 0, MPI_COMM_WORLD);
+      MPI_Ssend((void*)(ddmDofValue.data()), ddmDofSize,
+                MPI::DOUBLE_COMPLEX, 1, 0, MPI_COMM_WORLD);
+
+      // Recv from 1
+      MPI_Recv((void*)(incomingDdmDofEntity.data()), ddmDofSize,
+               MPI_INT, 1, 0, MPI_COMM_WORLD, &status);
+      MPI_Recv((void*)(incomingDdmDofType.data()), ddmDofSize,
+               MPI_INT, 1, 0, MPI_COMM_WORLD, &status);
+      MPI_Recv((void*)(incomingDdmDofValue.data()), ddmDofSize,
+               MPI::DOUBLE_COMPLEX, 1, 0, MPI_COMM_WORLD, &status);
+    }
+
+    if(myId == 1){
+      // Recv from 0
+      MPI_Status status;
+
+      MPI_Recv((void*)(incomingDdmDofEntity.data()), ddmDofSize,
+               MPI_INT, 0, 0, MPI_COMM_WORLD, &status);
+      MPI_Recv((void*)(incomingDdmDofType.data()), ddmDofSize,
+               MPI_INT, 0, 0, MPI_COMM_WORLD, &status);
+      MPI_Recv((void*)(incomingDdmDofValue.data()), ddmDofSize,
+               MPI::DOUBLE_COMPLEX, 0, 0, MPI_COMM_WORLD, &status);
+
+      // Send to 0
+      MPI_Ssend((void*)(ddmDofEntity.data()), ddmDofSize,
+                MPI_INT, 0, 0, MPI_COMM_WORLD);
+      MPI_Ssend((void*)(ddmDofType.data()), ddmDofSize,
+                MPI_INT, 0, 0, MPI_COMM_WORLD);
+      MPI_Ssend((void*)(ddmDofValue.data()), ddmDofSize,
+                MPI::DOUBLE_COMPLEX, 0, 0, MPI_COMM_WORLD);
+    }
+
+    // Update ddmDof
+    it  = ddmDof->begin();
+    end = ddmDof->end();
+
+    it2  = oldDdmDof.begin();
+    end2 = oldDdmDof.end();
+
+    for(size_t i = 0; it != end; it++, it2++, i++){
+      if((int)(it->first.getType()) != incomingDdmDofType[i])
+        throw Exception("Snif");
+
+      if((int)(it->first.getEntity()) != incomingDdmDofEntity[i])
+        throw Exception("Snif");
+
+      if((it->first.getType()) != it2->first.getType())
+        throw Exception("Snif");
+
+      if((it->first.getEntity()) != it2->first.getEntity())
+        throw Exception("Snif");
+
+      it->second = it2->second + incomingDdmDofValue[i];
+    }
 
     // Write Solution //
     stringstream feSolName;
@@ -164,6 +289,7 @@ int main(int argc, char** argv){
 
     // Clean //
     delete neumann;
+    delete emda;
     delete wave;
     delete system;
   }

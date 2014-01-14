@@ -10,6 +10,7 @@ set(src
   FormulationSteadyWaveScalarComplex.cpp
 
   FormulationNeumann.cpp
+  FormulationEMDA.cpp
 
   FormulationEigenFrequencyVector.cpp
   FormulationEigenFrequencyScalar.cpp

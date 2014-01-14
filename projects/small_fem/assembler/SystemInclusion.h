@@ -123,8 +123,15 @@ void System<scalar>::getSolution(std::map<Dof, scalar>& sol, size_t nSol) const{
   typename std::map<Dof, scalar>::iterator end = sol.end();
 
   // Loop on Dofs and set Values
-  for(; it != end; it++)
-    it->second = (*x)(this->dofM->getGlobalId(it->first));
+  for(; it != end; it++){
+    size_t gId = this->dofM->getGlobalId(it->first);
+
+    if(gId == DofManager<scalar>::isFixedId())
+      it->second = this->dofM->getValue(it->first);
+
+    else
+      it->second = (*x)(gId);
+  }
 }
 
 template<typename scalar>

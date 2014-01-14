@@ -1,8 +1,8 @@
-msh = 200;
-cl  = 1;
-l   = 1;
+l = 1;
+d = 10;
 
-L = l / 2;
+L  = l / 2;
+cl = l / d;
 
 Point(1) = {+L, -L, 0, cl};
 Point(2) = {+L, +L, 0, cl};
