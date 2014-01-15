@@ -1,6 +1,6 @@
 Group{
   GammaS = Region[5]; // Source
-  GammaC = Region[6]; // Neumann
+  GammaN = Region[6]; // Neumann
   Omega  = Region[7]; // Omega
 }
 
@@ -41,7 +41,7 @@ Integration {
 }
 
 Constraint{
-  { Name Dirichlet_e ;
+  { Name Dirichlet ;
     Case {
       { Region GammaS ; Value 1. ; }
     }
@@ -49,21 +49,21 @@ Constraint{
 }
 
 FunctionSpace {
-  { Name Hgrad_e; Type Form0;
+  { Name Hgrad; Type Form0;
     BasisFunction {
-      { Name se; NameOfCoef ee; Function BF_Node; Support Region[{Omega,GammaS,GammaC}] ; Entity NodesOf[All]; }
+      { Name se; NameOfCoef ee; Function BF_Node; Support Region[{Omega,GammaS,GammaN}] ; Entity NodesOf[All]; }
     }
     Constraint {
-      { NameOfCoef ee; EntityType NodesOf ; NameOfConstraint Dirichlet_e; }
+      { NameOfCoef ee; EntityType NodesOf ; NameOfConstraint Dirichlet; }
     }
   }
 }
 
 
 Formulation {
-  { Name Maxwell_e; Type FemEquation;
+  { Name FreeSpace; Type FemEquation;
     Quantity {
-      { Name e; Type Local;  NameOfSpace Hgrad_e; }
+      { Name e; Type Local;  NameOfSpace Hgrad; }
     }
     Equation {
       Galerkin { [ Dof{d e} , {d e} ];
@@ -73,16 +73,16 @@ Formulation {
                  In Omega; Integration I1; Jacobian JVol;  }
 
       Galerkin { [ -1 * I[] * k * Dof{e} , {e} ];
-                 In GammaC; Integration I1; Jacobian JSur;  }
+                 In GammaN; Integration I1; Jacobian JSur;  }
     }
   }
 }
 
 
 Resolution {
-  { Name Maxwell_e ;
+  { Name FreeSpace ;
     System {
-      { Name A ; NameOfFormulation Maxwell_e ; Type Complex; }
+      { Name A ; NameOfFormulation FreeSpace ; Type Complex; }
     }
     Operation {
       Generate[A] ; Solve[A] ; SaveSolution[A] ;
@@ -92,7 +92,7 @@ Resolution {
 
 
 PostProcessing {
-  { Name Maxwell_e ; NameOfFormulation Maxwell_e ;
+  { Name FreeSpace ; NameOfFormulation FreeSpace ;
     Quantity {
       { Name e ;
         Value { Local { [ {e} ] ; In Omega; Jacobian JVol ; } } }
@@ -102,9 +102,9 @@ PostProcessing {
 
 
 PostOperation {
-  { Name Maxwell_e ; NameOfPostProcessing Maxwell_e;
+  { Name FreeSpace ; NameOfPostProcessing FreeSpace;
     Operation {
-      Print[ e, OnElementsOf Omega, File "maxwellScalar.pos"] ;
+      Print[ e, OnElementsOf Omega, File "free.pos"] ;
     }
   }
 }
