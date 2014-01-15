@@ -62,7 +62,7 @@ int main(int argc, char** argv){
   MPI_Comm_rank(MPI_COMM_WORLD,&myId);
 
   if(numProcs != 2)
-    throw Exception("I just do two MPI Processes");
+    ;//throw Exception("I just do two MPI Processes");
 
   // Options //
   const Options& option = SmallFem::getOptions();
@@ -74,26 +74,30 @@ int main(int argc, char** argv){
   // Get Domains //
   Mesh msh(option.getValue("-msh")[0]);
   GroupOfElement* domain;
-  GroupOfElement* border;
+  GroupOfElement* source;
+  GroupOfElement* infinity;
   GroupOfElement* ddm;
 
   if(myId == 0){
-    domain = new GroupOfElement(msh.getFromPhysical(7));
-    border = new GroupOfElement(msh.getFromPhysical(5));
-    ddm    = new GroupOfElement(msh.getFromPhysical(4));
+    domain   = new GroupOfElement(msh.getFromPhysical(7));
+    source   = new GroupOfElement(msh.getFromPhysical(5));
+    infinity = new GroupOfElement(msh.getFromPhysical(61));
+    ddm      = new GroupOfElement(msh.getFromPhysical(4));
   }
 
   else{
-    domain = new GroupOfElement(msh.getFromPhysical(8));
-    border = new GroupOfElement(msh.getFromPhysical(6));
-    ddm    = new GroupOfElement(msh.getFromPhysical(4));
+    domain   = new GroupOfElement(msh.getFromPhysical(8));
+    source   = NULL;
+    infinity = new GroupOfElement(msh.getFromPhysical(62));
+    ddm      = new GroupOfElement(msh.getFromPhysical(4));
   }
 
   // DDM Loop //
-  const size_t maxIteration = 20;
+  const size_t maxIteration = 10;
 
   Formulation<complex<double> >* wave;
   Formulation<complex<double> >* emda;
+  Formulation<complex<double> >* neumann;
   System<complex<double> >*      system;
 
   map<Dof, complex<double> >* ddmDof;
@@ -126,35 +130,29 @@ int main(int argc, char** argv){
 
     // Constraint
     if(myId == 0)
-      SystemHelper<complex<double> >::dirichlet(*system, *border, fSource);
-    else
-      SystemHelper<complex<double> >::dirichlet(*system, *border, fWall);
+      SystemHelper<complex<double> >::dirichlet(*system, *source, fSource);
 
-    // Assemble
+    // Assemble //
+    // Volume
     system->assemble();
-    /*
-    if(myId == 1){// && (k == 0 || k == maxIteration - 1)){
-      map<Dof, complex<double> >::iterator it  = ddmDof->begin();
-      map<Dof, complex<double> >::iterator end = ddmDof->end();
 
-      for(; it != end; it++)
-        cout << "g" << myId << ": " << it->first.toString()
-             << ": " << it->second << endl;
-      cout << " --- " << endl;
-    }
-    */
+    // Neumann terms
+    neumann = new FormulationNeumann(*infinity, wavenum, order);
+    system->addBorderTerm(*neumann);
+
     // EMDA terms
     emda = new FormulationEMDA(*ddm, wavenum, order, *ddmDof);
     system->addBorderTerm(*emda);
 
-    // Solve
+    // Solve //
     system->solve();
 
     // Get DDM Solution //
     map<Dof, complex<double> > oldDdmDof = *ddmDof;
     system->getSolution(*ddmDof, 0);
 
-    if(myId == 1){// && (k == 0 || k == maxIteration - 1)){
+    if(myId == 0){
+      cout << "After Iteration: " << k + 1 << endl;
       map<Dof, complex<double> >::iterator it  = ddmDof->begin();
       map<Dof, complex<double> >::iterator end = ddmDof->end();
 
@@ -180,9 +178,9 @@ int main(int argc, char** argv){
 
     for(; it != end; it++, it2++){
       if(it->first == it2->first){
-        // g_new = 2*j*k*u + g_old
+        // g_new = -2*j*k*u - g_old
         it->second =
-          (it->second * (complex<double>(0, 2 * wavenum))) + it2->second;
+          (it->second * (complex<double>(0, -2 * wavenum))) - it2->second;
       }
 
       else
@@ -268,30 +266,35 @@ int main(int argc, char** argv){
       if((it->first.getEntity()) != it2->first.getEntity())
         throw Exception("Snif");
 
-      it->second = it2->second + incomingDdmDofValue[i];
+      it->second = incomingDdmDofValue[i];
     }
 
     // Write Solution //
-    stringstream feSolName;
-    FEMSolution<complex<double> > feSol;
-    system->getSolution(feSol);
+    if(k == maxIteration - 1){
+      stringstream feSolName;
+      FEMSolution<complex<double> > feSol;
+      system->getSolution(feSol);
 
-    if(myId == 0)
-      feSolName << "proc0_it" << k;
-    else
-      feSolName << "proc1_it" << k;
+      if(myId == 0)
+        feSolName << "proc0_it" << k;
+      else
+        feSolName << "proc1_it" << k;
 
-    feSol.write(feSolName.str());
+      feSol.write(feSolName.str());
+    }
 
     // Clean //
     delete emda;
+    delete neumann;
     delete wave;
     delete system;
   }
 
   // Finalize //
   delete domain;
-  delete border;
+  if(source)
+    delete source;
+  delete infinity;
   delete ddm;
   delete ddmDof;
 

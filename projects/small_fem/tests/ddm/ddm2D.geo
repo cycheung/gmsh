@@ -28,7 +28,8 @@ Plane Surface(10) = {8};
 Plane Surface(11) = {9};
 
 Physical Line(5) = {4};
-Physical Line(6) = {1};
+Physical Line(61) = {3, 5};
+Physical Line(62) = {1, 2, 6};
 Physical Line(4) = {7};
 
 Physical Surface(7) = {10};
