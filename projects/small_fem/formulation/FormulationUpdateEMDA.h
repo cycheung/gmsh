@@ -8,9 +8,9 @@
 
 /**
    @class FormulationUpdateEMDA
-   @brief Update Formulation for FormulationEDMA
+   @brief Update Formulation for FormulationEMDA
 
-   Update Formulation for FormulationEDMA
+   Update Formulation for FormulationEMDA
  */
 
 class FormulationUpdateEMDA: public Formulation<std::complex<double> >{
