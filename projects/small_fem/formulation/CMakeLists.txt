@@ -11,6 +11,7 @@ set(src
 
   FormulationNeumann.cpp
   FormulationEMDA.cpp
+  FormulationUpdateEMDA.cpp
 
   FormulationEigenFrequencyVector.cpp
   FormulationEigenFrequencyScalar.cpp

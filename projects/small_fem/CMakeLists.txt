@@ -160,6 +160,8 @@ add_executable(swave   simulation/SteadyWave.cpp)
 add_executable(free    simulation/FreeSpace.cpp)
 add_executable(emode   simulation/EigenMode.cpp)
 
+add_executable(ddm   simulation/Ddm.cpp)
+
 add_executable(proj simulation/Projection.cpp)
 add_executable(mesh simulation/Mesh.cpp)
 add_executable(fs   simulation/ShowFunctionSpace.cpp)
@@ -171,6 +173,8 @@ target_link_libraries(poisson sf)
 target_link_libraries(swave sf)
 target_link_libraries(free sf)
 target_link_libraries(emode sf)
+
+target_link_libraries(ddm sf)
 
 target_link_libraries(proj sf)
 target_link_libraries(mesh sf)

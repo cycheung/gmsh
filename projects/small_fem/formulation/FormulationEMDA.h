@@ -28,7 +28,7 @@ class FormulationEMDA: public Formulation<std::complex<double> >{
   // Local Terms (Projection u_i*u_j) //
   TermFieldField* localTerms;
 
-  // Qudrature //
+  // Quadrature //
   fullMatrix<double>* gC;
   fullVector<double>* gW;
   GroupOfJacobian*    jac;

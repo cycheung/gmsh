@@ -151,17 +151,6 @@ int main(int argc, char** argv){
     map<Dof, complex<double> > oldDdmDof = *ddmDof;
     system->getSolution(*ddmDof, 0);
 
-    if(myId == 0){
-      cout << "After Iteration: " << k + 1 << endl;
-      map<Dof, complex<double> >::iterator it  = ddmDof->begin();
-      map<Dof, complex<double> >::iterator end = ddmDof->end();
-
-      for(; it != end; it++)
-        cout << "u" << myId << ": " << it->first.toString()
-             << ": " << it->second << endl;
-      cout << " --- " << endl;
-    }
-
     // Update DDM //
     // Upade my Values
     map<Dof, complex<double> >::iterator it;
@@ -186,6 +175,19 @@ int main(int argc, char** argv){
       else
         throw Exception("Snif");
     }
+
+    if(myId == 0){
+      cout << "After Iteration: " << k + 1 << endl;
+      map<Dof, complex<double> >::iterator it  = ddmDof->begin();
+      map<Dof, complex<double> >::iterator end = ddmDof->end();
+
+      for(; it != end; it++)
+        cout << "u" << myId << ": " << it->first.toString()
+             << ": " << it->second << endl;
+      cout << " --- " << endl;
+    }
+
+
     // Serialize my Values
     const size_t             ddmDofSize = ddmDof->size();
     vector<int>              ddmDofEntity(ddmDofSize, 0);
