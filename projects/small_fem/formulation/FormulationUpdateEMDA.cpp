@@ -10,14 +10,16 @@ using namespace std;
 FormulationUpdateEMDA::
 FormulationUpdateEMDA(const FunctionSpaceScalar& fs,
                       double k,
+                      double chi,
                       const std::map<Dof, std::complex<double> >& solution,
                       const std::map<Dof, std::complex<double> >& oldG){
   // Save fspace //
   fspace = &fs;
   basis  = &fs.getBasis(0);
 
-  // Wavenumber //
-  this->k = k;
+  // Wavenumber & Chi //
+  this->k   = k;
+  this->chi = chi;
 
   // Domain //
   this->goe = &fs.getSupport();
@@ -124,7 +126,8 @@ rhs(size_t equationI, size_t elementId) const{
     // OldG & solution in *physical* coordinate
     oldGValue     = interpolate(element, xyz, *oldG);
     solutionValue = interpolate(element, xyz, *solution);
-    sub           = -2 * k * complex<double>(0, 1) * solutionValue - oldGValue;
+    sub           =
+      complex<double>(2 * chi, -2 * k) * solutionValue - oldGValue;
 
     // Integrate
     integral += sub * phi * fabs(det) * (*gW)(g);

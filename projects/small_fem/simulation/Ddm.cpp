@@ -130,10 +130,11 @@ void compute(const Options& option){
   MPI_Comm_rank(MPI_COMM_WORLD,&myId);
 
   if(numProcs != 2)
-    ;//throw Exception("I just do two MPI Processes");
+    throw Exception("I just do two MPI Processes");
 
   // Get Parameters //
   const double k     = atof(option.getValue("-k")[0].c_str());
+  const double chi   = atof(option.getValue("-chi")[0].c_str());
   const size_t order = atoi(option.getValue("-o")[0].c_str());
   const size_t maxIt = atoi(option.getValue("-max")[0].c_str());
 
@@ -221,7 +222,7 @@ void compute(const Options& option){
     system->addBorderTerm(*neumann);
 
     // EMDA terms
-    emda = new FormulationEMDA(*ddm, k, order, *oldG);
+    emda = new FormulationEMDA(*ddm, k, chi, order, *oldG);
     system->addBorderTerm(*emda);
 
     // Solve //
@@ -235,7 +236,7 @@ void compute(const Options& option){
     const FunctionSpaceScalar& emdaFSpace =
       static_cast<const FunctionSpaceScalar&>(emda->fs());
 
-    upEmda = new FormulationUpdateEMDA(emdaFSpace, k, *solution, *oldG);
+    upEmda = new FormulationUpdateEMDA(emdaFSpace, k, chi, *solution, *oldG);
     update = new System<Complex>(*upEmda);
 
     update->assemble();
@@ -298,7 +299,7 @@ void compute(const Options& option){
 
 int main(int argc, char** argv){
   // Init SmallFem //
-  SmallFem::Keywords("-msh,-o,-k,-max");
+  SmallFem::Keywords("-msh,-o,-k,-chi,-max");
   SmallFem::Initialize(argc, argv);
 
   compute(SmallFem::getOptions());

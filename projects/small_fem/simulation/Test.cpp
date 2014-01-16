@@ -62,13 +62,14 @@ int main(int argc, char** argv){
   MPI_Comm_rank(MPI_COMM_WORLD,&myId);
 
   if(numProcs != 2)
-    ;//throw Exception("I just do two MPI Processes");
+    throw Exception("I just do two MPI Processes");
 
   // Options //
   const Options& option = SmallFem::getOptions();
 
   // Get Parameters //
   const double wavenum = atof(option.getValue("-k")[0].c_str());
+  const double chi     = 0;
   const size_t order   = atoi(option.getValue("-o")[0].c_str());
 
   // Get Domains //
@@ -141,7 +142,7 @@ int main(int argc, char** argv){
     system->addBorderTerm(*neumann);
 
     // EMDA terms
-    emda = new FormulationEMDA(*ddm, wavenum, order, *ddmDof);
+    emda = new FormulationEMDA(*ddm, wavenum, chi, order, *ddmDof);
     system->addBorderTerm(*emda);
 
     // Solve //

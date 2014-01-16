@@ -10,6 +10,7 @@ using namespace std;
 FormulationEMDA::
 FormulationEMDA(GroupOfElement& goe,
                 double k,
+                double chi,
                 size_t order,
                 const std::map<Dof, std::complex<double> >& ddmDof){
   // Can't have 0th order //
@@ -17,8 +18,9 @@ FormulationEMDA(GroupOfElement& goe,
     throw
       Exception("Can't have a Scalar SteadyWave formulation of order 0");
 
-  // Wavenumber //
-  this->k = k;
+  // Wavenumber & Chi //
+  this->k   = k;
+  this->chi = chi;
 
   // Function Space & Basis//
   basis  = BasisGenerator::generate(goe.get(0).getType(),
@@ -59,7 +61,7 @@ FormulationEMDA::~FormulationEMDA(void){
 complex<double> FormulationEMDA::weak(size_t dofI, size_t dofJ,
                                       size_t elementId) const{
   return
-    complex<double>(0, -1 * k * localTerms->getTerm(dofI, dofJ, elementId));
+    complex<double>(chi, -k) * localTerms->getTerm(dofI, dofJ, elementId);
 }
 
 complex<double> FormulationEMDA::rhs(size_t equationI, size_t elementId) const{

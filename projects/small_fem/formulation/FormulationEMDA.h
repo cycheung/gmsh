@@ -15,8 +15,9 @@
 
 class FormulationEMDA: public Formulation<std::complex<double> >{
  private:
-  // Wavenumber //
+  // Wavenumber & Chi //
   double k;
+  double chi;
 
   // Function Space & Basis //
   FunctionSpaceScalar* fspace;
@@ -39,6 +40,7 @@ class FormulationEMDA: public Formulation<std::complex<double> >{
  public:
   FormulationEMDA(GroupOfElement& goe,
                   double k,
+                  double chi,
                   size_t order,
                   const std::map<Dof, std::complex<double> >& ddmDof);
 
@@ -66,11 +68,12 @@ class FormulationEMDA: public Formulation<std::complex<double> >{
    @fn FormulationEMDA::FormulationEMDA
    @param goe A GroupOfElement
    @param k A real number
+   @param chi A real number
    @param order A natural number
    @param ddmDof A map with the DDM Dof%s and their associated values
 
-   Instantiates a new FormulationEMDA of the given order, wavenumber (k)
-   and ddm Dof%s
+   Instantiates a new FormulationEMDA of the given order, wavenumber (k),
+   real shift (chi) and ddm Dof%s
 
    The given GroupOfElement will be used as the geomtrical domain
    **
