@@ -40,7 +40,8 @@ void initMap(System<Complex>& system,
     map.insert(pair<Dof, Complex>(*it, 0));
 }
 
-void displaySolution(map<Dof, Complex>& solution, int id, size_t step){
+void displaySolution(map<Dof, Complex>& solution,
+                     int id, size_t step, string name){
   int myId;
   MPI_Comm_rank(MPI_COMM_WORLD,&myId);
 
@@ -50,7 +51,7 @@ void displaySolution(map<Dof, Complex>& solution, int id, size_t step){
     map<Dof, Complex>::iterator end = solution.end();
 
     for(; it != end; it++)
-      cout << "u" << myId << ": " << it->first.toString()
+      cout << name << myId << ": " << it->first.toString()
            << ": " << it->second << endl;
     cout << " --- " << endl;
   }
@@ -138,7 +139,6 @@ void compute(const Options& option){
   // Get Parameters //
   const string ddmType = option.getValue("-ddm")[0];
   const double k       = atof(option.getValue("-k")[0].c_str());
-  const double chi     = atof(option.getValue("-chi")[0].c_str());
   const size_t order   = atoi(option.getValue("-o")[0].c_str());
   const size_t maxIt   = atoi(option.getValue("-max")[0].c_str());
 
@@ -146,21 +146,37 @@ void compute(const Options& option){
   const string emdaType("emda");
   const string oo2Type("oo2");
 
-  // OO2 Stuff //
+  // Variables
   const double Pi = std::atan(1.0) * 4;
-  const double LC = 0.1;
+  double lc       = 0;
+  double chi      = 0;
+  Complex ooA     = 0;
+  Complex ooB     = 0;
 
-  double ooXsiMin = 0;
-  double ooXsiMax = Pi / LC;
-  double ooDeltaK = Pi / .06;
+  // EMDA Stuff
+  if(ddmType == emdaType)
+    chi = atof(option.getValue("-chi")[0].c_str());
 
-  Complex ooAlpha(0, std::pow((k * k - ooXsiMin * ooXsiMin) *
-                              (k * k - (k - ooDeltaK) * (k - ooDeltaK)), 1/4));
-  Complex ooBeta(std::pow((ooXsiMax * ooXsiMax - k * k) *
-                          ((k + ooDeltaK) * (k + ooDeltaK) - k * k), 1/4), 0);
+  // OO2 Stuff
+  if(ddmType == oo2Type){
+    lc = atof(option.getValue("-lc")[0].c_str());
 
-  Complex ooA = -(ooAlpha * ooBeta - k * k) / (ooAlpha + ooBeta);
-  Complex ooB = Complex(-1, 0) / (ooAlpha + ooBeta);
+    double ooXsiMin = 0;
+    double ooXsiMax = Pi / lc;
+    double ooDeltaK = Pi / .06;
+
+    double tmp0 =
+      (k * k - ooXsiMin * ooXsiMin) * (k * k - (k - ooDeltaK) * (k - ooDeltaK));
+
+    double tmp1 =
+      (ooXsiMax * ooXsiMax - k * k) * ((k + ooDeltaK) * (k + ooDeltaK) - k * k);
+
+    Complex ooAlpha = std::pow(Complex(tmp0, 0), 0.25) * Complex(0, 1);
+    Complex ooBeta  = std::pow(Complex(tmp1, 0), 0.25);
+
+    ooA = -(ooAlpha * ooBeta - k * k) / (ooAlpha + ooBeta);
+    ooB = Complex(-1, 0) / (ooAlpha + ooBeta);
+  }
 
   // Get Domains //
   Mesh msh(option.getValue("-msh")[0]);
@@ -260,7 +276,7 @@ void compute(const Options& option){
 
     // Get DDM Border Solution //
     system->getSolution(*solution, 0);
-    displaySolution(*solution, 1, step);
+    displaySolution(*solution, 1, step, "u");
 
     // Update G //
     const FunctionSpaceScalar& ddmFSpace =
@@ -335,7 +351,7 @@ void compute(const Options& option){
 
 int main(int argc, char** argv){
   // Init SmallFem //
-  SmallFem::Keywords("-msh,-o,-k,-chi,-max,-ddm");
+  SmallFem::Keywords("-msh,-o,-k,-max,-ddm,-chi,-lc");
   SmallFem::Initialize(argc, argv);
 
   compute(SmallFem::getOptions());
