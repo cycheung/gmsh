@@ -15,16 +15,17 @@
    NEED TO BE MERGED WITH FEMSOLUTION: NEED HO PVIEW WITH ARBITRARY BASIS
  */
 
+template <typename scalar>
 class Interpolator{
  public:
    Interpolator(void);
   ~Interpolator(void);
 
   static void interpolate(const FunctionSpace& fs,
-                          const DofManager<double>& dofM,
-                          const fullVector<double>& coef,
+                          const DofManager<scalar>& dofM,
+                          const fullVector<scalar>& coef,
                           const fullMatrix<double>& point,
-                          fullMatrix<double>& values);
+                          fullMatrix<scalar>& values);
 };
 
 

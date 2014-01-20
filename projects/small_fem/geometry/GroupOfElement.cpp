@@ -75,6 +75,38 @@ void GroupOfElement::unoriented(void){
   orientationStat = NULL;
 }
 
+void GroupOfElement::
+getAllVertex(std::set<const MVertex*, VertexComparator>& vertex) const{
+  const size_t nElement = element->size();
+
+  // Loop On element
+  for(size_t i = 0; i < nElement; i++){
+    // Get Vertex
+    const size_t nVertex = (*element)[i]->getNumVertices();
+
+    for(size_t j = 0; j < nVertex; j++)
+      vertex.insert((*element)[i]->getVertex(j));
+  }
+}
+
+void GroupOfElement::getAllVertexCoordinate(fullMatrix<double>& coord) const{
+  // Get Vertex
+  set<const MVertex*, VertexComparator> vertex;
+  getAllVertex(vertex);
+
+  // Get Coordinates
+  set<const MVertex*, VertexComparator>::iterator it  = vertex.begin();
+  set<const MVertex*, VertexComparator>::iterator end = vertex.end();
+
+  coord.resize(vertex.size(), 3);
+
+  for(size_t i = 0; it != end; it++, i++){
+    coord(i, 0) = (*it)->x();
+    coord(i, 1) = (*it)->y();
+    coord(i, 2) = (*it)->z();
+  }
+}
+
 string GroupOfElement::toString(void) const{
   stringstream stream;
 

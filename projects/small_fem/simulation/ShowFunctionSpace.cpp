@@ -72,7 +72,17 @@ void compute(const Options& option){
     coef(i) = 0;
 
   // Set each coef to one (one at a time)
-  for(size_t i = 0; i < nCoef; i++){
+  size_t startCoef = 0;
+  size_t stopCoef  = nCoef;
+
+  if(option.getValue("-start").size() != 0)
+    startCoef = atoi(option.getValue("-start")[0].c_str());
+
+  if(option.getValue("-stop").size() != 0)
+    stopCoef = atoi(option.getValue("-stop")[0].c_str());
+
+  for(size_t i = startCoef; i < stopCoef; i++){
+    cout << "# Dof: " << i << "/" << nCoef  << endl;
     coef(i) = 1;
     sol.addCoefficients(i, i, *fSpace, dofM, coef);
     coef(i) = 0;
@@ -88,7 +98,7 @@ void compute(const Options& option){
 
 int main(int argc, char** argv){
   // Init SmallFem //
-  SmallFem::Keywords("-msh,-o,-type");
+  SmallFem::Keywords("-msh,-o,-type,-start,-stop");
   SmallFem::Initialize(argc, argv);
 
   compute(SmallFem::getOptions());

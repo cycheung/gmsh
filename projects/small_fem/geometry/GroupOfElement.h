@@ -58,6 +58,9 @@ class GroupOfElement{
   const std::vector<size_t>& getOrientationStats(void) const;
   void unoriented(void);
 
+  void getAllVertex(std::set<const MVertex*, VertexComparator>& vertex) const;
+  void getAllVertexCoordinate(fullMatrix<double>& coord) const;
+
   std::string toString(void) const;
 };
 

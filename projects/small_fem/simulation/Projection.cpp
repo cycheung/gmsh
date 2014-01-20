@@ -83,8 +83,7 @@ void write(bool isScalar, const fullMatrix<double>& l2, string name);
 void compute(const Options& option){
   // Get Visu Mesh and its vertex coordinates //
   cout << "## Reference Mesh" << endl << flush;
-  Mesh           visuMsh(option.getValue("-ref")[0]);
-  GroupOfElement visu = visuMsh.getFromPhysical(7);
+  Mesh visuMsh(option.getValue("-ref")[0]);
 
   fullMatrix<double> point;
   visuMsh.getAllVertexCoordinate(point);
@@ -227,11 +226,11 @@ void fem(double (*f)(fullVector<double>& xyz),
   fullVector<double> sysSol;
   sysProj.getSolution(sysSol, 0);
 
-  Interpolator::interpolate(sysProj.getFunctionSpace(),
-                            sysProj.getDofManager(),
-                            sysSol,
-                            point,
-                            sol);
+  Interpolator<double>::interpolate(sysProj.getFunctionSpace(),
+                                    sysProj.getDofManager(),
+                                    sysSol,
+                                    point,
+                                    sol);
   // Post-processing //
   if(!nopos){
     FEMSolution<double> feSol;
@@ -268,11 +267,11 @@ void fem(fullVector<double> (*f)(fullVector<double>& xyz),
   fullVector<double> sysSol;
   sysProj.getSolution(sysSol, 0);
 
-  Interpolator::interpolate(sysProj.getFunctionSpace(),
-                            sysProj.getDofManager(),
-                            sysSol,
-                            point,
-                            sol);
+  Interpolator<double>::interpolate(sysProj.getFunctionSpace(),
+                                    sysProj.getDofManager(),
+                                    sysSol,
+                                    point,
+                                    sol);
   // Post-processing //
   if(!nopos){
     FEMSolution<double> feSol;
