@@ -30,7 +30,6 @@ void compute(const Options& option){
   GroupOfElement domain     = msh.getFromPhysical(7);
   GroupOfElement source     = msh.getFromPhysical(5);
   GroupOfElement freeSpace  = msh.getFromPhysical(6);
-  //GroupOfElement outerSpace = msh.getFromPhysical(4);
 
   // Get Parameters //
   const double k     = atof(option.getValue("-k")[0].c_str());
@@ -40,7 +39,6 @@ void compute(const Options& option){
   assemble.start();
   FormulationSteadyWaveScalar<complex<double> > wave(domain, k, order);
   FormulationNeumann neumann(freeSpace, k, order);
-  //FormulationNeumann neumann2(outerSpace, k, order);
 
   // System //
   System<complex<double> > sys(wave);
@@ -53,7 +51,6 @@ void compute(const Options& option){
   // Assemble and Neumann//
   sys.assemble();
   sys.addBorderTerm(neumann);
-  //sys.addBorderTerm(neumann2);
   assemble.stop();
 
   cout << "Assembled: " << assemble.time() << assemble.unit()

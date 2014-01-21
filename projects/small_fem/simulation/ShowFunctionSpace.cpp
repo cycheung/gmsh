@@ -15,7 +15,8 @@ using namespace std;
 void compute(const Options& option){
   // Get Domains //
   Mesh msh(option.getValue("-msh")[0]);
-  GroupOfElement domain = msh.getFromPhysical(7);
+  GroupOfElement domain =
+    msh.getFromPhysical(atoi(option.getValue("-phys")[0].c_str()));
 
   // Get FunctionSpace //
   const size_t   order = atoi(option.getValue("-o")[0].c_str());
@@ -84,7 +85,7 @@ void compute(const Options& option){
   for(size_t i = startCoef; i < stopCoef; i++){
     cout << "# Dof: " << i << "/" << nCoef  << endl;
     coef(i) = 1;
-    sol.addCoefficients(i, i, *fSpace, dofM, coef);
+    sol.addCoefficients(i - startCoef, i - startCoef, *fSpace, dofM, coef);
     coef(i) = 0;
   }
 
@@ -98,7 +99,7 @@ void compute(const Options& option){
 
 int main(int argc, char** argv){
   // Init SmallFem //
-  SmallFem::Keywords("-msh,-o,-type,-start,-stop");
+  SmallFem::Keywords("-msh,-o,-type,-start,-stop,-phys");
   SmallFem::Initialize(argc, argv);
 
   compute(SmallFem::getOptions());
