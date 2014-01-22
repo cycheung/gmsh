@@ -45,7 +45,18 @@ void SmallFem::Initialize(int argc, char** argv){
     option = new Options(argc, argv, myKeywords);
 
     // PETSc And SLEPc
-    std::vector<std::string> argPetsc = option->getValue("-solver");
+    std::vector<std::string> argPetsc;
+    argPetsc.clear();
+
+    try{
+      argPetsc = option->getValue("-solver");
+      argPetsc.erase(argPetsc.begin()); // Remove "-solver" from vector
+    }
+    catch(Exception& ex){
+      // No solver Fields:
+      argPetsc.clear();
+    }
+
     int argPetscSize = argPetsc.size() + 1;
 
     char** argCStylePetsc = new char*[argPetscSize];

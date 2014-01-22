@@ -28,19 +28,19 @@ complex<double> fDirichletScal(fullVector<double>& xyz){
 
 void compute(const Options& option){
   // Get Domain //
-  Mesh msh(option.getValue("-msh")[0]);
+  Mesh msh(option.getValue("-msh")[1]);
   GroupOfElement domain = msh.getFromPhysical(7);
   GroupOfElement border = msh.getFromPhysical(5);
 
   // Get Parameters //
-  const size_t order = atoi(option.getValue("-o")[0].c_str());
-  const size_t nWave = atoi(option.getValue("-n")[0].c_str());
+  const size_t order = atoi(option.getValue("-o")[1].c_str());
+  const size_t nWave = atoi(option.getValue("-n")[1].c_str());
 
   // Chose write formulation for Eigenvalues and boundary condition //
   Formulation<complex<double> >* eig = NULL;
   SystemEigen* sys = NULL;
 
-  if(option.getValue("-type")[0].compare("vector") == 0){
+  if(option.getValue("-type")[1].compare("vector") == 0){
     eig = new FormulationEigenFrequencyVector(domain, order);
     sys = new SystemEigen(*eig);
 
@@ -48,7 +48,7 @@ void compute(const Options& option){
     cout << "Vectorial ";
   }
 
-  else if(option.getValue("-type")[0].compare("scalar") == 0){
+  else if(option.getValue("-type")[1].compare("scalar") == 0){
     eig = new FormulationEigenFrequencyScalar(domain, order);
     sys = new SystemEigen(*eig);
 
@@ -85,7 +85,10 @@ void compute(const Options& option){
          << eigenValue(i) << endl;
 
   // Write Sol //
-  if(!option.getValue("-nopos").size()){
+  try{
+    option.getValue("-nopos");
+  }
+  catch(...){
     FEMSolution<complex<double> > feSol;
     sys->getSolution(feSol);
     feSol.write("eigen_mode");

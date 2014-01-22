@@ -16,8 +16,8 @@ void compute(const Options& option){
   // Get Mesh //
   cout << "## Reading Mesh" << endl << flush;
 
-  Mesh msh(option.getValue("-msh")[0]);
-  size_t       physical = atoi(option.getValue("-phys")[0].c_str());
+  Mesh msh(option.getValue("-msh")[1]);
+  size_t       physical = atoi(option.getValue("-phys")[1].c_str());
   GroupOfElement domain = msh.getFromPhysical(physical);
 
   // Select Basis //

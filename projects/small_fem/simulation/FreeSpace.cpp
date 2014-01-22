@@ -23,14 +23,14 @@ void compute(const Options& option){
   timer.start();
 
   // Get Domains //
-  Mesh msh(option.getValue("-msh")[0]);
+  Mesh msh(option.getValue("-msh")[1]);
   GroupOfElement domain     = msh.getFromPhysical(7);
   GroupOfElement source     = msh.getFromPhysical(5);
   GroupOfElement freeSpace  = msh.getFromPhysical(6);
 
   // Get Parameters //
-  const double k     = atof(option.getValue("-k")[0].c_str());
-  const size_t order = atoi(option.getValue("-o")[0].c_str());
+  const double k     = atof(option.getValue("-k")[1].c_str());
+  const size_t order = atoi(option.getValue("-o")[1].c_str());
 
   // Formulation //
   assemble.start();
@@ -62,7 +62,10 @@ void compute(const Options& option){
        << endl << flush;
 
   // Write Sol //
-  if(!option.getValue("-nopos").size()){
+  try{
+    option.getValue("-nopos");
+  }
+  catch(...){
     FEMSolution<complex<double> > feSol;
     sys.getSolution(feSol);
     feSol.write("free");

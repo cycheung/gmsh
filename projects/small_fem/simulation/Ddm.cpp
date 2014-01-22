@@ -134,13 +134,13 @@ void compute(const Options& option){
   MPI_Comm_rank(MPI_COMM_WORLD,&myId);
 
   if(numProcs != 2)
-    throw Exception("I just do two MPI Processes");
+    ;//throw Exception("I just do two MPI Processes");
 
   // Get Parameters //
-  const string ddmType = option.getValue("-ddm")[0];
-  const double k       = atof(option.getValue("-k")[0].c_str());
-  const size_t order   = atoi(option.getValue("-o")[0].c_str());
-  const size_t maxIt   = atoi(option.getValue("-max")[0].c_str());
+  const string ddmType = option.getValue("-ddm")[1];
+  const double k       = atof(option.getValue("-k")[1].c_str());
+  const size_t order   = atoi(option.getValue("-o")[1].c_str());
+  const size_t maxIt   = atoi(option.getValue("-max")[1].c_str());
 
   // DDM Formulations //
   const string emdaType("emda");
@@ -155,11 +155,11 @@ void compute(const Options& option){
 
   // EMDA Stuff
   if(ddmType == emdaType)
-    chi = atof(option.getValue("-chi")[0].c_str());
+    chi = atof(option.getValue("-chi")[1].c_str());
 
   // OO2 Stuff
   if(ddmType == oo2Type){
-    lc = atof(option.getValue("-lc")[0].c_str());
+    lc = atof(option.getValue("-lc")[1].c_str());
 
     double ooXsiMin = 0;
     double ooXsiMax = Pi / lc;
@@ -179,7 +179,7 @@ void compute(const Options& option){
   }
 
   // Get Domains //
-  Mesh msh(option.getValue("-msh")[0]);
+  Mesh msh(option.getValue("-msh")[1]);
   GroupOfElement* domain;
   GroupOfElement* source;
   GroupOfElement* infinity;
@@ -277,9 +277,13 @@ void compute(const Options& option){
     // Get DDM Border Solution //
     system->getSolution(*solution, 0);
 
-    if(option.getValue("-disp").size() != 0)
-      displaySolution(*solution, atoi(option.getValue("-disp")[0].c_str()),
-                      step, "u");
+    try{
+      if(option.getValue("-disp").size() > 1)
+        displaySolution(*solution, atoi(option.getValue("-disp")[1].c_str()),
+                        step, "u");
+    }
+    catch(...){
+    }
 
     // Update G //
     const FunctionSpaceScalar& ddmFSpace =

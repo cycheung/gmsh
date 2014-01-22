@@ -2,6 +2,7 @@
 #include <set>
 #include <list>
 
+#include "Exception.h"
 #include "Options.h"
 
 using namespace std;
@@ -34,16 +35,13 @@ Options::Options(int argc,char** argv, const string& keywords){
   string opt;
 
   if(offset != argc){
-    opt = string(argv[offset]);
-
-    for(int i = offset + 1; i < argc; i++){
+    for(int i = offset; i < argc; i++){
       if(key.count(string(argv[i])) == 1)
         // A new option is found
         opt = string(argv[i]);
 
-      else
-        // Enlist this option arguments
-        list.push_back(pair<string, string>(opt, string(argv[i])));
+      // Enlist this option arguments
+      list.push_back(pair<string, string>(opt, string(argv[i])));
     }
   }
 
@@ -68,6 +66,9 @@ vector<string> Options::getValue(string option) const{
 
   for(it = itRef.first; it != itRef.second; it++)
     N++;
+
+  if(N == 0)
+    throw Exception("Options: option %s not found", option.c_str());
 
   // Reset 'it'
   it = itRef.first;

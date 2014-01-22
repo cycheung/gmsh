@@ -9,11 +9,12 @@
    @class Options
    @brief Handel options
 
-   An Option is a pair composed two strings:
+   An Option is a tuple composed N+1 strings:
    @li The first one is called the option
-   @li The second one is called the value
+   @li The N last ones are called the values
 
-   This class can store all the pairs (option, value) for latter access.
+   This class can parse a c-style (int argc, char** argv) set
+   of variables and store all the tuples (option, value1, value2, value3, ...)
 
    The possible values of the options are given by a set of keywords.
    These keywords are represented by a comma separated string.
@@ -43,12 +44,9 @@ class Options{
 
    Instanciates a new Options.
 
-   This method will parse the given char* and will store all the
-   (option, value) pairs, with the given keywords as possible options.
-
-   All the paires (option, value) will be stored for latter use.
-
-   @see Options::getValue
+   This method will parse the given char* and will store all the tuples
+   (option, value1, value2, value3, ...),
+   with the given keywords as possible options.
    **
 
    @fn Options::~Options
@@ -58,10 +56,9 @@ class Options{
    @fn Options::getValue
    @param option A string used as an option
    @return
-   Returns a vector with the values stored for the given option.
-   Those values have been stored during instanciation of this Options.
-
-   @see Options::Options
+   Returns the tuple (option, value1, value2, value3, ...)
+   associated to the given option.
+   If no match is founds , an Exception is thrown.
    **
 
    @fn Options::toString
@@ -80,7 +77,6 @@ class Options{
    vecCStyle will be populated starting at offset.
 
    The char* are bounded to the given vector.
-   **
  */
 
 #endif

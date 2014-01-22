@@ -83,30 +83,37 @@ void write(bool isScalar, const fullMatrix<double>& l2, string name);
 void compute(const Options& option){
   // Get Visu Mesh and its vertex coordinates //
   cout << "## Reference Mesh" << endl << flush;
-  Mesh visuMsh(option.getValue("-ref")[0]);
+  Mesh visuMsh(option.getValue("-ref")[1]);
 
   fullMatrix<double> point;
   visuMsh.getAllVertexCoordinate(point);
 
   // Get FEM Orders //
-  const size_t nOrder = option.getValue("-o").size();
+  const size_t nOrder = option.getValue("-o").size() - 1;
   vector<int>   order(nOrder);
 
   for(size_t i = 0; i < nOrder; i++)
-    order[i] = atoi(option.getValue("-o")[i].c_str());
+    order[i] = atoi(option.getValue("-o")[i + 1].c_str());
 
   // Get FEM Meshes //
-  const size_t  nMesh = option.getValue("-msh").size();
+  const size_t  nMesh = option.getValue("-msh").size() - 1;
   vector<string> mesh(nMesh);
 
   for(size_t i = 0; i < nMesh; i++)
-    mesh[i] = option.getValue("-msh")[i];
+    mesh[i] = option.getValue("-msh")[i + 1];
 
   // Post Processing ? //
-  bool nopos = (option.getValue("-nopos").size() != 0);
+  bool nopos;
+  try{
+    option.getValue("-nopos");
+    nopos = 1;
+  }
+  catch(Exception& ex){
+    nopos = 0;
+  }
 
   // Scalar or Vector //
-  bool isScalar = (option.getValue("-type")[0].compare("scalar") == 0);
+  bool isScalar = (option.getValue("-type")[1].compare("scalar") == 0);
 
   // Real Solutions //
   cout << "## Real Solution" << endl << flush;
@@ -144,7 +151,7 @@ void compute(const Options& option){
 
   // Display //
   cout << "## L2 Error" << endl << flush;
-  write(isScalar, l2, option.getValue("-name")[0]);
+  write(isScalar, l2, option.getValue("-name")[1]);
 }
 
 int main(int argc, char** argv){

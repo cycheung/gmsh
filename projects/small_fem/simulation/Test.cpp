@@ -68,12 +68,12 @@ int main(int argc, char** argv){
   const Options& option = SmallFem::getOptions();
 
   // Get Parameters //
-  const double wavenum = atof(option.getValue("-k")[0].c_str());
+  const double wavenum = atof(option.getValue("-k")[1].c_str());
   const double chi     = 0;
-  const size_t order   = atoi(option.getValue("-o")[0].c_str());
+  const size_t order   = atoi(option.getValue("-o")[1].c_str());
 
   // Get Domains //
-  Mesh msh(option.getValue("-msh")[0]);
+  Mesh msh(option.getValue("-msh")[1]);
   GroupOfElement* domain;
   GroupOfElement* source;
   GroupOfElement* infinity;

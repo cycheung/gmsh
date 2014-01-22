@@ -25,7 +25,7 @@ double fSource(fullVector<double>& xyz){
 
 void compute(const Options& option){
   // Get Domains //
-  Mesh msh(option.getValue("-msh")[0]);
+  Mesh msh(option.getValue("-msh")[1]);
   GroupOfElement    domain = msh.getFromPhysical(7);
   GroupOfElement boundary0 = msh.getFromPhysical(6);
   GroupOfElement boundary1 = msh.getFromPhysical(5);
@@ -34,7 +34,7 @@ void compute(const Options& option){
        << endl << flush;
 
   // Get Order //
-  size_t order = atoi(option.getValue("-o")[0].c_str());
+  size_t order = atoi(option.getValue("-o")[1].c_str());
 
   // Compute //
   FormulationPoisson poisson(domain, fSource, order);
@@ -51,7 +51,10 @@ void compute(const Options& option){
   sysPoisson.solve();
 
   // Write Sol //
-  if(!option.getValue("-nopos").size()){
+  try{
+    option.getValue("-nopos");
+  }
+  catch(...){
     FEMSolution<double> feSol;
     sysPoisson.getSolution(feSol);
     feSol.write("poisson");

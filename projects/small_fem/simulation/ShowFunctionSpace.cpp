@@ -14,16 +14,16 @@ using namespace std;
 
 void compute(const Options& option){
   // Get Domains //
-  Mesh msh(option.getValue("-msh")[0]);
+  Mesh msh(option.getValue("-msh")[1]);
   GroupOfElement domain =
-    msh.getFromPhysical(atoi(option.getValue("-phys")[0].c_str()));
+    msh.getFromPhysical(atoi(option.getValue("-phys")[1].c_str()));
 
   // Get FunctionSpace //
-  const size_t   order = atoi(option.getValue("-o")[0].c_str());
+  const size_t   order = atoi(option.getValue("-o")[1].c_str());
   Basis*         basis;
   FunctionSpace* fSpace;
 
-  if(option.getValue("-type")[0].compare("lagrange") == 0){
+  if(option.getValue("-type")[1].compare("lagrange") == 0){
     // If Lagrange
     basis =
       BasisGenerator::generate(domain.get(0).getType(),
@@ -32,7 +32,7 @@ void compute(const Options& option){
     fSpace = new FunctionSpaceScalar(domain, *basis);
   }
 
-  else if(option.getValue("-type")[0].compare("scalar") == 0){
+  else if(option.getValue("-type")[1].compare("scalar") == 0){
     // If Scalar
     basis =
       BasisGenerator::generate(domain.get(0).getType(),
@@ -41,7 +41,7 @@ void compute(const Options& option){
     fSpace = new FunctionSpaceScalar(domain, *basis);
   }
 
-  else if(option.getValue("-type")[0].compare("vector") == 0){
+  else if(option.getValue("-type")[1].compare("vector") == 0){
     // If Vector
     basis =
       BasisGenerator::generate(domain.get(0).getType(),
@@ -52,7 +52,7 @@ void compute(const Options& option){
 
   else
     throw Exception("Unknown FunctionSpace type: %s",
-                    option.getValue("-type")[0].c_str());
+                    option.getValue("-type")[1].c_str());
 
   // Enumerate Dofs //
   DofManager<double> dofM;
@@ -76,11 +76,19 @@ void compute(const Options& option){
   size_t startCoef = 0;
   size_t stopCoef  = nCoef;
 
-  if(option.getValue("-start").size() != 0)
-    startCoef = atoi(option.getValue("-start")[0].c_str());
+  try{
+    if(option.getValue("-start").size() > 1)
+      startCoef = atoi(option.getValue("-start")[1].c_str());
+  }
+  catch(...){
+  }
 
-  if(option.getValue("-stop").size() != 0)
-    stopCoef = atoi(option.getValue("-stop")[0].c_str());
+  try{
+    if(option.getValue("-stop").size() > 1)
+      stopCoef = atoi(option.getValue("-stop")[1].c_str());
+  }
+  catch(...){
+  }
 
   for(size_t i = startCoef; i < stopCoef; i++){
     cout << "# Dof: " << i << "/" << nCoef  << endl;

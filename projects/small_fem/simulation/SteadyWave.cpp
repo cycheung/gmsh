@@ -47,20 +47,20 @@ void compute(const Options& option){
   timer.start();
 
   // Get Domains //
-  Mesh msh(option.getValue("-msh")[0]);
+  Mesh msh(option.getValue("-msh")[1]);
   GroupOfElement domain = msh.getFromPhysical(7);
   GroupOfElement source = msh.getFromPhysical(5);
   GroupOfElement wall   = msh.getFromPhysical(6);
 
   // Get Parameters //
-  const double k     = atof(option.getValue("-k")[0].c_str());
-  const size_t order = atoi(option.getValue("-o")[0].c_str());
+  const double k     = atof(option.getValue("-k")[1].c_str());
+  const size_t order = atoi(option.getValue("-o")[1].c_str());
 
   // Chose write formulation for Steady Wave and boundary condition //
   Formulation<double>* wave = NULL;
   System<double>*      sys  = NULL;
 
-  if(option.getValue("-type")[0].compare("vector") == 0){
+  if(option.getValue("-type")[1].compare("vector") == 0){
     assemble.start();
     wave = new FormulationSteadyWaveVector(domain, k, order);
     sys  = new System<double>(*wave);
@@ -70,7 +70,7 @@ void compute(const Options& option){
     cout << "Vectorial ";
   }
 
-  else if(option.getValue("-type")[0].compare("slow") == 0){
+  else if(option.getValue("-type")[1].compare("slow") == 0){
     assemble.start();
     wave = new FormulationSteadyWaveVectorSlow(domain, k, order);
     sys  = new System<double>(*wave);
@@ -80,7 +80,7 @@ void compute(const Options& option){
     cout << "Slow Vectorial ";
   }
 
-  else if(option.getValue("-type")[0].compare("scalar") == 0){
+  else if(option.getValue("-type")[1].compare("scalar") == 0){
     assemble.start();
     wave = new FormulationSteadyWaveScalar<double>(domain, k, order);
     sys  = new System<double>(*wave);
@@ -110,7 +110,10 @@ void compute(const Options& option){
        << endl << flush;
 
   // Write Sol //
-  if(!option.getValue("-nopos").size()){
+  try{
+    option.getValue("-nopos");
+  }
+  catch(...){
     FEMSolution<double> feSol;
     sys->getSolution(feSol);
     feSol.write("swave");
