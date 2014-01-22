@@ -18,36 +18,12 @@
 #include "FormulationOO2.h"
 #include "FormulationUpdateOO2.h"
 
-#include "Interpolator.h"
-#include "NodeSolution.h"
-
 using namespace std;
 
 typedef std::complex<double> Complex;
 
 Complex fSource(fullVector<double>& xyz){
   return Complex(1, 0);
-}
-
-string toMatlab(fullMatrix<double> mat, string name){
-  stringstream stream;
-  int nRow = mat.size1();
-  int nCol = mat.size2();
-
-  stream << name << " = [";
-
-  for(int i = 0; i < nRow; i++){
-    stream << "[";
-
-    for(int j = 0; j < nCol; j++)
-      stream << mat(i, j) << ", ";
-
-    stream << "];";
-  }
-
-  stream << "];" << endl;
-
-  return stream.str();
 }
 
 void initMap(System<Complex>& system,
@@ -158,7 +134,7 @@ void compute(const Options& option){
   MPI_Comm_rank(MPI_COMM_WORLD,&myId);
 
   if(numProcs != 2)
-    ;//throw Exception("I just do two MPI Processes");
+    throw Exception("I just do two MPI Processes");
 
   // Get Parameters //
   const string ddmType = option.getValue("-ddm")[0];
@@ -212,7 +188,7 @@ void compute(const Options& option){
   if(myId == 0){
     domain    = new GroupOfElement(msh.getFromPhysical(7));
     source    = new GroupOfElement(msh.getFromPhysical(5));
-    infinity  = NULL;//new GroupOfElement(msh.getFromPhysical(61));
+    infinity  = new GroupOfElement(msh.getFromPhysical(61));
     ddmBorder = new GroupOfElement(msh.getFromPhysical(4));
   }
 
@@ -227,7 +203,7 @@ void compute(const Options& option){
   Formulation<Complex>* wave;
   Formulation<Complex>* ddm;
   Formulation<Complex>* upDdm;
-  Formulation<Complex>* neumann = NULL;
+  Formulation<Complex>* neumann;
 
   // System Pointers //
   System<Complex>* system;
@@ -282,10 +258,8 @@ void compute(const Options& option){
     system->assemble();
 
     // Neumann terms
-    if(myId == 1){
-      neumann = new FormulationNeumann(*infinity, k, order);
-      system->addBorderTerm(*neumann);
-    }
+    neumann = new FormulationNeumann(*infinity, k, order);
+    system->addBorderTerm(*neumann);
 
     // DDM terms
     if(ddmType == emdaType)
@@ -340,73 +314,8 @@ void compute(const Options& option){
       FEMSolution<Complex> feSol;
       system->getSolution(feSol);
 
-      if(myId == 0)
-        feSolName << "proc0_it" << step;
-      else
-        feSolName << "proc1_it" << step;
-
+      feSolName << "ddm" << myId;
       feSol.write(feSolName.str());
-    }
-
-    if((step == maxIt - 1) && (option.getValue("-interp").size() != 0)){
-      Mesh            visuMsh(option.getValue("-interp")[0]);
-      GroupOfElement* visu;
-
-      if(myId == 0)
-        visu = new GroupOfElement(visuMsh.getFromPhysical(7));
-      else
-        visu = new GroupOfElement(visuMsh.getFromPhysical(8));
-
-      fullMatrix<double> point;
-      set<const MVertex*, VertexComparator> vertex;
-      visu->getAllVertex(vertex);
-
-      {
-        set<const MVertex*, VertexComparator>::iterator it  = vertex.begin();
-        set<const MVertex*, VertexComparator>::iterator end = vertex.end();
-
-        point.resize(vertex.size(), 3);
-
-        for(size_t i = 0; it != end; it++, i++){
-          point(i, 0) = (*it)->x();
-          point(i, 1) = (*it)->y();
-          point(i, 2) = (*it)->z();
-        }
-      }
-
-      fullVector<Complex> sol;
-      system->getSolution(sol, 0);
-
-      fullMatrix<Complex> values;
-
-      Interpolator<Complex>::interpolate(system->getFunctionSpace(),
-                                         system->getDofManager(),
-                                         sol, point, values);
-
-      map<const MVertex*, Complex> nodeData;
-
-      {
-        set<const MVertex*, VertexComparator>::iterator it  = vertex.begin();
-        set<const MVertex*, VertexComparator>::iterator end = vertex.end();
-
-        for(size_t i = 0; it != end; it++, i++)
-          nodeData.insert(pair<const MVertex*, Complex>(*it, values(i, 0)));
-      }
-
-      {
-        stringstream nodeSolutionName;
-        NodeSolution nodeSolution;
-        nodeSolution.addNodeValue(0, 0, visuMsh, nodeData);
-
-        if(myId == 0)
-          nodeSolutionName << "interp0_it" << step;
-        else
-          nodeSolutionName << "interp1_it" << step;
-
-        nodeSolution.write(nodeSolutionName.str());
-      }
-
-      delete visu;
     }
 
     // Clean //
@@ -442,7 +351,7 @@ void compute(const Options& option){
 
 int main(int argc, char** argv){
   // Init SmallFem //
-  SmallFem::Keywords("-msh,-o,-k,-max,-ddm,-chi,-lc,-disp,-interp");
+  SmallFem::Keywords("-msh,-o,-k,-max,-ddm,-chi,-lc,-disp");
   SmallFem::Initialize(argc, argv);
 
   compute(SmallFem::getOptions());

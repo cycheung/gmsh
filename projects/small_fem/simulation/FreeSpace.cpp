@@ -11,9 +11,6 @@
 #include "Timer.h"
 #include "SmallFem.h"
 
-#include "NodeSolution.h"
-#include "Interpolator.h"
-
 using namespace std;
 
 complex<double> fSourceScal(fullVector<double>& xyz){
@@ -71,55 +68,6 @@ void compute(const Options& option){
     feSol.write("free");
   }
 
-  // Interpolate //
-  if(option.getValue("-interp").size() != 0){
-    Mesh           visuMsh(option.getValue("-interp")[0]);
-    GroupOfElement visu(visuMsh.getFromPhysical(7));
-
-    fullMatrix<double> point;
-    set<const MVertex*, VertexComparator> vertex;
-    visu.getAllVertex(vertex);
-
-    {
-      set<const MVertex*, VertexComparator>::iterator it  = vertex.begin();
-      set<const MVertex*, VertexComparator>::iterator end = vertex.end();
-
-      point.resize(vertex.size(), 3);
-
-      for(size_t i = 0; it != end; it++, i++){
-        point(i, 0) = (*it)->x();
-        point(i, 1) = (*it)->y();
-        point(i, 2) = (*it)->z();
-      }
-    }
-
-    fullVector<complex<double> > sol;
-    sys.getSolution(sol, 0);
-
-    fullMatrix<complex<double> > values;
-
-    Interpolator<complex<double> >::interpolate(sys.getFunctionSpace(),
-                                                sys.getDofManager(),
-                                                sol, point, values);
-
-    map<const MVertex*, complex<double> > nodeData;
-
-    {
-      set<const MVertex*, VertexComparator>::iterator it  = vertex.begin();
-      set<const MVertex*, VertexComparator>::iterator end = vertex.end();
-
-      for(size_t i = 0; it != end; it++, i++)
-        nodeData.insert
-          (pair<const MVertex*, complex<double> >(*it, values(i, 0)));
-    }
-
-    {
-      NodeSolution nodeSolution;
-      nodeSolution.addNodeValue(0, 0, visuMsh, nodeData);
-      nodeSolution.write("free_interp");
-    }
-  }
-
   // Timer -- Finalize -- Return //
   timer.stop();
 
@@ -129,7 +77,7 @@ void compute(const Options& option){
 
 int main(int argc, char** argv){
   // Init SmallFem //
-  SmallFem::Keywords("-msh,-o,-k,-nopos,-interp");
+  SmallFem::Keywords("-msh,-o,-k,-nopos");
   SmallFem::Initialize(argc, argv);
 
   compute(SmallFem::getOptions());
